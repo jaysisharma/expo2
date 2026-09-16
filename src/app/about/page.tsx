@@ -380,20 +380,53 @@ export default function AboutPage() {
             ))}
           </div>
 
-          {/* 5th Edition teaser — dark card */}
-          <div className="rounded-3xl bg-[#03160F] border border-emerald-500/20 p-10 sm:p-16 text-center relative overflow-hidden">
-            <div className="absolute inset-0 opacity-10">
-              <Image src="/images/gallery/2022/FOTO6017.webp" alt="" fill className="object-cover" />
-            </div>
-            <div className="relative z-10 space-y-3">
-              <p className="text-[11px] font-mono text-[#34D399] uppercase tracking-[0.25em]">2027 / 5TH EDITION</p>
-              <h3 className="text-4xl sm:text-6xl font-black text-white leading-tight">
-                NOW.<br />
-                <span className="text-[#34D399]">THE FIFTH.</span>
-              </h3>
-              <p className="text-sm text-emerald-100/60 max-w-sm mx-auto mt-4">
-                16–18 January 2027 · Bhrikutimandap, Kathmandu
-              </p>
+          {/* 5th Edition teaser — official announcement card with press_meet banner */}
+          <div className="rounded-3xl bg-gradient-to-br from-[#03160F] via-[#04281E] to-[#02130C] border border-emerald-500/30 p-8 sm:p-12 relative overflow-hidden shadow-2xl">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
+              <div className="lg:col-span-6 space-y-4 text-left">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-[#34D399] font-mono text-xs font-bold uppercase tracking-wider border border-emerald-500/30">
+                  <span className="w-2 h-2 rounded-full bg-[#34D399] animate-pulse" />
+                  <span>2027 · THE 5TH MILESTONE</span>
+                </div>
+                <h3 className="text-3xl sm:text-5xl font-black text-white leading-tight">
+                  RESILIENT ENERGY, <br />
+                  <span className="text-[#34D399]">PROSPEROUS NEPAL.</span>
+                </h3>
+                <p className="text-sm text-emerald-100/80 leading-relaxed max-w-lg">
+                  17th–19th January 2027 (Magh 3–5, 2083) at Bhrikutimandap Exhibition Complex, Kathmandu. Jointly organized by IPPAN and Event Solution, spotlighting Green Hydrogen, Solar, Wind, EV, and Alternative Clean Energy.
+                </p>
+                <div className="pt-2 flex flex-wrap gap-3">
+                  <Link
+                    href="/register"
+                    className="px-5 py-2.5 rounded-full bg-[#10B981] hover:bg-[#059669] text-slate-950 font-mono text-xs font-black tracking-wider transition-all shadow-md inline-flex items-center gap-2"
+                  >
+                    <span>REGISTER AS VISITOR</span>
+                    <ArrowUpRight className="w-4 h-4" />
+                  </Link>
+                  <Link
+                    href="/news"
+                    className="px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white font-mono text-xs font-bold tracking-wider transition-all border border-white/20"
+                  >
+                    <span>READ PRESS RELEASE</span>
+                  </Link>
+                </div>
+              </div>
+
+              <div className="lg:col-span-6">
+                <div className="relative aspect-[16/10] w-full rounded-2xl overflow-hidden border border-white/20 shadow-2xl group">
+                  <Image
+                    src="/images/press_meet.jpeg"
+                    alt="Himalayan Green Energy Expo 2027 Official Press Meet Banner"
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+                  <div className="absolute bottom-3 left-3 right-3 px-3 py-2 rounded-lg bg-black/70 backdrop-blur-md border border-white/10 text-left">
+                    <span className="text-[10px] font-mono text-[#34D399] uppercase font-bold tracking-wider block">OFFICIAL PRESS MEET CREATIVE</span>
+                    <span className="text-xs text-white font-medium">Bhrikutimandap, Kathmandu · IPPAN × Event Solution</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

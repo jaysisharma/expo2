@@ -64,45 +64,63 @@ export default function WelcomeExpoModal() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.94, y: 15 }}
             transition={{ duration: 0.25, ease: "easeOut" }}
-            className="relative w-full max-w-lg bg-gradient-to-b from-[#065F46] via-[#044E3B] to-[#022C22] border border-[#34D399]/30 shadow-[0_20px_60px_rgba(0,0,0,0.6)] rounded-3xl p-6 sm:p-8 text-white z-10 space-y-5 text-center"
+            className="relative w-full max-w-lg bg-gradient-to-b from-[#065F46] via-[#044E3B] to-[#022C22] border border-[#34D399]/30 shadow-[0_20px_60px_rgba(0,0,0,0.6)] rounded-3xl overflow-hidden text-white z-10 text-center"
           >
-            {/* Close Button */}
-            <button
-              onClick={handleClose}
-              aria-label="Close"
-              className="absolute top-4 right-4 text-emerald-200 hover:text-white p-1 cursor-pointer transition-colors rounded-full hover:bg-white/10"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            {/* Top Visual Banner from Official Press Meet Creative */}
+            <div className="relative w-full aspect-[21/9] sm:aspect-[2/1] overflow-hidden border-b border-white/15">
+              <Image
+                src="/images/press_meet.jpeg"
+                alt="Himalayan Green Energy Expo 2027 Official Announcement"
+                fill
+                priority
+                className="object-cover object-center"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#065F46] via-[#065F46]/30 to-transparent" />
+              
+              {/* Close Button on top right of banner */}
+              <button
+                onClick={handleClose}
+                aria-label="Close"
+                className="absolute top-3 right-3 text-white bg-black/50 hover:bg-black/80 p-1.5 cursor-pointer transition-colors rounded-full backdrop-blur-md z-20"
+              >
+                <X className="w-4 h-4" />
+              </button>
 
-            {/* 5th Edition Badge & Main Title */}
-            <div className="space-y-2">
-              <div className="inline-flex items-center px-3.5 py-1 rounded-full bg-white/15 border border-white/25 text-white font-mono text-xs font-bold uppercase tracking-wider backdrop-blur-sm">
-                <span>5TH EDITION</span>
-              </div>
-
-              <h2 className="font-sans font-black text-2xl sm:text-3xl text-white tracking-tight leading-tight drop-shadow-sm">
-                Himalayan Hydro & Green Energy Expo
-              </h2>
-
-              {/* Location well just below the title with location icon (no bg pill) */}
-              <div className="pt-1 flex items-center justify-center gap-1.5 text-xs font-mono text-emerald-100">
-                <MapPin className="w-4 h-4 text-[#34D399] shrink-0" />
-                <span className="font-medium text-white">
-                  Bhrikutimandap Exhibition Complex, Kathmandu, Nepal
-                </span>
-              </div>
-
-              <div className="flex items-center justify-center gap-1.5 text-xs font-mono text-[#34D399] font-bold">
-                <Calendar className="w-3.5 h-3.5" />
-                <span>Magh 2 – 4, 2083</span>
+              {/* Top Left Badge */}
+              <div className="absolute top-3 left-3 px-2.5 py-0.5 rounded-full bg-[#10B981] text-slate-950 font-mono text-[10px] font-black uppercase tracking-wider shadow-md">
+                5TH EDITION · 2027
               </div>
             </div>
 
-            {/* Short & Sweet Inviting Description */}
-            <p className="text-xs sm:text-sm text-emerald-50/95 font-normal leading-relaxed max-w-md mx-auto">
-              Join us at the biggest platform for the renewable & hydro energy sector in Nepal. Register now to be a part of it.
-            </p>
+            <div className="p-6 sm:p-7 space-y-4">
+              {/* 5th Edition Badge & Main Title */}
+              <div className="space-y-1.5">
+                <h2 className="font-sans font-black text-xl sm:text-2xl text-white tracking-tight leading-tight drop-shadow-sm">
+                  Himalayan Green Energy Expo 2027
+                </h2>
+
+                <p className="text-xs font-mono font-bold text-[#34D399] tracking-wide">
+                  &ldquo;Resilient Energy, Prosperous Nepal&rdquo;
+                </p>
+
+                {/* Location well just below the title with location icon (no bg pill) */}
+                <div className="pt-1 flex items-center justify-center gap-1.5 text-xs font-mono text-emerald-100">
+                  <MapPin className="w-4 h-4 text-[#34D399] shrink-0" />
+                  <span className="font-medium text-white">
+                    Bhrikutimandap Exhibition Complex, Kathmandu
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-center gap-1.5 text-xs font-mono text-[#38BDF8] font-bold">
+                  <Calendar className="w-3.5 h-3.5" />
+                  <span>17–19 January 2027 · Magh 3–5, 2083</span>
+                </div>
+              </div>
+
+              {/* Short & Sweet Inviting Description */}
+              <p className="text-xs text-emerald-50/90 font-normal leading-relaxed max-w-md mx-auto">
+                South Asia&apos;s flagship clean energy summit connecting developers, turbine OEMs, solar, EV, and green hydrogen leaders.
+              </p>
 
             {/* Action Buttons with rounded-full matching Navbar CTA */}
             <div className="pt-2 flex flex-col sm:flex-row gap-3">
@@ -121,6 +139,7 @@ export default function WelcomeExpoModal() {
               >
                 Register as Exhibitor
               </Link>
+            </div>
             </div>
           </motion.div>
         </div>

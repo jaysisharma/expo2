@@ -98,19 +98,25 @@ const NAV_ITEMS: NavItem[] = [
     ],
   },
   {
-    label: 'News & Gallery',
-    href: '/gallery',
+    label: 'News & Media',
+    href: '/press',
     children: [
       {
-        label: 'Photo Gallery',
-        href: '/gallery',
-        desc: 'Moments & showcases from 2018, 2019, 2022 & 2024',
-        badge: 'Highlights',
+        label: 'Official Press Room',
+        href: '/press',
+        desc: 'Official press meet banner, 6 shows & press kit',
+        badge: 'New',
       },
       {
         label: 'News & Press Releases',
         href: '/news',
         desc: 'Latest announcements & energy treaties',
+      },
+      {
+        label: 'Photo Gallery',
+        href: '/gallery',
+        desc: 'Moments & showcases from 2018, 2019, 2022 & 2024',
+        badge: 'Highlights',
       },
     ],
   },

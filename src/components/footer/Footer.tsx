@@ -119,6 +119,11 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/press" className="text-[#38BDF8] hover:text-[#7DD3FC] font-semibold transition-colors">
+                  Official Press Room
+                </Link>
+              </li>
+              <li>
                 <Link href="/gallery" className="hover:text-[#4ADE80] transition-colors">
                   Past Photo Gallery
                 </Link>

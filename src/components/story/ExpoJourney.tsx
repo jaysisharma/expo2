@@ -252,23 +252,26 @@ export function ExpoJourney() {
               </div>
             </div>
 
-            {/* Right Column: High-Res Expo Floor Photograph */}
+            {/* Right Column: Official Press Meet Announcement Graphic */}
             <div className="lg:col-span-5 relative">
-              <div className="relative h-[260px] sm:h-[340px] w-full rounded-2xl border border-white/15 overflow-hidden bg-slate-900 shadow-2xl group">
+              <div className="relative h-[260px] sm:h-[340px] w-full rounded-2xl border border-white/20 overflow-hidden bg-slate-950 shadow-2xl group cursor-pointer">
                 <Image
-                  src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80"
-                  alt="Himalayan Green Energy Expo 5th Edition Complex"
+                  src="/images/press_meet.jpeg"
+                  alt="Himalayan Green Energy Expo 2027 Official Press Meet Announcement"
                   fill
-                  sizes="(max-width: 1024px) 100vw, 500px"
-                  className="object-cover group-hover:scale-105 transition-transform duration-700"
+                  sizes="(max-width: 1024px) 100vw, 550px"
+                  className="object-cover object-center group-hover:scale-105 transition-transform duration-700"
                 />
-                <div className="absolute inset-0 bg-[#061A2A]/40" />
-                <div className="absolute bottom-3 left-3 right-3 p-3 bg-[#061A2A]/90 backdrop-blur-md border border-white/10 rounded-xl">
-                  <div className="text-[10px] font-mono text-[#38BDF8] font-bold uppercase">
-                    MAIN PLENARY & EXHIBITION
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none" />
+                <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-[#10B981]/90 text-slate-950 font-mono text-[10px] font-black uppercase tracking-wider backdrop-blur-md shadow-md">
+                  OFFICIAL CREATIVE
+                </div>
+                <div className="absolute bottom-3 left-3 right-3 p-3 bg-black/75 backdrop-blur-md border border-white/10 rounded-xl">
+                  <div className="text-[10px] font-mono text-[#34D399] font-bold uppercase tracking-wider">
+                    PRESS MEET · 17–19 JAN 2027
                   </div>
-                  <div className="text-xs text-white font-medium mt-0.5">
-                    Halls A & B · Bhrikutimandap Complex, Kathmandu
+                  <div className="text-xs text-white font-semibold mt-0.5">
+                    Resilient Energy, Prosperous Nepal · Bhrikutimandap
                   </div>
                 </div>
               </div>

@@ -2,6 +2,26 @@ import { NewsArticle } from "@/lib/types";
 
 export const newsData: NewsArticle[] = [
   {
+    id: "official-press-meet-announcement-2027",
+    slug: "official-press-meet-announcement-himalayan-green-energy-expo-2027",
+    title: "Official Press Meet: Himalayan Green Energy Expo 2027 Announced under Theme 'Resilient Energy, Prosperous Nepal'",
+    date: "March 15, 2026",
+    category: "Press Release",
+    author: "IPPAN & Event Solution Secretariat",
+    readTime: "3 min read",
+    featured: true,
+    sourceName: "Official Secretariat Release",
+    sourceUrl: "/files/hydroproposal-13-2-2024.pdf",
+    image: "/images/press_meet.jpeg",
+    summary: "Jointly organized by IPPAN and Event Solution, the 5th edition of Himalayan Green Energy Expo is officially announced for 17th–19th January 2027 (Magh 3–5, 2083) at Bhrikutimandap, Kathmandu, spotlighting 6 major clean energy sectors.",
+    content: [
+      "In a joint press conference held at Kathmandu, the Independent Power Producers' Association, Nepal (IPPAN) and Event Solution officially announced the 5th edition of the Himalayan Green Energy Expo 2027.",
+      "Themed 'Resilient Energy, Prosperous Nepal', the expo convenes developers, international OEMs, sovereign financiers, and regional trade delegations to support Nepal's 30,000 MW clean energy roadmap by 2035.",
+      "The 5th edition introduces 6 specialized concurrent sub-shows: Green Hydrogen Show, Green Energy Show, EV Show, Alternative Energy Show, Windmill Energy Show, and Solar Energy Show.",
+      "Official secretariat contact desks (+977-9703606340, himalayangreenenergyexpo@gmail.com, info@ippan.org.np) are now open for stall bookings, international sponsorships, and media accreditations.",
+    ],
+  },
+  {
     id: "trilateral-power-trade-agreement",
     slug: "trilateral-power-trade-nepal-india-bangladesh",
     title: "Historic Trilateral Power Agreement: Nepal Commences 40MW Clean Power Export to Bangladesh",
