@@ -146,21 +146,6 @@ export function Footer() {
         {/* Clean Bottom Bar */}
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 font-normal">
           <p>© 2027 Himalayan Green Energy Expo. All rights reserved.</p>
-          <div className="flex items-center gap-6 text-xs text-slate-400">
-            <Link href="/about" className="hover:text-white transition-colors">
-              About
-            </Link>
-            <Link href="/contact" className="hover:text-white transition-colors">
-              Contact
-            </Link>
-            <Link
-              href="/admin/login"
-              className="text-slate-300 hover:text-white transition-colors flex items-center gap-1 font-mono font-semibold"
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-[#25C176]" />
-              <span>Secretariat Login</span>
-            </Link>
-          </div>
         </div>
       </div>
     </footer>
