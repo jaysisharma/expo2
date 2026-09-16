@@ -1921,6 +1921,111 @@ export default function FloorPlanCanvasStudio() {
             >
               <Grid3X3 className="w-4 h-4" />
             </button>
+
+            <div className="h-5 w-px bg-slate-200 dark:bg-slate-700 mx-1" />
+
+            {/* Background Mode Selector: Blueprint Image / Solid Black / Clean White */}
+            <div className="flex items-center gap-1 p-0.5 rounded-xl bg-slate-100 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700">
+              <span className="text-[10px] font-mono font-bold text-slate-500 dark:text-slate-400 px-1.5">
+                BG:
+              </span>
+
+              {/* 1. Blueprint Image BG */}
+              <button
+                onClick={() => {
+                  setShowBgImage(true);
+                  notify("Canvas: Blueprint Image Background");
+                }}
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  showBgImage
+                    ? "bg-sky-600 text-white shadow-xs font-bold"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                }`}
+                title="Show Official Blueprint Background Image"
+              >
+                <ImageIcon className="w-3.5 h-3.5" />
+                <span>Blueprint Image</span>
+              </button>
+
+              {/* 2. Solid CAD Black BG */}
+              <button
+                onClick={() => {
+                  setShowBgImage(false);
+                  setCanvasBgMode("cad-dark");
+                  notify("Canvas: Solid CAD Black Background");
+                }}
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  !showBgImage && canvasBgMode === "cad-dark"
+                    ? "bg-slate-900 text-white border border-slate-600 shadow-xs font-bold"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                }`}
+                title="Solid CAD Dark / Black Background"
+              >
+                <span className="w-2.5 h-2.5 rounded-full bg-slate-950 border border-slate-500 shrink-0" />
+                <span>Black</span>
+              </button>
+
+              {/* 3. Clean White BG */}
+              <button
+                onClick={() => {
+                  setShowBgImage(false);
+                  setCanvasBgMode("clean-white");
+                  notify("Canvas: Clean White Background");
+                }}
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  !showBgImage && canvasBgMode === "clean-white"
+                    ? "bg-white text-slate-900 border border-slate-300 shadow-xs font-bold"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                }`}
+                title="Clean White Canvas Background"
+              >
+                <span className="w-2.5 h-2.5 rounded-full bg-white border border-slate-400 shrink-0" />
+                <span>White</span>
+              </button>
+            </div>
+
+            {/* Blueprint Opacity Toggle when in Image mode */}
+            {showBgImage && (
+              <button
+                onClick={() => {
+                  const nextOpacity = blueprintOpacity >= 0.9 ? 0.35 : blueprintOpacity >= 0.6 ? 0.95 : 0.65;
+                  setBlueprintOpacity(nextOpacity);
+                  notify(`Blueprint opacity: ${Math.round(nextOpacity * 100)}%`);
+                }}
+                className="px-2 py-1 rounded-lg text-[10px] font-mono font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 flex items-center gap-1 cursor-pointer"
+                title="Cycle Blueprint Opacity (35% / 65% / 95%)"
+              >
+                <Eye className="w-3 h-3 text-sky-500" />
+                <span>{Math.round(blueprintOpacity * 100)}%</span>
+              </button>
+            )}
+
+            <div className="h-5 w-px bg-slate-200 dark:bg-slate-700 mx-1" />
+
+            {/* Zoom Controls */}
+            <div className="flex items-center gap-0.5 bg-slate-100 dark:bg-slate-800/80 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700">
+              <button
+                onClick={() => setZoom((z) => Math.min(z + 0.1, 2.0))}
+                className="p-1 rounded hover:bg-white dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 cursor-pointer"
+                title="Zoom In"
+              >
+                <ZoomIn className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => setZoom((z) => Math.max(z - 0.1, 0.5))}
+                className="p-1 rounded hover:bg-white dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 cursor-pointer"
+                title="Zoom Out"
+              >
+                <ZoomOut className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => setZoom(1)}
+                className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold hover:bg-white dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 cursor-pointer"
+                title="Reset 100% Zoom"
+              >
+                {Math.round(zoom * 100)}%
+              </button>
+            </div>
           </div>
 
           {/* Canvas Viewport */}
