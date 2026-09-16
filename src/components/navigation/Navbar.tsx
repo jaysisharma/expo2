@@ -172,7 +172,7 @@ export function Navbar() {
     <>
       {/* ── Non-Sticky Navbar with Border Bottom ───────────────────────────── */}
       <nav className="relative w-full z-40 bg-[var(--c-bg)] border-b border-black/[0.08] transition-colors duration-200">
-        <div className="max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-10 h-[72px] grid grid-cols-[auto_1fr_auto] gap-4 items-center">
+        <div className="max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-10 h-[78px] sm:h-[86px] grid grid-cols-[auto_1fr_auto] gap-4 items-center">
 
           {/* ── Col 1: Single Logo (Left) ─────────────────────────────────── */}
           <div className="flex items-center justify-start shrink-0">
@@ -184,10 +184,10 @@ export function Navbar() {
               <Image
                 src="/images/logo.png"
                 alt="Himalayan Green Energy Expo"
-                width={140}
-                height={45}
+                width={220}
+                height={70}
                 priority
-                className="h-9 sm:h-10 w-auto object-contain"
+                className="h-12 sm:h-14 lg:h-16 w-auto object-contain transition-transform duration-200"
               />
             </Link>
           </div>
@@ -309,11 +309,11 @@ export function Navbar() {
       {/* ── Mobile Drawer ─────────────────────────────────────────────────── */}
       <div
         aria-hidden={!mobileOpen}
-        className={`lg:hidden fixed top-[72px] left-0 right-0 bottom-0 z-40 bg-white border-t border-black/[0.06] overflow-y-auto transition-transform duration-300 ease-out ${mobileOpen ? 'translate-x-0' : 'translate-x-full'
+        className={`lg:hidden fixed top-[78px] sm:top-[86px] left-0 right-0 bottom-0 z-40 bg-white border-t border-black/[0.06] overflow-y-auto transition-transform duration-300 ease-out ${mobileOpen ? 'translate-x-0' : 'translate-x-full'
           }`}
         style={{ display: mobileOpen ? 'block' : undefined }}
       >
-        <div className="px-6 py-6 flex flex-col gap-1 min-h-[calc(100vh-72px)] justify-between">
+        <div className="px-6 py-6 flex flex-col gap-1 min-h-[calc(100vh-78px)] sm:min-h-[calc(100vh-86px)] justify-between">
           <div className="flex flex-col">
             {NAV_ITEMS.map((item) => (
               <div key={item.label} className="border-b border-black/[0.06]">
