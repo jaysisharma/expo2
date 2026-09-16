@@ -14,17 +14,17 @@ interface OccupancyData {
 
 export function HallOccupancyChart({ data }: { data: OccupancyData[] }) {
   return (
-    <div className="p-6 rounded-2xl bg-white dark:bg-[#0A1220]/90 border border-black/[0.08] dark:border-white/10 shadow-sm hover:shadow-md transition-all duration-300 space-y-5 backdrop-blur-md">
-      <div className="flex items-center justify-between pb-3.5 border-b border-black/[0.05] dark:border-white/10">
+    <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-xs hover:shadow-md transition-all duration-300 space-y-5">
+      <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-[#218A59]/10 dark:bg-[#25C176]/15 text-[#218A59] dark:text-[#25C176] border border-[#218A59]/20">
+          <div className="p-2 rounded-xl bg-emerald-50 text-[#218A59] border border-emerald-200">
             <BarChart3 className="w-4 h-4" />
           </div>
-          <h4 className="font-display font-bold text-xs sm:text-sm text-gray-900 dark:text-white uppercase tracking-wider">
+          <h4 className="font-display font-bold text-xs sm:text-sm text-slate-900 uppercase tracking-wider">
             Stall Occupancy by Zone
           </h4>
         </div>
-        <span className="text-[10px] font-mono font-bold text-[#218A59] dark:text-[#25C176] bg-[#218A59]/10 border border-[#218A59]/20 px-2.5 py-0.5 rounded-full uppercase">
+        <span className="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full uppercase">
           Live Status
         </span>
       </div>
@@ -38,14 +38,14 @@ export function HallOccupancyChart({ data }: { data: OccupancyData[] }) {
           return (
             <div key={hall.hallName} className="space-y-1.5">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-gray-800 dark:text-slate-200 truncate font-semibold font-sans">{hall.hallName}</span>
-                <span className="font-mono text-slate-500 dark:text-slate-400 text-[11px]">
-                  <strong className="text-gray-900 dark:text-white font-bold">{hall.booked + hall.reserved}</strong> / {hall.total} ({bookedPct + reservedPct}%)
+                <span className="text-slate-800 truncate font-semibold font-sans">{hall.hallName}</span>
+                <span className="font-mono text-slate-500 text-[11px]">
+                  <strong className="text-slate-900 font-bold">{hall.booked + hall.reserved}</strong> / {hall.total} ({bookedPct + reservedPct}%)
                 </span>
               </div>
 
               {/* Progress Bar with Green & Blue brand gradients */}
-              <div className="w-full h-2.5 rounded-full bg-black/5 dark:bg-white/10 overflow-hidden flex">
+              <div className="w-full h-2.5 rounded-full bg-slate-100 overflow-hidden flex">
                 <div
                   style={{ width: `${bookedPct}%` }}
                   className="h-full bg-gradient-to-r from-[#5B9F35] to-[#218A59]"
@@ -68,18 +68,18 @@ export function HallOccupancyChart({ data }: { data: OccupancyData[] }) {
       </div>
 
       {/* Legend with public face colors */}
-      <div className="flex items-center gap-5 pt-1 text-[11px] text-slate-500 dark:text-slate-400 font-mono">
+      <div className="flex items-center gap-5 pt-1 text-[11px] text-slate-500 font-mono">
         <div className="flex items-center gap-1.5">
           <span className="w-2.5 h-2.5 rounded-full bg-[#218A59]" />
-          <span className="font-semibold text-gray-700 dark:text-slate-300">Booked</span>
+          <span className="font-semibold text-slate-700">Booked</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-[#234679] dark:bg-[#4A7EC7]" />
-          <span className="font-semibold text-gray-700 dark:text-slate-300">Reserved</span>
+          <span className="w-2.5 h-2.5 rounded-full bg-[#234679]" />
+          <span className="font-semibold text-slate-700">Reserved</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-black/15 dark:bg-white/20" />
-          <span className="font-semibold text-gray-700 dark:text-slate-300">Available</span>
+          <span className="w-2.5 h-2.5 rounded-full bg-slate-300" />
+          <span className="font-semibold text-slate-700">Available</span>
         </div>
       </div>
     </div>
@@ -96,17 +96,17 @@ export function RegistrationTrendChart({
   const max = Math.max(...counts, 150);
 
   return (
-    <div className="p-6 rounded-2xl bg-white dark:bg-[#0A1220]/90 border border-black/[0.08] dark:border-white/10 shadow-sm hover:shadow-md transition-all duration-300 space-y-5 backdrop-blur-md">
-      <div className="flex items-center justify-between pb-3.5 border-b border-black/[0.05] dark:border-white/10">
+    <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-xs hover:shadow-md transition-all duration-300 space-y-5">
+      <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-[#234679]/10 dark:bg-[#4A7EC7]/15 text-[#234679] dark:text-[#6FA0E8] border border-[#234679]/20">
+          <div className="p-2 rounded-xl bg-blue-50 text-[#234679] border border-blue-200">
             <TrendingUp className="w-4 h-4" />
           </div>
-          <h4 className="font-display font-bold text-xs sm:text-sm text-gray-900 dark:text-white uppercase tracking-wider">
+          <h4 className="font-display font-bold text-xs sm:text-sm text-slate-900 uppercase tracking-wider">
             Delegate Registrations
           </h4>
         </div>
-        <span className="text-[10px] font-mono font-bold text-[#218A59] dark:text-[#25C176] bg-[#218A59]/10 border border-[#218A59]/20 px-2.5 py-0.5 rounded-full uppercase">
+        <span className="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full uppercase">
           +32% this week
         </span>
       </div>
@@ -118,16 +118,16 @@ export function RegistrationTrendChart({
 
           return (
             <div key={day} className="flex-1 flex flex-col items-center gap-2 group">
-              <span className="text-[10px] font-mono font-bold text-[#218A59] dark:text-[#25C176] opacity-0 group-hover:opacity-100 transition-opacity">
+              <span className="text-[10px] font-mono font-bold text-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity">
                 {count}
               </span>
-              <div className="w-full max-w-[32px] h-32 bg-black/[0.03] dark:bg-white/[0.05] rounded-t-xl overflow-hidden flex items-end">
+              <div className="w-full max-w-[32px] h-32 bg-slate-100 rounded-t-xl overflow-hidden flex items-end">
                 <div
                   style={{ height: `${heightPct}%` }}
-                  className="w-full bg-gradient-to-t from-[#234679] to-[#6FA0E8] group-hover:from-[#5B9F35] group-hover:to-[#218A59] transition-all rounded-t-xl shadow-sm"
+                  className="w-full bg-gradient-to-t from-[#234679] to-[#6FA0E8] group-hover:from-[#5B9F35] group-hover:to-[#218A59] transition-all rounded-t-xl shadow-xs"
                 />
               </div>
-              <span className="text-[10px] font-mono font-medium text-slate-500 dark:text-slate-400">{day.split(" ")[1]}</span>
+              <span className="text-[10px] font-mono font-medium text-slate-500">{day.split(" ")[1]}</span>
             </div>
           );
         })}

@@ -5,18 +5,9 @@ import {
   Settings,
   Save,
   Download,
-  RotateCcw,
   CheckCircle2,
   Calendar,
-  MapPin,
-  Mail,
-  Phone,
-  DollarSign,
   ShieldCheck,
-  ToggleLeft,
-  ToggleRight,
-  Database,
-  Sparkles,
 } from "lucide-react";
 
 export default function AdminSettingsPage() {
@@ -100,84 +91,84 @@ export default function AdminSettingsPage() {
     <div className="space-y-6 font-sans">
       {/* Toast */}
       {toastMsg && (
-        <div className="fixed top-4 right-4 z-50 px-3.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-emerald-600 dark:text-emerald-400 text-xs font-medium shadow-xl flex items-center gap-2">
-          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+        <div className="fixed top-4 right-4 z-50 px-4 py-2 rounded-xl bg-white border border-emerald-200 text-emerald-800 text-xs font-semibold shadow-lg flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
           <span>{toastMsg}</span>
         </div>
       )}
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-mono text-[10px] font-bold uppercase">
+            <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 font-mono text-[10px] font-bold uppercase">
               Configuration
             </span>
-            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-display font-bold text-slate-900 tracking-tight">
               Event Parameters & System Settings
             </h1>
           </div>
-          <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
             Manage global dates, portal registration switches, currency exchange rates, and database backups.
           </p>
         </div>
 
         <button
           onClick={downloadFullDatabaseBackup}
-          className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold border border-slate-200 dark:border-slate-700 flex items-center gap-1.5 transition-colors self-start sm:self-auto shadow-xs"
+          className="px-4 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 shadow-xs flex items-center gap-1.5 transition-colors self-start sm:self-auto cursor-pointer"
         >
-          <Download className="w-3.5 h-3.5 text-sky-500 dark:text-sky-400" />
+          <Download className="w-3.5 h-3.5 text-[#234679]" />
           <span>Export Full JSON Database Backup</span>
         </button>
       </div>
 
       <form onSubmit={handleSave} className="space-y-6">
         {/* General Event Settings Card */}
-        <div className="p-6 rounded-2xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl space-y-4">
-          <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
-            <Calendar className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
-            <h3 className="font-bold text-sm text-slate-900 dark:text-white">General Expo Information</h3>
+        <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-4">
+          <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
+            <Calendar className="w-4 h-4 text-[#218A59]" />
+            <h3 className="font-bold text-sm text-slate-900">General Expo Information</h3>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
             <div>
-              <label className="block text-[11px] font-mono font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-[11px] font-mono font-bold text-slate-700 mb-1">
                 EVENT NAME
               </label>
               <input
                 type="text"
                 value={settings.eventName}
                 onChange={(e) => setSettings({ ...settings, eventName: e.target.value })}
-                className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500"
+                className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59]"
               />
             </div>
 
             <div>
-              <label className="block text-[11px] font-mono font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-[11px] font-mono font-bold text-slate-700 mb-1">
                 OFFICIAL DATES STRING
               </label>
               <input
                 type="text"
                 value={settings.eventDates}
                 onChange={(e) => setSettings({ ...settings, eventDates: e.target.value })}
-                className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500"
+                className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59]"
               />
             </div>
 
             <div>
-              <label className="block text-[11px] font-mono font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-[11px] font-mono font-bold text-slate-700 mb-1">
                 VENUE & COMPLEX
               </label>
               <input
                 type="text"
                 value={settings.venue}
                 onChange={(e) => setSettings({ ...settings, venue: e.target.value })}
-                className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500"
+                className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59]"
               />
             </div>
 
             <div>
-              <label className="block text-[11px] font-mono font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-[11px] font-mono font-bold text-slate-700 mb-1">
                 EXCHANGE RATE (1 USD = NPR)
               </label>
               <input
@@ -187,50 +178,50 @@ export default function AdminSettingsPage() {
                 onChange={(e) =>
                   setSettings({ ...settings, currencyRateUSD_NPR: parseFloat(e.target.value) || 134.5 })
                 }
-                className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-mono focus:outline-none focus:border-emerald-500"
+                className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono focus:outline-none focus:border-[#218A59]"
               />
             </div>
 
             <div>
-              <label className="block text-[11px] font-mono font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-[11px] font-mono font-bold text-slate-700 mb-1">
                 SECRETARIAT CONTACT EMAIL
               </label>
               <input
                 type="email"
                 value={settings.contactEmail}
                 onChange={(e) => setSettings({ ...settings, contactEmail: e.target.value })}
-                className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500"
+                className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59]"
               />
             </div>
 
             <div>
-              <label className="block text-[11px] font-mono font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-[11px] font-mono font-bold text-slate-700 mb-1">
                 SECRETARIAT HOTLINE
               </label>
               <input
                 type="text"
                 value={settings.contactPhone}
                 onChange={(e) => setSettings({ ...settings, contactPhone: e.target.value })}
-                className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500"
+                className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59]"
               />
             </div>
           </div>
         </div>
 
         {/* Public Portals Availability Toggles */}
-        <div className="p-6 rounded-2xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl space-y-4">
-          <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
-            <ShieldCheck className="w-4 h-4 text-sky-500 dark:text-sky-400" />
-            <h3 className="font-bold text-sm text-slate-900 dark:text-white">Public Portal Controls</h3>
+        <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-4">
+          <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
+            <ShieldCheck className="w-4 h-4 text-[#234679]" />
+            <h3 className="font-bold text-sm text-slate-900">Public Portal Controls</h3>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
               <div>
-                <span className="font-bold text-xs text-slate-900 dark:text-white block">
+                <span className="font-bold text-xs text-slate-900 block">
                   Public Visitor Registration
                 </span>
-                <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                <span className="text-[11px] text-slate-500">
                   Allow attendees to register and generate free digital entry badges
                 </span>
               </div>
@@ -239,22 +230,22 @@ export default function AdminSettingsPage() {
                 onClick={() =>
                   setSettings({ ...settings, registrationsOpen: !settings.registrationsOpen })
                 }
-                className={`p-2 rounded-xl text-xs font-bold font-mono transition-all ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold font-mono transition-all cursor-pointer ${
                   settings.registrationsOpen
-                    ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/40"
-                    : "bg-rose-500/20 text-rose-700 dark:text-rose-400 border border-rose-500/40"
+                    ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                    : "bg-rose-50 text-rose-800 border border-rose-200"
                 }`}
               >
                 {settings.registrationsOpen ? "OPEN (Active)" : "CLOSED"}
               </button>
             </div>
 
-            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
               <div>
-                <span className="font-bold text-xs text-slate-900 dark:text-white block">
+                <span className="font-bold text-xs text-slate-900 block">
                   Public Stall Booking System
                 </span>
-                <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                <span className="text-[11px] text-slate-500">
                   Allow exhibitors to submit online booth reservations
                 </span>
               </div>
@@ -263,10 +254,10 @@ export default function AdminSettingsPage() {
                 onClick={() =>
                   setSettings({ ...settings, stallBookingsOpen: !settings.stallBookingsOpen })
                 }
-                className={`p-2 rounded-xl text-xs font-bold font-mono transition-all ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold font-mono transition-all cursor-pointer ${
                   settings.stallBookingsOpen
-                    ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/40"
-                    : "bg-rose-500/20 text-rose-700 dark:text-rose-400 border border-rose-500/40"
+                    ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                    : "bg-rose-50 text-rose-800 border border-rose-200"
                 }`}
               >
                 {settings.stallBookingsOpen ? "OPEN (Active)" : "CLOSED"}
@@ -280,7 +271,7 @@ export default function AdminSettingsPage() {
           <button
             type="submit"
             disabled={isSaving}
-            className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-2 shadow-lg transition-all"
+            className="px-6 py-2.5 rounded-xl bg-[#218A59] hover:bg-[#1b734a] text-white font-bold text-xs flex items-center gap-2 shadow-xs transition-all cursor-pointer"
           >
             <Save className={`w-4 h-4 ${isSaving ? "animate-spin" : ""}`} />
             <span>{isSaving ? "Saving..." : "Save All Configuration"}</span>

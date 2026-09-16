@@ -10,7 +10,6 @@ import {
   Eye,
   Trash2,
   X,
-  Save,
   Printer,
 } from "lucide-react";
 import IDCardBadgePreview from "@/components/booking/IDCardBadgePreview";
@@ -103,7 +102,6 @@ export default function AdminRegistrationsPage() {
   const exhibitorCount = registrations.filter((r: any) => r.passType?.includes("Exhibitor")).length;
 
   const handleToggleCheckin = async (regId: string, currentStatus: boolean) => {
-    // Optimistic local state update to prevent UI race conditions on rapid clicks
     setData((prev: any) => {
       if (!prev?.registrations) return prev;
       return {
@@ -138,7 +136,6 @@ export default function AdminRegistrationsPage() {
   const handleDeleteRegistration = async (regId: string) => {
     if (!confirm(`Are you sure you want to delete ${regId}?`)) return;
 
-    // Optimistically remove from state
     setData((prev: any) => {
       if (!prev?.registrations) return prev;
       return {
@@ -228,34 +225,34 @@ export default function AdminRegistrationsPage() {
   };
 
   return (
-    <div className="space-y-5 font-sans">
+    <div className="space-y-6 font-sans">
       {toastMsg && (
-        <div className="fixed top-4 right-4 z-50 px-3.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-emerald-600 dark:text-emerald-400 text-xs font-medium shadow-xl flex items-center gap-2">
-          <CheckCircle2 className="w-3.5 h-3.5" />
+        <div className="fixed top-4 right-4 z-50 px-4 py-2 rounded-xl bg-white border border-emerald-200 text-emerald-700 text-xs font-semibold shadow-lg flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
           <span>{toastMsg}</span>
         </div>
       )}
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200 dark:border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
         <div>
-          <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Attendee Registrations</h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Registered trade visitors, exhibitors, and VIP delegates.
+          <h1 className="text-xl sm:text-2xl font-display font-bold text-slate-900 tracking-tight">Attendee Registrations</h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            Registered trade visitors, exhibitors, and VIP delegates with live check-in control.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             onClick={exportCSV}
-            className="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-medium border border-slate-200 dark:border-slate-800 flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
           >
-            <Download className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+            <Download className="w-3.5 h-3.5 text-slate-500" />
             <span>Export CSV</span>
           </button>
           <button
             onClick={() => setShowAddModal(true)}
-            className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="px-4 py-2 rounded-xl bg-[#218A59] hover:bg-[#1b734a] text-white font-semibold text-xs flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Add Attendee</span>
@@ -264,32 +261,32 @@ export default function AdminRegistrationsPage() {
       </div>
 
       {/* Metric chips */}
-      <div className="flex flex-wrap gap-2 text-xs font-mono">
-        <span className="px-3 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 shadow-xs">
-          Total: <strong className="text-slate-900 dark:text-white">{registrations.length}</strong>
+      <div className="flex flex-wrap gap-2.5 text-xs font-mono">
+        <span className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 shadow-xs">
+          Total: <strong className="text-slate-900">{registrations.length}</strong>
         </span>
-        <span className="px-3 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-medium">
+        <span className="px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 font-semibold shadow-xs">
           Checked In: <strong>{checkedInCount}</strong>
         </span>
-        <span className="px-3 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 shadow-xs">
-          Visitors: <strong className="text-slate-900 dark:text-slate-200">{visitorCount}</strong>
+        <span className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-600 shadow-xs">
+          Visitors: <strong className="text-slate-900">{visitorCount}</strong>
         </span>
-        <span className="px-3 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 shadow-xs">
-          Exhibitors: <strong className="text-slate-900 dark:text-slate-200">{exhibitorCount}</strong>
+        <span className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-600 shadow-xs">
+          Exhibitors: <strong className="text-slate-900">{exhibitorCount}</strong>
         </span>
       </div>
 
-      {/* Minimal Filters */}
+      {/* Filters */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-1 p-1 rounded-lg bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-x-auto">
+        <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-100 border border-slate-200 overflow-x-auto">
           {["All", "Visitor", "Exhibitor", "VIP"].map((type) => (
             <button
               key={type}
               onClick={() => setSelectedPassType(type)}
-              className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
                 selectedPassType === type
-                  ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-semibold shadow-xs"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                  ? "bg-white text-slate-900 shadow-xs border border-slate-200"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
               {type}
@@ -301,95 +298,95 @@ export default function AdminRegistrationsPage() {
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
-            className="p-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-700 dark:text-slate-300 focus:outline-none focus:border-slate-400 dark:focus:border-slate-700 cursor-pointer"
+            className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-xs font-medium text-slate-700 focus:outline-none focus:border-[#218A59] shadow-xs cursor-pointer"
           >
             <option value="All">All Status</option>
             <option value="Checked-in">Checked In</option>
             <option value="Pending">Pending</option>
           </select>
 
-          <div className="relative min-w-[200px]">
-            <Search className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <div className="relative min-w-[220px]">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search name, org, ID..."
-              className="w-full pl-8 pr-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-slate-400 dark:focus:border-slate-700"
+              placeholder="Search name, org, badge..."
+              className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-white border border-slate-200 text-xs text-slate-900 placeholder-slate-400 shadow-xs focus:outline-none focus:border-[#218A59]"
             />
           </div>
         </div>
       </div>
 
       {/* Table */}
-      <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 rounded-xl overflow-hidden shadow-xs">
+      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-600 dark:text-slate-300">
-            <thead className="bg-slate-50 dark:bg-[#051320] text-slate-500 dark:text-slate-400 font-mono text-[10px] tracking-wider border-b border-slate-200 dark:border-slate-800 uppercase">
+          <table className="w-full text-left text-xs text-slate-700">
+            <thead className="bg-slate-50 text-slate-600 font-mono text-[10px] tracking-wider border-b border-slate-200 uppercase">
               <tr>
-                <th className="p-3 font-semibold">Badge ID</th>
-                <th className="p-3 font-semibold">Name</th>
-                <th className="p-3 font-semibold">Organization</th>
-                <th className="p-3 font-semibold">Pass Type</th>
-                <th className="p-3 font-semibold">Contact</th>
-                <th className="p-3 font-semibold text-center">Status</th>
-                <th className="p-3 font-semibold text-right">Action</th>
+                <th className="p-3.5 font-bold">Badge ID</th>
+                <th className="p-3.5 font-bold">Name</th>
+                <th className="p-3.5 font-bold">Organization</th>
+                <th className="p-3.5 font-bold">Pass Type</th>
+                <th className="p-3.5 font-bold">Contact</th>
+                <th className="p-3.5 font-bold text-center">Status</th>
+                <th className="p-3.5 font-bold text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
+            <tbody className="divide-y divide-slate-100">
               {filteredRegistrations.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="p-8 text-center text-slate-400 dark:text-slate-500 text-xs">
+                  <td colSpan={7} className="p-8 text-center text-slate-400 text-xs">
                     No attendees found matching criteria.
                   </td>
                 </tr>
               ) : (
                 filteredRegistrations.map((reg: any) => (
-                  <tr key={reg.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/30 transition-colors">
-                    <td className="p-3 font-mono font-bold text-slate-700 dark:text-slate-300">
+                  <tr key={reg.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="p-3.5 font-mono font-bold text-[#234679]">
                       {reg.id}
                     </td>
-                    <td className="p-3 font-medium text-slate-900 dark:text-white">
+                    <td className="p-3.5 font-semibold text-slate-900">
                       {reg.name}
                     </td>
-                    <td className="p-3 text-slate-800 dark:text-slate-300">
-                      <div>{reg.organization}</div>
-                      <div className="text-[10px] text-slate-500 dark:text-slate-400">{reg.jobTitle}</div>
+                    <td className="p-3.5 text-slate-800">
+                      <div className="font-medium">{reg.organization}</div>
+                      <div className="text-[11px] text-slate-500">{reg.jobTitle}</div>
                     </td>
-                    <td className="p-3">
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                    <td className="p-3.5">
+                      <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
                         {reg.passType}
                       </span>
                     </td>
-                    <td className="p-3 text-slate-600 dark:text-slate-400 text-[11px]">
+                    <td className="p-3.5 text-slate-600 text-[11px]">
                       <div>{reg.email}</div>
-                      <div className="font-mono text-slate-400 dark:text-slate-500 text-[10px]">{reg.phone}</div>
+                      <div className="font-mono text-slate-400 text-[10px]">{reg.phone}</div>
                     </td>
-                    <td className="p-3 text-center">
+                    <td className="p-3.5 text-center">
                       <button
                         onClick={() => handleToggleCheckin(reg.id, reg.checkedIn)}
-                        className={`px-2 py-0.5 rounded text-[10px] font-mono transition-colors cursor-pointer ${
+                        className={`px-2.5 py-1 rounded-lg text-[10px] font-mono font-semibold transition-colors cursor-pointer ${
                           reg.checkedIn
-                            ? "text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 font-medium border border-emerald-500/20"
-                            : "text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
+                            ? "text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200"
+                            : "text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-200"
                         }`}
                       >
                         {reg.checkedIn ? "Checked In" : "Pending"}
                       </button>
                     </td>
-                    <td className="p-3 text-right">
-                      <div className="flex items-center justify-end gap-1">
+                    <td className="p-3.5 text-right">
+                      <div className="flex items-center justify-end gap-1.5">
                         <button
                           onClick={() => setPreviewingAttendee(reg)}
                           title="View Badge"
-                          className="p-1 rounded bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
+                          className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
                         >
                           <Eye className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => handleDeleteRegistration(reg.id)}
                           title="Delete"
-                          className="p-1 rounded bg-slate-100 hover:bg-rose-500/10 dark:bg-slate-800 dark:hover:bg-rose-500/10 text-slate-500 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 transition-colors cursor-pointer"
+                          className="p-1.5 rounded-lg bg-slate-100 hover:bg-rose-50 text-slate-500 hover:text-rose-600 transition-colors cursor-pointer"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -406,12 +403,12 @@ export default function AdminRegistrationsPage() {
       {/* ID Card Badge Modal Preview */}
       {previewingAttendee && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
-              <h3 className="font-semibold text-sm text-slate-900 dark:text-white">Digital Entry Badge</h3>
+          <div className="w-full max-w-sm bg-white border border-slate-200 rounded-2xl p-5 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 className="font-semibold text-sm text-slate-900">Digital Entry Badge</h3>
               <button
                 onClick={() => setPreviewingAttendee(null)}
-                className="p-1 rounded text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer transition-colors"
+                className="p-1 rounded text-slate-400 hover:text-slate-600 cursor-pointer transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -434,17 +431,17 @@ export default function AdminRegistrationsPage() {
               />
             </div>
 
-            <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-800 text-xs">
+            <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
               <button
                 onClick={() => window.print()}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 font-medium cursor-pointer"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium cursor-pointer"
               >
                 <Printer className="w-3.5 h-3.5" />
                 <span>Print</span>
               </button>
               <button
                 onClick={() => setPreviewingAttendee(null)}
-                className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-medium cursor-pointer"
+                className="px-3.5 py-1.5 rounded-lg bg-[#218A59] hover:bg-[#1b734a] text-white font-medium cursor-pointer"
               >
                 Done
               </button>
@@ -456,12 +453,12 @@ export default function AdminRegistrationsPage() {
       {/* Add Attendee Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
-              <h3 className="font-semibold text-sm text-slate-900 dark:text-white">Add Attendee</h3>
+          <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl p-5 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 className="font-semibold text-sm text-slate-900">Add Attendee</h3>
               <button
                 onClick={() => setShowAddModal(false)}
-                className="p-1 rounded text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer transition-colors"
+                className="p-1 rounded text-slate-400 hover:text-slate-600 cursor-pointer transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -469,73 +466,73 @@ export default function AdminRegistrationsPage() {
 
             <form onSubmit={handleAddRegistration} className="space-y-3 text-xs">
               <div>
-                <label className="block text-[11px] font-mono text-slate-500 dark:text-slate-400 mb-1">NAME</label>
+                <label className="block text-[11px] font-mono text-slate-600 mb-1">NAME</label>
                 <input
                   type="text"
                   required
                   value={newReg.name}
                   onChange={(e) => setNewReg({ ...newReg, name: e.target.value })}
                   placeholder="e.g. Aarav Sharma"
-                  className="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:border-slate-400 dark:focus:border-slate-700"
+                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#218A59]"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-[11px] font-mono text-slate-500 dark:text-slate-400 mb-1">EMAIL</label>
+                  <label className="block text-[11px] font-mono text-slate-600 mb-1">EMAIL</label>
                   <input
                     type="email"
                     required
                     value={newReg.email}
                     onChange={(e) => setNewReg({ ...newReg, email: e.target.value })}
                     placeholder="email@domain.com"
-                    className="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:border-slate-400 dark:focus:border-slate-700"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#218A59]"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-mono text-slate-500 dark:text-slate-400 mb-1">PHONE</label>
+                  <label className="block text-[11px] font-mono text-slate-600 mb-1">PHONE</label>
                   <input
                     type="text"
                     required
                     value={newReg.phone}
                     onChange={(e) => setNewReg({ ...newReg, phone: e.target.value })}
                     placeholder="+977..."
-                    className="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:border-slate-400 dark:focus:border-slate-700"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#218A59]"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-[11px] font-mono text-slate-500 dark:text-slate-400 mb-1">ORGANIZATION</label>
+                  <label className="block text-[11px] font-mono text-slate-600 mb-1">ORGANIZATION</label>
                   <input
                     type="text"
                     required
                     value={newReg.organization}
                     onChange={(e) => setNewReg({ ...newReg, organization: e.target.value })}
                     placeholder="Company / Entity"
-                    className="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:border-slate-400 dark:focus:border-slate-700"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#218A59]"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-mono text-slate-500 dark:text-slate-400 mb-1">DESIGNATION</label>
+                  <label className="block text-[11px] font-mono text-slate-600 mb-1">DESIGNATION</label>
                   <input
                     type="text"
                     value={newReg.jobTitle}
                     onChange={(e) => setNewReg({ ...newReg, jobTitle: e.target.value })}
                     placeholder="Engineer"
-                    className="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:border-slate-400 dark:focus:border-slate-700"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#218A59]"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-[11px] font-mono text-slate-500 dark:text-slate-400 mb-1">PASS TYPE</label>
+                  <label className="block text-[11px] font-mono text-slate-600 mb-1">PASS TYPE</label>
                   <select
                     value={newReg.passType}
                     onChange={(e) => setNewReg({ ...newReg, passType: e.target.value })}
-                    className="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-slate-400 dark:focus:border-slate-700 cursor-pointer"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59] cursor-pointer"
                   >
                     <option value="Trade Visitor (Free)">Trade Visitor</option>
                     <option value="Exhibitor Pass (All Access)">Exhibitor Pass</option>
@@ -543,28 +540,28 @@ export default function AdminRegistrationsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[11px] font-mono text-slate-500 dark:text-slate-400 mb-1">STALL #</label>
+                  <label className="block text-[11px] font-mono text-slate-600 mb-1">STALL #</label>
                   <input
                     type="text"
                     value={newReg.stallNumber}
                     onChange={(e) => setNewReg({ ...newReg, stallNumber: e.target.value })}
                     placeholder="A-101 (optional)"
-                    className="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:border-slate-400 dark:focus:border-slate-700"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#218A59]"
                   />
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800 text-xs">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 text-xs">
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-3 py-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white cursor-pointer"
+                  className="px-3.5 py-2 rounded-xl text-slate-600 hover:text-slate-900 cursor-pointer font-medium"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-medium cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-[#218A59] hover:bg-[#1b734a] text-white font-semibold cursor-pointer"
                 >
                   Save Attendee
                 </button>

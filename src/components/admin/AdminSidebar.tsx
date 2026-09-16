@@ -9,7 +9,6 @@ import {
   Store,
   Users,
   Building2,
-  Mic,
   CalendarDays,
   Newspaper,
   Award,
@@ -106,9 +105,9 @@ export default function AdminSidebar({
         />
       )}
 
-      {/* Sidebar matching Public Face Design */}
+      {/* Sidebar in Crisp Light Theme */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 flex flex-col bg-white/95 dark:bg-[#050C17]/95 backdrop-blur-xl border-r border-black/[0.08] dark:border-white/10 text-slate-700 dark:text-slate-300 font-sans transition-all duration-300 select-none ${
+        className={`fixed top-0 bottom-0 left-0 z-50 flex flex-col bg-white border-r border-slate-200 text-slate-700 font-sans transition-all duration-300 select-none shadow-sm ${
           isCollapsed ? "w-16" : "w-64"
         } ${
           mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
@@ -118,13 +117,13 @@ export default function AdminSidebar({
         <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-[#5B9F35] via-[#25C176] to-[#234679]" />
 
         {/* Brand Header */}
-        <div className="h-16 px-3.5 flex items-center justify-between border-b border-black/[0.06] dark:border-white/10">
+        <div className="h-16 px-3.5 flex items-center justify-between border-b border-slate-100">
           <Link
             href="/admin/dashboard"
             className="flex items-center gap-2.5 overflow-hidden group"
             onClick={handleLinkClick}
           >
-            <div className="relative w-8 h-8 shrink-0 rounded-xl bg-white dark:bg-white/10 border border-black/10 dark:border-white/20 p-1 flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
+            <div className="relative w-8 h-8 shrink-0 rounded-xl bg-slate-50 border border-slate-200 p-1 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
               <Image
                 src="/images/logo.png"
                 alt="Expo Logo"
@@ -135,11 +134,11 @@ export default function AdminSidebar({
             </div>
             {!isCollapsed && (
               <div className="flex flex-col">
-                <span className="font-display font-black text-xs text-gray-900 dark:text-white tracking-tight uppercase">
+                <span className="font-display font-black text-xs text-slate-900 tracking-tight uppercase">
                   Expo Admin
                 </span>
-                <span className="inline-flex items-center gap-1 text-[9px] font-mono font-bold text-[#218A59] dark:text-[#25C176] tracking-wider uppercase">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#218A59] dark:bg-[#25C176] animate-pulse" />
+                <span className="inline-flex items-center gap-1 text-[9px] font-mono font-bold text-[#218A59] tracking-wider uppercase">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#218A59] animate-pulse" />
                   Kathmandu 2027
                 </span>
               </div>
@@ -149,7 +148,7 @@ export default function AdminSidebar({
           {/* Collapse Toggle */}
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="hidden lg:flex p-1.5 rounded-lg text-slate-400 hover:text-gray-900 dark:hover:text-white hover:bg-black/[0.05] dark:hover:bg-white/[0.08] transition-colors"
+            className="hidden lg:flex p-1.5 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-colors"
             aria-label="Toggle Sidebar"
           >
             {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
@@ -161,7 +160,7 @@ export default function AdminSidebar({
           {navGroups.map((group, gIdx) => (
             <div key={gIdx} className="space-y-1">
               {!isCollapsed && (
-                <div className="px-2.5 py-1 text-[10px] font-mono font-bold text-[#234679] dark:text-[#6FA0E8] uppercase tracking-wider">
+                <div className="px-2.5 py-1 text-[10px] font-mono font-bold text-[#234679] uppercase tracking-wider">
                   {group.group}
                 </div>
               )}
@@ -179,8 +178,8 @@ export default function AdminSidebar({
                     title={isCollapsed ? item.label : undefined}
                     className={`group flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs transition-all duration-200 ${
                       isActive
-                        ? "bg-gradient-to-r from-[#5B9F35] to-[#218A59] text-white shadow-md shadow-[#218A59]/20 font-semibold"
-                        : "text-slate-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white hover:bg-black/[0.04] dark:hover:bg-white/[0.06] font-medium"
+                        ? "bg-gradient-to-r from-[#5B9F35] to-[#218A59] text-white shadow-md shadow-[#218A59]/20 font-bold"
+                        : "text-slate-700 hover:text-slate-950 hover:bg-slate-100/80 font-medium"
                     } ${isCollapsed ? "justify-center" : "justify-between"}`}
                   >
                     <div className="flex items-center gap-2.5 truncate">
@@ -188,18 +187,18 @@ export default function AdminSidebar({
                         className={`w-4 h-4 shrink-0 transition-colors ${
                           isActive
                             ? "text-white"
-                            : "text-[#234679] dark:text-[#6FA0E8] group-hover:text-[#218A59] dark:group-hover:text-[#25C176]"
+                            : "text-[#234679] group-hover:text-[#218A59]"
                         }`}
                       />
                       {!isCollapsed && (
-                        <span className="truncate font-sans font-medium tracking-normal">
+                        <span className="truncate font-sans tracking-normal">
                           {item.label}
                         </span>
                       )}
                     </div>
 
                     {!isCollapsed && item.badge && (
-                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-black/5 dark:bg-white/10 text-slate-500 dark:text-slate-300">
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-600 font-bold">
                         {item.badge}
                       </span>
                     )}
@@ -211,11 +210,11 @@ export default function AdminSidebar({
         </div>
 
         {/* Footer */}
-        <div className="p-3 border-t border-black/[0.06] dark:border-white/10 space-y-2">
+        <div className="p-3 border-t border-slate-100 space-y-2">
           <Link
             href="/"
             target="_blank"
-            className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-mono font-bold text-[#218A59] dark:text-[#25C176] hover:bg-[#218A59]/10 transition-colors ${
+            className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-mono font-bold text-[#218A59] hover:bg-[#218A59]/10 transition-colors ${
               isCollapsed ? "justify-center" : "justify-between"
             }`}
             title="Public Website"
@@ -227,20 +226,20 @@ export default function AdminSidebar({
           </Link>
 
           <div
-            className={`flex items-center gap-2.5 p-2 rounded-xl bg-black/[0.02] dark:bg-white/[0.04] border border-black/5 dark:border-white/10 ${
+            className={`flex items-center gap-2.5 p-2 rounded-xl bg-slate-50 border border-slate-200/80 ${
               isCollapsed ? "justify-center" : "justify-between"
             }`}
           >
             <div className="flex items-center gap-2.5 truncate">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#5B9F35] to-[#218A59] text-white text-xs font-bold font-display flex items-center justify-center shrink-0 shadow-sm">
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#5B9F35] to-[#218A59] text-white text-xs font-bold font-display flex items-center justify-center shrink-0 shadow-xs">
                 {user?.name ? user.name.charAt(0).toUpperCase() : "A"}
               </div>
               {!isCollapsed && (
                 <div className="flex flex-col truncate">
-                  <span className="text-xs text-gray-900 dark:text-white font-medium truncate font-sans">
+                  <span className="text-xs text-slate-900 font-bold truncate font-sans">
                     {user?.name || "Admin"}
                   </span>
-                  <span className="text-[10px] font-mono text-slate-400 truncate">
+                  <span className="text-[10px] font-mono text-slate-500 truncate">
                     Secretariat Desk
                   </span>
                 </div>
@@ -251,7 +250,7 @@ export default function AdminSidebar({
               <button
                 onClick={logout}
                 title="Log Out"
-                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
               >
                 <LogOut className="w-3.5 h-3.5" />
               </button>

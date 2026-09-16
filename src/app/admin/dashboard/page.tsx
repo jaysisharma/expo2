@@ -13,7 +13,6 @@ import {
   Clock,
   ExternalLink,
   ChevronRight,
-  Sparkles,
   DollarSign,
   TrendingUp,
   MapPin,
@@ -21,16 +20,14 @@ import {
   Award,
   Search,
   Check,
-  AlertCircle,
   ShieldCheck,
-  Zap,
 } from "lucide-react";
 import { boothsData } from "@/data/booths";
 import { exhibitorsData } from "@/data/exhibitors";
 import { speakersData } from "@/data/speakers";
 import { conferenceSessionsData } from "@/data/conference";
 import { sponsorsData } from "@/data/sponsors";
-import { formatCurrencyUSD, formatCurrencyNPR, formatNumber } from "@/lib/utils";
+import { formatCurrencyUSD, formatCurrencyNPR } from "@/lib/utils";
 
 export default function AdminDashboardPage() {
   const [data, setData] = useState<any>(null);
@@ -155,16 +152,16 @@ export default function AdminDashboardPage() {
     };
   }, [mergedBooths]);
 
-  // Quick Action: Toggle Check-in Directly from Dashboard
-  const handleToggleCheckin = async (regId: string, currentStatus: boolean) => {
+  // Handle live toggle check-in
+  const handleToggleCheckin = async (regId: string, currentCheckedIn: boolean) => {
     setActionInProgress(regId);
     try {
       const res = await fetch("/api/admin/data", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          action: "toggle_checkin",
-          payload: { regId, checkedIn: !currentStatus },
+          action: "update_registration",
+          payload: { id: regId, checkedIn: !currentCheckedIn },
         }),
       });
       const json = await res.json();
@@ -174,20 +171,20 @@ export default function AdminDashboardPage() {
           return {
             ...prev,
             registrations: prev.registrations.map((r: any) =>
-              r.id === regId ? { ...r, checkedIn: !currentStatus } : r
+              r.id === regId ? { ...r, checkedIn: !currentCheckedIn } : r
             ),
           };
         });
-        notify(`Check-in updated for ${regId}`);
+        notify(`Registration ${regId} ${!currentCheckedIn ? "Checked In" : "Unmarked"}`);
       }
     } catch (e) {
-      notify("Failed to update check-in status");
+      notify("Failed to update status");
     } finally {
       setActionInProgress(null);
     }
   };
 
-  // Quick Action: Update Inquiry Status Directly from Dashboard
+  // Handle live update inquiry
   const handleUpdateInquiry = async (inquiryId: string, newStatus: string) => {
     setActionInProgress(inquiryId);
     try {
@@ -195,8 +192,8 @@ export default function AdminDashboardPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          action: "update_inquiry_status",
-          payload: { inquiryId, status: newStatus },
+          action: "update_inquiry",
+          payload: { id: inquiryId, status: newStatus },
         }),
       });
       const json = await res.json();
@@ -245,27 +242,27 @@ export default function AdminDashboardPage() {
   }, [inquiries, activitySearch]);
 
   return (
-    <div className="max-w-7xl mx-auto space-y-7 font-sans transition-colors duration-300">
+    <div className="max-w-7xl mx-auto space-y-7 font-sans">
       {/* Dynamic Toast Alert */}
       {toastMessage && (
-        <div className="fixed top-20 right-6 z-50 px-4 py-2.5 rounded-xl bg-[#0A1220] border border-[#218A59]/40 text-white text-xs font-mono font-medium shadow-2xl flex items-center gap-2.5 animate-in fade-in slide-in-from-top-4">
+        <div className="fixed top-20 right-6 z-50 px-4 py-2.5 rounded-xl bg-slate-900 border border-[#218A59] text-white text-xs font-mono font-medium shadow-2xl flex items-center gap-2.5 animate-in fade-in slide-in-from-top-4">
           <CheckCircle2 className="w-4 h-4 text-[#25C176]" />
           <span>{toastMessage}</span>
         </div>
       )}
 
       {/* Dashboard Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-5 border-b border-black/[0.08] dark:border-white/10">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-5 border-b border-slate-200">
         <div className="space-y-1.5">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#218A59]/10 text-[#218A59] dark:bg-[#25C176]/15 dark:text-[#25C176] border border-[#218A59]/20 font-mono text-[10px] font-bold uppercase tracking-wider">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#218A59] dark:bg-[#25C176] animate-pulse" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#218A59]/10 text-[#218A59] border border-[#218A59]/20 font-mono text-[10px] font-bold uppercase tracking-wider">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#218A59] animate-pulse" />
             <span>ORGANIZER COMMAND CENTER · REAL-TIME</span>
           </div>
-          <h1 className="font-display font-black text-2xl sm:text-4xl text-gray-900 dark:text-white tracking-tight">
-            EXPO <span className="text-[#234679] dark:text-[#6FA0E8]">EXECUTIVE</span>{" "}
-            <span className="text-[#218A59] dark:text-[#25C176]">DASHBOARD</span>
+          <h1 className="font-display font-black text-2xl sm:text-4xl text-slate-900 tracking-tight">
+            EXPO <span className="text-[#234679]">EXECUTIVE</span>{" "}
+            <span className="text-[#218A59]">DASHBOARD</span>
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-sans">
+          <p className="text-xs sm:text-sm text-slate-600 font-sans">
             {data?.settings?.eventName || "Himalayan Green Energy Expo Nepal 2027"} · {data?.settings?.venue || "Bhrikutimandap Exhibition Complex, Kathmandu"}
           </p>
         </div>
@@ -277,11 +274,11 @@ export default function AdminDashboardPage() {
             title={autoRefresh ? "Auto-refresh is ON (Every 15s)" : "Auto-refresh is PAUSED"}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-mono font-bold transition-all cursor-pointer ${
               autoRefresh
-                ? "bg-[#218A59]/10 text-[#218A59] dark:bg-[#25C176]/15 dark:text-[#25C176] border-[#218A59]/30"
-                : "bg-black/[0.03] dark:bg-white/[0.06] text-slate-500 border-black/10 dark:border-white/10"
+                ? "bg-[#218A59]/10 text-[#218A59] border-[#218A59]/30"
+                : "bg-slate-100 text-slate-600 border-slate-200"
             }`}
           >
-            <span className={`w-2 h-2 rounded-full ${autoRefresh ? "bg-[#25C176] animate-ping" : "bg-slate-400"}`} />
+            <span className={`w-2 h-2 rounded-full ${autoRefresh ? "bg-[#218A59] animate-ping" : "bg-slate-400"}`} />
             <span>{autoRefresh ? "LIVE 15s" : "PAUSED"}</span>
           </button>
 
@@ -289,9 +286,9 @@ export default function AdminDashboardPage() {
             onClick={() => fetchDashboardData(true)}
             title="Force sync live metrics"
             disabled={isLoading}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/[0.03] dark:bg-white/[0.06] hover:bg-black/[0.06] dark:hover:bg-white/10 border border-black/10 dark:border-white/10 text-xs text-gray-700 dark:text-slate-300 transition-colors font-mono font-bold cursor-pointer disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-xs text-slate-800 transition-colors font-mono font-bold cursor-pointer disabled:opacity-50 shadow-xs"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin text-[#218A59] dark:text-[#25C176]" : ""}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin text-[#218A59]" : ""}`} />
             <span>SYNC DATA</span>
           </button>
         </div>
@@ -302,111 +299,111 @@ export default function AdminDashboardPage() {
         {/* Card 1: Stall Allocation & Space */}
         <Link
           href="/admin/stalls"
-          className="p-5 rounded-2xl bg-white dark:bg-[#0A1220]/90 border border-black/[0.08] dark:border-white/10 hover:border-[#218A59]/40 hover:shadow-lg transition-all duration-300 group block shadow-sm backdrop-blur-md relative overflow-hidden"
+          className="p-5 rounded-2xl bg-white border border-slate-200 hover:border-[#218A59]/50 hover:shadow-lg transition-all duration-200 group block shadow-sm relative overflow-hidden"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-mono font-bold text-[#234679] dark:text-[#6FA0E8] uppercase tracking-wider">
+            <span className="text-[11px] font-mono font-bold text-[#234679] uppercase tracking-wider">
               Stall Allocation
             </span>
-            <div className="p-2 rounded-xl bg-[#218A59]/10 text-[#218A59] dark:bg-[#25C176]/15 dark:text-[#25C176]">
+            <div className="p-2 rounded-xl bg-[#218A59]/10 text-[#218A59]">
               <Store className="w-4 h-4" />
             </div>
           </div>
           <div className="flex items-baseline gap-2 mt-3">
-            <span className="text-3xl font-display font-black text-gray-900 dark:text-white tracking-tight group-hover:text-[#218A59] dark:group-hover:text-[#25C176] transition-colors">
+            <span className="text-3xl font-display font-black text-slate-900 tracking-tight group-hover:text-[#218A59] transition-colors">
               {occupancyPct}%
             </span>
-            <span className="text-xs font-mono text-slate-500 dark:text-slate-400">
+            <span className="text-xs font-mono text-slate-500 font-semibold">
               ({bookedCount + reservedCount}/{totalStalls})
             </span>
           </div>
-          <div className="text-[11px] font-mono text-slate-500 dark:text-slate-400 mt-2 pt-2 border-t border-black/[0.04] dark:border-white/[0.06] flex items-center justify-between">
+          <div className="text-[11px] font-mono text-slate-600 mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
             <span>{bookedCount} booked · {reservedCount} reserved</span>
-            <span className="text-[#218A59] dark:text-[#25C176] font-bold">{availableCount} open</span>
+            <span className="text-[#218A59] font-bold">{availableCount} open</span>
           </div>
         </Link>
 
         {/* Card 2: Estimated Revenue (Dynamic USD & NPR) */}
-        <div className="p-5 rounded-2xl bg-white dark:bg-[#0A1220]/90 border border-black/[0.08] dark:border-white/10 shadow-sm backdrop-blur-md relative overflow-hidden">
+        <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm relative overflow-hidden">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-mono font-bold text-[#234679] dark:text-[#6FA0E8] uppercase tracking-wider">
+            <span className="text-[11px] font-mono font-bold text-[#234679] uppercase tracking-wider">
               Confirmed Revenue
             </span>
-            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-[#25C176]">
+            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-700">
               <DollarSign className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-3">
-            <div className="text-2xl sm:text-3xl font-display font-black text-gray-900 dark:text-white tracking-tight">
+            <div className="text-2xl sm:text-3xl font-display font-black text-slate-900 tracking-tight">
               {formatCurrencyUSD(bookedRevenueUSD)}
             </div>
-            <div className="text-[11px] font-mono text-slate-500 dark:text-slate-400 mt-1">
+            <div className="text-[11px] font-mono text-slate-600 font-medium mt-1">
               ≈ {formatCurrencyNPR(bookedRevenueUSD * exchangeRate)}
             </div>
           </div>
-          <div className="text-[11px] font-mono text-slate-500 dark:text-slate-400 mt-2 pt-2 border-t border-black/[0.04] dark:border-white/[0.06] flex items-center justify-between">
+          <div className="text-[11px] font-mono text-slate-600 mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
             <span>Potential: {formatCurrencyUSD(totalPotentialUSD)}</span>
-            <span className="text-amber-500 font-bold">+{formatCurrencyUSD(reservedRevenueUSD)} res</span>
+            <span className="text-amber-600 font-bold">+{formatCurrencyUSD(reservedRevenueUSD)} res</span>
           </div>
         </div>
 
         {/* Card 3: Delegates & Visitors (Check-in rate) */}
         <Link
           href="/admin/registrations"
-          className="p-5 rounded-2xl bg-white dark:bg-[#0A1220]/90 border border-black/[0.08] dark:border-white/10 hover:border-[#234679]/40 hover:shadow-lg transition-all duration-300 group block shadow-sm backdrop-blur-md"
+          className="p-5 rounded-2xl bg-white border border-slate-200 hover:border-[#234679]/50 hover:shadow-lg transition-all duration-200 group block shadow-sm"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-mono font-bold text-[#234679] dark:text-[#6FA0E8] uppercase tracking-wider">
+            <span className="text-[11px] font-mono font-bold text-[#234679] uppercase tracking-wider">
               Delegates & Visitors
             </span>
-            <div className="p-2 rounded-xl bg-[#234679]/10 text-[#234679] dark:bg-[#4A7EC7]/15 dark:text-[#6FA0E8]">
+            <div className="p-2 rounded-xl bg-[#234679]/10 text-[#234679]">
               <Users className="w-4 h-4" />
             </div>
           </div>
           <div className="flex items-baseline gap-2 mt-3">
-            <span className="text-3xl font-display font-black text-gray-900 dark:text-white tracking-tight group-hover:text-[#234679] dark:group-hover:text-[#6FA0E8] transition-colors">
+            <span className="text-3xl font-display font-black text-slate-900 tracking-tight group-hover:text-[#234679] transition-colors">
               {registrations.length}
             </span>
-            <span className="text-xs font-mono text-emerald-600 dark:text-emerald-400 font-bold">
+            <span className="text-xs font-mono text-emerald-700 font-bold">
               {checkInRate}% checked-in
             </span>
           </div>
-          <div className="text-[11px] font-mono text-slate-500 dark:text-slate-400 mt-2 pt-2 border-t border-black/[0.04] dark:border-white/[0.06] flex items-center justify-between">
+          <div className="text-[11px] font-mono text-slate-600 mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
             <span>{checkedInCount} verified badges issued</span>
-            <span className="text-slate-400">{registrations.length - checkedInCount} pending</span>
+            <span className="text-slate-500 font-medium">{registrations.length - checkedInCount} pending</span>
           </div>
         </Link>
 
         {/* Card 4: Inquiries & Leads (Status breakdown) */}
         <Link
           href="/admin/inquiries"
-          className="p-5 rounded-2xl bg-white dark:bg-[#0A1220]/90 border border-black/[0.08] dark:border-white/10 hover:border-amber-500/40 hover:shadow-lg transition-all duration-300 group block shadow-sm backdrop-blur-md"
+          className="p-5 rounded-2xl bg-white border border-slate-200 hover:border-amber-500/50 hover:shadow-lg transition-all duration-200 group block shadow-sm"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-mono font-bold text-[#234679] dark:text-[#6FA0E8] uppercase tracking-wider">
+            <span className="text-[11px] font-mono font-bold text-[#234679] uppercase tracking-wider">
               Inquiries & Leads
             </span>
-            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500">
+            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600">
               <MessageSquare className="w-4 h-4" />
             </div>
           </div>
           <div className="flex items-baseline gap-2 mt-3">
-            <span className="text-3xl font-display font-black text-gray-900 dark:text-white tracking-tight group-hover:text-amber-500 transition-colors">
+            <span className="text-3xl font-display font-black text-slate-900 tracking-tight group-hover:text-amber-600 transition-colors">
               {inquiries.length}
             </span>
             {pendingInquiries > 0 && (
-              <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400">
+              <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200">
                 {pendingInquiries} new
               </span>
             )}
           </div>
-          <div className="text-[11px] font-mono mt-2 pt-2 border-t border-black/[0.04] dark:border-white/[0.06] flex items-center justify-between">
+          <div className="text-[11px] font-mono mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
             {pendingInquiries > 0 ? (
-              <span className="text-rose-500 font-bold">{pendingInquiries} require response</span>
+              <span className="text-rose-600 font-bold">{pendingInquiries} require response</span>
             ) : (
-              <span className="text-[#218A59] dark:text-[#25C176] font-bold">All inquiries addressed</span>
+              <span className="text-[#218A59] font-bold">All inquiries addressed</span>
             )}
-            <span className="text-slate-400">{inquiries.filter((i: any) => i.status === "Resolved").length} resolved</span>
+            <span className="text-slate-500">{inquiries.filter((i: any) => i.status === "Resolved").length} resolved</span>
           </div>
         </Link>
       </div>
@@ -415,13 +412,13 @@ export default function AdminDashboardPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <Link
           href="/admin/exhibitors"
-          className="p-3.5 rounded-xl bg-white/70 dark:bg-[#0A1220]/70 border border-black/[0.06] dark:border-white/10 hover:border-[#218A59]/40 transition-colors flex items-center justify-between"
+          className="p-3.5 rounded-xl bg-white border border-slate-200 hover:border-[#218A59]/40 transition-colors flex items-center justify-between shadow-xs"
         >
           <div>
-            <div className="text-[10px] font-mono uppercase font-bold text-slate-500 dark:text-slate-400">
+            <div className="text-[10px] font-mono uppercase font-bold text-slate-500">
               Exhibitor OEMs
             </div>
-            <div className="text-lg font-display font-black text-gray-900 dark:text-white">
+            <div className="text-lg font-display font-black text-slate-900">
               {exhibitorsData.length}
             </div>
           </div>
@@ -430,13 +427,13 @@ export default function AdminDashboardPage() {
 
         <Link
           href="/admin/conference"
-          className="p-3.5 rounded-xl bg-white/70 dark:bg-[#0A1220]/70 border border-black/[0.06] dark:border-white/10 hover:border-[#234679]/40 transition-colors flex items-center justify-between"
+          className="p-3.5 rounded-xl bg-white border border-slate-200 hover:border-[#234679]/40 transition-colors flex items-center justify-between shadow-xs"
         >
           <div>
-            <div className="text-[10px] font-mono uppercase font-bold text-slate-500 dark:text-slate-400">
+            <div className="text-[10px] font-mono uppercase font-bold text-slate-500">
               Conference Agenda
             </div>
-            <div className="text-lg font-display font-black text-gray-900 dark:text-white">
+            <div className="text-lg font-display font-black text-slate-900">
               {conferenceSessionsData.length} Sessions
             </div>
           </div>
@@ -445,13 +442,13 @@ export default function AdminDashboardPage() {
 
         <Link
           href="/admin/sponsors"
-          className="p-3.5 rounded-xl bg-white/70 dark:bg-[#0A1220]/70 border border-black/[0.06] dark:border-white/10 hover:border-amber-500/40 transition-colors flex items-center justify-between"
+          className="p-3.5 rounded-xl bg-white border border-slate-200 hover:border-amber-500/40 transition-colors flex items-center justify-between shadow-xs"
         >
           <div>
-            <div className="text-[10px] font-mono uppercase font-bold text-slate-500 dark:text-slate-400">
+            <div className="text-[10px] font-mono uppercase font-bold text-slate-500">
               Sponsor Patrons
             </div>
-            <div className="text-lg font-display font-black text-gray-900 dark:text-white">
+            <div className="text-lg font-display font-black text-slate-900">
               {sponsorsData.reduce((acc, cat) => acc + (cat.sponsors?.length || 0), 0)} Partners
             </div>
           </div>
@@ -460,40 +457,40 @@ export default function AdminDashboardPage() {
 
         <Link
           href="/admin/speakers"
-          className="p-3.5 rounded-xl bg-white/70 dark:bg-[#0A1220]/70 border border-black/[0.06] dark:border-white/10 hover:border-purple-500/40 transition-colors flex items-center justify-between"
+          className="p-3.5 rounded-xl bg-white border border-slate-200 hover:border-purple-500/40 transition-colors flex items-center justify-between shadow-xs"
         >
           <div>
-            <div className="text-[10px] font-mono uppercase font-bold text-slate-500 dark:text-slate-400">
+            <div className="text-[10px] font-mono uppercase font-bold text-slate-500">
               IPPAN Leadership
             </div>
-            <div className="text-lg font-display font-black text-gray-900 dark:text-white">
+            <div className="text-lg font-display font-black text-slate-900">
               {speakersData.length} Members
             </div>
           </div>
-          <ShieldCheck className="w-4 h-4 text-purple-500 opacity-75" />
+          <ShieldCheck className="w-4 h-4 text-purple-600 opacity-75" />
         </Link>
       </div>
 
       {/* Floor & Hall Breakdown Cards */}
-      <div className="p-6 rounded-2xl bg-white dark:bg-[#0A1220]/90 border border-black/[0.08] dark:border-white/10 shadow-sm space-y-5 backdrop-blur-md">
+      <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <Store className="w-4 h-4 text-[#218A59] dark:text-[#25C176]" />
-            <div className="font-display font-bold text-xs sm:text-sm text-gray-900 dark:text-white tracking-wider uppercase">
+            <Store className="w-4 h-4 text-[#218A59]" />
+            <div className="font-display font-bold text-xs sm:text-sm text-slate-900 tracking-wider uppercase">
               Exhibition Hall Floor Status & Zone Utilization
             </div>
           </div>
           <div className="flex items-center gap-3 text-xs font-mono font-bold">
             <Link
               href="/admin/stalls"
-              className="text-[#218A59] dark:text-[#25C176] hover:underline flex items-center gap-1 uppercase"
+              className="text-[#218A59] hover:underline flex items-center gap-1 uppercase"
             >
               <span>Manage Stalls</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
             <Link
               href="/admin/floor-plan"
-              className="text-[#234679] dark:text-[#6FA0E8] hover:underline flex items-center gap-1 uppercase"
+              className="text-[#234679] hover:underline flex items-center gap-1 uppercase"
             >
               <span>Floor Studio</span>
               <ExternalLink className="w-3 h-3" />
@@ -503,11 +500,11 @@ export default function AdminDashboardPage() {
 
         {/* Global Progress Bar */}
         <div className="space-y-1.5">
-          <div className="flex justify-between text-xs font-mono text-slate-500 dark:text-slate-400">
+          <div className="flex justify-between text-xs font-mono text-slate-600 font-medium">
             <span>Overall Occupancy: {bookedCount + reservedCount} of {totalStalls} Stalls</span>
-            <span className="font-bold text-gray-900 dark:text-white">{occupancyPct}%</span>
+            <span className="font-bold text-slate-900">{occupancyPct}%</span>
           </div>
-          <div className="w-full h-3 rounded-full bg-black/5 dark:bg-white/10 overflow-hidden flex">
+          <div className="w-full h-3 rounded-full bg-slate-100 overflow-hidden flex">
             <div
               style={{ width: `${bookedPct}%` }}
               className="h-full bg-gradient-to-r from-[#5B9F35] to-[#218A59]"
@@ -524,69 +521,69 @@ export default function AdminDashboardPage() {
         {/* Hall-by-Hall Live Progress Breakdown */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
           {/* Hall A */}
-          <div className="p-3.5 rounded-xl bg-black/[0.02] dark:bg-white/[0.03] border border-black/5 dark:border-white/5 space-y-2">
+          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
             <div className="flex justify-between items-center text-xs font-sans">
-              <span className="font-bold text-gray-900 dark:text-white">Hall A: Turbines & OEM</span>
-              <span className="font-mono text-[11px] font-bold text-[#218A59] dark:text-[#25C176]">{hallA.pct}%</span>
+              <span className="font-bold text-slate-900">Hall A: Turbines & OEM</span>
+              <span className="font-mono text-[11px] font-bold text-[#218A59]">{hallA.pct}%</span>
             </div>
-            <div className="w-full h-1.5 rounded-full bg-black/10 dark:bg-white/10 overflow-hidden">
+            <div className="w-full h-1.5 rounded-full bg-slate-200 overflow-hidden">
               <div
                 style={{ width: `${hallA.pct}%` }}
                 className="h-full bg-[#218A59]"
               />
             </div>
-            <div className="text-[10px] font-mono text-slate-500 dark:text-slate-400 flex justify-between">
+            <div className="text-[10px] font-mono text-slate-600 flex justify-between font-medium">
               <span>{hallA.booked} booked · {hallA.reserved} reserved</span>
-              <span>{hallA.available} open</span>
+              <span className="text-[#218A59] font-bold">{hallA.available} open</span>
             </div>
           </div>
 
           {/* Hall B */}
-          <div className="p-3.5 rounded-xl bg-black/[0.02] dark:bg-white/[0.03] border border-black/5 dark:border-white/5 space-y-2">
+          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
             <div className="flex justify-between items-center text-xs font-sans">
-              <span className="font-bold text-gray-900 dark:text-white">Hall B: Electrical & Grid</span>
-              <span className="font-mono text-[11px] font-bold text-[#234679] dark:text-[#6FA0E8]">{hallB.pct}%</span>
+              <span className="font-bold text-slate-900">Hall B: Electrical & Grid</span>
+              <span className="font-mono text-[11px] font-bold text-[#234679]">{hallB.pct}%</span>
             </div>
-            <div className="w-full h-1.5 rounded-full bg-black/10 dark:bg-white/10 overflow-hidden">
+            <div className="w-full h-1.5 rounded-full bg-slate-200 overflow-hidden">
               <div
                 style={{ width: `${hallB.pct}%` }}
-                className="h-full bg-[#234679] dark:bg-[#4A7EC7]"
+                className="h-full bg-[#234679]"
               />
             </div>
-            <div className="text-[10px] font-mono text-slate-500 dark:text-slate-400 flex justify-between">
+            <div className="text-[10px] font-mono text-slate-600 flex justify-between font-medium">
               <span>{hallB.booked} booked · {hallB.reserved} reserved</span>
-              <span>{hallB.available} open</span>
+              <span className="text-[#234679] font-bold">{hallB.available} open</span>
             </div>
           </div>
 
           {/* Outdoor Area */}
-          <div className="p-3.5 rounded-xl bg-black/[0.02] dark:bg-white/[0.03] border border-black/5 dark:border-white/5 space-y-2">
+          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
             <div className="flex justify-between items-center text-xs font-sans">
-              <span className="font-bold text-gray-900 dark:text-white">Outdoor Heavy Pavilion</span>
-              <span className="font-mono text-[11px] font-bold text-amber-500">{outdoor.pct}%</span>
+              <span className="font-bold text-slate-900">Outdoor Heavy Pavilion</span>
+              <span className="font-mono text-[11px] font-bold text-amber-600">{outdoor.pct}%</span>
             </div>
-            <div className="w-full h-1.5 rounded-full bg-black/10 dark:bg-white/10 overflow-hidden">
+            <div className="w-full h-1.5 rounded-full bg-slate-200 overflow-hidden">
               <div
                 style={{ width: `${outdoor.pct}%` }}
                 className="h-full bg-amber-500"
               />
             </div>
-            <div className="text-[10px] font-mono text-slate-500 dark:text-slate-400 flex justify-between">
+            <div className="text-[10px] font-mono text-slate-600 flex justify-between font-medium">
               <span>{outdoor.booked} booked · {outdoor.reserved} reserved</span>
-              <span>{outdoor.available} open</span>
+              <span className="text-amber-600 font-bold">{outdoor.available} open</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Live Activity & Interactive Stream */}
-      <div className="p-6 rounded-2xl bg-white dark:bg-[#0A1220]/90 border border-black/[0.08] dark:border-white/10 shadow-sm space-y-5 backdrop-blur-md">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-black/[0.06] dark:border-white/10">
+      <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-slate-100">
           <div className="space-y-0.5">
-            <div className="font-display font-bold text-xs sm:text-sm text-gray-900 dark:text-white tracking-wider uppercase">
+            <div className="font-display font-bold text-xs sm:text-sm text-slate-900 tracking-wider uppercase">
               Live Activity Stream & Quick Actions
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+            <p className="text-[11px] text-slate-500">
               Interactive check-in and inquiry disposition without leaving the command center
             </p>
           </div>
@@ -594,23 +591,23 @@ export default function AdminDashboardPage() {
           {/* Search + Segmented Tabs */}
           <div className="flex items-center gap-2">
             <div className="relative">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="text"
                 placeholder="Filter activity..."
                 value={activitySearch}
                 onChange={(e) => setActivitySearch(e.target.value)}
-                className="pl-8 pr-2.5 py-1 text-xs rounded-xl bg-black/[0.03] dark:bg-white/[0.06] border border-black/10 dark:border-white/10 text-gray-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-[#218A59] w-36 sm:w-44"
+                className="pl-8 pr-2.5 py-1 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-[#218A59] w-36 sm:w-44 font-medium"
               />
             </div>
 
-            <div className="flex items-center gap-1 bg-black/[0.04] dark:bg-white/[0.06] p-1 rounded-xl shrink-0">
+            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl shrink-0">
               <button
                 onClick={() => setActivityTab("all")}
                 className={`px-3 py-1 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer ${
                   activityTab === "all"
                     ? "bg-gradient-to-r from-[#5B9F35] to-[#218A59] text-white shadow-xs"
-                    : "text-slate-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white"
+                    : "text-slate-600 hover:text-slate-900"
                 }`}
               >
                 ALL
@@ -620,7 +617,7 @@ export default function AdminDashboardPage() {
                 className={`px-3 py-1 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer ${
                   activityTab === "registrations"
                     ? "bg-gradient-to-r from-[#5B9F35] to-[#218A59] text-white shadow-xs"
-                    : "text-slate-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white"
+                    : "text-slate-600 hover:text-slate-900"
                 }`}
               >
                 ATTENDEES ({filteredRegistrations.length})
@@ -630,7 +627,7 @@ export default function AdminDashboardPage() {
                 className={`px-3 py-1 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer ${
                   activityTab === "inquiries"
                     ? "bg-gradient-to-r from-[#5B9F35] to-[#218A59] text-white shadow-xs"
-                    : "text-slate-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white"
+                    : "text-slate-600 hover:text-slate-900"
                 }`}
               >
                 INQUIRIES ({filteredInquiries.length})
@@ -640,31 +637,31 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Dynamic Activity List */}
-        <div className="divide-y divide-black/[0.05] dark:divide-white/[0.06] text-xs">
+        <div className="divide-y divide-slate-100 text-xs">
           {/* Registrations items */}
           {(activityTab === "all" || activityTab === "registrations") &&
             filteredRegistrations.slice(0, activityTab === "registrations" ? 10 : 4).map((reg: any) => (
               <div
                 key={reg.id}
-                className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-black/[0.02] dark:hover:bg-white/[0.03] transition-colors px-2 rounded-xl"
+                className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50 transition-colors px-2 rounded-xl"
               >
                 <div className="truncate flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-gray-900 dark:text-white truncate font-sans">
+                    <span className="font-bold text-slate-900 truncate font-sans">
                       {reg.name}
                     </span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-[#6FA0E8] font-bold">
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-bold border border-blue-200">
                       {reg.passType}
                     </span>
                   </div>
-                  <span className="text-[11px] text-slate-500 dark:text-slate-400 truncate block mt-0.5">
+                  <span className="text-[11px] text-slate-600 truncate block mt-0.5 font-medium">
                     {reg.organization || "Independent"} · {reg.country || "Nepal"}
                   </span>
                 </div>
 
                 {/* Inline check-in trigger */}
                 <div className="flex items-center gap-2.5 shrink-0">
-                  <span className="text-[10px] font-mono text-slate-400">
+                  <span className="text-[10px] font-mono text-slate-500 font-medium">
                     {reg.id}
                   </span>
                   <button
@@ -673,16 +670,16 @@ export default function AdminDashboardPage() {
                     title="Click to toggle check-in verification"
                     className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono font-bold transition-all cursor-pointer border ${
                       reg.checkedIn
-                        ? "text-[#218A59] dark:text-[#25C176] bg-[#218A59]/10 border-[#218A59]/30 hover:bg-rose-500/10 hover:text-rose-500 hover:border-rose-500/30"
-                        : "text-slate-600 dark:text-slate-300 bg-black/5 dark:bg-white/10 border-black/10 dark:border-white/10 hover:bg-[#218A59]/15 hover:text-[#218A59] hover:border-[#218A59]/30"
+                        ? "text-[#218A59] bg-[#218A59]/10 border-[#218A59]/30 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-300"
+                        : "text-slate-700 bg-slate-100 border-slate-300 hover:bg-[#218A59]/15 hover:text-[#218A59] hover:border-[#218A59]/30"
                     }`}
                   >
                     {actionInProgress === reg.id ? (
                       <RefreshCw className="w-3 h-3 animate-spin" />
                     ) : reg.checkedIn ? (
-                      <Check className="w-3 h-3 text-[#25C176]" />
+                      <Check className="w-3 h-3 text-[#218A59]" />
                     ) : (
-                      <Clock className="w-3 h-3 text-slate-400" />
+                      <Clock className="w-3 h-3 text-slate-500" />
                     )}
                     <span>{reg.checkedIn ? "CHECKED IN" : "MARK CHECK-IN"}</span>
                   </button>
@@ -695,30 +692,30 @@ export default function AdminDashboardPage() {
             filteredInquiries.slice(0, activityTab === "inquiries" ? 10 : 3).map((inq: any) => (
               <div
                 key={inq.id}
-                className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-black/[0.02] dark:hover:bg-white/[0.03] transition-colors px-2 rounded-xl"
+                className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50 transition-colors px-2 rounded-xl"
               >
                 <div className="truncate flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-gray-900 dark:text-white truncate font-sans">
+                    <span className="font-bold text-slate-900 truncate font-sans">
                       {inq.company || inq.name}
                     </span>
-                    <span className="text-[10px] font-mono text-[#234679] dark:text-[#6FA0E8] font-bold">
+                    <span className="text-[10px] font-mono text-[#234679] font-bold">
                       INQUIRY
                     </span>
                     {inq.stallInterest && (
-                      <span className="text-[10px] font-mono bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1.5 py-0.2 rounded">
+                      <span className="text-[10px] font-mono bg-amber-50 text-amber-700 border border-amber-200 px-1.5 py-0.2 rounded font-bold">
                         Stall {inq.stallInterest}
                       </span>
                     )}
                   </div>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                  <p className="text-[11px] text-slate-600 truncate mt-0.5 font-medium">
                     {inq.subject}
                   </p>
                 </div>
 
                 {/* Inline inquiry disposition buttons */}
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-[10px] font-mono text-slate-400 hidden sm:inline">
+                  <span className="text-[10px] font-mono text-slate-500 font-medium hidden sm:inline">
                     {inq.id}
                   </span>
 
@@ -726,7 +723,7 @@ export default function AdminDashboardPage() {
                     <button
                       onClick={() => handleUpdateInquiry(inq.id, "In Progress")}
                       disabled={actionInProgress === inq.id}
-                      className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 hover:bg-amber-500/25 transition-colors cursor-pointer"
+                      className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-100 text-amber-700 border border-amber-300 hover:bg-amber-200 transition-colors cursor-pointer"
                     >
                       START REVIEW
                     </button>
@@ -736,7 +733,7 @@ export default function AdminDashboardPage() {
                     <button
                       onClick={() => handleUpdateInquiry(inq.id, "Resolved")}
                       disabled={actionInProgress === inq.id}
-                      className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#218A59]/15 text-[#218A59] dark:text-[#25C176] border border-[#218A59]/30 hover:bg-[#218A59]/25 transition-colors cursor-pointer"
+                      className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#218A59]/15 text-[#218A59] border border-[#218A59]/30 hover:bg-[#218A59]/25 transition-colors cursor-pointer"
                     >
                       RESOLVE
                     </button>
@@ -745,10 +742,10 @@ export default function AdminDashboardPage() {
                   <span
                     className={`text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full ${
                       inq.status === "New"
-                        ? "text-rose-600 dark:text-rose-400 bg-rose-500/10 border border-rose-500/20"
+                        ? "text-rose-700 bg-rose-50 border border-rose-200"
                         : inq.status === "In Progress"
-                        ? "text-amber-500 bg-amber-500/10 border border-amber-500/20"
-                        : "text-[#218A59] dark:text-[#25C176] bg-[#218A59]/10 border border-[#218A59]/20"
+                        ? "text-amber-700 bg-amber-50 border border-amber-200"
+                        : "text-[#218A59] bg-[#218A59]/10 border border-[#218A59]/20"
                     }`}
                   >
                     {inq.status}
@@ -759,22 +756,22 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Footer info & links */}
-        <div className="pt-3 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-mono border-t border-black/[0.06] dark:border-white/10 gap-2">
+        <div className="pt-3 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 font-mono border-t border-slate-100 gap-2 font-medium">
           <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#25C176]" />
+            <span className="w-1.5 h-1.5 rounded-full bg-[#218A59]" />
             <span>Sync: {lastRefreshed.toLocaleTimeString()}</span>
           </div>
 
           <div className="flex items-center gap-5 font-bold uppercase">
             <Link
               href="/admin/registrations"
-              className="hover:text-[#218A59] dark:hover:text-[#25C176] transition-colors"
+              className="text-[#218A59] hover:text-[#1B7249] transition-colors"
             >
               ALL ATTENDEES →
             </Link>
             <Link
               href="/admin/inquiries"
-              className="hover:text-[#218A59] dark:hover:text-[#25C176] transition-colors"
+              className="text-[#234679] hover:text-[#162E52] transition-colors"
             >
               CRM INQUIRIES →
             </Link>
@@ -784,4 +781,3 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
-

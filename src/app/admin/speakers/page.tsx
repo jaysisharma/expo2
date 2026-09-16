@@ -7,18 +7,16 @@ import {
   Search,
   Plus,
   Star,
-  Building2,
   Edit,
   Trash2,
   Download,
   CheckCircle2,
   X,
-  Save,
   LayoutGrid,
   List,
 } from "lucide-react";
 import { speakersData as initialIPPANMembers } from "@/data/speakers";
-import { eventSolutionTeam as initialEventSolutionTeam, EventSolutionMember } from "@/data/eventSolutionTeam";
+import { eventSolutionTeam as initialEventSolutionTeam } from "@/data/eventSolutionTeam";
 
 export interface UnifiedMember {
   id: string;
@@ -164,27 +162,27 @@ export default function AdminMembersPage() {
   };
 
   return (
-    <div className="space-y-5 font-sans">
+    <div className="space-y-6 font-sans">
       {/* Toast Notification */}
       {toastMsg && (
-        <div className="fixed top-4 right-4 z-50 px-3.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-emerald-600 dark:text-emerald-400 text-xs font-medium shadow-xl flex items-center gap-2">
-          <CheckCircle2 className="w-3.5 h-3.5" />
+        <div className="fixed top-4 right-4 z-50 px-4 py-2 rounded-xl bg-white border border-emerald-200 text-emerald-800 text-xs font-semibold shadow-lg flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
           <span>{toastMsg}</span>
         </div>
       )}
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200 dark:border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-mono text-[10px] font-bold uppercase">
+            <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-[#218A59] border border-emerald-200 font-mono text-[10px] font-bold uppercase">
               Leadership & Organizers
             </span>
           </div>
-          <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight mt-1">
+          <h1 className="text-xl sm:text-2xl font-display font-bold text-slate-900 tracking-tight mt-1">
             Members of IPPAN & Event Solution
           </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
             Profiles for IPPAN Executive Committee and Event Solution organizing team.
           </p>
         </div>
@@ -192,14 +190,14 @@ export default function AdminMembersPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={exportCSV}
-            className="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-medium border border-slate-200 dark:border-slate-800 flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
           >
-            <Download className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+            <Download className="w-3.5 h-3.5 text-slate-500" />
             <span>Export CSV</span>
           </button>
           <button
             onClick={() => setShowAddModal(true)}
-            className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="px-4 py-2 rounded-xl bg-[#218A59] hover:bg-[#1b734a] text-white font-semibold text-xs flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Add Member</span>
@@ -208,29 +206,29 @@ export default function AdminMembersPage() {
       </div>
 
       {/* Metric chips */}
-      <div className="flex flex-wrap gap-2 text-xs font-mono">
-        <span className="px-3 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 shadow-xs">
-          Total Members: <strong className="text-slate-900 dark:text-white">{members.length}</strong>
+      <div className="flex flex-wrap gap-2.5 text-xs font-mono">
+        <span className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 shadow-xs">
+          Total Members: <strong className="text-slate-900">{members.length}</strong>
         </span>
-        <span className="px-3 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-medium">
+        <span className="px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 font-semibold shadow-xs">
           IPPAN Committee: <strong>{ippanCount}</strong>
         </span>
-        <span className="px-3 py-1 rounded-lg bg-sky-500/10 border border-sky-500/20 text-sky-600 dark:text-sky-400 font-medium">
+        <span className="px-3 py-1.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-800 font-semibold shadow-xs">
           Event Solution Team: <strong>{eventSolutionCount}</strong>
         </span>
       </div>
 
       {/* Filters & View Toggle */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-1 p-1 rounded-lg bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-x-auto">
+        <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-100 border border-slate-200 overflow-x-auto">
           {(["All", "IPPAN", "Event Solution"] as const).map((org) => (
             <button
               key={org}
               onClick={() => setSelectedOrg(org)}
-              className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
                 selectedOrg === org
-                  ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-semibold shadow-xs"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                  ? "bg-white text-slate-900 font-bold shadow-xs border border-slate-200"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
               {org === "All" ? "All Members" : org === "IPPAN" ? "IPPAN Committee" : "Event Solution"}
@@ -240,38 +238,38 @@ export default function AdminMembersPage() {
 
         <div className="flex items-center gap-2">
           <div className="relative min-w-[220px]">
-            <Search className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search member, role, org..."
-              className="w-full pl-8 pr-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-slate-400 dark:focus:border-slate-700"
+              className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-white border border-slate-200 text-xs text-slate-900 placeholder-slate-400 shadow-xs focus:outline-none focus:border-[#218A59]"
             />
           </div>
 
-          <div className="flex items-center p-0.5 rounded-lg bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+          <div className="flex items-center p-0.5 rounded-xl bg-slate-100 border border-slate-200">
             <button
               onClick={() => setViewMode("table")}
               title="Table View"
-              className={`p-1 rounded-md transition-colors cursor-pointer ${
+              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
                 viewMode === "table"
-                  ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs"
-                  : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                  ? "bg-white text-slate-900 shadow-xs"
+                  : "text-slate-500 hover:text-slate-900"
               }`}
             >
-              <List className="w-3.5 h-3.5" />
+              <List className="w-4 h-4" />
             </button>
             <button
               onClick={() => setViewMode("grid")}
               title="Grid View"
-              className={`p-1 rounded-md transition-colors cursor-pointer ${
+              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
                 viewMode === "grid"
-                  ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs"
-                  : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                  ? "bg-white text-slate-900 shadow-xs"
+                  : "text-slate-500 hover:text-slate-900"
               }`}
             >
-              <LayoutGrid className="w-3.5 h-3.5" />
+              <LayoutGrid className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -279,32 +277,32 @@ export default function AdminMembersPage() {
 
       {/* Content: Table View */}
       {viewMode === "table" ? (
-        <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 rounded-xl overflow-hidden shadow-xs">
+        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-slate-600 dark:text-slate-300">
-              <thead className="bg-slate-50 dark:bg-[#051320] text-slate-500 dark:text-slate-400 font-mono text-[10px] tracking-wider border-b border-slate-200 dark:border-slate-800 uppercase">
+            <table className="w-full text-left text-xs text-slate-700">
+              <thead className="bg-slate-50 text-slate-600 font-mono text-[10px] tracking-wider border-b border-slate-200 uppercase">
                 <tr>
-                  <th className="p-3 font-semibold">Member</th>
-                  <th className="p-3 font-semibold">Designation</th>
-                  <th className="p-3 font-semibold">Organization</th>
-                  <th className="p-3 font-semibold">Group</th>
-                  <th className="p-3 font-semibold text-center">Featured</th>
-                  <th className="p-3 font-semibold text-right">Action</th>
+                  <th className="p-3.5 font-bold">Member</th>
+                  <th className="p-3.5 font-bold">Designation</th>
+                  <th className="p-3.5 font-bold">Organization</th>
+                  <th className="p-3.5 font-bold">Group</th>
+                  <th className="p-3.5 font-bold text-center">Featured</th>
+                  <th className="p-3.5 font-bold text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
+              <tbody className="divide-y divide-slate-100">
                 {filteredMembers.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="p-8 text-center text-slate-400 dark:text-slate-500 text-xs">
+                    <td colSpan={6} className="p-8 text-center text-slate-400 text-xs">
                       No members found matching criteria.
                     </td>
                   </tr>
                 ) : (
                   filteredMembers.map((m) => (
-                    <tr key={m.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/30 transition-colors">
-                      <td className="p-3">
+                    <tr key={m.id} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="p-3.5">
                         <div className="flex items-center gap-3">
-                          <div className="relative w-8 h-8 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shrink-0">
+                          <div className="relative w-8 h-8 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
                             <Image
                               src={m.photo || "/images/committee/mohan-kumar-dangi.png"}
                               alt={m.name}
@@ -313,53 +311,53 @@ export default function AdminMembersPage() {
                             />
                           </div>
                           <div>
-                            <div className="font-medium text-slate-900 dark:text-white">{m.name}</div>
-                            <div className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">
+                            <div className="font-semibold text-slate-900">{m.name}</div>
+                            <div className="text-[10px] text-slate-400 font-mono">
                               {m.category}
                             </div>
                           </div>
                         </div>
                       </td>
-                      <td className="p-3 font-medium text-slate-800 dark:text-slate-200">
+                      <td className="p-3.5 font-medium text-slate-800">
                         {m.title}
                       </td>
-                      <td className="p-3 text-slate-600 dark:text-slate-400 truncate max-w-[220px]">
+                      <td className="p-3.5 text-slate-600 truncate max-w-[220px]">
                         {m.organization}
                       </td>
-                      <td className="p-3">
+                      <td className="p-3.5">
                         <span
-                          className={`text-[10px] font-mono px-2 py-0.5 rounded border ${
+                          className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded border ${
                             m.orgType === "IPPAN"
-                              ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20"
-                              : "bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/20"
+                              ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                              : "bg-blue-50 text-blue-800 border-blue-200"
                           }`}
                         >
                           {m.orgType}
                         </span>
                       </td>
-                      <td className="p-3 text-center">
+                      <td className="p-3.5 text-center">
                         <button
                           onClick={() => handleToggleFeatured(m.id)}
                           className={`p-1 rounded transition-colors cursor-pointer ${
                             m.featured
-                              ? "text-amber-500 dark:text-amber-400"
-                              : "text-slate-300 dark:text-slate-600 hover:text-slate-500 dark:hover:text-slate-400"
+                              ? "text-amber-500"
+                              : "text-slate-300 hover:text-slate-500"
                           }`}
                         >
-                          <Star className="w-3.5 h-3.5 fill-current" />
+                          <Star className="w-4 h-4 fill-current" />
                         </button>
                       </td>
-                      <td className="p-3 text-right">
-                        <div className="flex items-center justify-end gap-1">
+                      <td className="p-3.5 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
                           <button
                             onClick={() => setEditingMember(m)}
-                            className="p-1 rounded bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
                           >
                             <Edit className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={() => handleDelete(m.id, m.name)}
-                            className="p-1 rounded bg-slate-100 hover:bg-rose-500/10 dark:bg-slate-800 dark:hover:bg-rose-500/10 text-slate-500 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg bg-slate-100 hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -378,11 +376,11 @@ export default function AdminMembersPage() {
           {filteredMembers.map((m) => (
             <div
               key={m.id}
-              className="p-4 rounded-xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700 shadow-xs transition-all flex flex-col justify-between space-y-3"
+              className="p-4 rounded-2xl bg-white border border-slate-200 hover:border-slate-300 shadow-xs transition-all flex flex-col justify-between space-y-3"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shrink-0">
+                  <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
                     <Image
                       src={m.photo || "/images/committee/mohan-kumar-dangi.png"}
                       alt={m.name}
@@ -391,11 +389,11 @@ export default function AdminMembersPage() {
                     />
                   </div>
                   <div>
-                    <h3 className="font-bold text-sm text-slate-900 dark:text-white line-clamp-1">{m.name}</h3>
-                    <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium block line-clamp-1">
+                    <h3 className="font-bold text-sm text-slate-900 line-clamp-1">{m.name}</h3>
+                    <span className="text-xs text-[#218A59] font-semibold block line-clamp-1">
                       {m.title}
                     </span>
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400 line-clamp-1">
+                    <span className="text-[10px] text-slate-500 line-clamp-1">
                       {m.organization}
                     </span>
                   </div>
@@ -405,27 +403,27 @@ export default function AdminMembersPage() {
                   onClick={() => handleToggleFeatured(m.id)}
                   className={`p-1.5 rounded-lg shrink-0 cursor-pointer ${
                     m.featured
-                      ? "text-amber-500 dark:text-amber-400"
-                      : "text-slate-300 dark:text-slate-600 hover:text-slate-500 dark:hover:text-slate-400"
+                      ? "text-amber-500"
+                      : "text-slate-300 hover:text-slate-500"
                   }`}
                   title={m.featured ? "Featured" : "Click to feature"}
                 >
-                  <Star className="w-3.5 h-3.5 fill-current" />
+                  <Star className="w-4 h-4 fill-current" />
                 </button>
               </div>
 
               {m.bio && (
-                <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
                   {m.bio}
                 </p>
               )}
 
-              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
+              <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
                 <span
-                  className={`text-[10px] font-mono px-2 py-0.5 rounded border ${
+                  className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded border ${
                     m.orgType === "IPPAN"
-                      ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20"
-                      : "bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/20"
+                      ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                      : "bg-blue-50 text-blue-800 border-blue-200"
                   }`}
                 >
                   {m.orgType}
@@ -434,13 +432,13 @@ export default function AdminMembersPage() {
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => setEditingMember(m)}
-                    className="p-1 rounded bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
+                    className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
                   >
                     <Edit className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={() => handleDelete(m.id, m.name)}
-                    className="p-1 rounded bg-slate-100 hover:bg-rose-500/10 dark:bg-slate-800 dark:hover:bg-rose-500/10 text-slate-500 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 transition-colors cursor-pointer"
+                    className="p-1.5 rounded-lg bg-slate-100 hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
@@ -454,12 +452,12 @@ export default function AdminMembersPage() {
       {/* Edit Modal */}
       {editingMember && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
-              <h3 className="font-semibold text-sm text-slate-900 dark:text-white">Edit Member</h3>
+          <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl p-5 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 className="font-semibold text-sm text-slate-900">Edit Member</h3>
               <button
                 onClick={() => setEditingMember(null)}
-                className="p-1 rounded text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer transition-colors"
+                className="p-1 rounded text-slate-400 hover:text-slate-600 cursor-pointer transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -467,7 +465,7 @@ export default function AdminMembersPage() {
 
             <form onSubmit={handleSaveEdit} className="space-y-3 text-xs">
               <div>
-                <label className="block text-[11px] font-mono text-slate-500 dark:text-slate-400 mb-1">
+                <label className="block text-[11px] font-mono text-slate-600 mb-1">
                   FULL NAME
                 </label>
                 <input
@@ -477,13 +475,13 @@ export default function AdminMembersPage() {
                   onChange={(e) =>
                     setEditingMember({ ...editingMember, name: e.target.value })
                   }
-                  className="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-slate-400 dark:focus:border-slate-700"
+                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59]"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-[11px] font-mono text-slate-500 dark:text-slate-400 mb-1">
+                  <label className="block text-[11px] font-mono text-slate-600 mb-1">
                     DESIGNATION / TITLE
                   </label>
                   <input
@@ -493,11 +491,11 @@ export default function AdminMembersPage() {
                     onChange={(e) =>
                       setEditingMember({ ...editingMember, title: e.target.value })
                     }
-                    className="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-slate-400 dark:focus:border-slate-700"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59]"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-mono text-slate-500 dark:text-slate-400 mb-1">
+                  <label className="block text-[11px] font-mono text-slate-600 mb-1">
                     ORGANIZATION GROUP
                   </label>
                   <select
@@ -512,7 +510,7 @@ export default function AdminMembersPage() {
                             : "Event Solution Pvt. Ltd.",
                       })
                     }
-                    className="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-slate-400 dark:focus:border-slate-700 cursor-pointer"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59] cursor-pointer"
                   >
                     <option value="IPPAN">IPPAN Committee</option>
                     <option value="Event Solution">Event Solution Team</option>
@@ -521,7 +519,7 @@ export default function AdminMembersPage() {
               </div>
 
               <div>
-                <label className="block text-[11px] font-mono text-slate-500 dark:text-slate-400 mb-1">
+                <label className="block text-[11px] font-mono text-slate-600 mb-1">
                   CATEGORY / ROLE
                 </label>
                 <input
@@ -530,12 +528,12 @@ export default function AdminMembersPage() {
                   onChange={(e) =>
                     setEditingMember({ ...editingMember, category: e.target.value })
                   }
-                  className="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-slate-400 dark:focus:border-slate-700"
+                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59]"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-mono text-slate-500 dark:text-slate-400 mb-1">
+                <label className="block text-[11px] font-mono text-slate-600 mb-1">
                   BIOGRAPHY / PROFILE NOTE
                 </label>
                 <textarea
@@ -544,23 +542,23 @@ export default function AdminMembersPage() {
                   onChange={(e) =>
                     setEditingMember({ ...editingMember, bio: e.target.value })
                   }
-                  className="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-slate-400 dark:focus:border-slate-700"
+                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59]"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800 text-xs">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 text-xs">
                 <button
                   type="button"
                   onClick={() => setEditingMember(null)}
-                  className="px-3 py-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white cursor-pointer"
+                  className="px-3.5 py-2 rounded-xl text-slate-600 hover:text-slate-900 cursor-pointer font-medium"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-medium cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-[#218A59] hover:bg-[#1b734a] text-white font-semibold cursor-pointer"
                 >
-                  Save
+                  Save Changes
                 </button>
               </div>
             </form>
@@ -571,12 +569,12 @@ export default function AdminMembersPage() {
       {/* Add Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
-              <h3 className="font-semibold text-sm text-slate-900 dark:text-white">Add Member</h3>
+          <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl p-5 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 className="font-semibold text-sm text-slate-900">Add Member</h3>
               <button
                 onClick={() => setShowAddModal(false)}
-                className="p-1 rounded text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer transition-colors"
+                className="p-1 rounded text-slate-400 hover:text-slate-600 cursor-pointer transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -584,7 +582,7 @@ export default function AdminMembersPage() {
 
             <form onSubmit={handleAddSubmit} className="space-y-3 text-xs">
               <div>
-                <label className="block text-[11px] font-mono text-slate-500 dark:text-slate-400 mb-1">
+                <label className="block text-[11px] font-mono text-slate-600 mb-1">
                   FULL NAME
                 </label>
                 <input
@@ -592,13 +590,13 @@ export default function AdminMembersPage() {
                   name="name"
                   required
                   placeholder="e.g. Sunil Bhandari"
-                  className="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:border-slate-400 dark:focus:border-slate-700"
+                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#218A59]"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-[11px] font-mono text-slate-500 dark:text-slate-400 mb-1">
+                  <label className="block text-[11px] font-mono text-slate-600 mb-1">
                     DESIGNATION / TITLE
                   </label>
                   <input
@@ -606,16 +604,16 @@ export default function AdminMembersPage() {
                     name="title"
                     required
                     placeholder="e.g. Chairman / VP"
-                    className="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:border-slate-400 dark:focus:border-slate-700"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#218A59]"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-mono text-slate-500 dark:text-slate-400 mb-1">
+                  <label className="block text-[11px] font-mono text-slate-600 mb-1">
                     ORGANIZATION GROUP
                   </label>
                   <select
                     name="orgType"
-                    className="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-slate-400 dark:focus:border-slate-700 cursor-pointer"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59] cursor-pointer"
                   >
                     <option value="IPPAN">IPPAN Committee</option>
                     <option value="Event Solution">Event Solution Team</option>
@@ -624,40 +622,40 @@ export default function AdminMembersPage() {
               </div>
 
               <div>
-                <label className="block text-[11px] font-mono text-slate-500 dark:text-slate-400 mb-1">
+                <label className="block text-[11px] font-mono text-slate-600 mb-1">
                   CATEGORY / ROLE
                 </label>
                 <input
                   type="text"
                   name="category"
                   placeholder="e.g. Executive, Operations, Leadership"
-                  className="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:border-slate-400 dark:focus:border-slate-700"
+                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#218A59]"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-mono text-slate-500 dark:text-slate-400 mb-1">
+                <label className="block text-[11px] font-mono text-slate-600 mb-1">
                   BIOGRAPHY / NOTE
                 </label>
                 <textarea
                   name="bio"
                   rows={3}
                   placeholder="Responsibilities and brief background..."
-                  className="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:border-slate-400 dark:focus:border-slate-700"
+                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#218A59]"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800 text-xs">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 text-xs">
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-3 py-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white cursor-pointer"
+                  className="px-3.5 py-2 rounded-xl text-slate-600 hover:text-slate-900 cursor-pointer font-medium"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-medium cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-[#218A59] hover:bg-[#1b734a] text-white font-semibold cursor-pointer"
                 >
                   Save Member
                 </button>

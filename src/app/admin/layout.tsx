@@ -21,9 +21,9 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
   // If still verifying authentication
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-stone-50 dark:bg-stone-950 gap-3">
-        <div className="w-8 h-8 rounded-full border-2 border-[#218A59] dark:border-[#25C176] border-t-transparent animate-spin" />
-        <span className="text-xs text-stone-500 font-mono">Verifying secretariat access...</span>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 gap-3">
+        <div className="w-8 h-8 rounded-full border-2 border-[#218A59] border-t-transparent animate-spin" />
+        <span className="text-xs text-slate-600 font-mono font-medium">Verifying secretariat access...</span>
       </div>
     );
   }
@@ -37,11 +37,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen flex flex-col font-sans bg-transparent text-slate-900 dark:text-slate-100 transition-colors duration-300 relative overflow-x-hidden">
-      {/* Subtle ambient lighting orbs in dark mode */}
-      <div className="hidden dark:block absolute top-0 right-1/4 w-[500px] h-[500px] bg-[#218A59]/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="hidden dark:block absolute bottom-1/3 left-10 w-[450px] h-[450px] bg-[#234679]/10 rounded-full blur-3xl pointer-events-none" />
-
+    <div className="min-h-screen flex flex-col font-sans bg-slate-50 text-slate-900 transition-colors duration-200 relative overflow-x-hidden">
       {/* Sidebar */}
       <AdminSidebar
         isCollapsed={isCollapsed}
