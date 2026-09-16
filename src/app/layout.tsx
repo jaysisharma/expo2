@@ -12,8 +12,8 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" data-theme="light">
-      <body>
+    <html lang="en" data-theme="light" suppressHydrationWarning>
+      <body suppressHydrationWarning>
         <ThemeProvider>
           <AppLayoutClient>{children}</AppLayoutClient>
         </ThemeProvider>
