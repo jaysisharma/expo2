@@ -62,10 +62,6 @@ export function ConferenceThemesSection() {
         <ScrollReveal direction="up" distance={25}>
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-8 border-b border-black/10 dark:border-white/10 mb-8">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#218A59]/10 text-[#218A59] dark:bg-[#25C176]/15 dark:text-[#25C176] border border-[#218A59]/25 dark:border-[#25C176]/30 text-xs font-mono font-bold uppercase tracking-wider mb-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#218A59] dark:bg-[#25C176]" />
-                <span>6 INTEGRATED EXHIBITION SECTORS</span>
-              </div>
               <h2 className="font-display font-black text-2xl sm:text-4xl text-gray-900 dark:text-white tracking-tight">
                 Major Exhibition Sectors
               </h2>

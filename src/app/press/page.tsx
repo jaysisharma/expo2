@@ -171,9 +171,6 @@ export default function PressPage() {
       {/* ── 02: THE 6 CONCURRENT SUB-SHOWS HIGHLIGHTED IN THE GRAPHIC ── */}
       <section className="py-16 sm:py-20 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto space-y-10">
         <div className="space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-emerald-300 font-mono text-xs font-bold uppercase tracking-wider">
-            <span>6 INTEGRATED EXHIBITION SECTORS</span>
-          </div>
           <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
             Concurrent Sub-Shows at the Expo
           </h2>
