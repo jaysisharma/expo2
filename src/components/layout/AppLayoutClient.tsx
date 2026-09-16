@@ -9,6 +9,7 @@ import SmoothScrollProvider from "@/components/providers/SmoothScrollProvider";
 import WelcomeExpoModal from "@/components/modals/WelcomeExpoModal";
 import PdfDownloadModal from "@/components/modals/PdfDownloadModal";
 import HydroLoadingScreen from "@/components/ui/HydroLoadingScreen";
+import TurbineCursor from "@/components/ui/TurbineCursor";
 
 export default function AppLayoutClient({
   children,
@@ -22,6 +23,7 @@ export default function AppLayoutClient({
   if (isBuilderPage || isAdminPage) {
     return (
       <main className="w-full min-h-screen">
+        <TurbineCursor />
         {children}
       </main>
     );
@@ -29,6 +31,7 @@ export default function AppLayoutClient({
 
   return (
     <SmoothScrollProvider>
+      <TurbineCursor />
       <HydroLoadingScreen />
       <Navbar />
       <div className="flex-grow w-full">{children}</div>
