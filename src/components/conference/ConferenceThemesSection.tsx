@@ -3,14 +3,12 @@
 import React from 'react';
 import Image from 'next/image';
 import {
-  Waves,
-  SunMedium,
+  Atom,
+  Car,
+  Sparkles,
+  Wind,
+  Sun,
   Zap,
-  Leaf,
-  Briefcase,
-  Flame,
-  Globe2,
-  Wrench,
   ArrowUpRight,
 } from 'lucide-react';
 import { ScrollReveal } from '@/components/ui';
@@ -19,91 +17,72 @@ interface SectorItem {
   id: string;
   num: string;
   title: string;
+  badge: string;
   tagline: string;
   icon: React.ElementType;
   image: string;
-  themeColor: 'blue' | 'green';
+  themeColor: 'green' | 'blue' | 'amber';
 }
 
 const exhibitionSectors: SectorItem[] = [
   {
     id: 's1',
     num: '01',
-    title: 'Hydro Heavy Equipment & Turbines',
-    tagline: 'Francis, Pelton & Kaplan high-head turbine innovations',
-    icon: Waves,
-    image:
-      'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&w=800&q=80',
-    themeColor: 'blue',
+    title: 'Green Hydrogen Show',
+    badge: 'HYDROGEN & CLEAN FUELS',
+    tagline: 'Water electrolysis, green ammonia synthesis, and industrial zero-carbon molecular energy systems.',
+    icon: Atom,
+    image: '/images/sectors/green_hydrogen_show.jpg',
+    themeColor: 'green',
   },
   {
     id: 's2',
     num: '02',
-    title: 'Utility Solar & Hybrid Storage',
-    tagline: 'Floating PV, BESS storage & Himalayan solar parks',
-    icon: SunMedium,
-    image:
-      'https://images.unsplash.com/photo-1509391365360-2e959784a276?auto=format&fit=crop&w=800&q=80',
-    themeColor: 'green',
+    title: 'EV Show',
+    badge: 'ELECTRIC MOBILITY',
+    tagline: 'Electric vehicles, commercial fleet electrification, ultra-fast charging corridors & next-gen battery tech.',
+    icon: Car,
+    image: '/images/sectors/ev_show.jpg',
+    themeColor: 'blue',
   },
   {
     id: 's3',
     num: '03',
-    title: 'High-Voltage Transmission & GIS',
-    tagline: '400kV cross-border lines, transformers & digital substations',
-    icon: Zap,
-    image:
-      'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=800&q=80',
-    themeColor: 'blue',
+    title: 'Alternative Energy Show',
+    badge: 'ALTERNATIVE RENEWABLES',
+    tagline: 'Biomass energy plants, geothermal power, smart microgrids & decentralized clean technologies.',
+    icon: Sparkles,
+    image: '/images/sectors/alternative_energy_show.jpg',
+    themeColor: 'amber',
   },
   {
     id: 's4',
     num: '04',
-    title: 'Green Hydrogen & Clean Fuels',
-    tagline: 'Water electrolysis, green ammonia & zero-carbon fuels',
-    icon: Flame,
-    image:
-      'https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=800&q=80',
-    themeColor: 'green',
+    title: 'Windmill Energy Show',
+    badge: 'WIND POWER SYSTEMS',
+    tagline: 'High-altitude wind turbine engineering, wind-hydro hybrid farms & smart grid synchronization.',
+    icon: Wind,
+    image: '/images/sectors/windmill_energy_show.jpg',
+    themeColor: 'blue',
   },
   {
     id: 's5',
     num: '05',
-    title: 'Cross-Border Clean Power Trade',
-    tagline: 'Bilateral open-access power markets with India & Bangladesh',
-    icon: Globe2,
-    image:
-      'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80',
-    themeColor: 'blue',
+    title: 'Solar Energy Show',
+    badge: 'SOLAR PV & STORAGE',
+    tagline: 'Utility-scale solar PV parks, floating solar arrays on hydro reservoirs & commercial BESS storage.',
+    icon: Sun,
+    image: '/images/sectors/solar_energy_show.jpg',
+    themeColor: 'amber',
   },
   {
     id: 's6',
     num: '06',
-    title: 'Multilateral Climate Finance & ESG',
-    tagline: 'Green bonds, debt syndication, private equity & sovereign risk',
-    icon: Briefcase,
-    image:
-      'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80',
-    themeColor: 'green',
-  },
-  {
-    id: 's7',
-    num: '07',
-    title: 'EPC Engineering, Tunnelling & Dam Tech',
-    tagline: 'Tunnel boring machines, shotcrete & geological stabilization',
-    icon: Wrench,
-    image:
-      'https://images.unsplash.com/photo-1541888946425-d0fbb18086f6?auto=format&fit=crop&w=800&q=80',
-    themeColor: 'blue',
-  },
-  {
-    id: 's8',
-    num: '08',
-    title: 'Decarbonized E-Mobility & Smart Grids',
-    tagline: 'High-power EV charging corridors & IoT grid management',
-    icon: Leaf,
-    image:
-      'https://images.unsplash.com/photo-1558441719-20b1356f9175?auto=format&fit=crop&w=800&q=80',
+    title: 'Green Energy Show',
+    badge: 'HYDRO & GRID INFRASTRUCTURE',
+    tagline: 'High-head hydro turbines, pumped storage powerhouses, 400kV substations & cross-border transmission.',
+    icon: Zap,
+    image: '/images/sectors/green_energy_show.jpg',
     themeColor: 'green',
   },
 ];
@@ -121,7 +100,7 @@ export function ConferenceThemesSection() {
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#218A59]/10 text-[#218A59] dark:bg-[#25C176]/15 dark:text-[#25C176] border border-[#218A59]/25 dark:border-[#25C176]/30 text-xs font-mono font-bold uppercase tracking-wider mb-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#218A59] dark:bg-[#25C176]" />
-                <span>HIMALAYAN GREEN ENERGY EXPO SECTORS</span>
+                <span>6 INTEGRATED EXHIBITION SECTORS</span>
               </div>
               <h2 className="font-display font-black text-2xl sm:text-4xl text-gray-900 dark:text-white tracking-tight">
                 Major Exhibition Sectors
@@ -140,62 +119,51 @@ export function ConferenceThemesSection() {
           </div>
         </ScrollReveal>
 
-        {/* 8 Clean Sector Horizon Cards */}
-        <ScrollReveal direction="up" distance={30} stagger={0.07} duration={0.65}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {/* 6 Clean Sector Cards (3 Columns) */}
+        <ScrollReveal direction="up" distance={30} stagger={0.08} duration={0.65}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {exhibitionSectors.map((sector) => {
               const Icon = sector.icon;
-              const isGreen = sector.themeColor === 'green';
 
               return (
                 <div
                   key={sector.id}
-                  className={`rounded-2xl overflow-hidden relative min-h-[260px] sm:min-h-[280px] p-6 flex flex-col justify-between group shadow-sm hover:shadow-xl border border-black/10 dark:border-white/10 transition-all duration-300 ease-out cursor-pointer hover:-translate-y-1 ${
-                    isGreen
-                      ? 'hover:border-[#218A59] dark:hover:border-[#25C176]'
-                      : 'hover:border-[#234679] dark:hover:border-[#4A7EC7]'
-                  }`}
+                  className="rounded-3xl overflow-hidden relative min-h-[300px] sm:min-h-[340px] p-6 flex flex-col justify-between group shadow-md hover:shadow-2xl border border-black/10 dark:border-white/10 transition-all duration-500 ease-out cursor-pointer hover:-translate-y-1.5"
                 >
-                  {/* Background Photography */}
+                  {/* Background High-Res Generated AI Photography */}
                   <Image
                     src={sector.image}
                     alt={sector.title}
                     fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    className="object-cover group-hover:scale-108 transition-transform duration-700 ease-out"
                   />
 
                   {/* Dark Gradient Overlay for Readability */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/20 group-hover:from-black/95 group-hover:via-black/60 transition-all duration-300" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/25 group-hover:from-black/95 group-hover:via-black/60 transition-all duration-300" />
 
-                  {/* Top: Icon & Sector Number */}
+                  {/* Top: Sector Number & Icon */}
                   <div className="relative z-10 flex items-center justify-between">
-                    <span className="font-mono text-xs font-bold text-white/80 drop-shadow-sm">
-                      {sector.num}
-                    </span>
-                    <div
-                      className={`p-2.5 rounded-xl bg-white/20 backdrop-blur-md text-white border border-white/20 transition-all duration-300 shadow-md ${
-                        isGreen
-                          ? 'group-hover:bg-[#218A59] group-hover:text-white'
-                          : 'group-hover:bg-[#234679] group-hover:text-white'
-                      }`}
-                    >
+                    <div className="flex items-center gap-2">
+                      <span className="px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md border border-white/15 font-mono text-xs font-black text-white shadow-xs">
+                        {sector.num}
+                      </span>
+                      <span className="text-[10px] font-mono font-bold text-slate-300 uppercase tracking-wider drop-shadow-sm">
+                        {sector.badge}
+                      </span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-white/20 backdrop-blur-md text-white border border-white/20 transition-all duration-300 shadow-md group-hover:bg-[#218A59] group-hover:scale-110">
                       <Icon className="w-4 h-4" />
                     </div>
                   </div>
 
-                  {/* Bottom Content: Title by default, description revealed on hover */}
+                  {/* Bottom Content: Title always visible, Description cleanly sliding in on hover */}
                   <div className="relative z-10 text-white">
-                    <h3
-                      className={`font-display font-bold text-base sm:text-lg text-white tracking-tight leading-snug drop-shadow-md transition-colors duration-300 ${
-                        isGreen
-                          ? 'group-hover:text-[#4ADE80]'
-                          : 'group-hover:text-[#93C5FD]'
-                      }`}
-                    >
+                    <h3 className="font-display font-black text-xl sm:text-2xl text-white tracking-tight leading-snug drop-shadow-md group-hover:text-[#34D399] transition-colors duration-300 uppercase">
                       {sector.title}
                     </h3>
-                    <div className="overflow-hidden transition-all duration-300 ease-out max-h-0 opacity-0 -translate-y-1 group-hover:max-h-28 group-hover:opacity-100 group-hover:translate-y-0 group-hover:mt-1.5">
-                      <p className="text-xs text-slate-200 font-mono tracking-wide drop-shadow-sm leading-relaxed">
+                    <div className="overflow-hidden transition-all duration-300 ease-out max-h-0 opacity-0 -translate-y-1 group-hover:max-h-32 group-hover:opacity-100 group-hover:translate-y-0 group-hover:mt-2">
+                      <p className="text-xs text-slate-200 font-sans tracking-wide drop-shadow-sm leading-relaxed">
                         {sector.tagline}
                       </p>
                     </div>
@@ -209,3 +177,5 @@ export function ConferenceThemesSection() {
     </section>
   );
 }
+
+export default ConferenceThemesSection;
