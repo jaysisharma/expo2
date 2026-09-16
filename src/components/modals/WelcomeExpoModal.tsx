@@ -4,32 +4,51 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, MapPin, Calendar, ArrowRight, Sparkles } from "lucide-react";
+import { X, FileDown, ArrowRight, Sparkles, Calendar, MapPin } from "lucide-react";
 
 export default function WelcomeExpoModal() {
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   useEffect(() => {
-    try {
-      const dismissed = sessionStorage.getItem("expo_welcome_modal_dismissed");
-      if (!dismissed) {
-        const timer = setTimeout(() => {
+    const handleLoaderComplete = () => {
+      try {
+        const dismissed = sessionStorage.getItem("expo_invitation_modal_dismissed");
+        if (!dismissed) {
+          setTimeout(() => {
+            setIsOpen(true);
+          }, 350);
+        }
+      } catch {
+        setTimeout(() => {
           setIsOpen(true);
-        }, 2400);
-        return () => clearTimeout(timer);
+        }, 350);
       }
-    } catch {
-      const timer = setTimeout(() => {
+    };
+
+    window.addEventListener("hydro-loader-complete", handleLoaderComplete);
+
+    // Fallback timer if event is missed or already fired
+    const fallbackTimer = setTimeout(() => {
+      try {
+        const dismissed = sessionStorage.getItem("expo_invitation_modal_dismissed");
+        if (!dismissed) {
+          setIsOpen(true);
+        }
+      } catch {
         setIsOpen(true);
-      }, 2400);
-      return () => clearTimeout(timer);
-    }
+      }
+    }, 2000);
+
+    return () => {
+      window.removeEventListener("hydro-loader-complete", handleLoaderComplete);
+      clearTimeout(fallbackTimer);
+    };
   }, []);
 
   const handleClose = () => {
     setIsOpen(false);
     try {
-      sessionStorage.setItem("expo_welcome_modal_dismissed", "true");
+      sessionStorage.setItem("expo_invitation_modal_dismissed", "true");
     } catch {
       // ignore
     }
@@ -48,98 +67,102 @@ export default function WelcomeExpoModal() {
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
-          {/* Light translucent backdrop so hero section stays visible */}
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          {/* Dimmed luxury backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={handleClose}
-            className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity"
+            className="fixed inset-0 bg-slate-950/80 backdrop-blur-md transition-opacity"
           />
 
-          {/* Green Color Background Card with Rounded Styling */}
+          {/* Invitation Card Container */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.94, y: 15 }}
+            initial={{ opacity: 0, scale: 0.9, y: 25 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.94, y: 15 }}
-            transition={{ duration: 0.25, ease: "easeOut" }}
-            className="relative w-full max-w-lg bg-gradient-to-b from-[#065F46] via-[#044E3B] to-[#022C22] border border-[#34D399]/30 shadow-[0_20px_60px_rgba(0,0,0,0.6)] rounded-3xl overflow-hidden text-white z-10 text-center"
+            exit={{ opacity: 0, scale: 0.9, y: 25 }}
+            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            className="relative w-full max-w-lg sm:max-w-xl max-h-[92vh] flex flex-col bg-[#071F17] border border-amber-400/40 shadow-[0_25px_70px_rgba(0,0,0,0.8)] rounded-3xl overflow-hidden text-white z-10 my-auto"
           >
-            {/* Top Visual Banner from Official Press Meet Creative */}
-            <div className="relative w-full aspect-[21/9] sm:aspect-[2/1] overflow-hidden border-b border-white/15">
-              <Image
-                src="/images/press_meet.jpeg"
-                alt="Himalayan Green Energy Expo 2027 Official Announcement"
-                fill
-                priority
-                className="object-cover object-center"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#065F46] via-[#065F46]/30 to-transparent" />
-              
-              {/* Close Button on top right of banner */}
+            {/* Header Ribbon */}
+            <div className="px-5 py-3 bg-gradient-to-r from-amber-700 via-yellow-600 to-amber-700 text-slate-950 flex items-center justify-between border-b border-amber-300/30 shrink-0">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-slate-950" />
+                <span className="font-mono text-xs font-black uppercase tracking-wider">
+                  OFFICIAL INVITATION · हार्दिक निमन्त्रणा
+                </span>
+              </div>
+
+              {/* Close Button */}
               <button
                 onClick={handleClose}
-                aria-label="Close"
-                className="absolute top-3 right-3 text-white bg-black/50 hover:bg-black/80 p-1.5 cursor-pointer transition-colors rounded-full backdrop-blur-md z-20"
+                aria-label="Close Invitation"
+                className="w-7 h-7 rounded-full bg-black/30 hover:bg-black/60 text-white flex items-center justify-center transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
-
-              {/* Top Left Badge */}
-              <div className="absolute top-3 left-3 px-2.5 py-0.5 rounded-full bg-[#10B981] text-slate-950 font-mono text-[10px] font-black uppercase tracking-wider shadow-md">
-                5TH EDITION · 2027
-              </div>
             </div>
 
-            <div className="p-6 sm:p-7 space-y-4">
-              {/* 5th Edition Badge & Main Title */}
-              <div className="space-y-1.5">
-                <h2 className="font-sans font-black text-xl sm:text-2xl text-white tracking-tight leading-tight drop-shadow-sm">
-                  Himalayan Green Energy Expo 2027
-                </h2>
+            {/* Scrollable / Visual Image Content */}
+            <div className="p-4 sm:p-5 overflow-y-auto flex flex-col items-center space-y-4">
+              {/* High-Resolution Invitation Image Card */}
+              <div className="relative w-full max-w-sm sm:max-w-md aspect-[3/4.2] rounded-2xl overflow-hidden border-2 border-amber-400/30 shadow-2xl bg-white group">
+                <Image
+                  src="/images/invitation.jpeg"
+                  alt="Official Invitation - Himalayan Green Energy Expo 2027 Press Meet"
+                  fill
+                  priority
+                  className="object-contain object-top hover:scale-[1.02] transition-transform duration-500"
+                />
+              </div>
 
-                <p className="text-xs font-mono font-bold text-[#34D399] tracking-wide">
-                  &ldquo;Resilient Energy, Prosperous Nepal&rdquo;
-                </p>
+              {/* Quick Details Pill Bar */}
+              <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono">
+                <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2.5">
+                  <Calendar className="w-4 h-4 text-amber-400 shrink-0" />
+                  <div>
+                    <span className="text-[10px] text-slate-400 block font-bold">DATE & TIME</span>
+                    <span className="text-white font-semibold">2083 Asoj 1 · 2:00 PM</span>
+                  </div>
+                </div>
 
-                {/* Location well just below the title with location icon (no bg pill) */}
-                <div className="pt-1 flex items-center justify-center gap-1.5 text-xs font-mono text-emerald-100">
+                <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2.5">
                   <MapPin className="w-4 h-4 text-[#34D399] shrink-0" />
-                  <span className="font-medium text-white">
-                    Bhrikutimandap Exhibition Complex, Kathmandu
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-center gap-1.5 text-xs font-mono text-[#38BDF8] font-bold">
-                  <Calendar className="w-3.5 h-3.5" />
-                  <span>17–19 January 2027 · Magh 3–5, 2083</span>
+                  <div>
+                    <span className="text-[10px] text-slate-400 block font-bold">VENUE</span>
+                    <span className="text-white font-semibold truncate">Hotel Royal Tulip, Gwarko</span>
+                  </div>
                 </div>
               </div>
 
-              {/* Short & Sweet Inviting Description */}
-              <p className="text-xs text-emerald-50/90 font-normal leading-relaxed max-w-md mx-auto">
-                South Asia&apos;s flagship clean energy summit connecting developers, turbine OEMs, solar, EV, and green hydrogen leaders.
-              </p>
+              {/* Action CTAs */}
+              <div className="w-full pt-1 flex flex-col sm:flex-row gap-2.5">
+                <a
+                  href="/images/invitation.jpeg"
+                  download="Himalayan_Green_Energy_Expo_Invitation.jpeg"
+                  className="flex-1 py-3 px-4 rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-mono text-xs font-black uppercase tracking-wider inline-flex items-center justify-center gap-2 shadow-lg transition-all active:scale-98"
+                >
+                  <FileDown className="w-4 h-4" />
+                  <span>Download Card</span>
+                </a>
 
-            {/* Action Buttons with rounded-full matching Navbar CTA */}
-            <div className="pt-2 flex flex-col sm:flex-row gap-3">
-              <Link
-                href="/register"
-                onClick={handleClose}
-                className="flex-1 flex items-center justify-center py-3 px-6 rounded-full bg-white hover:bg-emerald-50 text-black font-extrabold text-xs tracking-wider uppercase text-center transition-all shadow-lg hover:scale-[1.02] active:scale-[0.98]"
-              >
-                <span className="text-black">Register as Visitor</span>
-              </Link>
+                <Link
+                  href="/register"
+                  onClick={handleClose}
+                  className="flex-1 py-3 px-4 rounded-full bg-[#10B981] hover:bg-[#059669] text-slate-950 font-mono text-xs font-black uppercase tracking-wider inline-flex items-center justify-center gap-2 shadow-lg transition-all active:scale-98"
+                >
+                  <span>Register Now</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
 
-              <Link
-                href="/book-stall"
-                onClick={handleClose}
-                className="flex-1 py-3 px-6 rounded-full bg-[#10B981] hover:bg-[#059669] text-slate-950 font-bold text-xs tracking-wider uppercase text-center transition-all shadow-lg border border-white/20 hover:scale-102 active:scale-98"
-              >
-                Register as Exhibitor
-              </Link>
-            </div>
+                <button
+                  onClick={handleClose}
+                  className="sm:w-auto py-3 px-4 rounded-full bg-white/10 hover:bg-white/20 text-white font-mono text-xs font-semibold tracking-wider transition-all border border-white/15 cursor-pointer"
+                >
+                  Enter Site
+                </button>
+              </div>
             </div>
           </motion.div>
         </div>
@@ -147,3 +170,4 @@ export default function WelcomeExpoModal() {
     </AnimatePresence>
   );
 }
+

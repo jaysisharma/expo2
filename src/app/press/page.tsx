@@ -135,23 +135,31 @@ export default function PressPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <a
+                    href="/images/invitation.jpeg"
+                    download="Himalayan_Green_Energy_Expo_Invitation.jpeg"
+                    className="px-3.5 py-2 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-mono text-xs font-bold tracking-wider inline-flex items-center gap-1.5 transition-all shadow-md active:scale-95"
+                  >
+                    <FileDown className="w-3.5 h-3.5" />
+                    <span>Invitation Card</span>
+                  </a>
                   <a
                     href="/images/press_meet.jpeg"
                     download="Himalayan_Green_Energy_Expo_2027_Press_Meet.jpeg"
-                    className="px-4 py-2 rounded-full bg-white hover:bg-slate-100 text-slate-950 font-mono text-xs font-bold tracking-wider inline-flex items-center gap-1.5 transition-all shadow-md active:scale-95"
+                    className="px-3.5 py-2 rounded-full bg-white hover:bg-slate-100 text-slate-950 font-mono text-xs font-bold tracking-wider inline-flex items-center gap-1.5 transition-all shadow-md active:scale-95"
                   >
                     <FileDown className="w-3.5 h-3.5" />
-                    <span>Download Banner</span>
+                    <span>Press Banner</span>
                   </a>
                   <a
                     href="/files/hydroproposal-13-2-2024.pdf"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-4 py-2 rounded-full bg-[#10B981] hover:bg-[#059669] text-slate-950 font-mono text-xs font-black tracking-wider inline-flex items-center gap-1.5 transition-all shadow-md active:scale-95"
+                    className="px-3.5 py-2 rounded-full bg-[#10B981] hover:bg-[#059669] text-slate-950 font-mono text-xs font-black tracking-wider inline-flex items-center gap-1.5 transition-all shadow-md active:scale-95"
                   >
                     <FileDown className="w-3.5 h-3.5" />
-                    <span>Event Proposal PDF</span>
+                    <span>Proposal PDF</span>
                   </a>
                 </div>
               </div>
