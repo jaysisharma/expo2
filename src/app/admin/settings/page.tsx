@@ -57,7 +57,7 @@ export default function AdminSettingsPage() {
       });
       const json = await res.json();
       if (json.success) {
-        notify("Expo settings and portal parameters saved successfully");
+        notify("Expo settings saved successfully");
       }
     } catch (e) {
       notify("Failed to save settings");
@@ -76,14 +76,14 @@ export default function AdminSettingsPage() {
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `Himalayan_Expo_Full_Backup_${Date.now()}.json`;
+      link.download = `Himalayan_Expo_Backup_${Date.now()}.json`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
-      notify("Complete Expo JSON database backup exported successfully");
+      notify("Data backup downloaded successfully");
     } catch (e) {
-      notify("Failed to export backup");
+      notify("Failed to download backup");
     }
   };
 
@@ -274,7 +274,7 @@ export default function AdminSettingsPage() {
             className="px-6 py-2.5 rounded-xl bg-[#218A59] hover:bg-[#1b734a] text-white font-bold text-xs flex items-center gap-2 shadow-xs transition-all cursor-pointer"
           >
             <Save className={`w-4 h-4 ${isSaving ? "animate-spin" : ""}`} />
-            <span>{isSaving ? "Saving..." : "Save All Configuration"}</span>
+            <span>{isSaving ? "Saving..." : "Save Settings"}</span>
           </button>
         </div>
       </form>

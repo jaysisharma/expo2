@@ -407,7 +407,7 @@ export default function AdminDashboardPage() {
         </Link>
       </div>
 
-      {/* Secondary Fast Metric Row: Exhibitors, Sessions, Sponsors, IPPAN Leadership */}
+      {/* Secondary Fast Metric Row: Exhibitors, Sessions, Sponsors, IPPAN Team */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <Link
           href="/admin/exhibitors"
@@ -415,7 +415,7 @@ export default function AdminDashboardPage() {
         >
           <div>
             <div className="text-[10px] font-mono uppercase font-bold text-slate-500">
-              Exhibitor OEMs
+              Exhibitors
             </div>
             <div className="text-lg font-display font-black text-slate-900">
               {exhibitorsData.length}
@@ -430,7 +430,7 @@ export default function AdminDashboardPage() {
         >
           <div>
             <div className="text-[10px] font-mono uppercase font-bold text-slate-500">
-              Conference Agenda
+              Conference Schedule
             </div>
             <div className="text-lg font-display font-black text-slate-900">
               {conferenceSessionsData.length} Sessions
@@ -445,7 +445,7 @@ export default function AdminDashboardPage() {
         >
           <div>
             <div className="text-[10px] font-mono uppercase font-bold text-slate-500">
-              Sponsor Patrons
+              Sponsors
             </div>
             <div className="text-lg font-display font-black text-slate-900">
               {sponsorsData.reduce((acc, cat) => acc + (cat.sponsors?.length || 0), 0)} Partners
@@ -460,7 +460,7 @@ export default function AdminDashboardPage() {
         >
           <div>
             <div className="text-[10px] font-mono uppercase font-bold text-slate-500">
-              IPPAN Leadership
+              IPPAN Team
             </div>
             <div className="text-lg font-display font-black text-slate-900">
               {speakersData.length} Members
@@ -476,7 +476,7 @@ export default function AdminDashboardPage() {
           <div className="flex items-center gap-2">
             <Store className="w-4 h-4 text-[#218A59]" />
             <div className="font-display font-bold text-xs sm:text-sm text-slate-900 tracking-wider uppercase">
-              Exhibition Hall Floor Status & Zone Utilization
+              Hall Space & Stall Status
             </div>
           </div>
           <div className="flex items-center gap-3 text-xs font-mono font-bold">
@@ -491,7 +491,7 @@ export default function AdminDashboardPage() {
               href="/admin/floor-plan"
               className="text-[#234679] hover:underline flex items-center gap-1 uppercase"
             >
-              <span>Floor Studio</span>
+              <span>Floor Plan</span>
               <ExternalLink className="w-3 h-3" />
             </Link>
           </div>
@@ -758,7 +758,7 @@ export default function AdminDashboardPage() {
         <div className="pt-3 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 font-mono border-t border-slate-100 gap-2 font-medium">
           <div className="flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-[#218A59]" />
-            <span>Sync: {lastRefreshed.toLocaleTimeString()}</span>
+            <span>Updated: {lastRefreshed.toLocaleTimeString()}</span>
           </div>
 
           <div className="flex items-center gap-5 font-bold uppercase">
@@ -772,7 +772,7 @@ export default function AdminDashboardPage() {
               href="/admin/inquiries"
               className="text-[#234679] hover:text-[#162E52] transition-colors"
             >
-              CRM INQUIRIES →
+              ALL INQUIRIES →
             </Link>
           </div>
         </div>

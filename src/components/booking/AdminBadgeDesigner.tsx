@@ -550,9 +550,9 @@ export default function AdminBadgeDesigner({ onClose, onSaved }: AdminBadgeDesig
         <div>
           <div className="flex items-center gap-2">
             <span className="px-2.5 py-0.5 rounded-full bg-blue-50 text-[#234679] border border-blue-200 text-[10px] font-mono font-bold tracking-wider uppercase">
-              Admin Studio
+              Badge Designer
             </span>
-            <h3 className="font-bold text-lg text-slate-900 font-display">ID Card Drag & Drop Layout Studio</h3>
+            <h3 className="font-bold text-lg text-slate-900 font-display">Badge Layout Designer</h3>
           </div>
           <p className="text-xs text-slate-500 mt-1">
             Drag any item on the badge, or use <strong className="text-[#218A59]">Arrow Keys (↑ ↓ ← →)</strong> for exact 1px precision movement.

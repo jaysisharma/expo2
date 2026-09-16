@@ -173,7 +173,7 @@ export default function AdminStallsPage() {
             className="px-4 py-2 rounded-xl bg-[#218A59] hover:bg-[#1b734a] text-white font-semibold text-xs flex items-center gap-1.5 shadow-xs transition-colors"
           >
             <Compass className="w-3.5 h-3.5" />
-            <span>Floor Plan Studio</span>
+            <span>Floor Plan Map</span>
           </Link>
         </div>
       </div>
