@@ -498,18 +498,20 @@ export default function IDCardBadgePreview({
         <button
           onClick={handleDownloadBadgeImage}
           disabled={isDownloading}
-          className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-md flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
+          style={{ color: "#ffffff" }}
+          className="px-5 py-3 rounded-xl bg-[#218A59] hover:bg-[#1b734a] text-white !text-white text-xs font-bold shadow-md flex items-center gap-2 transition-all hover:scale-105 active:scale-95 cursor-pointer disabled:opacity-50"
         >
-          <Download className="w-4 h-4" />
-          <span>{isDownloading ? "Generating Pass..." : "Download Pass (PNG Image)"}</span>
+          <Download className="w-4 h-4 text-white shrink-0" />
+          <span className="text-white !text-white font-bold">{isDownloading ? "Generating Pass..." : "Download Pass (PNG Image)"}</span>
         </button>
 
         <button
           onClick={handlePrint}
-          className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold shadow-md flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
+          style={{ color: "#ffffff" }}
+          className="px-5 py-3 rounded-xl bg-[#234679] hover:bg-[#1a3459] text-white !text-white text-xs font-bold shadow-md flex items-center gap-2 transition-all hover:scale-105 active:scale-95 cursor-pointer"
         >
-          <Printer className="w-4 h-4" />
-          <span>Print / Save Pass (PDF)</span>
+          <Printer className="w-4 h-4 text-white shrink-0" />
+          <span className="text-white !text-white font-bold">Print / Save Pass (PDF)</span>
         </button>
       </div>
     </div>
