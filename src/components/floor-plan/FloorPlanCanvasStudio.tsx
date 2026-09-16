@@ -818,11 +818,59 @@ export default function FloorPlanCanvasStudio() {
         setSelectedIds([]);
         setActiveTool("select");
       }
+
+      // 6. ARROW KEYS MOVEMENT (Up, Down, Left, Right in X and Y directions)
+      else if (
+        e.key === "ArrowUp" ||
+        e.key === "ArrowDown" ||
+        e.key === "ArrowLeft" ||
+        e.key === "ArrowRight"
+      ) {
+        if (selectedIds.length > 0) {
+          e.preventDefault();
+          const step = e.shiftKey
+            ? (gridSize * 2 || 20)
+            : e.altKey
+            ? 1
+            : snapToGrid
+            ? gridSize
+            : 5;
+
+          let dx = 0;
+          let dy = 0;
+          if (e.key === "ArrowUp") dy = -step;
+          if (e.key === "ArrowDown") dy = step;
+          if (e.key === "ArrowLeft") dx = -step;
+          if (e.key === "ArrowRight") dx = step;
+
+          const updated = elements.map((el) => {
+            if (selectedIds.includes(el.id)) {
+              if (el.points && el.points.length > 0) {
+                return {
+                  ...el,
+                  points: el.points.map((pt) => ({
+                    x: Math.round(pt.x + dx),
+                    y: Math.round(pt.y + dy),
+                  })),
+                };
+              }
+              return {
+                ...el,
+                x: Math.round(el.x + dx),
+                y: Math.round(el.y + dy),
+              };
+            }
+            return el;
+          });
+
+          recordHistory(updated);
+        }
+      }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedIds, elements, historyIdx, history]);
+  }, [selectedIds, elements, historyIdx, history, snapToGrid, gridSize]);
 
   // Clear Canvas
   const clearCanvas = () => {
