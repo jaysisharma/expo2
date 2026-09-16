@@ -212,10 +212,10 @@ export default function AboutPage() {
             {/* Card 1: 1911 AD */}
             <div className="relative rounded-3xl overflow-hidden min-h-[420px] border border-emerald-500/20 bg-emerald-950/40 p-6 sm:p-7 flex flex-col justify-between group shadow-xl">
               <Image
-                src="/images/gallery/2022/DSC_6373.webp"
-                alt="1911 Pharping Hydropower"
+                src="/images/hydro_1911.jpg"
+                alt="1911 Pharping Hydropower Genesis"
                 fill
-                className="object-cover group-hover:scale-105 transition-transform duration-700 opacity-35"
+                className="object-cover group-hover:scale-105 transition-transform duration-700 opacity-45"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#03160F] via-[#03160F]/70 to-transparent" />
 
