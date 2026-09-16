@@ -13,14 +13,14 @@ export default function AdminFloorPlanPage() {
         <div>
           <div className="flex items-center gap-2">
             <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-[#218A59] border border-emerald-200 font-mono text-[10px] font-bold uppercase">
-              Blueprint Studio
+              Floor Plan
             </span>
             <h1 className="text-xl sm:text-2xl font-display font-bold text-slate-900 tracking-tight">
-              Interactive Floor Plan & Stall Mapper
+              Exhibition Floor Plan & Stall Map
             </h1>
           </div>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Draw, scale, reposition, and calibrate stalls on top of the official Bhrikutimandap complex layout.
+            View and manage stall locations across the exhibition halls.
           </p>
         </div>
 
@@ -31,7 +31,7 @@ export default function AdminFloorPlanPage() {
             className="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 shadow-xs flex items-center gap-1.5 transition-colors"
           >
             <Maximize2 className="w-3.5 h-3.5 text-[#234679]" />
-            <span>Launch Fullscreen Studio</span>
+            <span>Open Fullscreen View</span>
           </Link>
           <Link
             href="/floor-plan"

@@ -27,14 +27,14 @@ export default function AdminBadgeDesignerPage() {
         <div>
           <div className="flex items-center gap-2">
             <span className="px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-800 border border-purple-200 font-mono text-[10px] font-bold uppercase">
-              Badge Studio
+              Badge Designer
             </span>
             <h1 className="text-xl sm:text-2xl font-display font-bold text-slate-900 tracking-tight">
-              ID Card & QR Code Placement Designer
+              Attendee & Exhibitor Badge Designer
             </h1>
           </div>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Drag and customize official delegate, trade visitor, and exhibitor identification card templates with 1px precision nudge.
+            Customize visitor and exhibitor badges and preview QR codes.
           </p>
         </div>
       </div>

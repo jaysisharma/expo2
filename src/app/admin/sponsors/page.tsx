@@ -79,14 +79,14 @@ export default function AdminSponsorsPage() {
         <div>
           <div className="flex items-center gap-2">
             <span className="px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 font-mono text-[10px] font-bold uppercase">
-              Partners & Patrons
+              Partners & Sponsors
             </span>
             <h1 className="text-xl sm:text-2xl font-display font-bold text-slate-900 tracking-tight">
-              Sponsorship & Alliance Manager
+              Sponsors & Partners
             </h1>
           </div>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Organize official sovereign ministries, country partners, endorsing chambers, and sponsors.
+            Manage official sponsors, partners, and supporting organizations.
           </p>
         </div>
 
@@ -104,19 +104,19 @@ export default function AdminSponsorsPage() {
         <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs">
           <span className="text-[11px] text-slate-500 block font-mono font-bold">TOTAL PARTNERS</span>
           <span className="text-2xl font-black text-slate-900">{totalSponsors}</span>
-          <span className="text-[10px] text-slate-400 block mt-0.5">Across all endorsement tiers</span>
+          <span className="text-[10px] text-slate-400 block mt-0.5">Across all tiers</span>
         </div>
         <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200 shadow-xs">
-          <span className="text-[11px] text-amber-800 block font-mono font-bold">TIERS & CATEGORIES</span>
+          <span className="text-[11px] text-amber-800 block font-mono font-bold">CATEGORIES</span>
           <span className="text-2xl font-black text-amber-900">{categories.length}</span>
-          <span className="text-[10px] text-amber-600 block mt-0.5">Government, OEM & Media</span>
+          <span className="text-[10px] text-amber-600 block mt-0.5">Government, Corporate & Media</span>
         </div>
         <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 shadow-xs">
-          <span className="text-[11px] text-emerald-800 block font-mono font-bold">PATRON BODIES</span>
+          <span className="text-[11px] text-emerald-800 block font-mono font-bold">GOVERNMENT BODIES</span>
           <span className="text-2xl font-black text-emerald-900">
             {categories.find((c) => c.tier.includes("Government"))?.sponsors.length || 4}
           </span>
-          <span className="text-[10px] text-emerald-600 block mt-0.5">Ministry, NEA, ERC, HIDCL</span>
+          <span className="text-[10px] text-emerald-600 block mt-0.5">Ministries, NEA, ERC, HIDCL</span>
         </div>
       </div>
 

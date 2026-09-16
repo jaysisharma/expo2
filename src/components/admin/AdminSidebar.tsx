@@ -60,8 +60,8 @@ export default function AdminSidebar({
       group: "Exhibition",
       items: [
         { label: "Stalls & Booths", href: "/admin/stalls", icon: Store },
-        { label: "Floor Plan Studio", href: "/admin/floor-plan", icon: Compass },
-        { label: "ID Badge Designer", href: "/admin/badge-designer", icon: Sliders },
+        { label: "Floor Plan Map", href: "/admin/floor-plan", icon: Compass },
+        { label: "Badge Designer", href: "/admin/badge-designer", icon: Sliders },
       ],
     },
     {
@@ -69,15 +69,15 @@ export default function AdminSidebar({
       items: [
         { label: "Registrations", href: "/admin/registrations", icon: Users },
         { label: "Exhibitors", href: "/admin/exhibitors", icon: Building2 },
-        { label: "IPPAN & Event Solution", href: "/admin/speakers", icon: Users },
-        { label: "Conference Agenda", href: "/admin/conference", icon: CalendarDays },
-        { label: "Sponsors & Patrons", href: "/admin/sponsors", icon: Award },
+        { label: "Committee & Team", href: "/admin/speakers", icon: Users },
+        { label: "Conference Schedule", href: "/admin/conference", icon: CalendarDays },
+        { label: "Sponsors & Partners", href: "/admin/sponsors", icon: Award },
       ],
     },
     {
       group: "Communication",
       items: [
-        { label: "News & Releases", href: "/admin/news", icon: Newspaper },
+        { label: "News & Articles", href: "/admin/news", icon: Newspaper },
         { label: "Inquiries", href: "/admin/inquiries", icon: MessageSquareQuote },
       ],
     },
@@ -240,7 +240,7 @@ export default function AdminSidebar({
                     {user?.name || "Admin"}
                   </span>
                   <span className="text-[10px] font-mono text-slate-500 truncate">
-                    Secretariat Desk
+                    Expo Team
                   </span>
                 </div>
               )}

@@ -90,14 +90,14 @@ export default function AdminConferencePage() {
         <div>
           <div className="flex items-center gap-2">
             <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-[#218A59] border border-emerald-200 font-mono text-[10px] font-bold uppercase">
-              Program Agenda
+              Schedule
             </span>
           </div>
           <h1 className="text-xl sm:text-2xl font-display font-bold text-slate-900 tracking-tight mt-1">
-            3-Day Conference & Plenaries Manager
+            Conference & Session Schedule
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Configure plenary stages, technical masterclasses, fireside chats, and speaker schedules.
+            Manage daily conference sessions, halls, topics, and speaker timings.
           </p>
         </div>
 

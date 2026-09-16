@@ -132,14 +132,14 @@ export default function AdminNewsPage() {
         <div>
           <div className="flex items-center gap-2">
             <span className="px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 font-mono text-[10px] font-bold uppercase">
-              Press & Media
+              News & Media
             </span>
             <h1 className="text-xl sm:text-2xl font-display font-bold text-slate-900 tracking-tight">
-              News & Press Releases CMS
+              News & Announcements
             </h1>
           </div>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Publish event announcements, cross-border energy treaties, and scrape official news.
+            Publish event announcements, updates, and articles.
           </p>
         </div>
 
@@ -150,7 +150,7 @@ export default function AdminNewsPage() {
             className="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
           >
             <RefreshCw className={`w-3.5 h-3.5 text-amber-600 ${isScraping ? "animate-spin" : ""}`} />
-            <span>{isScraping ? "Scraping..." : "Trigger Auto-Scraper"}</span>
+            <span>{isScraping ? "Refreshing..." : "Refresh News"}</span>
           </button>
           <button
             onClick={() => setShowAddModal(true)}

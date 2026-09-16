@@ -98,14 +98,14 @@ export default function AdminInquiriesPage() {
         <div>
           <div className="flex items-center gap-2">
             <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-[#218A59] border border-emerald-200 font-mono text-[10px] font-bold uppercase">
-              Leads & CRM
+              Messages
             </span>
             <h1 className="text-xl sm:text-2xl font-display font-bold text-slate-900 tracking-tight">
-              Inquiries & Contact CRM
+              Inquiries & Contact Messages
             </h1>
           </div>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Track stall booking queries, delegate requests, and sponsorship proposals.
+            Track stall booking questions, delegate requests, and general messages.
           </p>
         </div>
 
@@ -114,31 +114,31 @@ export default function AdminInquiriesPage() {
           className="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 shadow-xs flex items-center gap-1.5 transition-colors self-start sm:self-auto cursor-pointer"
         >
           <RefreshCw className={`w-3.5 h-3.5 text-[#218A59] ${isLoading ? "animate-spin" : ""}`} />
-          <span>Refresh Leads</span>
+          <span>Refresh</span>
         </button>
       </div>
 
       {/* KPI Row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs">
-          <span className="text-[11px] text-slate-500 block font-mono font-bold">TOTAL LEADS</span>
+          <span className="text-[11px] text-slate-500 block font-mono font-bold">TOTAL INQUIRIES</span>
           <span className="text-2xl font-black text-slate-900">{inquiries.length}</span>
           <span className="text-[10px] text-slate-400 block mt-0.5">All received requests</span>
         </div>
         <div className="p-4 rounded-2xl bg-rose-50/70 border border-rose-200 shadow-xs">
-          <span className="text-[11px] text-rose-800 block font-mono font-bold">NEW INQUIRIES</span>
+          <span className="text-[11px] text-rose-800 block font-mono font-bold">NEW MESSAGES</span>
           <span className="text-2xl font-black text-rose-900">{newCount}</span>
-          <span className="text-[10px] text-rose-600 block mt-0.5">Needs action</span>
+          <span className="text-[10px] text-rose-600 block mt-0.5">Needs reply</span>
         </div>
         <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200 shadow-xs">
           <span className="text-[11px] text-amber-800 block font-mono font-bold">IN PROGRESS</span>
           <span className="text-2xl font-black text-amber-900">{inProgressCount}</span>
-          <span className="text-[10px] text-amber-600 block mt-0.5">Secretariat reviewing</span>
+          <span className="text-[10px] text-amber-600 block mt-0.5">Under review</span>
         </div>
         <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 shadow-xs">
           <span className="text-[11px] text-emerald-800 block font-mono font-bold">RESOLVED</span>
           <span className="text-2xl font-black text-emerald-900">{resolvedCount}</span>
-          <span className="text-[10px] text-emerald-600 block mt-0.5">Confirmed & answered</span>
+          <span className="text-[10px] text-emerald-600 block mt-0.5">Answered & closed</span>
         </div>
       </div>
 

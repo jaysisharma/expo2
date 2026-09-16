@@ -256,22 +256,21 @@ export default function AdminDashboardPage() {
         <div className="space-y-1.5">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#218A59]/10 text-[#218A59] border border-[#218A59]/20 font-mono text-[10px] font-bold uppercase tracking-wider">
             <span className="w-1.5 h-1.5 rounded-full bg-[#218A59] animate-pulse" />
-            <span>ORGANIZER COMMAND CENTER · REAL-TIME</span>
+            <span>EXPO ADMIN · LIVE STATUS</span>
           </div>
           <h1 className="font-display font-black text-2xl sm:text-4xl text-slate-900 tracking-tight">
-            EXPO <span className="text-[#234679]">EXECUTIVE</span>{" "}
-            <span className="text-[#218A59]">DASHBOARD</span>
+            EXPO <span className="text-[#218A59]">DASHBOARD</span>
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 font-sans">
             {data?.settings?.eventName || "Himalayan Green Energy Expo Nepal 2027"} · {data?.settings?.venue || "Bhrikutimandap Exhibition Complex, Kathmandu"}
           </p>
         </div>
 
-        {/* Live Controls: Auto-sync toggle & Manual refresh */}
+        {/* Live Controls: Auto-refresh toggle & Manual refresh */}
         <div className="flex items-center gap-2.5">
           <button
             onClick={() => setAutoRefresh(!autoRefresh)}
-            title={autoRefresh ? "Auto-refresh is ON (Every 15s)" : "Auto-refresh is PAUSED"}
+            title={autoRefresh ? "Auto-refresh is ON" : "Auto-refresh is OFF"}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-mono font-bold transition-all cursor-pointer ${
               autoRefresh
                 ? "bg-[#218A59]/10 text-[#218A59] border-[#218A59]/30"
@@ -279,17 +278,17 @@ export default function AdminDashboardPage() {
             }`}
           >
             <span className={`w-2 h-2 rounded-full ${autoRefresh ? "bg-[#218A59] animate-ping" : "bg-slate-400"}`} />
-            <span>{autoRefresh ? "LIVE 15s" : "PAUSED"}</span>
+            <span>{autoRefresh ? "AUTO REFRESH: ON" : "AUTO REFRESH: OFF"}</span>
           </button>
 
           <button
             onClick={() => fetchDashboardData(true)}
-            title="Force sync live metrics"
+            title="Refresh dashboard data"
             disabled={isLoading}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-xs text-slate-800 transition-colors font-mono font-bold cursor-pointer disabled:opacity-50 shadow-xs"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin text-[#218A59]" : ""}`} />
-            <span>SYNC DATA</span>
+            <span>REFRESH</span>
           </button>
         </div>
       </div>
@@ -581,10 +580,10 @@ export default function AdminDashboardPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-slate-100">
           <div className="space-y-0.5">
             <div className="font-display font-bold text-xs sm:text-sm text-slate-900 tracking-wider uppercase">
-              Live Activity Stream & Quick Actions
+              Recent Activity & Updates
             </div>
             <p className="text-[11px] text-slate-500">
-              Interactive check-in and inquiry disposition without leaving the command center
+              View and manage recent attendee registrations and inquiries
             </p>
           </div>
 
@@ -713,7 +712,7 @@ export default function AdminDashboardPage() {
                   </p>
                 </div>
 
-                {/* Inline inquiry disposition buttons */}
+                {/* Inline inquiry status update buttons */}
                 <div className="flex items-center gap-2 shrink-0">
                   <span className="text-[10px] font-mono text-slate-500 font-medium hidden sm:inline">
                     {inq.id}
