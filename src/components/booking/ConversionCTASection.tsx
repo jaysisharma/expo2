@@ -144,10 +144,10 @@ export function ConversionCTASection() {
 
             <Link
               href="/register"
-              className="w-full py-3.5 rounded-full bg-white text-[#040E1B] hover:bg-gray-100 font-mono text-xs font-black text-center flex items-center justify-center gap-2 transition-all duration-300 shadow-lg active:scale-98"
+              className="w-full py-3.5 rounded-full bg-gradient-to-r from-[#234679] via-[#087EA4] to-[#0284C7] hover:brightness-110 !text-white font-mono text-xs font-black text-center flex items-center justify-center gap-2 transition-all duration-300 shadow-lg shadow-cyan-900/40 border border-cyan-400/40 active:scale-98"
             >
-              <span>REGISTER AS VISITOR</span>
-              <ArrowUpRight className="w-4 h-4 text-[#234679]" />
+              <span className="!text-white tracking-wider">REGISTER AS VISITOR</span>
+              <ArrowUpRight className="w-4 h-4 !text-white" />
             </Link>
           </div>
         </div>
