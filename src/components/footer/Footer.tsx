@@ -3,7 +3,7 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Mail, Phone, MapPin, ArrowUpRight } from 'lucide-react';
+import { Mail, Phone, MapPin, FileDown } from 'lucide-react';
 
 export function Footer() {
   return (
@@ -31,13 +31,13 @@ export function Footer() {
               </div>
             </Link>
 
-            <p className="text-xs text-slate-400 font-normal leading-relaxed max-w-sm">
+            <p className="text-xs text-slate-300 font-normal leading-relaxed max-w-sm">
               South Asia&apos;s premier clean energy summit connecting developers, turbine OEMs, and sovereign finance with Nepal&apos;s 30,000 MW roadmap.
             </p>
 
             {/* Compact Organizer Badges */}
             <div className="pt-1 flex items-center gap-4">
-              <span className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-wider">
+              <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider">
                 Organized by:
               </span>
               <div className="flex items-center gap-3">
@@ -65,56 +65,67 @@ export function Footer() {
 
           {/* Quick Navigation (Col 6-7) */}
           <div className="lg:col-span-2 space-y-3.5">
-            <h4 className="text-xs font-mono font-bold text-slate-200 tracking-wider uppercase">
+            <h4 className="text-xs font-mono font-bold text-slate-100 tracking-wider uppercase">
               Exhibition
             </h4>
-            <ul className="space-y-2.5 text-xs text-slate-400 font-medium">
+            <ul className="space-y-2.5 text-xs text-slate-300 font-medium">
               <li>
-                <Link href="/book-stall" className="hover:text-white transition-colors">
+                <Link href="/book-stall" className="hover:text-[#4ADE80] transition-colors">
                   Book a Stall
                 </Link>
               </li>
               <li>
-                <Link href="/floor-plan" className="hover:text-white transition-colors">
+                <Link href="/floor-plan" className="hover:text-[#4ADE80] transition-colors">
                   Interactive Floor Plan
                 </Link>
               </li>
               <li>
-                <Link href="/exhibit" className="hover:text-white transition-colors">
+                <Link href="/exhibit" className="hover:text-[#4ADE80] transition-colors">
                   Exhibitor Packages
                 </Link>
               </li>
               <li>
-                <Link href="/exhibitors" className="hover:text-white transition-colors">
+                <Link href="/exhibitors" className="hover:text-[#4ADE80] transition-colors">
                   Exhibitors Directory
                 </Link>
+              </li>
+              <li>
+                <a
+                  href="/files/hydroproposal-13-2-2024.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-[#38BDF8] hover:text-[#7DD3FC] transition-colors font-semibold"
+                >
+                  <FileDown className="w-3.5 h-3.5" />
+                  <span>Download Proposal (PDF)</span>
+                </a>
               </li>
             </ul>
           </div>
 
           {/* Events & Visitor (Col 8-9) */}
           <div className="lg:col-span-2 space-y-3.5">
-            <h4 className="text-xs font-mono font-bold text-slate-200 tracking-wider uppercase">
+            <h4 className="text-xs font-mono font-bold text-slate-100 tracking-wider uppercase">
               Event & Venue
             </h4>
-            <ul className="space-y-2.5 text-xs text-slate-400 font-medium">
+            <ul className="space-y-2.5 text-xs text-slate-300 font-medium">
               <li>
-                <Link href="/register" className="hover:text-white transition-colors">
+                <Link href="/register" className="hover:text-[#4ADE80] transition-colors">
                   Visitor Registration
                 </Link>
               </li>
               <li>
-                <Link href="/conference" className="hover:text-white transition-colors">
+                <Link href="/conference" className="hover:text-[#4ADE80] transition-colors">
                   Conference Plenaries
                 </Link>
               </li>
               <li>
-                <Link href="/venue" className="hover:text-white transition-colors">
+                <Link href="/venue" className="hover:text-[#4ADE80] transition-colors">
                   Bhrikutimandap Venue
                 </Link>
               </li>
               <li>
-                <Link href="/gallery" className="hover:text-white transition-colors">
+                <Link href="/gallery" className="hover:text-[#4ADE80] transition-colors">
                   Past Photo Gallery
                 </Link>
               </li>
@@ -123,10 +134,10 @@ export function Footer() {
 
           {/* Secretarial Contact (Col 10-12) */}
           <div className="lg:col-span-3 space-y-3.5">
-            <h4 className="text-xs font-mono font-bold text-slate-200 tracking-wider uppercase">
+            <h4 className="text-xs font-mono font-bold text-slate-100 tracking-wider uppercase">
               Secretariat Desk
             </h4>
-            <div className="space-y-2.5 text-xs text-slate-400">
+            <div className="space-y-2.5 text-xs text-slate-300">
               <div className="flex items-center gap-2.5">
                 <MapPin className="w-4 h-4 text-[#25C176] shrink-0" />
                 <span>Bhrikutimandap, Kathmandu, Nepal</span>
@@ -144,7 +155,7 @@ export function Footer() {
         </div>
 
         {/* Clean Bottom Bar */}
-        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 font-normal">
+        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400 font-normal">
           <p>© 2027 Himalayan Green Energy Expo. All rights reserved.</p>
         </div>
       </div>
