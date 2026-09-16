@@ -118,6 +118,24 @@ export default function AdminStallsPage() {
     }
   };
 
+  const handleResetAllBooths = async () => {
+    if (!confirm("Are you sure you want to reset all stalls to Available?")) return;
+    try {
+      const res = await fetch("/api/admin/data", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "reset_all_booths" }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        notify("All stalls have been reset to Available");
+        fetchBoothsData();
+      }
+    } catch (e) {
+      notify("Failed to reset stalls");
+    }
+  };
+
   const exportCSV = () => {
     const headers = ["Booth Number", "Hall", "Size (m²)", "Type", "Status", "Exhibitor Name", "Price (USD)"];
     const rows = filteredBooths.map((b) => [
@@ -160,7 +178,16 @@ export default function AdminStallsPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {(bookedCount > 0 || reservedCount > 0) && (
+            <button
+              onClick={handleResetAllBooths}
+              className="px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold border border-rose-200 shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <span>Reset All to Available</span>
+            </button>
+          )}
+
           <button
             onClick={exportCSV}
             className="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"

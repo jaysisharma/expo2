@@ -358,6 +358,12 @@ export async function POST(req: Request) {
         return NextResponse.json({ success: true, message: `Booth ${boothNumber} updated`, data: data.boothOverrides[boothNumber] });
       }
 
+      case "reset_all_booths": {
+        data.boothOverrides = {};
+        await saveAdminData(data);
+        return NextResponse.json({ success: true, message: "All stalls reset to Available" });
+      }
+
       case "update_inquiry_status": {
         const { inquiryId, status } = payload;
         const inq = data.inquiries.find((i: any) => i.id === inquiryId);
