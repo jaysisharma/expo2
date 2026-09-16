@@ -147,27 +147,13 @@ export default function AdminHeader({
         </div>
       </div>
 
-      {/* Right Area: Event Dates, Theme Switcher & Actions */}
+      {/* Right Area: Event Dates & Actions */}
       <div className="flex items-center gap-2.5 sm:gap-4">
         {/* Confirmed Date Badge matching Public Pill */}
-        <div className="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#218A59]/10 text-[#218A59] dark:bg-[#25C176]/15 dark:text-[#25C176] border border-[#218A59]/20 font-mono text-[11px] font-bold uppercase tracking-wider">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#218A59] dark:bg-[#25C176] animate-pulse" />
+        <div className="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#218A59]/10 text-[#218A59] border border-[#218A59]/20 font-mono text-[11px] font-bold uppercase tracking-wider">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#218A59] animate-pulse" />
           <span>{liveSettings?.eventDates?.toUpperCase() || "MAGH 2 - 4 · 16–18 JAN 2027"}</span>
         </div>
-
-        {/* Light / Dark Mode Toggle Button matching Public Navbar */}
-        <button
-          onClick={toggleTheme}
-          title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
-          className="p-2 rounded-xl text-slate-500 hover:text-gray-900 dark:hover:text-white hover:bg-black/[0.05] dark:hover:bg-white/[0.08] transition-colors cursor-pointer border border-black/[0.06] dark:border-white/10"
-          aria-label="Toggle Theme"
-        >
-          {theme === "dark" ? (
-            <Sun className="w-4 h-4 text-amber-400" />
-          ) : (
-            <Moon className="w-4 h-4 text-[#234679]" />
-          )}
-        </button>
 
         {/* Notification Bell */}
         <div className="relative">

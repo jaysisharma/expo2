@@ -1,9 +1,8 @@
 "use client";
 
 import React, { createContext, useContext } from "react";
-import { useTheme } from "@/components/ThemeProvider";
 
-type Theme = "dark" | "light";
+type Theme = "light";
 
 interface AdminThemeContextType {
   theme: Theme;
@@ -18,13 +17,11 @@ const AdminThemeContext = createContext<AdminThemeContextType>({
 });
 
 export function AdminThemeProvider({ children }: { children: React.ReactNode }) {
-  const { theme, toggle, setTheme } = useTheme();
-
   return (
-    <AdminThemeContext.Provider value={{ theme, toggleTheme: toggle, setTheme }}>
+    <AdminThemeContext.Provider value={{ theme: "light", toggleTheme: () => {}, setTheme: () => {} }}>
       <div
-        data-theme={theme}
-        className={`${theme === "dark" ? "dark " : ""}admin-portal w-full min-h-screen bg-slate-50 dark:bg-[#070B14] text-slate-900 dark:text-slate-100 transition-colors duration-300`}
+        data-theme="light"
+        className="admin-portal w-full min-h-screen bg-slate-50 text-slate-900 transition-colors duration-200"
       >
         {children}
       </div>
