@@ -182,11 +182,10 @@ export function Navbar() {
               className="inline-flex items-center focus-visible:outline-2 focus-visible:outline-[#218A59] focus-visible:rounded-md transition-opacity hover:opacity-90"
             >
               <Image
-                key={isDark ? 'dark-logo' : 'light-logo'}
-                src={isDark ? '/images/logo-dark.png' : '/images/logo.png'}
-                alt="Himalayan Hydro Expo"
-                width={130}
-                height={42}
+                src="/images/logo.png"
+                alt="Himalayan Green Energy Expo"
+                width={140}
+                height={45}
                 priority
                 className="h-9 sm:h-10 w-auto object-contain"
               />
