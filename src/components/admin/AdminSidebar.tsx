@@ -16,6 +16,7 @@ import {
   Sliders,
   Compass,
   Settings,
+  Image as ImageIcon,
   ExternalLink,
   LogOut,
   ChevronLeft,
@@ -78,6 +79,7 @@ export default function AdminSidebar({
       group: "Communication",
       items: [
         { label: "News & Articles", href: "/admin/news", icon: Newspaper },
+        { label: "Photo Gallery", href: "/admin/gallery", icon: ImageIcon },
         { label: "Inquiries", href: "/admin/inquiries", icon: MessageSquareQuote },
       ],
     },

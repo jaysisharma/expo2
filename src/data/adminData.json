@@ -1,6 +1,25 @@
 {
   "registrations": [
     {
+      "id": "HHE26-626743",
+      "name": "Jaysi Sharma",
+      "email": "a@dfdgf",
+      "phone": "123456543",
+      "organization": "Awaso",
+      "jobTitle": "",
+      "stallNumber": "",
+      "country": "Nepal",
+      "passType": "Trade Visitor (Free)",
+      "interests": [
+        "Hydropower & Turbines",
+        "Cross-Border Energy Trade",
+        "Project Finance & Green Bonds",
+        "SCADA & AI Dispatch"
+      ],
+      "checkedIn": false,
+      "registeredAt": "2026-09-16T18:56:42.092Z"
+    },
+    {
       "id": "HHE26-695065",
       "name": "Jaysi Sharma",
       "email": "a@gmail.com",
