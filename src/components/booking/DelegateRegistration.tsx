@@ -374,14 +374,9 @@ export default function DelegateRegistration() {
               </div>
 
               <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="block text-xs font-semibold text-slate-700">
-                    MOBILE / WHATSAPP NUMBER *
-                  </label>
-                  <span className="text-[10px] text-slate-400 font-mono">
-                    {formData.phone.replace(/[^0-9]/g, "").length}/15 digits
-                  </span>
-                </div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  MOBILE / WHATSAPP NUMBER *
+                </label>
                 <input
                   type="tel"
                   required
@@ -395,9 +390,6 @@ export default function DelegateRegistration() {
                   }}
                   className="w-full p-3 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-hydro-primary shadow-sm font-medium"
                 />
-                <span className="text-[10px] text-slate-500 mt-1 block">
-                  Enter up to 15 digits international or local mobile number.
-                </span>
               </div>
             </div>
 
@@ -516,16 +508,16 @@ export default function DelegateRegistration() {
               <button
                 type="button"
                 onClick={handleNext}
-                className={`px-7 py-3.5 rounded-xl text-xs font-bold tracking-wider shadow-md transition-all flex items-center gap-2 !text-white cursor-pointer ${step === 3
+                className={`px-7 py-3.5 rounded-xl text-xs font-bold tracking-wider shadow-md transition-all flex items-center gap-2 text-white cursor-pointer ${step === 3
                   ? "bg-[#19A974] hover:bg-[#158f62] shadow-emerald-700/20"
                   : "bg-[#218A59] hover:bg-[#186a43] shadow-emerald-900/20"
                   }`}
               >
-                <span className="!text-black opacity-100">
+                <span>
                   {step === 3 ? "COMPLETE & GENERATE ID CARD" : "CONTINUE NEXT"}
                 </span>
 
-                <ArrowRight className="w-4 h-4 !text-black" />
+                <ArrowRight className="w-4 h-4 text-white" />
               </button>
             </div>
           </div>

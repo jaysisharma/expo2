@@ -1,5 +1,26 @@
 {
-  "registrations": [],
+  "registrations": [
+    {
+      "id": "HHE26-695065",
+      "name": "Jaysi Sharma",
+      "email": "a@gmail.com",
+      "phone": "123456543",
+      "organization": "Awaso",
+      "jobTitle": "sdfd",
+      "stallNumber": "",
+      "country": "Nepal",
+      "passType": "Trade Visitor (Free)",
+      "interests": [
+        "Hydropower & Turbines",
+        "Cross-Border Energy Trade",
+        "Transmission & 400kV Substations",
+        "Project Finance & Green Bonds",
+        "SCADA & AI Dispatch"
+      ],
+      "checkedIn": false,
+      "registeredAt": "2026-09-16T18:54:27.802Z"
+    }
+  ],
   "inquiries": [
     {
       "id": "INQ-2026-001",
