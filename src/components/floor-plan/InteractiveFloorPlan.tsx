@@ -152,15 +152,28 @@ const stallHotspots: Record<string, ClickableHotspot> = {
   F2: { id: "F2", left: "42.0%", top: "15.2%", width: "3.0%", height: "4.4%", rotate: "0deg" },
 };
 
+export interface InteractiveFloorPlanProps {
+  compact?: boolean;
+  selectedStalls?: string[];
+  onSelectStall?: (stall: OfficialStall) => void;
+  showCheckoutBar?: boolean;
+  onProceedToBooking?: (selectedStallIds: string[]) => void;
+}
+
 export default function InteractiveFloorPlan({
   compact = false,
-}: {
-  compact?: boolean;
-}) {
-  const [selectedStalls, setSelectedStalls] = useState<string[]>(["C1"]);
+  selectedStalls: controlledSelectedStalls,
+  onSelectStall,
+  showCheckoutBar = true,
+  onProceedToBooking,
+}: InteractiveFloorPlanProps) {
+  const [internalSelectedStalls, setInternalSelectedStalls] = useState<string[]>(["C1"]);
+  const isControlled = controlledSelectedStalls !== undefined;
+  const selectedStalls = isControlled ? controlledSelectedStalls : internalSelectedStalls;
+
   const [hoveredStall, setHoveredStall] = useState<OfficialStall | null>(null);
   const [activeStall, setActiveStall] = useState<OfficialStall>(
-    officialStalls.find((s) => s.id === "C1") || officialStalls[0]
+    officialStalls.find((s) => s.id === (selectedStalls[0] || "C1")) || officialStalls[0]
   );
   const [zoomLevel, setZoomLevel] = useState<number>(1);
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -169,11 +182,16 @@ export default function InteractiveFloorPlan({
     if (stall.status === "Booked" || stall.category === "SEMINAR HALL") return;
 
     setActiveStall(stall);
-    setSelectedStalls((prev) =>
-      prev.includes(stall.id)
-        ? prev.filter((id) => id !== stall.id)
-        : [...prev, stall.id]
-    );
+    if (onSelectStall) {
+      onSelectStall(stall);
+    }
+    if (!isControlled) {
+      setInternalSelectedStalls((prev) =>
+        prev.includes(stall.id)
+          ? prev.filter((id) => id !== stall.id)
+          : [...prev, stall.id]
+      );
+    }
   };
 
   const selectedStallObjects = officialStalls.filter((s) =>
@@ -355,86 +373,111 @@ export default function InteractiveFloorPlan({
       {/* =========================================================================
           03: THEATER CART & BOOKING CHECKOUT BAR (STICKY BOTTOM CLOSER)
          ========================================================================= */}
-      <div className="p-6 rounded-2xl bg-[#061A2A] text-white border border-white/10 shadow-2xl font-mono flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-6">
-        {/* Left: Selected Stalls List */}
-        <div className="space-y-2 flex-1">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-[#19BFE8]" />
-            <span className="text-xs font-bold text-white uppercase tracking-wider">
-              YOUR SELECTED STALLS ({selectedStalls.length}):
-            </span>
-          </div>
-
-          {selectedStalls.length === 0 ? (
-            <div className="text-xs text-slate-400 italic">
-              Click any colored stall directly on the official blueprint image above to select and reserve it (theater-style seat selection).
+      {showCheckoutBar && (
+        <div className="p-6 rounded-2xl bg-[#061A2A] text-white border border-white/10 shadow-2xl font-mono flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-6">
+          {/* Left: Selected Stalls List */}
+          <div className="space-y-2 flex-1">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-[#19BFE8]" />
+              <span className="text-xs font-bold text-white uppercase tracking-wider">
+                YOUR SELECTED STALLS ({selectedStalls.length}):
+              </span>
             </div>
-          ) : (
-            <div className="flex flex-wrap items-center gap-2">
-              {selectedStallObjects.map((s) => (
-                <div
-                  key={s.id}
-                  className="flex items-center gap-2 px-3 py-1 rounded-lg bg-white/10 border border-[#19BFE8]/40 text-xs font-bold text-white shadow-sm"
-                >
-                  <span className="text-[#19BFE8]">{s.number}</span>
-                  <span className="text-slate-300 text-[10px]">
-                    ({s.category} · {s.sizeSqM}m²)
-                  </span>
-                  <button
-                    onClick={() => toggleStall(s)}
-                    className="hover:text-red-400 ml-1"
+
+            {selectedStalls.length === 0 ? (
+              <div className="text-xs text-slate-400 italic">
+                Click any colored stall directly on the official blueprint image above to select and reserve it (theater-style seat selection).
+              </div>
+            ) : (
+              <div className="flex flex-wrap items-center gap-2">
+                {selectedStallObjects.map((s) => (
+                  <div
+                    key={s.id}
+                    className="flex items-center gap-2 px-3 py-1 rounded-lg bg-white/10 border border-[#19BFE8]/40 text-xs font-bold text-white shadow-sm"
                   >
-                    <X className="w-3.5 h-3.5" />
+                    <span className="text-[#19BFE8]">{s.number}</span>
+                    <span className="text-slate-300 text-[10px]">
+                      ({s.category} · {s.sizeSqM}m²)
+                    </span>
+                    <button
+                      onClick={() => toggleStall(s)}
+                      className="hover:text-red-400 ml-1 cursor-pointer"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+                {!isControlled && (
+                  <button
+                    onClick={() => setInternalSelectedStalls([])}
+                    className="text-[11px] text-slate-400 hover:text-red-400 underline ml-2 cursor-pointer"
+                  >
+                    Clear All
                   </button>
-                </div>
-              ))}
-              <button
-                onClick={() => setSelectedStalls([])}
-                className="text-[11px] text-slate-400 hover:text-red-400 underline ml-2"
-              >
-                Clear All
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Right: Price Aggregates & Instant Checkout CTA */}
-        <div className="flex flex-wrap items-center gap-6 border-t lg:border-t-0 lg:border-l border-white/10 pt-4 lg:pt-0 lg:pl-6">
-          <div className="space-y-0.5 text-right">
-            <div className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">
-              TOTAL ESTIMATED INVESTMENT
-            </div>
-            <div className="font-sans font-black text-2xl text-white">
-              NPR {totalPriceNPR.toLocaleString()}
-            </div>
-            <div className="text-[11px] font-bold text-[#43D69A]">
-              USD ${totalPriceUSD.toLocaleString()} · {totalAreaSqM} m² ({totalAreaSqFt} sq.ft)
-            </div>
+                )}
+              </div>
+            )}
           </div>
 
-          <Link
-            href={`/book-stall${
-              selectedStalls.length > 0
-                ? `?stalls=${selectedStalls.join(",")}`
-                : ""
-            }`}
-            className={`px-6 py-3.5 rounded-full font-mono text-xs font-bold flex items-center gap-2 transition-all shadow-lg ${
-              selectedStalls.length > 0
-                ? "bg-[#19A974] hover:bg-[#158f62] text-white hover:scale-105"
-                : "bg-[#087EA4] hover:bg-[#066584] text-white"
-            }`}
-          >
-            <span>
-              {selectedStalls.length > 0
-                ? `PROCEED TO BOOK (${selectedStalls.length} STALL${
-                    selectedStalls.length > 1 ? "S" : ""
-                  })`
-                : "OPEN STALL BOOKING WIZARD"}
-            </span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
+          {/* Right: Price Aggregates & Instant Checkout CTA */}
+          <div className="flex flex-wrap items-center gap-6 border-t lg:border-t-0 lg:border-l border-white/10 pt-4 lg:pt-0 lg:pl-6">
+            <div className="space-y-0.5 text-right">
+              <div className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">
+                TOTAL ESTIMATED INVESTMENT
+              </div>
+              <div className="font-sans font-black text-2xl text-white">
+                NPR {totalPriceNPR.toLocaleString()}
+              </div>
+              <div className="text-[11px] font-bold text-[#43D69A]">
+                USD ${totalPriceUSD.toLocaleString()} · {totalAreaSqM} m² ({totalAreaSqFt} sq.ft)
+              </div>
+            </div>
+
+            {onProceedToBooking ? (
+              <button
+                type="button"
+                onClick={() => onProceedToBooking(selectedStalls)}
+                className={`px-6 py-3.5 rounded-full font-mono text-xs font-bold flex items-center gap-2 transition-all shadow-lg cursor-pointer ${
+                  selectedStalls.length > 0
+                    ? "bg-[#19A974] hover:bg-[#158f62] text-white hover:scale-105"
+                    : "bg-[#087EA4] hover:bg-[#066584] text-white"
+                }`}
+              >
+                <span>
+                  {selectedStalls.length > 0
+                    ? `PROCEED TO BOOK (${selectedStalls.length} STALL${
+                        selectedStalls.length > 1 ? "S" : ""
+                      })`
+                    : "OPEN STALL BOOKING WIZARD"}
+                </span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            ) : (
+              <Link
+                href={`/book-stall${
+                  selectedStalls.length > 0
+                    ? `?stalls=${selectedStalls.join(",")}`
+                    : ""
+                }`}
+                className={`px-6 py-3.5 rounded-full font-mono text-xs font-bold flex items-center gap-2 transition-all shadow-lg ${
+                  selectedStalls.length > 0
+                    ? "bg-[#19A974] hover:bg-[#158f62] text-white hover:scale-105"
+                    : "bg-[#087EA4] hover:bg-[#066584] text-white"
+                }`}
+              >
+                <span>
+                  {selectedStalls.length > 0
+                    ? `PROCEED TO BOOK (${selectedStalls.length} STALL${
+                        selectedStalls.length > 1 ? "S" : ""
+                      })`
+                    : "OPEN STALL BOOKING WIZARD"}
+                </span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

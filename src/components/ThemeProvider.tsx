@@ -32,19 +32,17 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     } catch (e) {}
   };
 
-  // On mount: read from localStorage or OS preference safely
+  // On mount: read from localStorage, default to 'light'
   useEffect(() => {
     let initial: Theme = 'light';
     try {
       const stored = localStorage.getItem('theme') as Theme | null;
-      if (stored === 'light' || stored === 'dark') {
-        initial = stored;
-      } else if (typeof window !== 'undefined' && window.matchMedia) {
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        initial = prefersDark ? 'dark' : 'light';
+      if (stored === 'dark') {
+        initial = 'dark';
+      } else {
+        initial = 'light';
       }
     } catch (e) {
-      // Fallback for sandboxed iframes or private browsing
       initial = 'light';
     }
     applyTheme(initial);

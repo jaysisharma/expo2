@@ -135,11 +135,39 @@ export async function GET(req: Request) {
       const bookedCount = mergedBooths.filter((b) => b.status === "Booked").length;
       const reservedCount = mergedBooths.filter((b) => b.status === "Reserved").length;
       const availableCount = mergedBooths.filter((b) => b.status === "Available").length;
-      const totalStalls = mergedBooths.length;
+      const totalStalls = mergedBooths.length || 1;
 
-      const totalRevenue = mergedBooths
+      // Hall breakdowns
+      const hallABooths = mergedBooths.filter((b) => b.hall?.includes("Hall A") || b.number.startsWith("A"));
+      const hallBBooths = mergedBooths.filter((b) => b.hall?.includes("Hall B") || b.number.startsWith("B"));
+      const outdoorBooths = mergedBooths.filter((b) => b.hall?.includes("Outdoor") || b.number.startsWith("OUT"));
+
+      const bookedRevenueUSD = mergedBooths
         .filter((b) => b.status === "Booked")
         .reduce((sum, b) => sum + (b.priceUSD || 2500), 0);
+
+      const reservedRevenueUSD = mergedBooths
+        .filter((b) => b.status === "Reserved")
+        .reduce((sum, b) => sum + (b.priceUSD || 2500), 0);
+
+      const totalPossibleRevenueUSD = mergedBooths
+        .reduce((sum, b) => sum + (b.priceUSD || 2500), 0);
+
+      const exchangeRate = data.settings?.currencyRateUSD_NPR || 134.5;
+      const bookedRevenueNPR = bookedRevenueUSD * exchangeRate;
+
+      const totalAllocatedSqM = mergedBooths
+        .filter((b) => b.status === "Booked" || b.status === "Reserved")
+        .reduce((sum, b) => sum + (b.sizeSqM || 9), 0);
+
+      const totalFloorSqM = mergedBooths.reduce((sum, b) => sum + (b.sizeSqM || 9), 0);
+
+      // Pass type breakdown
+      const passTypeCounts: Record<string, number> = {};
+      (data.registrations || []).forEach((r: any) => {
+        const type = r.passType || "Trade Visitor (Free)";
+        passTypeCounts[type] = (passTypeCounts[type] || 0) + 1;
+      });
 
       const stats = {
         totalStalls,
@@ -147,14 +175,45 @@ export async function GET(req: Request) {
         reservedStalls: reservedCount,
         availableStalls: availableCount,
         occupancyRate: Math.round(((bookedCount + reservedCount) / totalStalls) * 100),
+        bookedPct: Math.round((bookedCount / totalStalls) * 100),
+        reservedPct: Math.round((reservedCount / totalStalls) * 100),
+        totalAllocatedSqM,
+        totalFloorSqM,
+        halls: {
+          hallA: {
+            total: hallABooths.length,
+            booked: hallABooths.filter((b) => b.status === "Booked").length,
+            reserved: hallABooths.filter((b) => b.status === "Reserved").length,
+            available: hallABooths.filter((b) => b.status === "Available").length,
+          },
+          hallB: {
+            total: hallBBooths.length,
+            booked: hallBBooths.filter((b) => b.status === "Booked").length,
+            reserved: hallBBooths.filter((b) => b.status === "Reserved").length,
+            available: hallBBooths.filter((b) => b.status === "Available").length,
+          },
+          outdoor: {
+            total: outdoorBooths.length,
+            booked: outdoorBooths.filter((b) => b.status === "Booked").length,
+            reserved: outdoorBooths.filter((b) => b.status === "Reserved").length,
+            available: outdoorBooths.filter((b) => b.status === "Available").length,
+          },
+        },
         totalRegistrations: data.registrations?.length || 0,
         checkedInAttendees: data.registrations?.filter((r: any) => r.checkedIn).length || 0,
+        passTypeCounts,
         totalExhibitors: exhibitorsData.length,
         totalSpeakers: speakersData.length,
         totalNews: newsArticles.length,
         totalInquiries: data.inquiries?.length || 0,
         newInquiriesCount: data.inquiries?.filter((i: any) => i.status === "New").length || 0,
-        estimatedRevenueUSD: totalRevenue,
+        inProgressInquiriesCount: data.inquiries?.filter((i: any) => i.status === "In Progress").length || 0,
+        resolvedInquiriesCount: data.inquiries?.filter((i: any) => i.status === "Resolved").length || 0,
+        estimatedRevenueUSD: bookedRevenueUSD,
+        reservedRevenueUSD,
+        totalPossibleRevenueUSD,
+        estimatedRevenueNPR: bookedRevenueNPR,
+        currencyRateUSD_NPR: exchangeRate,
       };
 
       return NextResponse.json(
@@ -163,14 +222,65 @@ export async function GET(req: Request) {
       );
     }
 
+    // Default: return full data with enriched metrics
+    const mergedBooths = boothsData.map((b) => {
+      const override = data.boothOverrides?.[b.number];
+      return override ? { ...b, ...override } : b;
+    });
+
+    const bookedCount = mergedBooths.filter((b) => b.status === "Booked").length;
+    const reservedCount = mergedBooths.filter((b) => b.status === "Reserved").length;
+    const availableCount = mergedBooths.filter((b) => b.status === "Available").length;
+    const totalStalls = mergedBooths.length || 1;
+    const exchangeRate = data.settings?.currencyRateUSD_NPR || 134.5;
+    const bookedRevenueUSD = mergedBooths
+      .filter((b) => b.status === "Booked")
+      .reduce((sum, b) => sum + (b.priceUSD || 2500), 0);
+
+    const hallABooths = mergedBooths.filter((b) => b.hall?.includes("Hall A") || b.number.startsWith("A"));
+    const hallBBooths = mergedBooths.filter((b) => b.hall?.includes("Hall B") || b.number.startsWith("B"));
+    const outdoorBooths = mergedBooths.filter((b) => b.hall?.includes("Outdoor") || b.number.startsWith("OUT"));
+
     return NextResponse.json(
       {
         success: true,
         data,
-        exhibitorsCount: exhibitorsData.length,
-        speakersCount: speakersData.length,
-        newsCount: newsArticles.length,
-        boothsCount: boothsData.length,
+        metrics: {
+          totalStalls,
+          bookedCount,
+          reservedCount,
+          availableCount,
+          bookedPct: Math.round((bookedCount / totalStalls) * 100),
+          reservedPct: Math.round((reservedCount / totalStalls) * 100),
+          occupancyRate: Math.round(((bookedCount + reservedCount) / totalStalls) * 100),
+          bookedRevenueUSD,
+          bookedRevenueNPR: bookedRevenueUSD * exchangeRate,
+          exchangeRate,
+          halls: {
+            hallA: {
+              total: hallABooths.length,
+              booked: hallABooths.filter((b) => b.status === "Booked").length,
+              reserved: hallABooths.filter((b) => b.status === "Reserved").length,
+              available: hallABooths.filter((b) => b.status === "Available").length,
+            },
+            hallB: {
+              total: hallBBooths.length,
+              booked: hallBBooths.filter((b) => b.status === "Booked").length,
+              reserved: hallBBooths.filter((b) => b.status === "Reserved").length,
+              available: hallBBooths.filter((b) => b.status === "Available").length,
+            },
+            outdoor: {
+              total: outdoorBooths.length,
+              booked: outdoorBooths.filter((b) => b.status === "Booked").length,
+              reserved: outdoorBooths.filter((b) => b.status === "Reserved").length,
+              available: outdoorBooths.filter((b) => b.status === "Available").length,
+            },
+          },
+          exhibitorsCount: exhibitorsData.length,
+          speakersCount: speakersData.length,
+          newsCount: newsArticles.length,
+          boothsCount: boothsData.length,
+        },
       },
       { headers: { "Cache-Control": "no-store, no-cache, must-revalidate" } }
     );

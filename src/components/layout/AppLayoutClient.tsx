@@ -8,6 +8,7 @@ import SmoothScrollProvider from "@/components/providers/SmoothScrollProvider";
 
 import WelcomeExpoModal from "@/components/modals/WelcomeExpoModal";
 import PdfDownloadModal from "@/components/modals/PdfDownloadModal";
+import HydroLoadingScreen from "@/components/ui/HydroLoadingScreen";
 
 export default function AppLayoutClient({
   children,
@@ -28,6 +29,7 @@ export default function AppLayoutClient({
 
   return (
     <SmoothScrollProvider>
+      <HydroLoadingScreen />
       <Navbar />
       <div className="flex-grow w-full">{children}</div>
       <Footer />

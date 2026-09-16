@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Sun, Moon, Menu, X, ChevronDown, ArrowRight, Ticket } from 'lucide-react';
+import { Menu, X, ChevronDown, ArrowRight, Ticket } from 'lucide-react';
 import { useTheme } from '../ThemeProvider';
 
 /* ─── Nav Items Configuration ─────────────────────────────────────────────── */
@@ -140,7 +140,7 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 export function Navbar() {
-  const { theme, toggle } = useTheme();
+  const { theme } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -205,20 +205,18 @@ export function Navbar() {
                       }
                       aria-expanded={activeDropdown === item.label}
                       aria-haspopup="menu"
-                      className={`${navLinkClasses} ${
-                        activeDropdown === item.label
-                          ? 'text-[#218A59] dark:text-[#25C176] bg-[#218A59]/10 dark:bg-[#25C176]/10 font-semibold'
-                          : ''
-                      }`}
+                      className={`${navLinkClasses} ${activeDropdown === item.label
+                        ? 'text-[#218A59] dark:text-[#25C176] bg-[#218A59]/10 dark:bg-[#25C176]/10 font-semibold'
+                        : ''
+                        }`}
                     >
                       <span>{item.label}</span>
                       <ChevronDown
                         size={13}
                         strokeWidth={2.2}
                         aria-hidden="true"
-                        className={`transition-transform duration-200 opacity-60 ${
-                          activeDropdown === item.label ? 'rotate-180 opacity-100 text-[#218A59] dark:text-[#25C176]' : ''
-                        }`}
+                        className={`transition-transform duration-200 opacity-60 ${activeDropdown === item.label ? 'rotate-180 opacity-100 text-[#218A59] dark:text-[#25C176]' : ''
+                          }`}
                       />
                     </button>
 
@@ -267,38 +265,21 @@ export function Navbar() {
             ))}
           </div>
 
-          {/* ── Col 3: CTA Buttons + Theme Toggle (Right) ──────────────────── */}
+          {/* ── Col 3: CTA Buttons (Right) ──────────────────── */}
           <div className="flex items-center justify-end gap-2.5 sm:gap-3 shrink-0">
-            {/* Theme Toggle Button */}
-            <button
-              onClick={toggle}
-              aria-label="Toggle light and dark mode"
-              className="group relative flex items-center justify-center w-10 h-10 rounded-full border border-black/10 dark:border-white/15 bg-black/[0.03] dark:bg-white/[0.07] hover:border-[#218A59] dark:hover:border-[#25C176] hover:bg-[#218A59]/10 dark:hover:bg-[#25C176]/10 transition-all duration-200 cursor-pointer active:scale-95"
-            >
-              {isDark ? (
-                <Sun
-                  size={17}
-                  strokeWidth={2}
-                  className="text-amber-400 group-hover:rotate-45 transition-transform duration-300"
-                />
-              ) : (
-                <Moon
-                  size={17}
-                  strokeWidth={2}
-                  className="text-gray-700 group-hover:text-[#218A59] group-hover:-rotate-12 transition-all duration-300"
-                />
-              )}
-            </button>
-
             {/* Secondary CTA: Register Pass */}
             <Link
               href="/register"
-              className="hidden sm:inline-flex items-center gap-1.5 h-10 px-5 rounded-full border-[1.5px] border-[#234679] dark:border-[#4A7EC7] text-[#234679] dark:text-[#6FA0E8] font-body text-xs font-bold uppercase tracking-wider bg-transparent hover:bg-[#234679] dark:hover:bg-[#4A7EC7] hover:text-white dark:hover:text-white transition-all duration-200 active:scale-95 shadow-xs"
+              className="hidden sm:inline-flex items-center gap-1.5 h-10 px-5 rounded-full border-[1.5px] border-[#234679] dark:border-[#4A7EC7] text-[#234679] dark:text-[#6FA0E8] font-body text-xs font-bold uppercase tracking-wider bg-transparent hover:bg-[#234679] dark:hover:bg-[#4A7EC7] hover:!text-white transition-all duration-200 active:scale-95 shadow-xs"
             >
-              <Ticket size={14} strokeWidth={2.2} aria-hidden="true" />
-              <span>Register</span>
+              <Ticket
+                size={14}
+                strokeWidth={2.2}
+                aria-hidden="true"
+                className="!text-inherit !stroke-current"
+              />
+              <span className="!text-inherit">Register</span>
             </Link>
-
             {/* Primary CTA: Book Stall */}
             <Link
               href="/book-stall"
@@ -329,9 +310,8 @@ export function Navbar() {
       {/* ── Mobile Drawer ─────────────────────────────────────────────────── */}
       <div
         aria-hidden={!mobileOpen}
-        className={`lg:hidden fixed top-[72px] left-0 right-0 bottom-0 z-40 bg-white dark:bg-[#0A0F1A] border-t border-black/[0.06] dark:border-white/[0.08] overflow-y-auto transition-transform duration-300 ease-out ${
-          mobileOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
+        className={`lg:hidden fixed top-[72px] left-0 right-0 bottom-0 z-40 bg-white dark:bg-[#0A0F1A] border-t border-black/[0.06] dark:border-white/[0.08] overflow-y-auto transition-transform duration-300 ease-out ${mobileOpen ? 'translate-x-0' : 'translate-x-full'
+          }`}
         style={{ display: mobileOpen ? 'block' : undefined }}
       >
         <div className="px-6 py-6 flex flex-col gap-1 min-h-[calc(100vh-72px)] justify-between">
@@ -350,9 +330,8 @@ export function Navbar() {
                       <span>{item.label}</span>
                       <ChevronDown
                         size={16}
-                        className={`transition-transform duration-200 opacity-60 ${
-                          activeDropdown === item.label ? 'rotate-180 opacity-100 text-[#218A59] dark:text-[#25C176]' : ''
-                        }`}
+                        className={`transition-transform duration-200 opacity-60 ${activeDropdown === item.label ? 'rotate-180 opacity-100 text-[#218A59] dark:text-[#25C176]' : ''
+                          }`}
                       />
                     </button>
                     {activeDropdown === item.label && (

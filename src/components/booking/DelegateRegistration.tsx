@@ -9,15 +9,13 @@ import {
   ArrowLeft,
   Download,
   QrCode,
-  Sliders,
-  Settings,
   User,
   Building,
   Sparkles,
   Eye,
 } from "lucide-react";
 import IDCardBadgePreview from "./IDCardBadgePreview";
-import AdminBadgeDesigner, { BadgeConfig } from "./AdminBadgeDesigner";
+import type { BadgeConfig } from "./AdminBadgeDesigner";
 
 export default function DelegateRegistration() {
   const searchParams = useSearchParams();
@@ -40,12 +38,12 @@ export default function DelegateRegistration() {
       initialRole === "exhibitor"
         ? "Exhibitor Pass (All Access)"
         : initialPass === "gala-dinner"
-        ? "Gala Dinner Delegate"
-        : "Trade Visitor (Free)",
+          ? "Gala Dinner Delegate"
+          : "Trade Visitor (Free)",
     interests: ["Hydropower & Turbines", "Cross-Border Energy Trade"],
   });
   const [delegateId, setDelegateId] = useState<string>("");
-  const [showAdminDesigner, setShowAdminDesigner] = useState<boolean>(false);
+  const [formError, setFormError] = useState<string>("");
   const [badgeTemplates, setBadgeTemplates] = useState<{
     visitor?: BadgeConfig;
     exhibitor?: BadgeConfig;
@@ -62,7 +60,7 @@ export default function DelegateRegistration() {
           setBadgeTemplates(parsed);
         }
       }
-    } catch (e) {}
+    } catch (e) { }
 
     // 2. Fetch latest from API
     async function fetchTemplates() {
@@ -73,7 +71,7 @@ export default function DelegateRegistration() {
           setBadgeTemplates(json.data);
           try {
             localStorage.setItem("hhe_badge_templates", JSON.stringify(json.data));
-          } catch (e) {}
+          } catch (e) { }
         }
       } catch (err) {
         console.warn("Could not fetch custom badge template", err);
@@ -118,6 +116,26 @@ export default function DelegateRegistration() {
   };
 
   const handleNext = async () => {
+    setFormError("");
+
+    if (step === 1) {
+      if (!formData.name.trim() || !formData.organization.trim()) {
+        setFormError("Please enter your Full Name and Organization before proceeding.");
+        return;
+      }
+      if (registrationRole === "exhibitor" && !formData.stallNumber.trim()) {
+        setFormError("Please enter your Stall Number / Booth name.");
+        return;
+      }
+    }
+
+    if (step === 2) {
+      if (!formData.email.trim()) {
+        setFormError("Please enter your email address to receive your confirmation.");
+        return;
+      }
+    }
+
     if (step === 3) {
       const prefix = registrationRole === "visitor" ? "HHE26" : "HHE26-EX";
       const generatedId = `${prefix}-${Math.floor(100000 + Math.random() * 900000)}`;
@@ -157,49 +175,12 @@ export default function DelegateRegistration() {
   };
 
   const handlePrev = () => {
+    setFormError("");
     setStep((prev) => Math.max(prev - 1, 1));
   };
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6">
-      {/* Admin Designer Toggle Banner */}
-      <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-[#0C121C] border border-slate-800 text-xs shadow-md">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold">
-            <Settings className="w-4 h-4" />
-          </div>
-          <div>
-            <span className="font-bold text-white block text-sm">Organizer Badge Template Portal</span>
-            <span className="text-slate-400 text-xs">
-              Upload custom ID card background and adjust QR code & text field placement.
-            </span>
-          </div>
-        </div>
-
-        <button
-          onClick={() => setShowAdminDesigner(!showAdminDesigner)}
-          className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all ${
-            showAdminDesigner
-              ? "bg-slate-700 text-white"
-              : "bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold shadow-md"
-          }`}
-        >
-          <Sliders className="w-3.5 h-3.5" />
-          <span>{showAdminDesigner ? "Close Designer" : "Configure ID Card & QR Placement"}</span>
-        </button>
-      </div>
-
-      {/* Admin Designer Modal / Panel */}
-      {showAdminDesigner && (
-        <AdminBadgeDesigner
-          onClose={() => setShowAdminDesigner(false)}
-          onSaved={(newTemplates) => {
-            setBadgeTemplates(newTemplates);
-            setShowAdminDesigner(false);
-          }}
-        />
-      )}
-
       {/* Main Registration Box */}
       <div className="w-full p-6 sm:p-10 rounded-3xl bg-white border border-slate-200 shadow-xl font-sans">
         {/* Step Indicator & Progress */}
@@ -210,10 +191,10 @@ export default function DelegateRegistration() {
               {step === 1
                 ? "BADGE CATEGORY & DETAILS"
                 : step === 2
-                ? "ORGANIZATION & CONTACT"
-                : step === 3
-                ? "INTERESTS & SECTORS"
-                : "OFFICIAL DIGITAL ID BADGE"}
+                  ? "ORGANIZATION & CONTACT"
+                  : step === 3
+                    ? "INTERESTS & SECTORS"
+                    : "OFFICIAL DIGITAL ID BADGE"}
             </span>
             <span>{Math.round((step / 4) * 100)}% COMPLETED</span>
           </div>
@@ -245,11 +226,10 @@ export default function DelegateRegistration() {
                   setRegistrationRole("visitor");
                   setFormData({ ...formData, passType: "Trade Visitor (Free)" });
                 }}
-                className={`p-4 rounded-2xl border text-left flex items-center justify-between transition-all ${
-                  registrationRole === "visitor"
-                    ? "bg-sky-50/80 border-sky-500 ring-2 ring-sky-500/20"
-                    : "bg-slate-50/60 border-slate-200 hover:border-slate-300"
-                }`}
+                className={`p-4 rounded-2xl border text-left flex items-center justify-between transition-all ${registrationRole === "visitor"
+                  ? "bg-sky-50/80 border-sky-500 ring-2 ring-sky-500/20"
+                  : "bg-slate-50/60 border-slate-200 hover:border-slate-300"
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center font-bold">
@@ -271,11 +251,10 @@ export default function DelegateRegistration() {
                   setRegistrationRole("exhibitor");
                   setFormData({ ...formData, passType: "Exhibitor Pass (All Access)" });
                 }}
-                className={`p-4 rounded-2xl border text-left flex items-center justify-between transition-all ${
-                  registrationRole === "exhibitor"
-                    ? "bg-emerald-50/80 border-emerald-500 ring-2 ring-emerald-500/20"
-                    : "bg-slate-50/60 border-slate-200 hover:border-slate-300"
-                }`}
+                className={`p-4 rounded-2xl border text-left flex items-center justify-between transition-all ${registrationRole === "exhibitor"
+                  ? "bg-emerald-50/80 border-emerald-500 ring-2 ring-emerald-500/20"
+                  : "bg-slate-50/60 border-slate-200 hover:border-slate-300"
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
@@ -464,11 +443,10 @@ export default function DelegateRegistration() {
                     key={interest}
                     type="button"
                     onClick={() => handleInterestToggle(interest)}
-                    className={`p-3.5 rounded-xl text-xs text-left border transition-all flex items-center justify-between ${
-                      selected
-                        ? "bg-sky-50 border-sky-500 text-sky-950 font-bold"
-                        : "bg-white border-slate-200 text-slate-700 hover:border-slate-300 shadow-sm"
-                    }`}
+                    className={`p-3.5 rounded-xl text-xs text-left border transition-all flex items-center justify-between ${selected
+                      ? "bg-sky-50 border-sky-500 text-sky-950 font-bold"
+                      : "bg-white border-slate-200 text-slate-700 hover:border-slate-300 shadow-sm"
+                      }`}
                   >
                     <span>{interest}</span>
                     {selected && <CheckCircle2 className="w-4 h-4 text-sky-600 shrink-0" />}
@@ -514,33 +492,42 @@ export default function DelegateRegistration() {
 
         {/* Navigation Footer */}
         {step < 4 && (
-          <div className="mt-8 pt-6 border-t border-slate-200 flex items-center justify-between">
-            {step > 1 ? (
+          <div className="mt-8 pt-6 border-t border-slate-200">
+            {formError && (
+              <div className="mb-4 p-3.5 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs font-semibold flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
+                <span>{formError}</span>
+              </div>
+            )}
+            <div className="flex items-center justify-between">
+              {step > 1 ? (
+                <button
+                  type="button"
+                  onClick={handlePrev}
+                  className="px-5 py-3 rounded-xl bg-white text-slate-700 text-xs font-bold hover:text-slate-900 border border-slate-300 transition-colors flex items-center gap-2 shadow-sm"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  <span>BACK</span>
+                </button>
+              ) : (
+                <div />
+              )}
+
               <button
                 type="button"
-                onClick={handlePrev}
-                className="px-5 py-3 rounded-xl bg-white text-slate-700 text-xs font-bold hover:text-slate-900 border border-slate-300 transition-colors flex items-center gap-2 shadow-sm"
+                onClick={handleNext}
+                className={`px-7 py-3.5 rounded-xl text-xs font-bold tracking-wider shadow-md transition-all flex items-center gap-2 !text-white cursor-pointer ${step === 3
+                  ? "bg-[#19A974] hover:bg-[#158f62] shadow-emerald-700/20"
+                  : "bg-[#218A59] hover:bg-[#186a43] shadow-emerald-900/20"
+                  }`}
               >
-                <ArrowLeft className="w-4 h-4" />
-                <span>BACK</span>
-              </button>
-            ) : (
-              <div />
-            )}
+                <span className="!text-black opacity-100">
+                  {step === 3 ? "COMPLETE & GENERATE ID CARD" : "CONTINUE NEXT"}
+                </span>
 
-            <button
-              type="button"
-              onClick={handleNext}
-              disabled={step === 1 && (!formData.name || !formData.organization)}
-              className={`px-6 py-3.5 rounded-xl text-xs font-bold tracking-wider shadow-sm transition-colors flex items-center gap-2 text-white disabled:opacity-50 ${
-                step === 3
-                  ? "bg-[#19A974] hover:bg-[#158f62]"
-                  : "bg-[#087EA4] hover:bg-[#07698a]"
-              }`}
-            >
-              <span>{step === 3 ? "COMPLETE & GENERATE ID CARD" : "CONTINUE NEXT"}</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
+                <ArrowRight className="w-4 h-4 !text-black" />
+              </button>
+            </div>
           </div>
         )}
       </div>

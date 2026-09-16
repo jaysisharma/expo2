@@ -15,13 +15,13 @@ export default function WelcomeExpoModal() {
       if (!dismissed) {
         const timer = setTimeout(() => {
           setIsOpen(true);
-        }, 500);
+        }, 2400);
         return () => clearTimeout(timer);
       }
     } catch {
       const timer = setTimeout(() => {
         setIsOpen(true);
-      }, 500);
+      }, 2400);
       return () => clearTimeout(timer);
     }
   }, []);

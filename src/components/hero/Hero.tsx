@@ -120,6 +120,27 @@ export function Hero() {
         gsap.set(leftColRef.current, { y: 0 });
       }
 
+      // Initial Entrance Animation when loader finishes
+      const playEntrance = () => {
+        gsap.fromTo(
+          topContentRef.current,
+          { opacity: 0, y: 30 },
+          { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out' }
+        );
+        gsap.fromTo(
+          videoBoxRef.current,
+          { opacity: 0, scale: 0.96, y: 20 },
+          { opacity: 1, scale: 1, y: 0, duration: 1.1, ease: 'power3.out', delay: 0.15 }
+        );
+      };
+
+      window.addEventListener('hydro-loader-complete', playEntrance);
+
+      // Also trigger immediately if loader is not present or already completed in session
+      if (typeof window !== 'undefined' && sessionStorage.getItem('hydro_loader_completed')) {
+        playEntrance();
+      }
+
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: heroTrackRef.current,
@@ -324,10 +345,16 @@ export function Hero() {
 
             <Link
               href="/register"
-              className="inline-flex items-center justify-center gap-2 h-9 sm:h-10 px-5 sm:px-6 rounded-full border-[1.5px] border-[#234679] dark:border-[#4A7EC7] text-[#234679] dark:text-[#6FA0E8] font-body text-xs sm:text-sm font-bold uppercase tracking-wider bg-transparent hover:bg-[#234679] dark:hover:bg-[#4A7EC7] hover:text-white dark:hover:text-white transition-all duration-200 active:scale-95 shadow-xs"
+              className="group inline-flex items-center justify-center gap-2 h-9 sm:h-10 px-5 sm:px-6 rounded-full border-[1.5px] border-[#234679] dark:border-[#4A7EC7] text-[#234679] dark:text-[#6FA0E8] font-body text-xs sm:text-sm font-bold uppercase tracking-wider bg-transparent hover:bg-[#234679] dark:hover:bg-[#4A7EC7] hover:text-white transition-all duration-200 active:scale-95 shadow-xs"
             >
-              <Ticket size={14} strokeWidth={2.2} />
-              <span>Register Free Pass</span>
+              <Ticket
+                size={14}
+                strokeWidth={2.2}
+                className="shrink-0 stroke-[#234679] dark:stroke-[#6FA0E8] group-hover:!stroke-white"
+              />
+              <span className="group-hover:text-white">
+                Register Free Pass
+              </span>
             </Link>
           </div>
         </div>
@@ -438,11 +465,10 @@ export function Hero() {
                   {/* Card Top Row: Floating Badges */}
                   <div className="relative z-10 flex items-center justify-between gap-4">
                     <span
-                      className={`text-xs sm:text-sm font-bold px-3.5 py-1.5 rounded-full border backdrop-blur-md shadow-sm ${
-                        card.accent === 'green'
-                          ? 'bg-[#218A59]/30 text-[#4ADE80] border-[#218A59]/60'
-                          : 'bg-[#234679]/40 text-[#93C5FD] border-[#4A7EC7]/60'
-                      }`}
+                      className={`text-xs sm:text-sm font-bold px-3.5 py-1.5 rounded-full border backdrop-blur-md shadow-sm ${card.accent === 'green'
+                        ? 'bg-[#218A59]/30 text-[#4ADE80] border-[#218A59]/60'
+                        : 'bg-[#234679]/40 text-[#93C5FD] border-[#4A7EC7]/60'
+                        }`}
                     >
                       {card.badge}
                     </span>
@@ -456,11 +482,10 @@ export function Hero() {
                   <div className="relative z-10 my-auto py-2">
                     <div className="flex items-baseline gap-2.5 mb-2">
                       <span
-                        className={`text-5xl sm:text-6xl font-black font-display tracking-tight leading-none drop-shadow-md ${
-                          card.accent === 'green'
-                            ? 'text-[#4ADE80]'
-                            : 'text-[#93C5FD]'
-                        }`}
+                        className={`text-5xl sm:text-6xl font-black font-display tracking-tight leading-none drop-shadow-md ${card.accent === 'green'
+                          ? 'text-[#4ADE80]'
+                          : 'text-[#93C5FD]'
+                          }`}
                       >
                         {card.capacity}
                       </span>
@@ -484,9 +509,8 @@ export function Hero() {
                       {card.metricLabel}
                     </span>
                     <span
-                      className={`font-mono text-xs font-bold ${
-                        card.accent === 'green' ? 'text-[#4ADE80]' : 'text-[#93C5FD]'
-                      }`}
+                      className={`font-mono text-xs font-bold ${card.accent === 'green' ? 'text-[#4ADE80]' : 'text-[#93C5FD]'
+                        }`}
                     >
                       {card.capacity} {card.capacityUnit}
                     </span>

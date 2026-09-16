@@ -68,16 +68,16 @@ export default function BookStallPage() {
       </div>
 
       {/* =========================================================================
-          02: MAIN CONTENT (WIZARD + SIDEBAR CARDS)
+          02: MAIN CONTENT (INTERACTIVE FLOOR PLAN WIZARD + INCLUSIONS)
          ========================================================================= */}
       <div className="py-10 sm:py-14 px-4 sm:px-6 lg:px-8 flex-grow">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* LEFT: Stall Booking Wizard Form (8 Cols) */}
-          <div className="lg:col-span-8">
+        <div className="max-w-7xl mx-auto space-y-10">
+          {/* Stall Booking Wizard with Interactive Floor Plan embedded */}
+          <div>
             <Suspense
               fallback={
                 <div className="p-12 rounded-3xl bg-white border border-slate-200 text-center font-mono text-xs text-slate-500 shadow-sm">
-                  LOADING EXHIBITOR STALL DESK...
+                  LOADING EXHIBITOR STALL DESK & FLOOR PLAN...
                 </div>
               }
             >
@@ -85,36 +85,12 @@ export default function BookStallPage() {
             </Suspense>
           </div>
 
-          {/* RIGHT: Informational Sidebar & Inclusions (4 Cols) */}
-          <div className="lg:col-span-4 space-y-6">
-            {/* Card 1: Interactive Floor Plan Preview CTA */}
-            <div className="p-6 rounded-3xl bg-gradient-to-br from-[#061A2A] to-[#040E18] text-white border border-slate-700 shadow-md flex flex-col justify-between space-y-4">
-              <div className="space-y-2">
-                <div className="inline-flex items-center gap-1.5 text-[10px] font-mono font-bold text-[#38BDF8] bg-[#087EA4]/20 border border-[#38BDF8]/30 px-2.5 py-1 rounded-full uppercase">
-                  <Map className="w-3 h-3" />
-                  <span>INTERACTIVE MAP</span>
-                </div>
-                <h3 className="font-sans font-bold text-lg text-white">
-                  Inspect Available Stalls Live
-                </h3>
-                <p className="text-xs text-slate-300 leading-relaxed font-normal">
-                  View the real-time architectural floor plan of Bhrikutimandap halls, corner prime locations, and reserved pavilions.
-                </p>
-              </div>
-
-              <Link
-                href="/floor-plan"
-                className="w-full py-3 rounded-full bg-[#10B981] hover:bg-[#059669] text-slate-950 font-mono text-xs font-bold text-center flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
-              >
-                <span>OPEN 2D FLOOR MAP</span>
-                <span>→</span>
-              </Link>
-            </div>
-
-            {/* Card 2: Stall Types & Standard Inclusions */}
-            <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-5">
-              <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
-                <div className="p-2 rounded-xl bg-emerald-50 text-[#059669]">
+          {/* Informational Cards & Secretariat Inclusions Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Card 1: Stall Packages & Official Standards */}
+            <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-4">
+              <div className="flex items-center gap-2.5 pb-3 border-b border-slate-100">
+                <div className="p-2 rounded-xl bg-emerald-50 text-[#218A59]">
                   <Layers className="w-5 h-5" />
                 </div>
                 <div>
@@ -125,78 +101,66 @@ export default function BookStallPage() {
                 </div>
               </div>
 
-              {/* Shell Scheme Specs */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs font-mono font-bold text-slate-900">
-                  <span className="text-[#087EA4]">● Shell Scheme (Built)</span>
-                  <span className="text-slate-500">Standard 9m²–36m²</span>
+                  <span className="text-[#218A59]">● Shell Scheme (Built)</span>
+                  <span className="text-slate-500">9m²–36m²</span>
                 </div>
-                <ul className="text-xs text-slate-600 space-y-1.5 pl-2 font-normal">
+                <ul className="text-xs text-slate-600 space-y-1.5 pl-1 font-normal">
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-[#10B981] shrink-0" />
-                    <span>Octanorm pre-fabricated partition walls</span>
+                    <span>Octanorm partition walls & carpet</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-[#10B981] shrink-0" />
-                    <span>Company fascia board with vinyl lettering</span>
+                    <span>Fascia board name & spotlights</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-[#10B981] shrink-0" />
-                    <span>Carpet flooring, 1 table, 2 chairs & trash bin</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#10B981] shrink-0" />
-                    <span>Spotlights & 15A single-phase power plug</span>
+                    <span>1 Table, 2 Chairs & 15A Power</span>
                   </li>
                 </ul>
               </div>
-
-              {/* Bare Space Specs */}
-              <div className="space-y-2 pt-3 border-t border-slate-100">
-                <div className="flex items-center justify-between text-xs font-mono font-bold text-slate-900">
-                  <span className="text-[#059669]">● Bare Space (Raw)</span>
-                  <span className="text-slate-500">Min 36m² +</span>
-                </div>
-                <p className="text-xs text-slate-600 leading-relaxed font-normal pl-2">
-                  Ideal for custom-built structural pavilions, double-decker lounges, and heavy physical turbine model demonstrations.
-                </p>
-              </div>
             </div>
 
-            {/* Card 3: Download Official Prospectus */}
-            <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm flex items-center justify-between gap-4">
-              <div className="space-y-1">
-                <div className="font-sans font-bold text-sm text-slate-900">
-                  Official Expo Proposal
+            {/* Card 2: Download Official Prospectus */}
+            <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between space-y-4">
+              <div className="space-y-2">
+                <div className="inline-flex items-center gap-1.5 text-[10px] font-mono font-bold text-[#218A59] bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full uppercase">
+                  <FileText className="w-3 h-3" />
+                  <span>OFFICIAL PROPOSAL</span>
                 </div>
-                <div className="text-xs text-slate-500">
-                  Detailed brochure, tariff, and floor plan PDF
-                </div>
+                <h3 className="font-sans font-bold text-base text-slate-900">
+                  Event Tariff & Prospectus PDF
+                </h3>
+                <p className="text-xs text-slate-600 leading-relaxed font-normal">
+                  Download the complete official exhibition prospectus with technical electrical guidelines, stall dimensions, and sponsorship tiers.
+                </p>
               </div>
 
               <a
                 href="/files/hydroproposal-13-2-2024.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-4 py-2.5 rounded-full bg-[#087EA4] hover:bg-[#066584] text-white font-mono text-xs font-bold shrink-0 flex items-center gap-1.5 transition-colors shadow-xs"
+                className="w-full py-3 rounded-full bg-[#218A59] hover:bg-[#186a43] text-white font-mono text-xs font-bold text-center flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
               >
                 <FileText className="w-3.5 h-3.5" />
-                <span>PDF</span>
+                <span>DOWNLOAD PROPOSAL PDF</span>
               </a>
             </div>
 
-            {/* Card 4: IPPAN Secretariat Assistance */}
+            {/* Card 3: IPPAN Secretariat Assistance */}
             <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-3">
               <div className="flex items-center gap-2 text-xs font-mono font-bold text-slate-900 uppercase">
                 <ShieldCheck className="w-4 h-4 text-[#10B981]" />
-                <span>IPPAN Secretariat Desk</span>
+                <span>Secretariat Help Desk</span>
               </div>
               <p className="text-xs text-slate-600 font-normal leading-relaxed">
-                For customized large pavilions, sponsorship packages, or international wire payments, contact our desk directly:
+                For custom pavilions, bank wire transfers, or immediate assistance:
               </p>
               <div className="space-y-2 pt-1 text-xs font-mono text-slate-700">
                 <div className="flex items-center gap-2">
-                  <Phone className="w-3.5 h-3.5 text-[#087EA4]" />
+                  <Phone className="w-3.5 h-3.5 text-[#218A59]" />
                   <span>+977 1 4169175 / +977 9851458275</span>
                 </div>
                 <div className="flex items-center gap-2">

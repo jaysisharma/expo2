@@ -20,7 +20,7 @@ export default function RootLayout({
               (function() {
                 try {
                   var stored = localStorage.getItem('theme');
-                  var dark = stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                  var dark = stored === 'dark';
                   var theme = dark ? 'dark' : 'light';
                   document.documentElement.setAttribute('data-theme', theme);
                   if (dark) {

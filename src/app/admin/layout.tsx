@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import React, { useState } from "react";
+import { usePathname } from "next/navigation";
 import { AdminAuthProvider, useAdminAuth } from "@/components/admin/AdminAuthContext";
 import { AdminThemeProvider } from "@/components/admin/AdminThemeContext";
 import AdminSidebar from "@/components/admin/AdminSidebar";
@@ -10,28 +10,30 @@ import AdminHeader from "@/components/admin/AdminHeader";
 function AdminLayoutInner({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAdminAuth();
   const pathname = usePathname();
-  const router = useRouter();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const isLoginPage = pathname === "/admin/login";
-
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated && !isLoginPage) {
-      router.replace("/admin/login");
-    }
-  }, [isAuthenticated, isLoading, isLoginPage, router]);
-
-  if (isLoginPage) {
+  // If on /admin/login or /admin/register, never block or redirect
+  if (pathname === "/admin/login" || pathname === "/admin/register") {
     return <>{children}</>;
   }
 
-  if (isLoading || !isAuthenticated) {
+  // If still verifying authentication
+  if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-stone-50 dark:bg-stone-950 gap-3">
         <div className="w-8 h-8 rounded-full border-2 border-[#218A59] dark:border-[#25C176] border-t-transparent animate-spin" />
+        <span className="text-xs text-stone-500 font-mono">Verifying secretariat access...</span>
       </div>
     );
+  }
+
+  // If not authenticated, client-side fallback redirect
+  if (!isAuthenticated) {
+    if (typeof window !== "undefined") {
+      window.location.href = `/admin/login?from=${encodeURIComponent(pathname || "/admin/dashboard")}`;
+    }
+    return null;
   }
 
   return (

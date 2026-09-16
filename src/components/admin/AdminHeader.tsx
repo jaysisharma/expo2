@@ -32,6 +32,68 @@ export default function AdminHeader({
   const [showNotifications, setShowNotifications] = useState(false);
   const [showQuickActions, setShowQuickActions] = useState(false);
   const [searchVal, setSearchVal] = useState("");
+  const [liveSettings, setLiveSettings] = useState<any>(null);
+  const [dynamicNotifications, setDynamicNotifications] = useState<
+    Array<{ id: string; title: string; desc: string; time: string; link?: string }>
+  >([]);
+
+  React.useEffect(() => {
+    async function loadHeaderData() {
+      try {
+        const res = await fetch("/api/admin/data");
+        const json = await res.json();
+        if (json.success && json.data) {
+          if (json.data.settings) {
+            setLiveSettings(json.data.settings);
+          }
+          const notifs: Array<{ id: string; title: string; desc: string; time: string; link?: string }> = [];
+
+          // New inquiries
+          const newInqs = (json.data.inquiries || []).filter((i: any) => i.status === "New");
+          newInqs.slice(0, 3).forEach((i: any) => {
+            notifs.push({
+              id: `inq-${i.id}`,
+              title: `New Inquiry: ${i.company || i.name}`,
+              desc: i.subject || "General inquiry received",
+              time: "Action Needed",
+              link: "/admin/inquiries",
+            });
+          });
+
+          // Recent registrations
+          const recentRegs = (json.data.registrations || []).slice(0, 3);
+          recentRegs.forEach((r: any) => {
+            notifs.push({
+              id: `reg-${r.id}`,
+              title: `${r.passType || "Visitor"}: ${r.name}`,
+              desc: `${r.organization || "Independent"} · ${r.country || "Nepal"}`,
+              time: r.checkedIn ? "Checked In" : "Registered",
+              link: "/admin/registrations",
+            });
+          });
+
+          // Recent booked booths
+          const overrides = json.data.boothOverrides || {};
+          Object.keys(overrides)
+            .filter((k) => overrides[k].status === "Booked")
+            .slice(0, 2)
+            .forEach((k) => {
+              notifs.push({
+                id: `booth-${k}`,
+                title: `Stall ${k} Confirmed`,
+                desc: overrides[k].exhibitorName ? `Exhibitor: ${overrides[k].exhibitorName}` : "Booked",
+                time: "Allocated",
+                link: "/admin/stalls",
+              });
+            });
+
+          setDynamicNotifications(notifs);
+        }
+      } catch (e) {}
+    }
+
+    loadHeaderData();
+  }, []);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchVal(e.target.value);
@@ -40,18 +102,20 @@ export default function AdminHeader({
     }
   };
 
-  const notifications = [
+  const notifications = dynamicNotifications.length > 0 ? dynamicNotifications : [
     {
       id: "1",
       title: "New Stall Inquiry: Siemens Energy",
       desc: "Requested 36m² Island Stall A-105.",
       time: "15m ago",
+      link: "/admin/inquiries",
     },
     {
       id: "2",
       title: "VIP Delegate Registered: NEA",
       desc: "Sunita Adhikari registered as VIP.",
       time: "1h ago",
+      link: "/admin/registrations",
     },
   ];
 
@@ -88,7 +152,7 @@ export default function AdminHeader({
         {/* Confirmed Date Badge matching Public Pill */}
         <div className="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#218A59]/10 text-[#218A59] dark:bg-[#25C176]/15 dark:text-[#25C176] border border-[#218A59]/20 font-mono text-[11px] font-bold uppercase tracking-wider">
           <span className="w-1.5 h-1.5 rounded-full bg-[#218A59] dark:bg-[#25C176] animate-pulse" />
-          <span>MAGH 2 - 4 · 16–18 JAN 2027</span>
+          <span>{liveSettings?.eventDates?.toUpperCase() || "MAGH 2 - 4 · 16–18 JAN 2027"}</span>
         </div>
 
         {/* Light / Dark Mode Toggle Button matching Public Navbar */}
@@ -113,35 +177,39 @@ export default function AdminHeader({
             aria-label="Notifications"
           >
             <Bell className="w-4 h-4" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#25C176] ring-2 ring-white dark:ring-[#050C17]" />
+            {notifications.length > 0 && (
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#25C176] ring-2 ring-white dark:ring-[#050C17]" />
+            )}
           </button>
 
           {showNotifications && (
             <div className="absolute right-0 mt-2 w-80 rounded-2xl bg-white dark:bg-[#0B1524] border border-black/10 dark:border-white/15 shadow-2xl p-4 space-y-3 z-50">
               <div className="flex items-center justify-between pb-2 border-b border-black/5 dark:border-white/10">
                 <span className="font-display font-bold text-xs text-gray-900 dark:text-white uppercase tracking-wider">
-                  Notifications
+                  Live Stream Notifications
                 </span>
                 <span className="text-[10px] font-mono font-bold text-[#218A59] dark:text-[#25C176]">
-                  2 New
+                  {notifications.length} Updates
                 </span>
               </div>
-              <div className="space-y-2.5">
+              <div className="space-y-2.5 max-h-80 overflow-y-auto pr-1">
                 {notifications.map((n) => (
-                  <div
+                  <Link
                     key={n.id}
-                    className="p-2.5 rounded-xl bg-black/[0.02] dark:bg-white/[0.04] border border-black/5 dark:border-white/10 space-y-1"
+                    href={n.link || "/admin/dashboard"}
+                    onClick={() => setShowNotifications(false)}
+                    className="block p-2.5 rounded-xl bg-black/[0.02] dark:bg-white/[0.04] hover:bg-black/[0.05] dark:hover:bg-white/[0.08] border border-black/5 dark:border-white/10 space-y-1 transition-colors"
                   >
-                    <div className="text-xs font-semibold text-gray-900 dark:text-white">
-                      {n.title}
+                    <div className="text-xs font-semibold text-gray-900 dark:text-white flex items-center justify-between">
+                      <span className="truncate">{n.title}</span>
+                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/10 text-slate-400 shrink-0 ml-1">
+                        {n.time}
+                      </span>
                     </div>
-                    <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
                       {n.desc}
                     </div>
-                    <div className="text-[10px] font-mono text-slate-400">
-                      {n.time}
-                    </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>
