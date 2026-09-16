@@ -85,15 +85,26 @@ export default function WelcomeExpoModal() {
             transition={{ duration: 0.3, ease: "easeOut" }}
             className="relative w-full max-w-md sm:max-w-lg bg-slate-900 border border-white/15 shadow-2xl rounded-3xl overflow-hidden text-white z-10 my-auto flex flex-col max-h-[92vh]"
           >
-            {/* Top Close Button (High Contrast & Visible) */}
             <button
+              type="button"
               onClick={handleClose}
               aria-label="Close"
-              className="absolute top-3 right-3 z-30 w-10 h-10 rounded-full bg-slate-950/90 hover:bg-red-600 text-white flex items-center justify-center transition-all duration-200 cursor-pointer border-2 border-white/80 shadow-[0_4px_20px_rgba(0,0,0,0.5)] hover:scale-110 active:scale-95"
+              className="
+    fixed top-4 right-4 z-[9999]
+    flex h-11 w-11 items-center justify-center
+    rounded-full
+    bg-black text-white
+    border-2 border-white
+    shadow-2xl
+    hover:bg-red-600
+    hover:scale-110
+    active:scale-95
+    transition-all duration-200
+    cursor-pointer
+  "
             >
-              <X className="w-5 h-5 stroke-[2.5]" />
+              <X className="h-6 w-6 stroke-[3]" />
             </button>
-
             {/* Official Invitation Graphic (Full & Crisp) */}
             <div className="relative w-full aspect-[3/4.2] bg-white overflow-hidden">
               <Image

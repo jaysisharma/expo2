@@ -191,6 +191,8 @@ export default function FloorPlanCanvasStudio() {
           }
           if (resData.data.bgImageSrc) setBgImageSrc(resData.data.bgImageSrc);
           if (resData.data.blueprintOpacity !== undefined) setBlueprintOpacity(resData.data.blueprintOpacity);
+          if (resData.data.canvasBgMode) setCanvasBgMode(resData.data.canvasBgMode);
+          if (resData.data.showBgImage !== undefined) setShowBgImage(resData.data.showBgImage);
           if (resData.data.updatedAt) {
             const d = new Date(resData.data.updatedAt);
             setLastSavedTime(d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
@@ -212,6 +214,10 @@ export default function FloorPlanCanvasStudio() {
             setHistoryIdx(0);
           }
         }
+        const localBg = localStorage.getItem("hhe_canvas_bg_mode");
+        if (localBg) setCanvasBgMode(localBg as any);
+        const localShowBg = localStorage.getItem("hhe_show_bg_image");
+        if (localShowBg !== null) setShowBgImage(localShowBg === "true");
       } catch (e) {}
     }
 
@@ -888,6 +894,8 @@ export default function FloorPlanCanvasStudio() {
     setIsSaving(true);
     try {
       localStorage.setItem("hhe_canvas_studio_elements", JSON.stringify(elements));
+      localStorage.setItem("hhe_canvas_bg_mode", canvasBgMode);
+      localStorage.setItem("hhe_show_bg_image", String(showBgImage));
 
       const response = await fetch("/api/floor-plan/save", {
         method: "POST",
@@ -896,6 +904,8 @@ export default function FloorPlanCanvasStudio() {
           elements,
           bgImageSrc,
           blueprintOpacity,
+          canvasBgMode,
+          showBgImage,
         }),
       });
 
@@ -904,7 +914,7 @@ export default function FloorPlanCanvasStudio() {
       setLastSavedTime(now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
 
       if (resJson.success) {
-        notify("Design saved to server database");
+        notify("Design & background saved to server database");
       } else {
         notify("Saved to local browser backup");
       }

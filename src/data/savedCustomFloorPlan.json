@@ -858,7 +858,9 @@
       "rotation": -34
     }
   ],
-  "updatedAt": "2026-09-16T16:56:02.153Z",
+  "updatedAt": "2026-09-17T05:00:00.000Z",
   "bgImageSrc": "/images/floor-plan-official.png",
-  "blueprintOpacity": 0.65
+  "blueprintOpacity": 0.65,
+  "canvasBgMode": "clean-white",
+  "showBgImage": false
 }

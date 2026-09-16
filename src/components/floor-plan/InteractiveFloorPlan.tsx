@@ -48,6 +48,14 @@ export default function InteractiveFloorPlan({
   const [blueprintOpacity, setBlueprintOpacity] = useState<number>(
     (savedFloorPlanFallback as any).blueprintOpacity ?? 0.65
   );
+  const [canvasBgMode, setCanvasBgMode] = useState<string>(
+    (savedFloorPlanFallback as any).canvasBgMode || "cad-dark"
+  );
+  const [showBgImage, setShowBgImage] = useState<boolean>(
+    (savedFloorPlanFallback as any).showBgImage !== undefined
+      ? (savedFloorPlanFallback as any).showBgImage
+      : true
+  );
 
   const [internalSelectedStalls, setInternalSelectedStalls] = useState<string[]>(["C1"]);
   const isControlled = controlledSelectedStalls !== undefined;
@@ -63,11 +71,15 @@ export default function InteractiveFloorPlan({
       try {
         const res = await fetch("/api/floor-plan/save");
         const json = await res.json();
-        if (json.success && json.data?.elements?.length) {
-          setElements(json.data.elements);
+        if (json.success && json.data) {
+          if (Array.isArray(json.data.elements) && json.data.elements.length > 0) {
+            setElements(json.data.elements);
+          }
           if (json.data.bgImageSrc) setBgImageSrc(json.data.bgImageSrc);
           if (json.data.blueprintOpacity !== undefined)
             setBlueprintOpacity(json.data.blueprintOpacity);
+          if (json.data.canvasBgMode) setCanvasBgMode(json.data.canvasBgMode);
+          if (json.data.showBgImage !== undefined) setShowBgImage(json.data.showBgImage);
         }
       } catch (err) {
         console.warn("Using local fallback custom floor plan:", err);
@@ -194,11 +206,17 @@ export default function InteractiveFloorPlan({
               transform: `scale(${zoomLevel})`,
               transformOrigin: "center center",
               transition: "transform 0.2s ease-out",
+              backgroundColor:
+                canvasBgMode === "clean-white"
+                  ? "#FFFFFF"
+                  : canvasBgMode === "cad-navy"
+                  ? "#0F172A"
+                  : "#0C121C",
             }}
-            className="relative max-w-none bg-slate-900 rounded-xl shadow-2xl border border-slate-700 overflow-hidden shrink-0"
+            className="relative max-w-none rounded-xl shadow-2xl border border-slate-300 dark:border-slate-700 overflow-hidden shrink-0"
           >
             {/* Background Blueprint Image */}
-            {bgImageSrc && (
+            {showBgImage && bgImageSrc && (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={bgImageSrc}
@@ -209,7 +227,13 @@ export default function InteractiveFloorPlan({
             )}
 
             {/* Grid Pattern Overlay */}
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none" />
+            <div
+              className={`absolute inset-0 pointer-events-none ${
+                canvasBgMode === "clean-white"
+                  ? "bg-[linear-gradient(to_right,#0000000a_1px,transparent_1px),linear-gradient(to_bottom,#0000000a_1px,transparent_1px)]"
+                  : "bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)]"
+              } bg-[size:20px_20px]`}
+            />
 
             {/* Render All Custom Drawn Stalls */}
             {stallElements.map((el) => {

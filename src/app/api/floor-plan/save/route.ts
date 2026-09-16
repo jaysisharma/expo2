@@ -31,7 +31,14 @@ export async function GET() {
   try {
     const json = await readFloorPlanData();
     if (json) {
-      return NextResponse.json({ success: true, data: json });
+      return NextResponse.json({
+        success: true,
+        data: {
+          ...json,
+          canvasBgMode: json.canvasBgMode || "cad-dark",
+          showBgImage: json.showBgImage !== undefined ? json.showBgImage : true,
+        },
+      });
     }
     return NextResponse.json({
       success: true,
@@ -39,6 +46,8 @@ export async function GET() {
         elements: [],
         bgImageSrc: "/images/floor-plan-official.png",
         blueprintOpacity: 0.65,
+        canvasBgMode: "cad-dark",
+        showBgImage: true,
       },
     });
   } catch (error) {
@@ -57,6 +66,8 @@ export async function POST(request: Request) {
       updatedAt: new Date().toISOString(),
       bgImageSrc: body.bgImageSrc || "/images/floor-plan-official.png",
       blueprintOpacity: body.blueprintOpacity ?? 0.65,
+      canvasBgMode: body.canvasBgMode || "cad-dark",
+      showBgImage: body.showBgImage !== undefined ? body.showBgImage : true,
     };
 
     const content = JSON.stringify(dataToSave, null, 2);
