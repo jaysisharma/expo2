@@ -1,116 +1,257 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Mail, Phone, MapPin, Calendar, FileText } from 'lucide-react';
+import {
+  Mail,
+  Phone,
+  MapPin,
+  Calendar,
+  FileText,
+  ArrowRight,
+  ShieldCheck,
+  Download,
+  CheckCircle2,
+  Sparkles,
+  Globe,
+} from 'lucide-react';
 
 export function Footer() {
-  return (
-    <footer className="relative bg-gradient-to-b from-[#083E2D] via-[#05291E] to-[#021A13] text-white border-t border-[#25C176]/30 pt-16 pb-20 px-4 sm:px-6 lg:px-12 overflow-hidden font-sans select-none">
-      {/* Top luminous green accent border */}
-      <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-[#25C176] to-transparent shadow-[0_0_15px_rgba(37,193,118,0.6)]" />
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [subscribed, setSubscribed] = useState(false);
 
-      {/* Radiant ambient emerald glows */}
-      <div className="absolute top-0 right-1/4 w-[600px] h-[400px] bg-[#10B981]/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 left-10 w-[500px] h-[450px] bg-[#059669]/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-[#25C176]/10 rounded-full blur-3xl pointer-events-none" />
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newsletterEmail.trim()) {
+      setSubscribed(true);
+      setTimeout(() => {
+        setNewsletterEmail('');
+      }, 3000);
+    }
+  };
+
+  return (
+    <footer className="relative bg-[#F4F7F5] text-slate-800 border-t border-slate-200/90 pt-14 pb-16 px-4 sm:px-6 lg:px-12 overflow-hidden font-sans select-none">
+      {/* Top Accent Gradient Border */}
+      <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-[#5B9F35] via-[#218A59] to-[#234679]" />
+
+      {/* Subtle Ambient Brand Glow */}
+      <div
+        aria-hidden="true"
+        className="absolute top-0 right-1/4 w-[600px] h-[350px] bg-gradient-to-b from-[#218A59]/8 via-[#234679]/4 to-transparent blur-3xl pointer-events-none rounded-full"
+      />
+      <div
+        aria-hidden="true"
+        className="absolute bottom-0 left-10 w-[500px] h-[350px] bg-gradient-to-t from-[#5B9F35]/8 via-transparent to-transparent blur-3xl pointer-events-none rounded-full"
+      />
 
       <div className="relative z-10 max-w-7xl mx-auto">
-        {/* Joint Organizers Banner with Official Logos */}
-        <div className="p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-[#0A4633]/90 via-[#0D523C]/80 to-[#083A2A]/90 border border-[#25C176]/35 shadow-2xl mb-16 grid grid-cols-1 md:grid-cols-2 gap-8 items-center backdrop-blur-xl hover:border-[#25C176]/60 transition-all duration-300">
-          {/* IPPAN */}
-          <div className="flex items-start gap-4">
-            <div className="relative h-14 w-28 bg-white rounded-xl border border-white/20 p-2 shrink-0 flex items-center justify-center shadow-md">
-              <Image
-                src="/ippan.png"
-                alt="IPPAN Logo"
-                width={95}
-                height={45}
-                className="object-contain max-h-11"
-              />
+        {/* ── 01: Top Banner (Joint Organizers + Newsletter CTA) ── */}
+        <div className="p-6 sm:p-8 rounded-2xl bg-white border border-slate-200 shadow-lg shadow-slate-900/5 mb-14 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          {/* Joint Organizers Logos & Credentials */}
+          <div className="lg:col-span-7 flex flex-col sm:flex-row items-start sm:items-center gap-6">
+            {/* IPPAN */}
+            <div className="flex items-center gap-3.5">
+              <div className="relative h-13 w-24 bg-white rounded-xl border border-slate-200 p-2 shrink-0 flex items-center justify-center shadow-xs">
+                <Image
+                  src="/ippan.png"
+                  alt="IPPAN Logo"
+                  width={85}
+                  height={40}
+                  className="object-contain max-h-10"
+                />
+              </div>
+              <div>
+                <span className="text-[10px] font-mono font-bold text-[#234679] uppercase tracking-wider block">
+                  ORGANIZED BY
+                </span>
+                <h4 className="font-display font-bold text-sm text-slate-900 leading-tight">
+                  IPPAN
+                </h4>
+                <p className="text-[11px] text-slate-500 line-clamp-1">
+                  Apex private hydro body
+                </p>
+              </div>
             </div>
-            <div>
-              <span className="text-[10px] font-mono font-bold text-[#6FA0E8] uppercase tracking-wider block">
-                ORGANIZED BY
-              </span>
-              <h4 className="font-display font-bold text-base text-white">
-                Independent Power Producers&apos; Association, Nepal (IPPAN)
-              </h4>
-              <p className="text-xs text-emerald-100/85 mt-1 leading-relaxed">
-                Apex representative body of private sector hydropower developers in Nepal.
-              </p>
+
+            <div className="hidden sm:block w-px h-10 bg-slate-200" />
+
+            {/* Event Solution */}
+            <div className="flex items-center gap-3.5">
+              <div className="relative h-13 w-24 bg-white rounded-xl border border-slate-200 p-2 shrink-0 flex items-center justify-center shadow-xs">
+                <Image
+                  src="/event_solution.png"
+                  alt="Event Solution Pvt. Ltd. Logo"
+                  width={90}
+                  height={40}
+                  className="object-contain max-h-10"
+                />
+              </div>
+              <div>
+                <span className="text-[10px] font-mono font-bold text-[#218A59] uppercase tracking-wider block">
+                  EVENT MANAGER
+                </span>
+                <h4 className="font-display font-bold text-sm text-slate-900 leading-tight">
+                  Event Solution
+                </h4>
+                <p className="text-[11px] text-slate-500 line-clamp-1">
+                  Premier trade expo manager
+                </p>
+              </div>
             </div>
           </div>
 
-          {/* Event Solution */}
-          <div className="flex items-start gap-4 md:border-l border-[#25C176]/25 md:pl-8">
-            <div className="relative h-14 w-28 bg-white rounded-xl border border-white/20 p-2 shrink-0 flex items-center justify-center shadow-md">
-              <Image
-                src="/event_solution.png"
-                alt="Event Solution Pvt. Ltd. Logo"
-                width={100}
-                height={45}
-                className="object-contain max-h-11"
-              />
-            </div>
-            <div>
-              <span className="text-[10px] font-mono font-bold text-[#25C176] uppercase tracking-wider block">
-                EVENT MANAGER & JOINT ORGANIZER
+          {/* Newsletter / Bulletin Subscription */}
+          <div className="lg:col-span-5 lg:border-l lg:border-slate-200 lg:pl-8">
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <Sparkles size={13} className="text-[#218A59]" />
+              <span className="text-xs font-bold text-slate-900 uppercase tracking-wide">
+                Stay Updated for 2027
               </span>
-              <h4 className="font-display font-bold text-base text-white">
-                Event Solution Pvt. Ltd.
-              </h4>
-              <p className="text-xs text-emerald-100/85 mt-1 leading-relaxed">
-                Nepal&apos;s premier professional trade expo and event management enterprise.
-              </p>
             </div>
+            <p className="text-xs text-slate-500 mb-3">
+              Receive official delegate schedules, plenary releases, and stall openings.
+            </p>
+
+            {subscribed ? (
+              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold">
+                <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+                <span>Thank you! You are subscribed to official expo updates.</span>
+              </div>
+            ) : (
+              <form onSubmit={handleSubscribe} className="flex items-center gap-2">
+                <input
+                  type="email"
+                  required
+                  value={newsletterEmail}
+                  onChange={(e) => setNewsletterEmail(e.target.value)}
+                  placeholder="Enter official work email..."
+                  className="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-300 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-[#218A59] focus:ring-2 focus:ring-[#218A59]/20 transition-all font-medium"
+                />
+                <button
+                  type="submit"
+                  className="px-4 py-2.5 rounded-xl bg-[#218A59] hover:bg-[#1B7249] text-white text-xs font-bold uppercase tracking-wider shrink-0 transition-all shadow-sm hover:shadow active:scale-95 flex items-center gap-1.5 cursor-pointer"
+                >
+                  <span>Join</span>
+                  <ArrowRight size={13} />
+                </button>
+              </form>
+            )}
           </div>
         </div>
 
-        {/* Main Footer Links Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8 pb-12 border-b border-[#25C176]/20">
-          {/* Col 1: Brand Info */}
+        {/* ── 02: Main 4-Column Directory ── */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8 pb-12 border-b border-slate-200">
+          {/* Col 1: Brand Info & Socials */}
           <div className="lg:col-span-4 space-y-4">
             <Link href="/" className="flex items-center gap-3">
-              <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-white/10 border border-white/20 p-1.5 flex items-center justify-center shadow-md">
+              <div className="relative w-11 h-11 rounded-xl bg-white border border-slate-200 p-1.5 flex items-center justify-center shadow-xs">
                 <Image
                   src="/images/logo.png"
                   alt="Himalayan Green Energy Expo Nepal"
-                  width={44}
-                  height={44}
+                  width={40}
+                  height={40}
                   className="object-contain"
                 />
               </div>
               <div>
-                <span className="font-display font-black text-base text-white tracking-tight block">
+                <span className="font-display font-black text-base text-slate-900 tracking-tight block">
                   HIMALAYAN GREEN ENERGY EXPO
                 </span>
-                <span className="text-[9px] text-[#25C176] tracking-wider block font-mono font-bold">
-                  IPPAN × EVENT SOLUTION PVT. LTD.
+                <span className="text-[10px] text-[#218A59] tracking-wider block font-mono font-bold">
+                  IPPAN × EVENT SOLUTION
                 </span>
               </div>
             </Link>
 
-            <p className="text-xs text-emerald-100/80 font-normal leading-relaxed max-w-sm">
-              Nepal&apos;s flagship international trade exhibition dedicated to hydropower engineering, cross-border energy trade, renewable energy, and regional investment.
+            <p className="text-xs text-slate-600 font-normal leading-relaxed max-w-sm">
+              South Asia&apos;s apex clean energy convergence uniting international developers, turbine OEMs, and sovereign finance around Nepal&apos;s 30,000 MW clean energy roadmap.
             </p>
 
-            <div className="pt-1 flex items-center gap-2 text-xs text-emerald-200 font-medium">
-              <MapPin className="w-4 h-4 text-[#6FA0E8]" />
-              <span>Bhrikutimandap, Kathmandu, Nepal</span>
+            <div className="flex items-center gap-2 pt-1 text-xs text-slate-700 font-medium">
+              <MapPin className="w-4 h-4 text-[#234679] shrink-0" />
+              <span>Bhrikutimandap Exhibition Complex, Kathmandu</span>
+            </div>
+
+            {/* Social Channels */}
+            <div className="flex items-center gap-2 pt-2">
+              <a
+                href="https://linkedin.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="LinkedIn"
+                className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-[#218A59] hover:border-[#218A59]/30 flex items-center justify-center transition-colors shadow-xs"
+              >
+                <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                  <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 10.9v8.37H9.2V10.9H6.46M7.83 6.64a1.65 1.65 0 0 0-1.66 1.66 1.66 1.66 0 0 0 1.66 1.65 1.66 1.66 0 0 0 1.66-1.65c0-.92-.74-1.66-1.66-1.66Z" />
+                </svg>
+              </a>
+              <a
+                href="https://facebook.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Facebook"
+                className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-[#218A59] hover:border-[#218A59]/30 flex items-center justify-center transition-colors shadow-xs"
+              >
+                <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                  <path d="M12 2.04c-5.5 0-10 4.49-10 10.02 0 5 3.66 9.15 8.44 9.9v-7H7.9v-2.9h2.54V9.85c0-2.51 1.49-3.89 3.78-3.89 1.09 0 2.23.19 2.23.19v2.47h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.45 2.9h-2.33v7a10 10 0 0 0 8.44-9.9c0-5.53-4.5-10.02-10-10.02Z" />
+                </svg>
+              </a>
+              <a
+                href="https://youtube.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="YouTube"
+                className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-[#218A59] hover:border-[#218A59]/30 flex items-center justify-center transition-colors shadow-xs"
+              >
+                <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                  <path d="m10 15 5.19-3L10 9v6m11.56-7.83c.13.47.22 1.1.28 1.9.07.8.1 1.49.1 2.09L22 12c0 2.19-.16 3.8-.44 4.83-.25.9-.83 1.48-1.73 1.73-.47.13-1.33.22-2.65.28-1.3.07-2.49.1-3.59.1L12 22c-4.19 0-6.8-.16-7.83-.44-.9-.25-1.48-.83-1.73-1.73-.13-.47-.22-1.1-.28-1.9-.07-.8-.1-1.49-.1-2.09L2 12c0-2.19.16-3.8.44-4.83.25-.9.83-1.48 1.73-1.73.47-.13 1.33-.22 2.65-.28 1.3-.07 2.49-.1 3.59-.1L12 2c4.19 0 6.8.16 7.83.44.9.25 1.48.83 1.73 1.73Z" />
+                </svg>
+              </a>
+              <a
+                href="https://twitter.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Twitter / X"
+                className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-[#218A59] hover:border-[#218A59]/30 flex items-center justify-center transition-colors shadow-xs"
+              >
+                <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                </svg>
+              </a>
             </div>
           </div>
 
-          {/* Col 2: Navigation Links */}
+          {/* Col 2: Exhibition Directory */}
           <div className="lg:col-span-2 space-y-3">
-            <h4 className="text-xs font-mono font-bold text-white tracking-wider uppercase">
+            <h4 className="text-xs font-mono font-bold text-slate-900 tracking-wider uppercase">
               EXHIBITION
             </h4>
-            <ul className="space-y-2 text-xs text-emerald-100/80 font-normal">
+            <ul className="space-y-2.5 text-xs text-slate-600 font-medium">
               <li>
-                <Link href="/floor-plan" className="hover:text-white transition-colors">
-                  Floor Plan
+                <Link href="/book-stall" className="hover:text-[#218A59] transition-colors flex items-center gap-1 text-[#218A59] font-bold">
+                  <span>Book Exhibition Stall</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/floor-plan" className="hover:text-[#218A59] transition-colors">
+                  Interactive Floor Plan
+                </Link>
+              </li>
+              <li>
+                <Link href="/floor-plan/builder" className="hover:text-[#218A59] transition-colors">
+                  Floor Plan Studio
+                </Link>
+              </li>
+              <li>
+                <Link href="/exhibit" className="hover:text-[#218A59] transition-colors">
+                  Why Exhibit
+                </Link>
+              </li>
+              <li>
+                <Link href="/exhibitors" className="hover:text-[#218A59] transition-colors">
+                  Exhibitors Directory
                 </Link>
               </li>
               <li>
@@ -118,34 +259,39 @@ export function Footer() {
                   href="/files/hydroproposal-13-2-2024.pdf"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:text-white transition-colors text-left flex items-center gap-1 text-[#25C176] font-medium"
+                  className="hover:text-[#218A59] transition-colors flex items-center gap-1 text-[#234679] font-semibold"
                 >
-                  <FileText className="w-3 h-3" />
-                  <span>Download Proposal (PDF)</span>
+                  <Download className="w-3 h-3" />
+                  <span>Proposal (PDF)</span>
                 </a>
-              </li>
-              <li>
-                <Link href="/exhibit" className="hover:text-white transition-colors">
-                  Why Exhibit
-                </Link>
-              </li>
-              <li>
-                <Link href="/exhibitors" className="hover:text-white transition-colors">
-                  Exhibitor Directory
-                </Link>
               </li>
             </ul>
           </div>
 
-          {/* Col 3: Program & Resources */}
-          <div className="lg:col-span-2 space-y-3">
-            <h4 className="text-xs font-mono font-bold text-white tracking-wider uppercase">
-              RESOURCES & MEDIA
+          {/* Col 3: Programs & Official Documents */}
+          <div className="lg:col-span-3 space-y-3">
+            <h4 className="text-xs font-mono font-bold text-slate-900 tracking-wider uppercase">
+              PROGRAM & RESOURCES
             </h4>
-            <ul className="space-y-2 text-xs text-emerald-100/80 font-normal">
+            <ul className="space-y-2.5 text-xs text-slate-600 font-medium">
               <li>
-                <Link href="/gallery" className="hover:text-white transition-colors">
-                  Photo & Video Gallery
+                <Link href="/conference" className="hover:text-[#218A59] transition-colors">
+                  12 Conference Plenaries
+                </Link>
+              </li>
+              <li>
+                <Link href="/events" className="hover:text-[#218A59] transition-colors">
+                  Student CleanTech Challenge
+                </Link>
+              </li>
+              <li>
+                <Link href="/gallery" className="hover:text-[#218A59] transition-colors">
+                  Expo Photo & Video Archive
+                </Link>
+              </li>
+              <li>
+                <Link href="/news" className="hover:text-[#218A59] transition-colors">
+                  News & Press Releases
                 </Link>
               </li>
               <li>
@@ -153,9 +299,9 @@ export function Footer() {
                   href="https://www.ippan.org.np/wp-content/uploads/2024/04/Ippan-Bulletine_2024-March.pdf"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:text-white transition-colors flex items-center gap-1"
+                  className="hover:text-[#218A59] transition-colors flex items-center gap-1"
                 >
-                  <FileText className="w-3 h-3 text-[#25C176]" />
+                  <FileText className="w-3 h-3 text-[#218A59]" />
                   <span>IPPAN Bulletin (PDF)</span>
                 </a>
               </li>
@@ -164,73 +310,65 @@ export function Footer() {
                   href="https://www.ippan.org.np/wp-content/uploads/2024/04/Himalyan-Hydro-Final-Session.pdf"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:text-white transition-colors flex items-center gap-1"
+                  className="hover:text-[#218A59] transition-colors flex items-center gap-1"
                 >
-                  <FileText className="w-3 h-3 text-[#6FA0E8]" />
+                  <FileText className="w-3 h-3 text-[#234679]" />
                   <span>Technical Sessions (PDF)</span>
                 </a>
-              </li>
-              <li>
-                <Link href="/news" className="hover:text-white transition-colors">
-                  News & Press Coverage
-                </Link>
               </li>
             </ul>
           </div>
 
-          {/* Col 4: Secretarial Contact */}
-          <div className="lg:col-span-4 space-y-3">
-            <h4 className="text-xs font-mono font-bold text-white tracking-wider uppercase">
+          {/* Col 4: Secretariat Contact */}
+          <div className="lg:col-span-3 space-y-3">
+            <h4 className="text-xs font-mono font-bold text-slate-900 tracking-wider uppercase">
               JOINT SECRETARIAT DESK
             </h4>
-            <div className="space-y-2.5 text-xs text-emerald-100/85 font-normal">
+            <div className="space-y-2.5 text-xs text-slate-600 font-medium">
               <div className="flex items-start gap-2.5">
-                <MapPin className="w-4 h-4 text-[#6FA0E8] shrink-0 mt-0.5" />
+                <MapPin className="w-4 h-4 text-[#234679] shrink-0 mt-0.5" />
                 <span>
                   Bhrikutimandap Exhibition Complex, Kathmandu, Nepal
                 </span>
               </div>
               <div className="flex items-center gap-2.5">
-                <Phone className="w-4 h-4 text-[#25C176] shrink-0" />
+                <Phone className="w-4 h-4 text-[#218A59] shrink-0" />
                 <span>+977-1-4412345 / +977-1-4435678</span>
               </div>
               <div className="flex items-center gap-2.5">
-                <Mail className="w-4 h-4 text-[#6FA0E8] shrink-0" />
-                <span>expo@ippan.org.np / info@eventsolution.com.np</span>
+                <Mail className="w-4 h-4 text-[#234679] shrink-0" />
+                <span className="truncate">expo@ippan.org.np</span>
               </div>
-              <div className="flex items-center gap-2.5">
-                <Calendar className="w-4 h-4 text-[#25C176] shrink-0" />
-                <span className="text-white font-semibold">Magh 2 - 4 · 16–18 Jan 2027 (09:00 - 18:00 NPT)</span>
+              <div className="flex items-center gap-2.5 pt-1">
+                <Calendar className="w-4 h-4 text-[#218A59] shrink-0" />
+                <span className="text-slate-900 font-bold">
+                  16–18 Jan 2027 (09:00 - 18:00 NPT)
+                </span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Bottom Legal Bar */}
-        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-emerald-200/70 font-normal">
+        {/* ── 03: Bottom Sub-Footer ── */}
+        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 font-medium">
           <div>
             © 2027 Himalayan Green Energy Expo Nepal. Organized jointly by IPPAN & Event Solution Pvt. Ltd.
           </div>
-          <div className="flex items-center gap-6">
-            <a
-              href="/files/hydroproposal-13-2-2024.pdf"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-white transition-colors cursor-pointer text-emerald-200"
-            >
-              Proposal (PDF)
-            </a>
-            <Link href="/floor-plan" className="hover:text-white transition-colors">
-              Floor Plan
+          <div className="flex items-center gap-5 sm:gap-6 flex-wrap justify-center">
+            <Link href="/venue" className="hover:text-slate-900 transition-colors">
+              Kathmandu Guide
             </Link>
-            <Link href="/contact" className="hover:text-white transition-colors">
-              Contact
+            <Link href="/faq" className="hover:text-slate-900 transition-colors">
+              FAQs
+            </Link>
+            <Link href="/contact" className="hover:text-slate-900 transition-colors">
+              Contact Us
             </Link>
             <Link
-              href="/admin"
-              className="text-[#6FA0E8] hover:text-white transition-colors flex items-center gap-1 font-mono font-bold"
+              href="/admin/login"
+              className="text-[#234679] hover:text-[#218A59] transition-colors flex items-center gap-1.5 font-mono font-bold"
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-[#25C176]" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#218A59]" />
               <span>Organizer Portal</span>
             </Link>
           </div>
