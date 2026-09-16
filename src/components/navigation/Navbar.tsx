@@ -166,12 +166,12 @@ export function Navbar() {
   }, [mobileOpen]);
 
   const navLinkClasses =
-    'inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-[13.5px] font-medium font-body text-gray-800 dark:text-gray-100 hover:text-[#218A59] dark:hover:text-[#25C176] hover:bg-[#218A59]/10 dark:hover:bg-[#25C176]/10 transition-all duration-150 cursor-pointer bg-transparent border-none';
+    'inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-[13.5px] font-medium font-body text-slate-800 hover:text-[#218A59] hover:bg-[#218A59]/10 transition-all duration-150 cursor-pointer bg-transparent border-none';
 
   return (
     <>
       {/* ── Non-Sticky Navbar with Border Bottom ───────────────────────────── */}
-      <nav className="relative w-full z-40 bg-[var(--c-bg)] border-b border-black/[0.08] dark:border-white/[0.12] transition-colors duration-200">
+      <nav className="relative w-full z-40 bg-[var(--c-bg)] border-b border-black/[0.08] transition-colors duration-200">
         <div className="max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-10 h-[72px] grid grid-cols-[auto_1fr_auto] gap-4 items-center">
 
           {/* ── Col 1: Single Logo (Left) ─────────────────────────────────── */}
@@ -206,7 +206,7 @@ export function Navbar() {
                       aria-expanded={activeDropdown === item.label}
                       aria-haspopup="menu"
                       className={`${navLinkClasses} ${activeDropdown === item.label
-                        ? 'text-[#218A59] dark:text-[#25C176] bg-[#218A59]/10 dark:bg-[#25C176]/10 font-semibold'
+                        ? 'text-[#218A59] bg-[#218A59]/10 font-semibold'
                         : ''
                         }`}
                     >
@@ -215,7 +215,7 @@ export function Navbar() {
                         size={13}
                         strokeWidth={2.2}
                         aria-hidden="true"
-                        className={`transition-transform duration-200 opacity-60 ${activeDropdown === item.label ? 'rotate-180 opacity-100 text-[#218A59] dark:text-[#25C176]' : ''
+                        className={`transition-transform duration-200 opacity-60 ${activeDropdown === item.label ? 'rotate-180 opacity-100 text-[#218A59]' : ''
                           }`}
                       />
                     </button>
@@ -224,7 +224,7 @@ export function Navbar() {
                     {activeDropdown === item.label && (
                       <div
                         role="menu"
-                        className="absolute top-[calc(100%+8px)] left-1/2 -translate-x-1/2 w-80 p-2 bg-white dark:bg-[#121A28] border border-black/[0.08] dark:border-white/[0.12] rounded-2xl shadow-xl shadow-black/[0.08] dark:shadow-black/50 overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150"
+                        className="absolute top-[calc(100%+8px)] left-1/2 -translate-x-1/2 w-80 p-2 bg-white border border-black/[0.08] rounded-2xl shadow-xl shadow-black/[0.08] overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150"
                       >
                         <div className="flex flex-col gap-1">
                           {item.children.map((child) => (
@@ -233,20 +233,20 @@ export function Navbar() {
                               href={child.href}
                               role="menuitem"
                               onClick={() => setActiveDropdown(null)}
-                              className="group flex flex-col p-2.5 rounded-xl hover:bg-[#218A59]/8 dark:hover:bg-[#25C176]/10 transition-all text-left"
+                              className="group flex flex-col p-2.5 rounded-xl hover:bg-[#218A59]/8 transition-all text-left"
                             >
                               <div className="flex items-center justify-between gap-2">
-                                <span className="font-semibold text-[13.5px] text-gray-800 dark:text-gray-100 group-hover:text-[#218A59] dark:group-hover:text-[#25C176] transition-colors">
+                                <span className="font-semibold text-[13.5px] text-slate-800 group-hover:text-[#218A59] transition-colors">
                                   {child.label}
                                 </span>
                                 {child.badge && (
-                                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#218A59]/10 dark:bg-[#25C176]/15 text-[#218A59] dark:text-[#25C176] border border-[#218A59]/20 dark:border-[#25C176]/25">
+                                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#218A59]/10 text-[#218A59] border border-[#218A59]/20">
                                     {child.badge}
                                   </span>
                                 )}
                               </div>
                               {child.desc && (
-                                <span className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-1">
+                                <span className="text-xs text-slate-500 mt-0.5 line-clamp-1">
                                   {child.desc}
                                 </span>
                               )}
@@ -270,7 +270,7 @@ export function Navbar() {
             {/* Secondary CTA: Register Pass */}
             <Link
               href="/register"
-              className="hidden sm:inline-flex items-center gap-1.5 h-10 px-5 rounded-full border-[1.5px] border-[#234679] dark:border-[#4A7EC7] text-[#234679] dark:text-[#6FA0E8] font-body text-xs font-bold uppercase tracking-wider bg-transparent hover:bg-[#234679] dark:hover:bg-[#4A7EC7] hover:!text-white transition-all duration-200 active:scale-95 shadow-xs"
+              className="hidden sm:inline-flex items-center gap-1.5 h-10 px-5 rounded-full border-[1.5px] border-[#234679] text-[#234679] font-body text-xs font-bold uppercase tracking-wider bg-transparent hover:bg-[#234679] hover:!text-white transition-all duration-200 active:scale-95 shadow-xs"
             >
               <Ticket
                 size={14}
@@ -299,7 +299,7 @@ export function Navbar() {
               onClick={() => setMobileOpen(!mobileOpen)}
               aria-label={mobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
               aria-expanded={mobileOpen}
-              className="lg:hidden flex items-center justify-center w-10 h-10 rounded-xl border border-black/10 dark:border-white/15 text-gray-800 dark:text-gray-100 bg-black/[0.02] dark:bg-white/[0.05] hover:bg-black/[0.05] dark:hover:bg-white/[0.1] transition-colors cursor-pointer"
+              className="lg:hidden flex items-center justify-center w-10 h-10 rounded-xl border border-black/10 text-slate-800 bg-black/[0.02] hover:bg-black/[0.05] transition-colors cursor-pointer"
             >
               {mobileOpen ? <X size={20} strokeWidth={2} /> : <Menu size={20} strokeWidth={2} />}
             </button>
@@ -310,14 +310,14 @@ export function Navbar() {
       {/* ── Mobile Drawer ─────────────────────────────────────────────────── */}
       <div
         aria-hidden={!mobileOpen}
-        className={`lg:hidden fixed top-[72px] left-0 right-0 bottom-0 z-40 bg-white dark:bg-[#0A0F1A] border-t border-black/[0.06] dark:border-white/[0.08] overflow-y-auto transition-transform duration-300 ease-out ${mobileOpen ? 'translate-x-0' : 'translate-x-full'
+        className={`lg:hidden fixed top-[72px] left-0 right-0 bottom-0 z-40 bg-white border-t border-black/[0.06] overflow-y-auto transition-transform duration-300 ease-out ${mobileOpen ? 'translate-x-0' : 'translate-x-full'
           }`}
         style={{ display: mobileOpen ? 'block' : undefined }}
       >
         <div className="px-6 py-6 flex flex-col gap-1 min-h-[calc(100vh-72px)] justify-between">
           <div className="flex flex-col">
             {NAV_ITEMS.map((item) => (
-              <div key={item.label} className="border-b border-black/[0.06] dark:border-white/[0.08]">
+              <div key={item.label} className="border-b border-black/[0.06]">
                 {item.children ? (
                   <div>
                     <button
@@ -325,12 +325,12 @@ export function Navbar() {
                         setActiveDropdown(activeDropdown === item.label ? null : item.label)
                       }
                       aria-expanded={activeDropdown === item.label}
-                      className="flex items-center justify-between w-full py-4 text-[15px] font-semibold font-body text-gray-800 dark:text-gray-100 bg-transparent border-none cursor-pointer hover:text-[#218A59] dark:hover:text-[#25C176] transition-colors"
+                      className="flex items-center justify-between w-full py-4 text-[15px] font-semibold font-body text-slate-800 bg-transparent border-none cursor-pointer hover:text-[#218A59] transition-colors"
                     >
                       <span>{item.label}</span>
                       <ChevronDown
                         size={16}
-                        className={`transition-transform duration-200 opacity-60 ${activeDropdown === item.label ? 'rotate-180 opacity-100 text-[#218A59] dark:text-[#25C176]' : ''
+                        className={`transition-transform duration-200 opacity-60 ${activeDropdown === item.label ? 'rotate-180 opacity-100 text-[#218A59]' : ''
                           }`}
                       />
                     </button>
@@ -344,20 +344,20 @@ export function Navbar() {
                               setMobileOpen(false);
                               setActiveDropdown(null);
                             }}
-                            className="block py-2 px-3 rounded-xl hover:bg-[#218A59]/10 dark:hover:bg-[#25C176]/10 transition-colors"
+                            className="block py-2 px-3 rounded-xl hover:bg-[#218A59]/10 transition-colors"
                           >
                             <div className="flex items-center justify-between gap-2">
-                              <span className="font-semibold text-[13.5px] text-gray-800 dark:text-gray-100">
+                              <span className="font-semibold text-[13.5px] text-slate-800">
                                 {child.label}
                               </span>
                               {child.badge && (
-                                <span className="text-[10px] font-bold px-2 py-0.2 rounded-full bg-[#218A59]/10 dark:bg-[#25C176]/15 text-[#218A59] dark:text-[#25C176]">
+                                <span className="text-[10px] font-bold px-2 py-0.2 rounded-full bg-[#218A59]/10 text-[#218A59]">
                                   {child.badge}
                                 </span>
                               )}
                             </div>
                             {child.desc && (
-                              <span className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 block">
+                              <span className="text-xs text-slate-500 mt-0.5 block">
                                 {child.desc}
                               </span>
                             )}
@@ -370,7 +370,7 @@ export function Navbar() {
                   <Link
                     href={item.href}
                     onClick={() => setMobileOpen(false)}
-                    className="flex items-center py-4 text-[15px] font-semibold font-body text-gray-800 dark:text-gray-100 hover:text-[#218A59] dark:hover:text-[#25C176] transition-colors"
+                    className="flex items-center py-4 text-[15px] font-semibold font-body text-slate-800 hover:text-[#218A59] transition-colors"
                   >
                     {item.label}
                   </Link>
@@ -384,7 +384,7 @@ export function Navbar() {
             <Link
               href="/register"
               onClick={() => setMobileOpen(false)}
-              className="flex items-center justify-center gap-2 h-12 w-full rounded-full border-[1.5px] border-[#234679] dark:border-[#4A7EC7] text-[#234679] dark:text-[#6FA0E8] font-body text-sm font-bold uppercase tracking-wider hover:bg-[#234679] dark:hover:bg-[#4A7EC7] hover:text-white dark:hover:text-white transition-all duration-200 shadow-sm"
+              className="flex items-center justify-center gap-2 h-12 w-full rounded-full border-[1.5px] border-[#234679] text-[#234679] font-body text-sm font-bold uppercase tracking-wider hover:bg-[#234679] hover:text-white transition-all duration-200 shadow-sm"
             >
               <Ticket size={16} strokeWidth={2.2} />
               <span>Register Pass</span>

@@ -115,30 +115,12 @@ export function Hero() {
         }
       });
 
-      // Left column starts at its resting position
-      if (leftColRef.current) {
-        gsap.set(leftColRef.current, { y: 0 });
+      // Explicitly set initial states
+      if (topContentRef.current) {
+        gsap.set(topContentRef.current, { opacity: 1, y: 0, scale: 1, pointerEvents: 'auto' });
       }
-
-      // Initial Entrance Animation when loader finishes
-      const playEntrance = () => {
-        gsap.fromTo(
-          topContentRef.current,
-          { opacity: 0, y: 30 },
-          { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out' }
-        );
-        gsap.fromTo(
-          videoBoxRef.current,
-          { opacity: 0, scale: 0.96, y: 20 },
-          { opacity: 1, scale: 1, y: 0, duration: 1.1, ease: 'power3.out', delay: 0.15 }
-        );
-      };
-
-      window.addEventListener('hydro-loader-complete', playEntrance);
-
-      // Also trigger immediately if loader is not present or already completed in session
-      if (typeof window !== 'undefined' && sessionStorage.getItem('hydro_loader_completed')) {
-        playEntrance();
+      if (videoBoxRef.current) {
+        gsap.set(videoBoxRef.current, { opacity: 1, scale: 1, y: 0 });
       }
 
       const tl = gsap.timeline({
@@ -152,9 +134,15 @@ export function Hero() {
         },
       });
 
-      // ── PHASE 1: Expand video to full screen ────────────────────────
-      tl.to(
+      // ── PHASE 1: Fade out headline and expand video to full screen ──
+      tl.fromTo(
         topContentRef.current,
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          pointerEvents: 'auto',
+        },
         {
           opacity: 0,
           y: -40,
@@ -320,12 +308,12 @@ export function Hero() {
           className="absolute top-0 left-0 right-0 z-20 h-[30vh] min-h-[170px] pt-4 pb-2 px-4 flex flex-col items-center justify-center text-center max-w-4xl mx-auto"
         >
           {/* Main Headline */}
-          <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold font-display tracking-tight leading-[1.1] text-gray-900 dark:text-white mb-2.5">
-            Himalayan <span className="text-[#218A59] dark:text-[#25C176]">Green Energy</span> Expo
+          <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold font-display tracking-tight leading-[1.1] text-slate-900 mb-2.5">
+            Himalayan <span className="text-[#218A59]">Green Energy</span> Expo
           </h1>
 
           {/* Sub-headline */}
-          <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 font-body max-w-3xl mx-auto leading-relaxed line-clamp-2 mb-3 sm:mb-4">
+          <p className="text-xs sm:text-sm text-slate-700 font-body max-w-3xl mx-auto leading-relaxed line-clamp-2 mb-3 sm:mb-4">
             South Asia&apos;s apex clean energy convergence uniting international developers, turbine OEMs, and sovereign finance around Nepal&apos;s 30,000 MW clean energy roadmap.
           </p>
 
@@ -345,12 +333,12 @@ export function Hero() {
 
             <Link
               href="/register"
-              className="group inline-flex items-center justify-center gap-2 h-9 sm:h-10 px-5 sm:px-6 rounded-full border-[1.5px] border-[#234679] dark:border-[#4A7EC7] text-[#234679] dark:text-[#6FA0E8] font-body text-xs sm:text-sm font-bold uppercase tracking-wider bg-transparent hover:bg-[#234679] dark:hover:bg-[#4A7EC7] hover:text-white transition-all duration-200 active:scale-95 shadow-xs"
+              className="group inline-flex items-center justify-center gap-2 h-9 sm:h-10 px-5 sm:px-6 rounded-full border-[1.5px] border-[#234679] text-[#234679] font-body text-xs sm:text-sm font-bold uppercase tracking-wider bg-transparent hover:bg-[#234679] hover:text-white transition-all duration-200 active:scale-95 shadow-xs"
             >
               <Ticket
                 size={14}
                 strokeWidth={2.2}
-                className="shrink-0 stroke-[#234679] dark:stroke-[#6FA0E8] group-hover:!stroke-white"
+                className="shrink-0 stroke-[#234679] group-hover:!stroke-white"
               />
               <span className="group-hover:text-white">
                 Register Free Pass
@@ -362,46 +350,24 @@ export function Hero() {
         {/* ── BOTTOM ~70%: Video Container (Expands to full 100vw x 100vh on scroll) ── */}
         <div
           ref={videoBoxRef}
-          className="absolute top-[30vh] bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 z-10 w-[92vw] max-w-[1360px] rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl shadow-black/25 dark:shadow-black/60 border border-black/10 dark:border-white/15 bg-black"
+          className="absolute top-[30vh] bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 z-10 w-[92vw] max-w-[1360px] rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl shadow-black/25 border border-black/10 bg-black"
           style={{ willChange: 'top, bottom, width, border-radius' }}
         >
-          <video
-            ref={videoRef}
-            src="/videos/hero.mp4"
-            poster="/images/himalayan_hydro_hero_bg.jpg"
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="w-full h-full object-cover"
+          <iframe
+            src="https://drive.google.com/file/d/1ddIs5UcaQHcE5fdAy-Su0KK5q38s5Wig/preview?autoplay=1"
+            allow="autoplay; fullscreen"
+            allowFullScreen
+            className="w-full h-full border-none"
+            title="Himalayan Hydro Expo Video Showcase"
           />
 
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20 pointer-events-none" />
-
-          {/* Audio toggle button */}
-          <button
-            onClick={toggleAudio}
-            aria-label={isMuted ? 'Unmute video audio' : 'Mute video audio'}
-            className="absolute bottom-4 right-4 z-30 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-md border border-white/20 text-white text-xs font-mono font-medium transition-all duration-200 cursor-pointer active:scale-95"
-          >
-            {isMuted ? (
-              <>
-                <VolumeX size={14} className="text-red-400" />
-                <span className="hidden sm:inline">Muted</span>
-              </>
-            ) : (
-              <>
-                <Volume2 size={14} className="text-[#25C176]" />
-                <span className="hidden sm:inline">Sound On</span>
-              </>
-            )}
-          </button>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-black/10 pointer-events-none" />
         </div>
 
         {/* ── RECTANGLE CONTAINER 1: Emerges from center to 100vw & 100vh ─── */}
         <div
           ref={rectangleContainerRef}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 bg-[var(--c-bg)] flex items-center justify-center overflow-hidden border border-black/15 dark:border-white/15 shadow-2xl"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 bg-[var(--c-bg)] flex items-center justify-center overflow-hidden border border-black/15 shadow-2xl"
           style={{
             width: '0vw',
             height: '0vh',
@@ -420,18 +386,18 @@ export function Hero() {
             {/* ── Left Pinned Column ────────────────────────────────────────── */}
             <div className="w-full lg:w-5/12 flex flex-col justify-center select-none shrink-0 py-8 lg:py-0">
               <div ref={leftColRef} style={{ willChange: 'transform' }}>
-                <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-widest bg-[#218A59]/10 text-[#218A59] dark:bg-[#25C176]/15 dark:text-[#25C176] border border-[#218A59]/25 dark:border-[#25C176]/30 mb-4 sm:mb-6 self-start">
-                  <Sparkles size={12} className="text-[#218A59] dark:text-[#25C176]" />
+                <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-widest bg-[#218A59]/10 text-[#218A59] border border-[#218A59]/25 mb-4 sm:mb-6 self-start">
+                  <Sparkles size={12} className="text-[#218A59]" />
                   <span>National Clean Energy Roadmap</span>
                 </span>
 
-                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black font-display tracking-tight text-gray-900 dark:text-white uppercase leading-[1.12] mb-4 sm:mb-6">
-                  NEPAL&apos;S <span className="text-[#218A59] dark:text-[#25C176]">CLEAN ENERGY</span> PROGRESS
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black font-display tracking-tight text-slate-900 uppercase leading-[1.12] mb-4 sm:mb-6">
+                  NEPAL&apos;S <span className="text-[#218A59]">CLEAN ENERGY</span> PROGRESS
                 </h2>
 
-                <p className="text-base sm:text-lg lg:text-xl font-medium font-body text-gray-600 dark:text-gray-300 leading-relaxed max-w-md">
-                  From <span className="font-bold text-[#234679] dark:text-[#6FA0E8]">0.5 MW in 1911</span> to{' '}
-                  <span className="font-bold text-[#218A59] dark:text-[#25C176]">30,000 MW by 2035</span>.
+                <p className="text-base sm:text-lg lg:text-xl font-medium font-body text-slate-700 leading-relaxed max-w-md">
+                  From <span className="font-bold text-[#234679]">0.5 MW in 1911</span> to{' '}
+                  <span className="font-bold text-[#218A59]">30,000 MW by 2035</span>.
                 </p>
               </div>
             </div>

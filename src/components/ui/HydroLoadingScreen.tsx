@@ -52,7 +52,7 @@ export default function HydroLoadingScreen({ onComplete }: { onComplete?: () => 
             y: '-100%',
             transition: { duration: 0.65, ease: [0.76, 0, 0.24, 1] },
           }}
-          className="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-[#FAFCFB] dark:bg-[#070D16] select-none pointer-events-auto transition-colors duration-300"
+          className="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-white select-none pointer-events-auto transition-colors duration-300"
         >
           {/* Subtle Ambient Light Glow */}
           <div
@@ -65,7 +65,7 @@ export default function HydroLoadingScreen({ onComplete }: { onComplete?: () => 
             <div className="relative w-28 h-28 sm:w-32 sm:h-32">
               <svg
                 viewBox="0 0 100 100"
-                className="w-full h-full drop-shadow-[0_12px_28px_rgba(33,138,89,0.18)] dark:drop-shadow-[0_12px_28px_rgba(0,0,0,0.6)]"
+                className="w-full h-full drop-shadow-[0_12px_28px_rgba(33,138,89,0.18)]"
               >
                 <defs>
                   {/* Water Gradient */}
@@ -84,7 +84,7 @@ export default function HydroLoadingScreen({ onComplete }: { onComplete?: () => 
                 {/* Vessel Outer Outline */}
                 <path
                   d="M50 8 C50 8 18 46 18 68 C18 85.67 32.33 100 50 100 C67.67 100 82 85.67 82 68 C82 46 50 8 50 8 Z"
-                  className="fill-white/80 dark:fill-[#0D1524] stroke-gray-200/80 dark:stroke-white/10"
+                  className="fill-white stroke-slate-200"
                   strokeWidth="2"
                 />
 
@@ -117,19 +117,19 @@ export default function HydroLoadingScreen({ onComplete }: { onComplete?: () => 
                 <path
                   d="M30 48 C25 58 25 72 32 82"
                   fill="none"
-                  className="stroke-white/40 dark:stroke-white/20"
+                  className="stroke-white/40"
                   strokeWidth="2.5"
                   strokeLinecap="round"
                 />
               </svg>
 
               {/* Water Wave Ripple Pulse */}
-              <div className="absolute inset-0 rounded-full border border-[#218A59]/25 dark:border-[#25C176]/25 animate-ping pointer-events-none opacity-30 [animation-duration:3s]" />
+              <div className="absolute inset-0 rounded-full border border-[#218A59]/25 animate-ping pointer-events-none opacity-30 [animation-duration:3s]" />
             </div>
 
             {/* Percentage Number Loader */}
             <div className="mt-5 flex items-center justify-center">
-              <span className="text-sm sm:text-base font-mono font-medium tracking-widest text-gray-700 dark:text-gray-200">
+              <span className="text-sm sm:text-base font-mono font-bold tracking-widest text-slate-800">
                 {progress}%
               </span>
             </div>

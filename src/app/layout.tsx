@@ -12,28 +12,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" data-theme="light" suppressHydrationWarning>
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  var stored = localStorage.getItem('theme');
-                  var dark = stored === 'dark';
-                  var theme = dark ? 'dark' : 'light';
-                  document.documentElement.setAttribute('data-theme', theme);
-                  if (dark) {
-                    document.documentElement.classList.add('dark');
-                  } else {
-                    document.documentElement.classList.remove('dark');
-                  }
-                } catch (e) {}
-              })();
-            `,
-          }}
-        />
-      </head>
+    <html lang="en" data-theme="light">
       <body>
         <ThemeProvider>
           <AppLayoutClient>{children}</AppLayoutClient>
