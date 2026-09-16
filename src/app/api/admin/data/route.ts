@@ -64,10 +64,6 @@ async function getAdminData() {
     console.warn("Firebase fetch error, using local fallback", e);
   }
 
-  if (memoryAdminData) {
-    return memoryAdminData;
-  }
-
   // Fallback 1: Root data/adminData.json
   try {
     const raw = await fs.readFile(ROOT_ADMIN_DATA_PATH, "utf-8");
