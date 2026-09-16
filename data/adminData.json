@@ -1,0 +1,149 @@
+{
+  "registrations": [
+    {
+      "id": "HHE26-849201",
+      "name": "Er. Aarav Sharma",
+      "email": "aarav.sharma@sanima.com.np",
+      "phone": "+977 9851029384",
+      "organization": "Sanima Hydropower Ltd.",
+      "jobTitle": "Senior Project Engineer",
+      "country": "Nepal",
+      "passType": "Trade Visitor (Free)",
+      "interests": ["Hydropower & Turbines", "SCADA & AI Dispatch"],
+      "checkedIn": true,
+      "registeredAt": "2026-08-28T09:14:22.000Z"
+    },
+    {
+      "id": "HHE26-EX-104",
+      "name": "Rajesh Khadka",
+      "email": "rajesh.khadka@voith.com",
+      "phone": "+977 9841203948",
+      "organization": "Voith Hydro International",
+      "jobTitle": "Head of Hydro Turbines",
+      "country": "Germany / Nepal",
+      "passType": "Exhibitor Pass (All Access)",
+      "stallNumber": "A-101",
+      "interests": ["Hydropower & Turbines", "Cross-Border Energy Trade"],
+      "checkedIn": true,
+      "registeredAt": "2026-08-27T14:30:00.000Z"
+    },
+    {
+      "id": "HHE26-918234",
+      "name": "Sunita Adhikari",
+      "email": "sunita.adhikari@nea.org.np",
+      "phone": "+977 9801928374",
+      "organization": "Nepal Electricity Authority (NEA)",
+      "jobTitle": "Director of Grid Planning",
+      "country": "Nepal",
+      "passType": "VIP / Government Delegate",
+      "interests": ["Transmission & 400kV Substations", "Cross-Border Energy Trade"],
+      "checkedIn": false,
+      "registeredAt": "2026-08-29T11:20:15.000Z"
+    },
+    {
+      "id": "HHE26-EX-108",
+      "name": "Dr. Michael Huber",
+      "email": "michael.huber@andritz.com",
+      "phone": "+43 316 6902",
+      "organization": "ANDRITZ Hydro GmbH",
+      "jobTitle": "Regional Technical Director",
+      "country": "Austria",
+      "passType": "Exhibitor Pass (All Access)",
+      "stallNumber": "A-108",
+      "interests": ["Generators & Electro-Mechanical", "Tunneling & TBM Infrastructure"],
+      "checkedIn": true,
+      "registeredAt": "2026-08-26T16:45:10.000Z"
+    },
+    {
+      "id": "HHE26-773821",
+      "name": "Kavita Gautam",
+      "email": "kavita.gautam@worldbank.org",
+      "phone": "+977 9812938475",
+      "organization": "World Bank Group",
+      "jobTitle": "Senior Energy Investment Specialist",
+      "country": "Nepal / USA",
+      "passType": "VIP / Government Delegate",
+      "interests": ["Project Finance & Green Bonds", "Green Hydrogen & Storage"],
+      "checkedIn": false,
+      "registeredAt": "2026-08-30T10:05:40.000Z"
+    },
+    {
+      "id": "HHE26-664912",
+      "name": "Bikash Shrestha",
+      "email": "bikash@butwalpower.com",
+      "phone": "+977 9851122334",
+      "organization": "Butwal Power Company (BPC)",
+      "jobTitle": "General Manager - Engineering",
+      "country": "Nepal",
+      "passType": "Trade Visitor (Free)",
+      "interests": ["Hydropower & Turbines", "Solar-Hydro Hybrids"],
+      "checkedIn": true,
+      "registeredAt": "2026-08-31T08:50:00.000Z"
+    },
+    {
+      "id": "HHE26-559201",
+      "name": "Priya Ranjan Patel",
+      "email": "priya.patel@tatapower.com",
+      "phone": "+91 9820192837",
+      "organization": "Tata Power Trading Co.",
+      "jobTitle": "VP - Cross-Border Power Markets",
+      "country": "India",
+      "passType": "Trade Visitor (Free)",
+      "interests": ["Cross-Border Energy Trade", "SCADA & AI Dispatch"],
+      "checkedIn": false,
+      "registeredAt": "2026-09-01T15:12:00.000Z"
+    }
+  ],
+  "inquiries": [
+    {
+      "id": "INQ-2026-001",
+      "name": "Hans Schneider",
+      "email": "h.schneider@siemens-energy.com",
+      "phone": "+49 89 2072",
+      "company": "Siemens Energy Global",
+      "subject": "36m² Island Stall Booking & 3-Phase 32A Power",
+      "message": "We are interested in booking Stall A-105 or A-106 for transformer and grid automation demo. Please provide bank wire details and space allotment confirmation.",
+      "stallInterest": "A-105",
+      "status": "In Progress",
+      "submittedAt": "2026-08-30T13:45:00.000Z"
+    },
+    {
+      "id": "INQ-2026-002",
+      "name": "Pradip Thapa",
+      "email": "pradip@himalayanclean.com.np",
+      "phone": "+977 9851098765",
+      "company": "Himalayan Clean Hydro Pvt.",
+      "subject": "Conference Sponsorship & Speaking Slot Query",
+      "message": "We would like to explore the Gold Sponsorship tier along with a speaking presentation slot on Session 2 (Cross-Border Power Wheeling).",
+      "status": "New",
+      "submittedAt": "2026-09-01T09:30:00.000Z"
+    },
+    {
+      "id": "INQ-2026-003",
+      "name": "Dr. Ananya Roy",
+      "email": "ananya.roy@iitd.ac.in",
+      "phone": "+91 9811223344",
+      "company": "IIT Delhi Energy Center",
+      "subject": "Student CleanTech Innovation Entry Submission",
+      "message": "Our student research team wants to submit a prototype for high-silt abrasive resistant Pelton turbine nozzle. What is the submission deadline?",
+      "status": "Resolved",
+      "submittedAt": "2026-08-28T11:15:00.000Z"
+    }
+  ],
+  "boothOverrides": {
+    "A-101": { "status": "Booked", "exhibitorName": "Voith Hydro International" },
+    "A-108": { "status": "Booked", "exhibitorName": "ANDRITZ Hydro" },
+    "B-201": { "status": "Booked", "exhibitorName": "Schneider Electric" },
+    "A-104": { "status": "Reserved", "exhibitorName": "BHEL India" }
+  },
+  "settings": {
+    "eventName": "Himalayan Green Energy Expo Nepal 2027",
+    "eventDates": "Magh 2 - 4 · 16–18 Jan 2027",
+    "venue": "Bhrikutimandap Exhibition Complex, Kathmandu",
+    "registrationsOpen": true,
+    "stallBookingsOpen": true,
+    "contactEmail": "expo@ippan.org.np",
+    "contactPhone": "+977-1-4412345",
+    "currencyRateUSD_NPR": 134.5
+  }
+}

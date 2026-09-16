@@ -1,0 +1,1 @@
+export { OfficialPatronsStrip } from './OfficialPatronsStrip';

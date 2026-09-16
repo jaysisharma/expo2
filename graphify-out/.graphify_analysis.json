@@ -1,0 +1,762 @@
+{
+  "communities": {
+    "0": [
+      "page_downloadfulldatabasebackup",
+      "page_exportcsv",
+      "page_fetchbadgetemplates",
+      "page_fetchboothsdata",
+      "page_fetchdata",
+      "page_fetchinquiries",
+      "page_handleaddregistration",
+      "page_handleaddsponsor",
+      "page_handleaddsubmit",
+      "page_handledelete",
+      "page_handledeleteexhibitor",
+      "page_handledeleteregistration",
+      "page_handledeletesponsor",
+      "page_handleopenedit",
+      "page_handlesave",
+      "page_handlesavebooth",
+      "page_handlesaveedit",
+      "page_handletogglecheckin",
+      "page_handletogglefeatured",
+      "page_handleupdatestatus",
+      "page_loadsettings",
+      "page_notify",
+      "page_triggerlivescrape",
+      "src_app_admin_badge_designer_page_tsx",
+      "src_app_admin_conference_page_tsx",
+      "src_app_admin_exhibitors_page_tsx",
+      "src_app_admin_inquiries_page_tsx",
+      "src_app_admin_news_page_tsx",
+      "src_app_admin_registrations_page_tsx",
+      "src_app_admin_settings_page_tsx",
+      "src_app_admin_speakers_page_tsx",
+      "src_app_admin_sponsors_page_tsx",
+      "src_app_admin_stalls_page_tsx"
+    ],
+    "1": [
+      "floorplancanvasstudio_alignselected",
+      "floorplancanvasstudio_applycategorypreset",
+      "floorplancanvasstudio_applysnap",
+      "floorplancanvasstudio_clearcanvas",
+      "floorplancanvasstudio_deleteselected",
+      "floorplancanvasstudio_duplicateselected",
+      "floorplancanvasstudio_getpencilpathdata",
+      "floorplancanvasstudio_handlebatchrenumber",
+      "floorplancanvasstudio_handleglobalmousemove",
+      "floorplancanvasstudio_handleglobalmouseup",
+      "floorplancanvasstudio_handlekeydown",
+      "floorplancanvasstudio_handleredo",
+      "floorplancanvasstudio_handleundo",
+      "floorplancanvasstudio_loadfloorplan",
+      "floorplancanvasstudio_notify",
+      "floorplancanvasstudio_oncanvasmousedown",
+      "floorplancanvasstudio_oncanvasmousemove",
+      "floorplancanvasstudio_oncanvasmouseup",
+      "floorplancanvasstudio_recordhistory",
+      "floorplancanvasstudio_savetostorage",
+      "floorplancanvasstudio_selectallstalls",
+      "floorplancanvasstudio_updateselectedbatch",
+      "src_components_floor_plan_floorplancanvasstudio_tsx"
+    ],
+    "2": [
+      "firebasedb_addfirebaseinquiry",
+      "firebasedb_addfirebaseregistration",
+      "firebasedb_deletefirebaseregistration",
+      "firebasedb_getfirebaseboothoverrides",
+      "firebasedb_getfirebaseinquiries",
+      "firebasedb_getfirebaseregistrations",
+      "firebasedb_getfirebasesettings",
+      "firebasedb_setfirebaseboothoverride",
+      "firebasedb_togglefirebasecheckin",
+      "firebasedb_updatefirebaseinquirystatus",
+      "firebasedb_updatefirebasesettings",
+      "route_ensuredirectoryexists",
+      "route_get",
+      "route_getadmindata",
+      "route_post",
+      "route_saveadmindata",
+      "src_app_api_admin_data_route_ts",
+      "src_app_api_badge_template_route_ts",
+      "src_app_api_floor_plan_save_route_ts",
+      "src_app_api_news_scrape_route_ts",
+      "src_lib_firebasedb_ts"
+    ],
+    "3": [
+      "adminauthcontext_adminauthprovider",
+      "adminauthcontext_useadminauth",
+      "adminheader_adminheader",
+      "adminthemecontext_adminthemeprovider",
+      "adminthemecontext_useadmintheme",
+      "layout_adminlayout",
+      "layout_adminlayoutinner",
+      "page_adminloginpage",
+      "src_app_admin_layout_tsx",
+      "src_app_admin_login_page_tsx",
+      "src_components_admin_adminauthcontext_tsx",
+      "src_components_admin_adminheader_tsx",
+      "src_components_admin_adminthemecontext_tsx",
+      "src_components_themeprovider_tsx",
+      "themeprovider_themeprovider",
+      "themeprovider_usetheme"
+    ],
+    "4": [
+      "adminbadgedesigner_handleaddcustomtext",
+      "adminbadgedesigner_handledeletecustomtext",
+      "adminbadgedesigner_handleglobalmousemove",
+      "adminbadgedesigner_handleglobalmouseup",
+      "adminbadgedesigner_handlekeydown",
+      "adminbadgedesigner_handlesave",
+      "adminbadgedesigner_handleuploadbgimage",
+      "adminbadgedesigner_loadtemplates",
+      "adminbadgedesigner_notify",
+      "adminbadgedesigner_updatecurrentconfig",
+      "src_components_booking_adminbadgedesigner_tsx"
+    ],
+    "5": [
+      "not_found_notfound",
+      "page_generatestaticparams",
+      "page_singleexhibitorpage",
+      "page_singlenewspage",
+      "src_app_conference_slug_page_tsx",
+      "src_app_exhibitors_slug_page_tsx",
+      "src_app_news_slug_page_tsx",
+      "src_app_not_found_tsx",
+      "src_app_speakers_slug_page_tsx"
+    ],
+    "6": [
+      "delegateregistration_fetchtemplates",
+      "delegateregistration_handleinteresttoggle",
+      "delegateregistration_handlenext",
+      "delegateregistration_handleprev",
+      "delegateregistration_handletemplatesupdated",
+      "src_components_booking_delegateregistration_tsx"
+    ],
+    "7": [
+      "pdfdownloadmodal_handledocumentclick",
+      "pdfdownloadmodal_handleopenmodal",
+      "pdfdownloadmodal_handlesubmit",
+      "pdfdownloadmodal_triggerpdfdownloadmodal",
+      "pdfdownloadmodal_validate",
+      "src_components_modals_pdfdownloadmodal_tsx"
+    ],
+    "8": [
+      "src_lib_utils_ts",
+      "utils_cn",
+      "utils_formatcurrencynpr",
+      "utils_formatcurrencyusd",
+      "utils_formatnumber"
+    ],
+    "9": [
+      "qrcodegenerator_generateqrcodedataurl",
+      "qrcodegenerator_generateqrcodematrix",
+      "qrcodegenerator_generateqrcodesvg",
+      "src_lib_qrcodegenerator_ts"
+    ],
+    "10": [
+      "page_handleaddnews",
+      "page_handlefetchpreview",
+      "src_app_news_page_tsx"
+    ],
+    "11": [
+      "sectorsgrid_geticon",
+      "sectorsgrid_scroll",
+      "src_components_sectors_sectorsgrid_tsx"
+    ],
+    "12": [
+      "idcardbadgepreview_handledownloadbadgeimage",
+      "idcardbadgepreview_handleprint",
+      "src_components_booking_idcardbadgepreview_tsx"
+    ],
+    "13": [
+      "src_components_booking_stallbookingwizard_tsx",
+      "stallbookingwizard_handlenext",
+      "stallbookingwizard_handleprev"
+    ],
+    "14": [
+      "src_components_gallery_videomodal_tsx",
+      "videomodal_getembedurl",
+      "videomodal_handlekeydown"
+    ],
+    "15": [
+      "masonrygallery_handlenextphoto",
+      "masonrygallery_handleprevphoto",
+      "src_components_gallery_masonrygallery_tsx"
+    ],
+    "16": [
+      "src_components_modals_welcomeexpomodal_tsx",
+      "welcomeexpomodal_handleclose",
+      "welcomeexpomodal_handlekeydown"
+    ],
+    "17": [
+      "layout_rootlayout",
+      "src_app_layout_tsx"
+    ],
+    "18": [
+      "page_home",
+      "src_app_page_tsx"
+    ],
+    "19": [
+      "page_handlesubmit",
+      "src_app_contact_page_tsx"
+    ],
+    "20": [
+      "page_faqpage",
+      "src_app_faq_page_tsx"
+    ],
+    "21": [
+      "page_gallerypage",
+      "src_app_gallery_page_tsx"
+    ],
+    "22": [
+      "page_adminrootpage",
+      "src_app_admin_page_tsx"
+    ],
+    "23": [
+      "page_fetchdashboarddata",
+      "src_app_admin_dashboard_page_tsx"
+    ],
+    "24": [
+      "page_adminfloorplanpage",
+      "src_app_admin_floor_plan_page_tsx"
+    ],
+    "25": [
+      "page_visitpage",
+      "src_app_visit_page_tsx"
+    ],
+    "26": [
+      "page_registerpage",
+      "src_app_register_page_tsx"
+    ],
+    "27": [
+      "page_exhibitorspage",
+      "src_app_exhibitors_page_tsx"
+    ],
+    "28": [
+      "page_bookstallpage",
+      "src_app_book_stall_page_tsx"
+    ],
+    "29": [
+      "page_venuepage",
+      "src_app_venue_page_tsx"
+    ],
+    "30": [
+      "page_floorplanpage",
+      "src_app_floor_plan_page_tsx"
+    ],
+    "31": [
+      "page_floorplanbuilderpage",
+      "src_app_floor_plan_builder_page_tsx"
+    ],
+    "32": [
+      "animatedstats_animatedstats",
+      "src_components_statistics_animatedstats_tsx"
+    ],
+    "33": [
+      "scrollreveal_scrollreveal",
+      "src_components_ui_scrollreveal_tsx"
+    ],
+    "34": [
+      "galadinnersection_galadinnersection",
+      "src_components_home_galadinnersection_tsx"
+    ],
+    "35": [
+      "footer_footer",
+      "src_components_footer_footer_tsx"
+    ],
+    "36": [
+      "conferencethemessection_conferencethemessection",
+      "src_components_conference_conferencethemessection_tsx"
+    ],
+    "37": [
+      "conferencetimeline_togglesave",
+      "src_components_conference_conferencetimeline_tsx"
+    ],
+    "38": [
+      "expointro_expointro",
+      "src_components_intro_expointro_tsx"
+    ],
+    "39": [
+      "src_components_technology_technologyviewer_tsx",
+      "technologyviewer_technologyviewer"
+    ],
+    "40": [
+      "faqaccordion_togglefaq",
+      "src_components_faq_faqaccordion_tsx"
+    ],
+    "41": [
+      "applayoutclient_applayoutclient",
+      "src_components_layout_applayoutclient_tsx"
+    ],
+    "42": [
+      "imagelightbox_handlekeydown",
+      "src_components_gallery_imagelightbox_tsx"
+    ],
+    "43": [
+      "smoothscrollprovider_smoothscrollprovider",
+      "src_components_providers_smoothscrollprovider_tsx"
+    ],
+    "44": [
+      "adminsidebar_handlelinkclick",
+      "src_components_admin_adminsidebar_tsx"
+    ],
+    "45": [
+      "datatable_handlesort",
+      "src_components_admin_datatable_tsx"
+    ],
+    "46": [
+      "navbar_handleclickoutside",
+      "src_components_navigation_navbar_tsx"
+    ],
+    "47": [
+      "sponsorsshowcasesection_sponsorsshowcasesection",
+      "src_components_sponsors_sponsorsshowcasesection_tsx"
+    ],
+    "48": [
+      "kathmanduvenueguide_kathmanduvenueguide",
+      "src_components_venue_kathmanduvenueguide_tsx"
+    ],
+    "49": [
+      "hero_toggleaudio",
+      "src_components_hero_hero_tsx"
+    ],
+    "50": [
+      "herotransitionstrip_herotransitionstrip",
+      "src_components_hero_herotransitionstrip_tsx"
+    ],
+    "51": [
+      "interactivefloorplan_togglestall",
+      "src_components_floor_plan_interactivefloorplan_tsx"
+    ],
+    "52": [
+      "inaugurationmomentssection_handlescroll",
+      "src_components_story_inaugurationmomentssection_tsx"
+    ],
+    "53": [
+      "expojourney_expojourney",
+      "src_components_story_expojourney_tsx"
+    ],
+    "54": [
+      "postcss_config_mjs"
+    ],
+    "55": [
+      "next_env_d_ts"
+    ],
+    "56": [
+      "postcss_config_js"
+    ],
+    "57": [
+      "next_config_ts"
+    ],
+    "58": [
+      "src_types_declarations_d_ts"
+    ],
+    "59": [
+      "src_app_conference_page_tsx"
+    ],
+    "60": [
+      "src_app_speakers_page_tsx"
+    ],
+    "61": [
+      "src_app_about_page_tsx"
+    ],
+    "62": [
+      "src_app_expo_page_tsx"
+    ],
+    "63": [
+      "src_app_sponsors_page_tsx"
+    ],
+    "64": [
+      "src_app_exhibit_page_tsx"
+    ],
+    "65": [
+      "src_app_events_page_tsx"
+    ],
+    "66": [
+      "src_components_ui_index_ts"
+    ],
+    "67": [
+      "src_components_home_index_ts"
+    ],
+    "68": [
+      "src_components_footer_index_ts"
+    ],
+    "69": [
+      "src_components_sections_cleanenergyprogress_tsx"
+    ],
+    "70": [
+      "src_components_conference_index_ts"
+    ],
+    "71": [
+      "src_components_speakers_speakergrid_tsx"
+    ],
+    "72": [
+      "src_components_speakers_index_ts"
+    ],
+    "73": [
+      "src_components_speakers_speakerssection_tsx"
+    ],
+    "74": [
+      "src_components_booking_conversionctasection_tsx"
+    ],
+    "75": [
+      "src_components_booking_index_ts"
+    ],
+    "76": [
+      "src_components_nepal_map_hydropowermap_tsx"
+    ],
+    "77": [
+      "src_components_admin_statcard_tsx"
+    ],
+    "78": [
+      "src_components_admin_chartcard_tsx"
+    ],
+    "79": [
+      "src_components_navigation_index_ts"
+    ],
+    "80": [
+      "src_components_sponsors_sponsormatrix_tsx"
+    ],
+    "81": [
+      "src_components_sponsors_officialpatronsstrip_tsx"
+    ],
+    "82": [
+      "src_components_sponsors_index_ts"
+    ],
+    "83": [
+      "src_components_experiences_experiencesscroll_tsx"
+    ],
+    "84": [
+      "src_components_exhibitors_exhibitorcard_tsx"
+    ],
+    "85": [
+      "src_components_exhibitors_exhibitordirectory_tsx"
+    ],
+    "86": [
+      "src_components_venue_venuemapand360_tsx"
+    ],
+    "87": [
+      "src_components_hero_index_ts"
+    ],
+    "88": [
+      "src_components_floor_plan_boothdetailmodal_tsx"
+    ],
+    "89": [
+      "src_components_floor_plan_venuefloorplansection_tsx"
+    ],
+    "90": [
+      "src_components_story_index_ts"
+    ],
+    "91": [
+      "src_components_story_organizerssection_tsx"
+    ],
+    "92": [
+      "src_lib_firebase_ts"
+    ],
+    "93": [
+      "src_lib_types_ts"
+    ],
+    "94": [
+      "src_data_videos_ts"
+    ],
+    "95": [
+      "src_data_news_ts"
+    ],
+    "96": [
+      "src_data_conference_ts"
+    ],
+    "97": [
+      "src_data_gallery_ts"
+    ],
+    "98": [
+      "src_data_sectors_ts"
+    ],
+    "99": [
+      "src_data_projects_ts"
+    ],
+    "100": [
+      "src_data_speakers_ts"
+    ],
+    "101": [
+      "src_data_resources_ts"
+    ],
+    "102": [
+      "src_data_booths_ts"
+    ],
+    "103": [
+      "src_data_editions_ts"
+    ],
+    "104": [
+      "src_data_faqs_ts"
+    ],
+    "105": [
+      "src_data_eventsolutionteam_ts"
+    ],
+    "106": [
+      "src_data_exhibitors_ts"
+    ],
+    "107": [
+      "src_data_sponsors_ts"
+    ],
+    "108": [
+      "src_data_officialfloorplandata_ts"
+    ],
+    "109": [
+      "src_data_organizers_ts"
+    ]
+  },
+  "cohesion": {
+    "0": 0.12,
+    "1": 0.18,
+    "2": 0.18,
+    "3": 0.12,
+    "4": 0.29,
+    "5": 0.25,
+    "6": 0.33,
+    "7": 0.47,
+    "8": 0.4,
+    "9": 0.5,
+    "10": 0.67,
+    "11": 0.67,
+    "12": 0.67,
+    "13": 0.67,
+    "14": 0.67,
+    "15": 0.67,
+    "16": 1.0,
+    "17": 1.0,
+    "18": 1.0,
+    "19": 1.0,
+    "20": 1.0,
+    "21": 1.0,
+    "22": 1.0,
+    "23": 1.0,
+    "24": 1.0,
+    "25": 1.0,
+    "26": 1.0,
+    "27": 1.0,
+    "28": 1.0,
+    "29": 1.0,
+    "30": 1.0,
+    "31": 1.0,
+    "32": 1.0,
+    "33": 1.0,
+    "34": 1.0,
+    "35": 1.0,
+    "36": 1.0,
+    "37": 1.0,
+    "38": 1.0,
+    "39": 1.0,
+    "40": 1.0,
+    "41": 1.0,
+    "42": 1.0,
+    "43": 1.0,
+    "44": 1.0,
+    "45": 1.0,
+    "46": 1.0,
+    "47": 1.0,
+    "48": 1.0,
+    "49": 1.0,
+    "50": 1.0,
+    "51": 1.0,
+    "52": 1.0,
+    "53": 1.0,
+    "54": 1.0,
+    "55": 1.0,
+    "56": 1.0,
+    "57": 1.0,
+    "58": 1.0,
+    "59": 1.0,
+    "60": 1.0,
+    "61": 1.0,
+    "62": 1.0,
+    "63": 1.0,
+    "64": 1.0,
+    "65": 1.0,
+    "66": 1.0,
+    "67": 1.0,
+    "68": 1.0,
+    "69": 1.0,
+    "70": 1.0,
+    "71": 1.0,
+    "72": 1.0,
+    "73": 1.0,
+    "74": 1.0,
+    "75": 1.0,
+    "76": 1.0,
+    "77": 1.0,
+    "78": 1.0,
+    "79": 1.0,
+    "80": 1.0,
+    "81": 1.0,
+    "82": 1.0,
+    "83": 1.0,
+    "84": 1.0,
+    "85": 1.0,
+    "86": 1.0,
+    "87": 1.0,
+    "88": 1.0,
+    "89": 1.0,
+    "90": 1.0,
+    "91": 1.0,
+    "92": 1.0,
+    "93": 1.0,
+    "94": 1.0,
+    "95": 1.0,
+    "96": 1.0,
+    "97": 1.0,
+    "98": 1.0,
+    "99": 1.0,
+    "100": 1.0,
+    "101": 1.0,
+    "102": 1.0,
+    "103": 1.0,
+    "104": 1.0,
+    "105": 1.0,
+    "106": 1.0,
+    "107": 1.0,
+    "108": 1.0,
+    "109": 1.0
+  },
+  "gods": [
+    {
+      "id": "page_notify",
+      "label": "notify()",
+      "degree": 25
+    },
+    {
+      "id": "route_post",
+      "label": "POST()",
+      "degree": 14
+    },
+    {
+      "id": "floorplancanvasstudio_notify",
+      "label": "notify()",
+      "degree": 12
+    },
+    {
+      "id": "floorplancanvasstudio_recordhistory",
+      "label": "recordHistory()",
+      "degree": 9
+    },
+    {
+      "id": "route_get",
+      "label": "GET()",
+      "degree": 8
+    },
+    {
+      "id": "route_getadmindata",
+      "label": "getAdminData()",
+      "degree": 7
+    },
+    {
+      "id": "page_handleaddsubmit",
+      "label": "handleAddSubmit()",
+      "degree": 6
+    },
+    {
+      "id": "page_handlesaveedit",
+      "label": "handleSaveEdit()",
+      "degree": 5
+    },
+    {
+      "id": "floorplancanvasstudio_handlekeydown",
+      "label": "handleKeyDown()",
+      "degree": 5
+    },
+    {
+      "id": "page_generatestaticparams",
+      "label": "generateStaticParams()",
+      "degree": 4
+    }
+  ],
+  "surprises": [
+    {
+      "source": "generateQRCodeMatrix()",
+      "target": "GET()",
+      "source_files": [
+        "/Users/jaysisharma/Desktop/expo2/src/lib/qrCodeGenerator.ts",
+        "/Users/jaysisharma/Desktop/expo2/src/app/api/floor-plan/save/route.ts"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source; bridges separate communities; peripheral node `generateQRCodeMatrix()` unexpectedly reaches hub `GET()`"
+    },
+    {
+      "source": "handleAddSubmit()",
+      "target": "GET()",
+      "source_files": [
+        "/Users/jaysisharma/Desktop/expo2/src/app/admin/exhibitors/page.tsx",
+        "/Users/jaysisharma/Desktop/expo2/src/app/api/floor-plan/save/route.ts"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source; bridges separate communities"
+    },
+    {
+      "source": "handleAddSponsor()",
+      "target": "GET()",
+      "source_files": [
+        "/Users/jaysisharma/Desktop/expo2/src/app/admin/sponsors/page.tsx",
+        "/Users/jaysisharma/Desktop/expo2/src/app/api/floor-plan/save/route.ts"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source; bridges separate communities"
+    },
+    {
+      "source": "POST()",
+      "target": "addFirebaseRegistration()",
+      "source_files": [
+        "/Users/jaysisharma/Desktop/expo2/src/app/api/floor-plan/save/route.ts",
+        "/Users/jaysisharma/Desktop/expo2/src/lib/firebaseDb.ts"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source; peripheral node `addFirebaseRegistration()` unexpectedly reaches hub `POST()`"
+    },
+    {
+      "source": "POST()",
+      "target": "toggleFirebaseCheckin()",
+      "source_files": [
+        "/Users/jaysisharma/Desktop/expo2/src/app/api/floor-plan/save/route.ts",
+        "/Users/jaysisharma/Desktop/expo2/src/lib/firebaseDb.ts"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source; peripheral node `toggleFirebaseCheckin()` unexpectedly reaches hub `POST()`"
+    }
+  ],
+  "questions": [
+    {
+      "type": "bridge_node",
+      "question": "Why does `GET()` connect `Community 2` to `Community 0`, `Community 9`?",
+      "why": "High betweenness centrality (0.022) - this node is a cross-community bridge."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `handleAddSubmit()` connect `Community 0` to `Community 2`?",
+      "why": "High betweenness centrality (0.012) - this node is a cross-community bridge."
+    },
+    {
+      "type": "verify_inferred",
+      "question": "Are the 7 inferred relationships involving `POST()` (e.g. with `addFirebaseRegistration()` and `toggleFirebaseCheckin()`) actually correct?",
+      "why": "`POST()` has 7 INFERRED edges - model-reasoned connections that need verification."
+    },
+    {
+      "type": "verify_inferred",
+      "question": "Are the 3 inferred relationships involving `GET()` (e.g. with `handleAddSubmit()` and `handleAddSponsor()`) actually correct?",
+      "why": "`GET()` has 3 INFERRED edges - model-reasoned connections that need verification."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `Community 0` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.12 - nodes in this community are weakly interconnected."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `Community 3` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.12 - nodes in this community are weakly interconnected."
+    }
+  ]
+}

@@ -1,0 +1,174 @@
+/* ==========================================================================
+   FONT SYSTEM: LIMBUS SANS L (NIMBUS SANS L) + DM SANS
+   Self-hosted & Google Fonts CDN Fallback with full weight & style spectrum
+   ========================================================================== */
+
+/* Optional CDN fallback for DM Sans */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
+
+/* --------------------------------------------------------------------------
+   1. LIMBUS SANS L / NIMBUS SANS L (@font-face declarations)
+   -------------------------------------------------------------------------- */
+
+/* Regular 400 Normal */
+@font-face {
+  font-family: 'Nimbus Sans L';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/NimbusSanL-Reg.woff') format('woff'),
+       local('Nimbus Sans L'),
+       local('NimbusSanL-Reg');
+}
+
+@font-face {
+  font-family: 'Limbus Sans L';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/NimbusSanL-Reg.woff') format('woff'),
+       local('Nimbus Sans L'),
+       local('NimbusSanL-Reg');
+}
+
+/* Regular 400 Italic */
+@font-face {
+  font-family: 'Nimbus Sans L';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/NimbusSanL-RegIta.woff') format('woff'),
+       local('Nimbus Sans L Italic'),
+       local('NimbusSanL-RegIta');
+}
+
+@font-face {
+  font-family: 'Limbus Sans L';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/NimbusSanL-RegIta.woff') format('woff'),
+       local('Nimbus Sans L Italic'),
+       local('NimbusSanL-RegIta');
+}
+
+/* Bold 700 Normal */
+@font-face {
+  font-family: 'Nimbus Sans L';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/NimbusSanL-Bol.woff') format('woff'),
+       local('Nimbus Sans L Bold'),
+       local('NimbusSanL-Bol');
+}
+
+@font-face {
+  font-family: 'Limbus Sans L';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/NimbusSanL-Bol.woff') format('woff'),
+       local('Nimbus Sans L Bold'),
+       local('NimbusSanL-Bol');
+}
+
+/* Bold 700 Italic */
+@font-face {
+  font-family: 'Nimbus Sans L';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/NimbusSanL-BolIta.woff') format('woff'),
+       local('Nimbus Sans L Bold Italic'),
+       local('NimbusSanL-BolIta');
+}
+
+@font-face {
+  font-family: 'Limbus Sans L';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/NimbusSanL-BolIta.woff') format('woff'),
+       local('Nimbus Sans L Bold Italic'),
+       local('NimbusSanL-BolIta');
+}
+
+/* --------------------------------------------------------------------------
+   2. DM SANS (Self-Hosted Variable TTF)
+   -------------------------------------------------------------------------- */
+
+@font-face {
+  font-family: 'DM Sans';
+  font-style: normal;
+  font-weight: 100 1000;
+  font-display: swap;
+  src: url('/fonts/DMSans-Variable.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'DM Sans';
+  font-style: italic;
+  font-weight: 100 1000;
+  font-display: swap;
+  src: url('/fonts/DMSans-Italic-Variable.ttf') format('truetype');
+}
+
+/* --------------------------------------------------------------------------
+   3. CSS VARIABLES & BASE CLASSES
+   -------------------------------------------------------------------------- */
+
+:root {
+  --font-limbus: 'Limbus Sans L', 'Nimbus Sans L', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+  --font-nimbus: 'Nimbus Sans L', 'Limbus Sans L', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+  --font-dm-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Semantic Typography Mapping */
+  --font-display: var(--font-limbus);
+  --font-body: var(--font-dm-sans);
+}
+
+/* Typography Utility Classes */
+.font-limbus,
+.font-nimbus {
+  font-family: var(--font-limbus);
+}
+
+.font-dm-sans {
+  font-family: var(--font-dm-sans);
+}
+
+/* Weight & Style Utility Classes */
+.font-normal {
+  font-weight: 400;
+  font-style: normal;
+}
+
+.font-italic {
+  font-style: italic;
+}
+
+.font-medium {
+  font-weight: 500;
+}
+
+.font-semibold {
+  font-weight: 600;
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
+.font-bold-italic {
+  font-weight: 700;
+  font-style: italic;
+}
+
+.font-extrabold {
+  font-weight: 800;
+}
+
+.font-black {
+  font-weight: 900;
+}
