@@ -88,12 +88,12 @@ export default function InteractiveFloorPlan({
     loadFloorPlan();
   }, []);
 
-  // Filter stall elements only
+  // Filter stall elements (both rectangular and polygon stalls)
   const stallElements = elements.filter(
-    (el) => el.type === "stall" || el.type === "custom-shape" || !el.type
+    (el) => el.type === "stall" || el.type === "custom-shape" || (el.type === "polygon" && (el.priceNPR > 0 || el.priceUSD > 0 || (el.number && !el.number.startsWith("WALL")))) || !el.type
   );
 
-  // Drawing elements (lines, arcs, pencil strokes, text labels, circles, walls)
+  // Drawing elements (lines, arcs, pencil strokes, text labels, circles, walls, boundary polygons)
   const drawingElements = elements.filter(
     (el) =>
       el.type === "line" ||
@@ -101,7 +101,8 @@ export default function InteractiveFloorPlan({
       el.type === "arc" ||
       el.type === "text" ||
       el.type === "circle" ||
-      el.type === "wall"
+      el.type === "wall" ||
+      el.type === "polygon"
   );
 
   const getPencilPathData = (points: { x: number; y: number }[]): string => {
@@ -334,6 +335,75 @@ export default function InteractiveFloorPlan({
                       stroke={el.borderColor || "#38BDF8"}
                       strokeWidth={el.strokeWidth || 2}
                     />
+                  );
+                }
+
+                // 6. Polygon (Boundary, Wall, or Custom Polygon Stall)
+                if (el.type === "polygon" && el.points && el.points.length >= 3) {
+                  const pointsStr = el.points.map((p: any) => `${p.x},${p.y}`).join(" ");
+                  const stallNumber = el.number || el.id;
+                  const isSelected = selectedStalls.includes(stallNumber);
+                  const isHovered = hoveredStall?.id === el.id;
+                  const isInteractive =
+                    (el.priceNPR && el.priceNPR > 0) ||
+                    (el.priceUSD && el.priceUSD > 0) ||
+                    (el.number && !el.number.startsWith("WALL"));
+
+                  return (
+                    <g
+                      key={el.id}
+                      className={isInteractive ? "cursor-pointer pointer-events-auto" : ""}
+                      onClick={() => isInteractive && toggleStall(el)}
+                      onMouseEnter={() => isInteractive && setHoveredStall(el)}
+                      onMouseLeave={() => isInteractive && setHoveredStall(null)}
+                    >
+                      <polygon
+                        points={pointsStr}
+                        fill={
+                          isSelected
+                            ? "#10B981"
+                            : isHovered
+                            ? "#38BDF8"
+                            : el.color === "transparent" || el.color === "none"
+                            ? "none"
+                            : el.color || "#0284C7"
+                        }
+                        fillOpacity={
+                          el.color === "transparent" || el.color === "none"
+                            ? 0
+                            : isSelected
+                            ? 0.9
+                            : isHovered
+                            ? 0.85
+                            : el.fillOpacity ?? 0.85
+                        }
+                        stroke={
+                          isSelected
+                            ? "#34D399"
+                            : isHovered
+                            ? "#FFFFFF"
+                            : el.borderColor || "#38BDF8"
+                        }
+                        strokeWidth={isSelected ? 3 : isHovered ? 2.5 : el.strokeWidth || 2}
+                        strokeLinejoin="round"
+                        strokeLinecap="round"
+                      />
+                      {el.number && (
+                        <text
+                          x={el.x + el.width / 2}
+                          y={el.y + el.height / 2 + 4}
+                          textAnchor="middle"
+                          dominantBaseline="middle"
+                          fill={el.textColor || "#FFFFFF"}
+                          fontSize="12"
+                          fontWeight="bold"
+                          fontFamily="monospace"
+                          className="select-none pointer-events-none drop-shadow-md"
+                        >
+                          {isSelected ? `✓ ${stallNumber}` : stallNumber}
+                        </text>
+                      )}
+                    </g>
                   );
                 }
 

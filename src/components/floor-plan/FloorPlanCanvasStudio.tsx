@@ -43,11 +43,14 @@ import {
   MapPin,
   Info,
   Tag,
+  Pentagon,
+  Hexagon,
+  Shapes,
 } from "lucide-react";
 
 export interface CanvasElement {
   id: string;
-  type: "stall" | "text" | "zone" | "pencil" | "arc" | "line";
+  type: "stall" | "text" | "zone" | "pencil" | "arc" | "line" | "polygon";
   number: string;
   category: string;
   dimensions: string;
@@ -71,7 +74,7 @@ export interface CanvasElement {
   rotation: number;
   points?: { x: number; y: number }[];
   arcControl?: { x: number; y: number };
-  
+
   // Exhibitor-facing deliverables & specifications
   powerIncluded?: string;
   inclusions?: string[];
@@ -103,8 +106,8 @@ export default function FloorPlanCanvasStudio() {
   const [elements, setElements] = useState<CanvasElement[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-  // Active Tool: select | rectangle | arc | line | pencil | text | eraser
-  const [activeTool, setActiveTool] = useState<"select" | "rectangle" | "arc" | "line" | "pencil" | "text" | "eraser">("select");
+  // Active Tool: select | rectangle | polygon | arc | line | pencil | text | eraser
+  const [activeTool, setActiveTool] = useState<"select" | "rectangle" | "polygon" | "arc" | "line" | "pencil" | "text" | "eraser">("select");
   const [leftSidebarTab, setLeftSidebarTab] = useState<"tools" | "inspector">("tools");
 
   // Global Style Properties for new elements
@@ -126,12 +129,14 @@ export default function FloorPlanCanvasStudio() {
   const [initialAngleOffset, setInitialAngleOffset] = useState<number>(0);
   const [dragStartPos, setDragStartPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [initialElementState, setInitialElementState] = useState<CanvasElement | null>(null);
-  const [initialMultiPosMap, setInitialMultiPosMap] = useState<{ [id: string]: { x: number; y: number } }>({});
+  const [initialMultiPosMap, setInitialMultiPosMap] = useState<{ [id: string]: { x: number; y: number; points?: { x: number; y: number }[]; arcControl?: { x: number; y: number } } }>({});
 
   // Drawing & Marquee Selection States
   const [isDrawing, setIsDrawing] = useState<boolean>(false);
   const [startPoint, setStartPoint] = useState<{ x: number; y: number } | null>(null);
   const [currentPencilPoints, setCurrentPencilPoints] = useState<{ x: number; y: number }[]>([]);
+  const [currentPolygonPoints, setCurrentPolygonPoints] = useState<{ x: number; y: number }[]>([]);
+  const [polygonHoverPos, setPolygonHoverPos] = useState<{ x: number; y: number } | null>(null);
   const [drawingRect, setDrawingRect] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
   const [drawingArc, setDrawingArc] = useState<{ x1: number; y1: number; x2: number; y2: number } | null>(null);
   const [selectionMarquee, setSelectionMarquee] = useState<{ x1: number; y1: number; x2: number; y2: number } | null>(null);
@@ -218,7 +223,7 @@ export default function FloorPlanCanvasStudio() {
         if (localBg) setCanvasBgMode(localBg as any);
         const localShowBg = localStorage.getItem("hhe_show_bg_image");
         if (localShowBg !== null) setShowBgImage(localShowBg === "true");
-      } catch (e) {}
+      } catch (e) { }
     }
 
     loadFloorPlan();
@@ -290,11 +295,33 @@ export default function FloorPlanCanvasStudio() {
         setElements((prev) =>
           prev.map((el) => {
             if (selectedIds.includes(el.id) && initialMultiPosMap[el.id]) {
-              return {
+              const basePos = initialMultiPosMap[el.id];
+              const newX = applySnap(basePos.x + dx);
+              const newY = applySnap(basePos.y + dy);
+              const shiftX = newX - basePos.x;
+              const shiftY = newY - basePos.y;
+
+              const updatedEl: CanvasElement = {
                 ...el,
-                x: applySnap(initialMultiPosMap[el.id].x + dx),
-                y: applySnap(initialMultiPosMap[el.id].y + dy),
+                x: newX,
+                y: newY,
               };
+
+              if (basePos.points) {
+                updatedEl.points = basePos.points.map((pt) => ({
+                  x: pt.x + shiftX,
+                  y: pt.y + shiftY,
+                }));
+              }
+
+              if (basePos.arcControl) {
+                updatedEl.arcControl = {
+                  x: basePos.arcControl.x + shiftX,
+                  y: basePos.arcControl.y + shiftY,
+                };
+              }
+
+              return updatedEl;
             }
             return el;
           })
@@ -391,6 +418,111 @@ export default function FloorPlanCanvasStudio() {
     };
   }, [isDragging, isResizing, isRotating, selectedIds, primarySelected, initialElementState, initialMultiPosMap, dragStartPos, getCoordinates, elements, snapToGrid]);
 
+  // Helper to finalize and create a Polygon Element
+  const finishPolygon = (pointsToFinish?: { x: number; y: number }[]) => {
+    const pts = pointsToFinish || currentPolygonPoints;
+    if (pts.length < 3) {
+      notify("Polygon requires at least 3 points");
+      return;
+    }
+    const minX = Math.min(...pts.map((p) => p.x));
+    const minY = Math.min(...pts.map((p) => p.y));
+    const maxX = Math.max(...pts.map((p) => p.x));
+    const maxY = Math.max(...pts.map((p) => p.y));
+    const width = Math.max(20, maxX - minX);
+    const height = Math.max(20, maxY - minY);
+
+    const stallLabel = `${counterPrefix}${counterNum}`;
+
+    const newPolyEl: CanvasElement = {
+      id: `POLY_${Date.now()}`,
+      type: "polygon",
+      number: stallLabel,
+      category: selectedCategory.name,
+      dimensions: selectedCategory.defaultDim || `${Math.round(width / 10)}m × ${Math.round(height / 10)}m`,
+      sizeSqM: selectedCategory.sqm || Math.round((width * height) / 100),
+      sizeSqFt: Math.round((selectedCategory.sqm || (width * height) / 100) * 10.764),
+      priceNPR: selectedCategory.npr,
+      priceUSD: selectedCategory.usd,
+      status: "Available",
+      color: activeFillColor === "transparent" ? "transparent" : (activeFillColor || selectedCategory.color),
+      fillOpacity: activeFillColor === "transparent" ? 0 : (selectedCategory.fillOpacity ?? 0.85),
+      borderColor: activeStrokeColor || selectedCategory.border,
+      textColor: activeFillColor === "transparent" ? (activeStrokeColor || "#38BDF8") : "#FFFFFF",
+      strokeWidth: activeStrokeWidth,
+      borderRadius: activeBorderRadius,
+      x: minX,
+      y: minY,
+      width,
+      height,
+      rotation: 0,
+      points: pts,
+    };
+
+    recordHistory([...elements, newPolyEl]);
+    setSelectedIds([newPolyEl.id]);
+    setCounterNum((prev) => prev + 1);
+    setCurrentPolygonPoints([]);
+    setPolygonHoverPos(null);
+    setIsDrawing(false);
+    notify(`Created Polygon Stall ${stallLabel}`);
+  };
+
+  // Helper to stamp regular geometric polygons (Triangle, Pentagon, Hexagon, Octagon, L-Shape)
+  const stampRegularPolygon = (sides: number, radius: number = 60, shapeName: string = "Polygon") => {
+    const centerX = canvasWidth / 2;
+    const centerY = canvasHeight / 2;
+    const pts: { x: number; y: number }[] = [];
+    const angleStep = (2 * Math.PI) / sides;
+    const offsetAngle = -Math.PI / 2;
+
+    for (let i = 0; i < sides; i++) {
+      const angle = offsetAngle + i * angleStep;
+      pts.push({
+        x: applySnap(Math.round(centerX + radius * Math.cos(angle))),
+        y: applySnap(Math.round(centerY + radius * Math.sin(angle))),
+      });
+    }
+
+    const minX = Math.min(...pts.map((p) => p.x));
+    const minY = Math.min(...pts.map((p) => p.y));
+    const maxX = Math.max(...pts.map((p) => p.x));
+    const maxY = Math.max(...pts.map((p) => p.y));
+    const width = maxX - minX;
+    const height = maxY - minY;
+    const stallLabel = `${counterPrefix}${counterNum}`;
+
+    const newPoly: CanvasElement = {
+      id: `POLY_${Date.now()}`,
+      type: "polygon",
+      number: stallLabel,
+      category: `${shapeName} Stall`,
+      dimensions: `${Math.round(width / 10)}m × ${Math.round(height / 10)}m`,
+      sizeSqM: selectedCategory.sqm || Math.round((width * height) / 100),
+      sizeSqFt: Math.round((selectedCategory.sqm || (width * height) / 100) * 10.764),
+      priceNPR: selectedCategory.npr,
+      priceUSD: selectedCategory.usd,
+      status: "Available",
+      color: activeFillColor === "transparent" ? "transparent" : (activeFillColor || selectedCategory.color),
+      fillOpacity: activeFillColor === "transparent" ? 0 : (selectedCategory.fillOpacity ?? 0.85),
+      borderColor: activeStrokeColor || selectedCategory.border,
+      textColor: activeFillColor === "transparent" ? (activeStrokeColor || "#38BDF8") : "#FFFFFF",
+      strokeWidth: activeStrokeWidth,
+      borderRadius: activeBorderRadius,
+      x: minX,
+      y: minY,
+      width,
+      height,
+      rotation: 0,
+      points: pts,
+    };
+
+    recordHistory([...elements, newPoly]);
+    setSelectedIds([newPoly.id]);
+    setCounterNum((prev) => prev + 1);
+    notify(`Stamped ${shapeName} (${sides}-sided) Stall ${stallLabel}`);
+  };
+
   // Canvas Mouse Down
   const onCanvasMouseDown = (e: React.MouseEvent<SVGSVGElement>) => {
     const coords = getCoordinates(e);
@@ -407,6 +539,22 @@ export default function FloorPlanCanvasStudio() {
       setIsDrawing(true);
       setStartPoint(coords);
       setDrawingRect({ x: coords.x, y: coords.y, width: 0, height: 0 });
+    } else if (activeTool === "polygon") {
+      if (currentPolygonPoints.length === 0) {
+        setIsDrawing(true);
+        setCurrentPolygonPoints([coords]);
+        setPolygonHoverPos(coords);
+      } else {
+        const firstPt = currentPolygonPoints[0];
+        const distToStart = Math.hypot(coords.x - firstPt.x, coords.y - firstPt.y);
+        // If clicking near first point and has 3+ points, close polygon
+        if (distToStart <= 16 && currentPolygonPoints.length >= 3) {
+          finishPolygon(currentPolygonPoints);
+        } else {
+          setCurrentPolygonPoints((prev) => [...prev, coords]);
+          setPolygonHoverPos(coords);
+        }
+      }
     } else if (activeTool === "pencil") {
       setIsDrawing(true);
       setCurrentPencilPoints([coords]);
@@ -445,6 +593,10 @@ export default function FloorPlanCanvasStudio() {
   // Canvas Mouse Move (during drawing / marquee selection)
   const onCanvasMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
     const coords = getCoordinates(e);
+
+    if (activeTool === "polygon" && currentPolygonPoints.length > 0) {
+      setPolygonHoverPos(coords);
+    }
 
     if (isDrawing && startPoint) {
       if (activeTool === "select") {
@@ -789,6 +941,29 @@ export default function FloorPlanCanvasStudio() {
       const isMac = typeof navigator !== "undefined" && navigator.platform.toUpperCase().indexOf("MAC") >= 0;
       const isCmdOrCtrl = isMac ? e.metaKey : e.ctrlKey;
 
+      // 0. ACTIVE POLYGON DRAWING SHORTCUTS
+      if (currentPolygonPoints.length > 0) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          if (currentPolygonPoints.length >= 3) {
+            finishPolygon();
+          } else {
+            notify("Need at least 3 vertices to finish polygon");
+          }
+          return;
+        } else if (e.key === "Escape") {
+          e.preventDefault();
+          setCurrentPolygonPoints([]);
+          setPolygonHoverPos(null);
+          notify("Cancelled polygon drawing");
+          return;
+        } else if (e.key === "Backspace" || e.key === "Delete") {
+          e.preventDefault();
+          setCurrentPolygonPoints((prev) => prev.slice(0, -1));
+          return;
+        }
+      }
+
       // 1. DELETE / BACKSPACE
       if (e.key === "Delete" || e.key === "Backspace") {
         if (selectedIds.length > 0) {
@@ -837,10 +1012,10 @@ export default function FloorPlanCanvasStudio() {
           const step = e.shiftKey
             ? (gridSize * 2 || 20)
             : e.altKey
-            ? 1
-            : snapToGrid
-            ? gridSize
-            : 5;
+              ? 1
+              : snapToGrid
+                ? gridSize
+                : 5;
 
           let dx = 0;
           let dy = 0;
@@ -990,12 +1165,18 @@ export default function FloorPlanCanvasStudio() {
           <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-1" />
 
           <button
+            type="button"
             onClick={saveToStorage}
             disabled={isSaving}
-            className="px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md flex items-center gap-1.5 transition-all"
+            className="relative z-[9999] inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold shadow-lg border border-emerald-400/50 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
           >
-            <Save className={`w-3.5 h-3.5 ${isSaving ? "animate-spin" : ""}`} />
-            <span>{isSaving ? "Saving..." : "Save Canvas"}</span>
+            <Save
+              className={`w-4 h-4 shrink-0 ${isSaving ? "animate-spin" : ""
+                }`}
+            />
+            <span className="whitespace-nowrap">
+              {isSaving ? "Saving..." : "Save Canvas"}
+            </span>
           </button>
         </div>
       </header>
@@ -1016,22 +1197,20 @@ export default function FloorPlanCanvasStudio() {
           <div className="flex border-b border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-[#090D14] p-1 gap-1">
             <button
               onClick={() => setLeftSidebarTab("tools")}
-              className={`flex-1 py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
-                leftSidebarTab === "tools"
-                  ? "bg-white dark:bg-slate-800 text-sky-600 dark:text-sky-400 shadow-xs border border-slate-200/80 dark:border-slate-700"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-              }`}
+              className={`flex-1 py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${leftSidebarTab === "tools"
+                ? "bg-white dark:bg-slate-800 text-sky-600 dark:text-sky-400 shadow-xs border border-slate-200/80 dark:border-slate-700"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                }`}
             >
               <MousePointer className={`w-3.5 h-3.5 ${leftSidebarTab === "tools" ? "text-sky-600 dark:text-sky-400" : "text-slate-500 dark:text-slate-400"}`} />
               <span>Drawing Tools</span>
             </button>
             <button
               onClick={() => setLeftSidebarTab("inspector")}
-              className={`flex-1 py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
-                leftSidebarTab === "inspector"
-                  ? "bg-white dark:bg-slate-800 text-sky-600 dark:text-sky-400 shadow-xs border border-slate-200/80 dark:border-slate-700"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-              }`}
+              className={`flex-1 py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${leftSidebarTab === "inspector"
+                ? "bg-white dark:bg-slate-800 text-sky-600 dark:text-sky-400 shadow-xs border border-slate-200/80 dark:border-slate-700"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                }`}
             >
               <Sliders className={`w-3.5 h-3.5 ${leftSidebarTab === "inspector" ? "text-sky-600 dark:text-sky-400" : "text-slate-500 dark:text-slate-400"}`} />
               <span>
@@ -1264,11 +1443,10 @@ export default function FloorPlanCanvasStudio() {
                                 textColor: primarySelected.borderColor || "#38BDF8",
                               })
                             }
-                            className={`px-2 py-0.5 rounded text-[10px] font-mono border transition-colors ${
-                              primarySelected.color === "transparent" || primarySelected.color === "none"
-                                ? "bg-sky-500/20 border-sky-400 text-sky-300 font-bold"
-                                : "bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-200"
-                            }`}
+                            className={`px-2 py-0.5 rounded text-[10px] font-mono border transition-colors ${primarySelected.color === "transparent" || primarySelected.color === "none"
+                              ? "bg-sky-500/20 border-sky-400 text-sky-300 font-bold"
+                              : "bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-200"
+                              }`}
                           >
                             Hollow / None
                           </button>
@@ -1301,9 +1479,8 @@ export default function FloorPlanCanvasStudio() {
                               })
                             }
                             style={{ backgroundColor: sw.hex }}
-                            className={`w-5 h-5 rounded-md border border-slate-700 hover:scale-110 transition-transform ${
-                              primarySelected.color === sw.hex ? "ring-2 ring-white scale-110" : ""
-                            }`}
+                            className={`w-5 h-5 rounded-md border border-slate-700 hover:scale-110 transition-transform ${primarySelected.color === sw.hex ? "ring-2 ring-white scale-110" : ""
+                              }`}
                           />
                         ))}
                       </div>
@@ -1357,9 +1534,8 @@ export default function FloorPlanCanvasStudio() {
                               })
                             }
                             style={{ backgroundColor: c }}
-                            className={`w-5 h-5 rounded-full border border-slate-700 hover:scale-110 transition-transform ${
-                              primarySelected.borderColor === c ? "ring-2 ring-white scale-110" : ""
-                            }`}
+                            className={`w-5 h-5 rounded-full border border-slate-700 hover:scale-110 transition-transform ${primarySelected.borderColor === c ? "ring-2 ring-white scale-110" : ""
+                              }`}
                           />
                         ))}
                       </div>
@@ -1391,9 +1567,8 @@ export default function FloorPlanCanvasStudio() {
                               })
                             }
                             style={{ backgroundColor: c }}
-                            className={`w-5 h-5 rounded-full border border-slate-700 hover:scale-110 transition-transform ${
-                              primarySelected.textColor === c ? "ring-2 ring-white scale-110" : ""
-                            }`}
+                            className={`w-5 h-5 rounded-full border border-slate-700 hover:scale-110 transition-transform ${primarySelected.textColor === c ? "ring-2 ring-white scale-110" : ""
+                              }`}
                           />
                         ))}
                       </div>
@@ -1504,11 +1679,10 @@ export default function FloorPlanCanvasStudio() {
                             key={ori}
                             type="button"
                             onClick={() => updateSelectedBatch({ orientation: ori })}
-                            className={`p-1.5 rounded-lg border text-left text-[10px] font-medium transition-all ${
-                              primarySelected.orientation === ori
-                                ? "bg-amber-50 dark:bg-amber-500/20 border-amber-400 text-amber-800 dark:text-amber-300 font-bold"
-                                : "bg-white dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-                            }`}
+                            className={`p-1.5 rounded-lg border text-left text-[10px] font-medium transition-all ${primarySelected.orientation === ori
+                              ? "bg-amber-50 dark:bg-amber-500/20 border-amber-400 text-amber-800 dark:text-amber-300 font-bold"
+                              : "bg-white dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                              }`}
                           >
                             {ori}
                           </button>
@@ -1562,11 +1736,10 @@ export default function FloorPlanCanvasStudio() {
                                   : [...currentInclusions, amenity];
                                 updateSelectedBatch({ inclusions: next });
                               }}
-                              className={`px-2 py-1 rounded-md text-[10px] border transition-all ${
-                                hasAmenity
-                                  ? "bg-emerald-50 dark:bg-emerald-500/20 border-emerald-500/40 text-emerald-800 dark:text-emerald-300 font-bold"
-                                  : "bg-white dark:bg-slate-800/40 border-slate-200 dark:border-slate-700/60 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-                              }`}
+                              className={`px-2 py-1 rounded-md text-[10px] border transition-all ${hasAmenity
+                                ? "bg-emerald-50 dark:bg-emerald-500/20 border-emerald-500/40 text-emerald-800 dark:text-emerald-300 font-bold"
+                                : "bg-white dark:bg-slate-800/40 border-slate-200 dark:border-slate-700/60 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                                }`}
                             >
                               {hasAmenity ? `✓ ${amenity}` : `+ ${amenity}`}
                             </button>
@@ -1696,9 +1869,8 @@ export default function FloorPlanCanvasStudio() {
                           key={st.id}
                           type="button"
                           onClick={() => updateSelectedBatch({ status: st.id as any })}
-                          className={`py-1.5 rounded-lg border text-center text-[11px] font-bold transition-all ${
-                            primarySelected.status === st.id ? st.bg : "bg-white dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400"
-                          }`}
+                          className={`py-1.5 rounded-lg border text-center text-[11px] font-bold transition-all ${primarySelected.status === st.id ? st.bg : "bg-white dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400"
+                            }`}
                         >
                           {st.id}
                         </button>
@@ -1837,11 +2009,10 @@ export default function FloorPlanCanvasStudio() {
                             setActiveFillColor(cat.color === "transparent" ? "transparent" : cat.color);
                             setActiveStrokeColor(cat.border);
                           }}
-                          className={`w-full p-2 rounded-lg border text-left flex items-center justify-between transition-colors ${
-                            isSelected
-                              ? "bg-sky-50 dark:bg-slate-800 border-sky-300 dark:border-slate-600 text-sky-950 dark:text-white font-medium shadow-xs"
-                              : "bg-slate-50/70 dark:bg-slate-900/40 border-slate-200/80 dark:border-transparent text-slate-700 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/40 hover:text-slate-900 dark:hover:text-slate-200"
-                          }`}
+                          className={`w-full p-2 rounded-lg border text-left flex items-center justify-between transition-colors ${isSelected
+                            ? "bg-sky-50 dark:bg-slate-800 border-sky-300 dark:border-slate-600 text-sky-950 dark:text-white font-medium shadow-xs"
+                            : "bg-slate-50/70 dark:bg-slate-900/40 border-slate-200/80 dark:border-transparent text-slate-700 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/40 hover:text-slate-900 dark:hover:text-slate-200"
+                            }`}
                         >
                           <div className="flex items-center gap-2 truncate">
                             <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: cat.border }} />
@@ -1878,6 +2049,64 @@ export default function FloorPlanCanvasStudio() {
                     </div>
                   </div>
                 </div>
+
+                {/* Polygon Tools & Quick Shape Presets */}
+                <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-slate-800/80">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                      <Shapes className="w-3.5 h-3.5 text-sky-500" />
+                      <span>Polygon Presets</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveTool("polygon");
+                        notify("Polygon tool active: Click canvas to add vertices, double-click or click start point to finish.");
+                      }}
+                      className="text-[10px] text-sky-600 dark:text-sky-400 font-bold hover:underline cursor-pointer"
+                    >
+                      + Draw Custom
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => stampRegularPolygon(3, 50, "Triangle")}
+                      className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/60 hover:border-sky-400 text-slate-700 dark:text-slate-300 text-[11px] font-medium flex items-center gap-1.5 transition-all cursor-pointer"
+                      title="Stamp 3-Sided Triangle Stall"
+                    >
+                      <span className="text-xs">▲</span>
+                      <span>Triangle (3)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => stampRegularPolygon(5, 55, "Pentagon")}
+                      className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/60 hover:border-sky-400 text-slate-700 dark:text-slate-300 text-[11px] font-medium flex items-center gap-1.5 transition-all cursor-pointer"
+                      title="Stamp 5-Sided Pentagon Stall"
+                    >
+                      <Pentagon className="w-3 h-3 text-sky-500" />
+                      <span>Pentagon (5)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => stampRegularPolygon(6, 60, "Hexagon")}
+                      className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/60 hover:border-sky-400 text-slate-700 dark:text-slate-300 text-[11px] font-medium flex items-center gap-1.5 transition-all cursor-pointer"
+                      title="Stamp 6-Sided Hexagon Stall"
+                    >
+                      <Hexagon className="w-3 h-3 text-amber-500" />
+                      <span>Hexagon (6)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => stampRegularPolygon(8, 65, "Octagon")}
+                      className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/60 hover:border-sky-400 text-slate-700 dark:text-slate-300 text-[11px] font-medium flex items-center gap-1.5 transition-all cursor-pointer"
+                      title="Stamp 8-Sided Octagon Stall"
+                    >
+                      <span className="text-xs font-bold">⯃</span>
+                      <span>Octagon (8)</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -1888,13 +2117,14 @@ export default function FloorPlanCanvasStudio() {
           {/* Canvas Floating Top Toolbar */}
           <div className="absolute top-4 left-6 z-20 flex items-center gap-1.5 p-1.5 rounded-2xl bg-white/95 dark:bg-[#0C121C]/90 backdrop-blur border border-slate-200 dark:border-slate-800 shadow-xl dark:shadow-2xl">
             {[
-              { id: "select", icon: MousePointer, label: "Select / Marquee Box" },
-              { id: "rectangle", icon: Square, label: "Draw Rectangle Stall" },
-              { id: "line", icon: Minus, label: "Draw Straight Wall" },
-              { id: "arc", icon: Spline, label: "Draw Curved Wall" },
-              { id: "pencil", icon: Pencil, label: "Freehand Pencil" },
-              { id: "text", icon: Type, label: "Text Label" },
-              { id: "eraser", icon: Eraser, label: "Eraser Tool" },
+              { id: "select", icon: MousePointer, label: "Select / Marquee Box (V)" },
+              { id: "rectangle", icon: Square, label: "Draw Rectangle Stall (R)" },
+              { id: "polygon", icon: Pentagon, label: "Draw Polygon / Multi-Point (P)" },
+              { id: "line", icon: Minus, label: "Draw Straight Wall (L)" },
+              { id: "arc", icon: Spline, label: "Draw Curved Wall (A)" },
+              { id: "pencil", icon: Pencil, label: "Freehand Pencil (B)" },
+              { id: "text", icon: Type, label: "Text Label (T)" },
+              { id: "eraser", icon: Eraser, label: "Eraser Tool (E)" },
             ].map((tool) => {
               const Icon = tool.icon;
               const isActive = activeTool === tool.id;
@@ -1907,11 +2137,10 @@ export default function FloorPlanCanvasStudio() {
                       setLeftSidebarTab("tools");
                     }
                   }}
-                  className={`p-2.5 rounded-xl font-medium text-xs flex items-center gap-1.5 transition-all ${
-                    isActive
-                      ? "bg-sky-600 text-white shadow-md shadow-sky-600/25 ring-2 ring-sky-500/30 scale-105"
-                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80"
-                  }`}
+                  className={`p-2.5 rounded-xl font-medium text-xs flex items-center gap-1.5 transition-all ${isActive
+                    ? "bg-sky-600 text-white shadow-md shadow-sky-600/25 ring-2 ring-sky-500/30 scale-105"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80"
+                    }`}
                   title={tool.label}
                 >
                   <Icon className="w-4 h-4" />
@@ -1924,9 +2153,8 @@ export default function FloorPlanCanvasStudio() {
             {/* Snap to Grid Toggle */}
             <button
               onClick={() => setSnapToGrid(!snapToGrid)}
-              className={`p-2 rounded-xl text-xs font-semibold flex items-center gap-1 transition-all ${
-                snapToGrid ? "bg-emerald-50 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/40 font-bold" : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-              }`}
+              className={`p-2 rounded-xl text-xs font-semibold flex items-center gap-1 transition-all ${snapToGrid ? "bg-emerald-50 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/40 font-bold" : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                }`}
               title="Snap to 10px Grid"
             >
               <Grid3X3 className="w-4 h-4" />
@@ -1946,11 +2174,10 @@ export default function FloorPlanCanvasStudio() {
                   setShowBgImage(true);
                   notify("Canvas: Blueprint Image Background");
                 }}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-                  showBgImage
-                    ? "bg-sky-600 text-white shadow-xs font-bold"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                }`}
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${showBgImage
+                  ? "bg-sky-600 text-white shadow-xs font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                  }`}
                 title="Show Official Blueprint Background Image"
               >
                 <ImageIcon className="w-3.5 h-3.5" />
@@ -1964,11 +2191,10 @@ export default function FloorPlanCanvasStudio() {
                   setCanvasBgMode("cad-dark");
                   notify("Canvas: Solid CAD Black Background");
                 }}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-                  !showBgImage && canvasBgMode === "cad-dark"
-                    ? "bg-slate-900 text-white border border-slate-600 shadow-xs font-bold"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                }`}
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${!showBgImage && canvasBgMode === "cad-dark"
+                  ? "bg-slate-900 text-white border border-slate-600 shadow-xs font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                  }`}
                 title="Solid CAD Dark / Black Background"
               >
                 <span className="w-2.5 h-2.5 rounded-full bg-slate-950 border border-slate-500 shrink-0" />
@@ -1982,11 +2208,10 @@ export default function FloorPlanCanvasStudio() {
                   setCanvasBgMode("clean-white");
                   notify("Canvas: Clean White Background");
                 }}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-                  !showBgImage && canvasBgMode === "clean-white"
-                    ? "bg-white text-slate-900 border border-slate-300 shadow-xs font-bold"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                }`}
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${!showBgImage && canvasBgMode === "clean-white"
+                  ? "bg-white text-slate-900 border border-slate-300 shadow-xs font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                  }`}
                 title="Clean White Canvas Background"
               >
                 <span className="w-2.5 h-2.5 rounded-full bg-white border border-slate-400 shrink-0" />
@@ -2146,10 +2371,10 @@ export default function FloorPlanCanvasStudio() {
                             el.color === "transparent" || el.color === "none"
                               ? 0
                               : el.fillOpacity !== undefined
-                              ? el.fillOpacity
-                              : isSelected
-                              ? 0.95
-                              : 0.85
+                                ? el.fillOpacity
+                                : isSelected
+                                  ? 0.95
+                                  : 0.85
                           }
                           stroke={isSelected ? "#38BDF8" : el.borderColor}
                           strokeWidth={isSelected ? Math.max(3, el.strokeWidth + 1.5) : el.strokeWidth || 2}
@@ -2418,6 +2643,112 @@ export default function FloorPlanCanvasStudio() {
                     );
                   }
 
+                  // 6. Polygon / Multi-Point Shape Stall
+                  if (el.type === "polygon" && el.points && el.points.length >= 3) {
+                    const pointsString = el.points.map((p) => `${p.x},${p.y}`).join(" ");
+                    const centerX = el.x + el.width / 2;
+                    const centerY = el.y + el.height / 2;
+
+                    return (
+                      <g key={el.id}>
+                        <polygon
+                          points={pointsString}
+                          fill={el.color === "transparent" || el.color === "none" ? "none" : el.color}
+                          fillOpacity={
+                            el.color === "transparent" || el.color === "none"
+                              ? 0
+                              : el.fillOpacity !== undefined
+                              ? el.fillOpacity
+                              : 0.85
+                          }
+                          stroke={isSelected ? "#38BDF8" : el.borderColor || "#38BDF8"}
+                          strokeWidth={isSelected ? (el.strokeWidth || 2) + 2 : (el.strokeWidth || 2)}
+                          strokeLinejoin="round"
+                          strokeLinecap="round"
+                          onMouseDown={(e) => {
+                            e.stopPropagation();
+                            if (activeTool === "eraser") {
+                              recordHistory(elements.filter((item) => item.id !== el.id));
+                              notify("Deleted polygon");
+                              return;
+                            }
+
+                            if (!isSelected) {
+                              setSelectedIds([el.id]);
+                            }
+
+                            const currentSelectedIds = isSelected ? selectedIds : [el.id];
+                            const posMap: { [id: string]: { x: number; y: number; points?: { x: number; y: number }[]; arcControl?: { x: number; y: number } } } = {};
+                            elements.forEach((item) => {
+                              if (currentSelectedIds.includes(item.id)) {
+                                posMap[item.id] = {
+                                  x: item.x,
+                                  y: item.y,
+                                  points: item.points ? item.points.map((p) => ({ ...p })) : undefined,
+                                  arcControl: item.arcControl ? { ...item.arcControl } : undefined,
+                                };
+                              }
+                            });
+
+                            setInitialMultiPosMap(posMap);
+                            setIsDragging(true);
+                            setInitialElementState(el);
+                            setDragStartPos(getCoordinates(e));
+                          }}
+                          className="cursor-grab active:cursor-grabbing"
+                        />
+
+                        {/* Stall Number / Label */}
+                        {el.number && (
+                          <text
+                            x={centerX}
+                            y={centerY + 4}
+                            textAnchor="middle"
+                            dominantBaseline="middle"
+                            fill={el.textColor || "#FFFFFF"}
+                            fontSize="12"
+                            fontWeight="bold"
+                            fontFamily="monospace"
+                            className="select-none pointer-events-none drop-shadow-md"
+                          >
+                            {el.number}
+                          </text>
+                        )}
+
+                        {/* Selected Vertex Handles & Bounding Outline */}
+                        {isSelected && (
+                          <>
+                            {/* Bounding Box Outline */}
+                            <rect
+                              x={el.x - 2}
+                              y={el.y - 2}
+                              width={el.width + 4}
+                              height={el.height + 4}
+                              fill="none"
+                              stroke="#38BDF8"
+                              strokeWidth="1"
+                              strokeDasharray="3 3"
+                              pointerEvents="none"
+                            />
+                            {/* Vertices Anchors */}
+                            {el.points.map((pt, pIdx) => (
+                              <circle
+                                key={pIdx}
+                                cx={pt.x}
+                                cy={pt.y}
+                                r="4.5"
+                                fill="#38BDF8"
+                                stroke="#0C121C"
+                                strokeWidth="1.5"
+                                className="pointer-events-none"
+                              />
+                            ))}
+                          </>
+                        )}
+                      </g>
+                    );
+                  }
+
                   return null;
                 })}
 
@@ -2437,6 +2768,71 @@ export default function FloorPlanCanvasStudio() {
                   />
                 )}
 
+                {/* Active Polygon In-Progress Drawing Preview */}
+                {activeTool === "polygon" && currentPolygonPoints.length > 0 && (
+                  <g className="pointer-events-none">
+                    {/* Ghost Fill Preview */}
+                    {currentPolygonPoints.length >= 2 && polygonHoverPos && (
+                      <polygon
+                        points={[...currentPolygonPoints, polygonHoverPos].map((p) => `${p.x},${p.y}`).join(" ")}
+                        fill={activeFillColor === "transparent" ? "none" : activeFillColor}
+                        fillOpacity={0.35}
+                        stroke="none"
+                      />
+                    )}
+
+                    {/* Polyline Path for existing points */}
+                    <polyline
+                      points={currentPolygonPoints.map((p) => `${p.x},${p.y}`).join(" ")}
+                      fill="none"
+                      stroke={activeStrokeColor || "#38BDF8"}
+                      strokeWidth={activeStrokeWidth || 2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+
+                    {/* Rubberband line from last point to cursor */}
+                    {polygonHoverPos && currentPolygonPoints.length > 0 && (
+                      <line
+                        x1={currentPolygonPoints[currentPolygonPoints.length - 1].x}
+                        y1={currentPolygonPoints[currentPolygonPoints.length - 1].y}
+                        x2={polygonHoverPos.x}
+                        y2={polygonHoverPos.y}
+                        stroke={activeStrokeColor || "#38BDF8"}
+                        strokeWidth={activeStrokeWidth || 2}
+                        strokeDasharray="4 4"
+                      />
+                    )}
+
+                    {/* Existing Vertex Circles */}
+                    {currentPolygonPoints.map((p, idx) => (
+                      <circle
+                        key={idx}
+                        cx={p.x}
+                        cy={p.y}
+                        r={idx === 0 ? "7" : "5"}
+                        fill={idx === 0 ? "#10B981" : "#38BDF8"}
+                        stroke="#0C121C"
+                        strokeWidth="2"
+                      />
+                    ))}
+
+                    {/* First Point Closing Target Halo */}
+                    {currentPolygonPoints.length >= 3 && (
+                      <circle
+                        cx={currentPolygonPoints[0].x}
+                        cy={currentPolygonPoints[0].y}
+                        r="14"
+                        fill="none"
+                        stroke="#10B981"
+                        strokeWidth="2"
+                        strokeDasharray="3 3"
+                        className="animate-pulse"
+                      />
+                    )}
+                  </g>
+                )}
+
                 {/* Marquee Box Selection Preview */}
                 {selectionMarquee && (
                   <rect
@@ -2452,6 +2848,44 @@ export default function FloorPlanCanvasStudio() {
                 )}
               </svg>
             </div>
+
+            {/* Floating In-Progress Polygon Banner Controls */}
+            {activeTool === "polygon" && currentPolygonPoints.length > 0 && (
+              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-slate-900/95 text-white border border-sky-500/40 shadow-2xl backdrop-blur font-sans text-xs">
+                <div className="flex items-center gap-1.5 font-mono text-sky-400 font-bold">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>Polygon: {currentPolygonPoints.length} vertices</span>
+                </div>
+                <div className="h-4 w-px bg-slate-700" />
+                <button
+                  type="button"
+                  disabled={currentPolygonPoints.length < 3}
+                  onClick={() => finishPolygon()}
+                  className="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 font-bold flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>Finish Polygon (Enter)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCurrentPolygonPoints((prev) => prev.slice(0, -1))}
+                  className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium transition-all cursor-pointer"
+                >
+                  Undo Point (Del)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCurrentPolygonPoints([]);
+                    setPolygonHoverPos(null);
+                    setActiveTool("select");
+                  }}
+                  className="px-2.5 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 font-medium transition-all cursor-pointer"
+                >
+                  Cancel (Esc)
+                </button>
+              </div>
+            )}
           </div>
         </main>
       </div>
