@@ -13,21 +13,15 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-12 pb-12 border-b border-slate-800/80">
           {/* Brand & Organizers (Col 1-5) */}
           <div className="lg:col-span-5 space-y-5">
-            <Link href="/" className="inline-flex items-center gap-3">
-              <Image
-                src="/images/logo.png"
-                alt="Himalayan Green Energy Expo"
-                width={36}
-                height={36}
-                className="object-contain brightness-0 invert"
-              />
-              <div>
-                <span className="font-display font-extrabold text-base tracking-tight text-white block">
-                  HIMALAYAN GREEN ENERGY EXPO
-                </span>
-                <span className="text-[10px] font-mono font-semibold text-[#25C176] tracking-wider uppercase block">
-                  5th Edition · 16–18 January 2027
-                </span>
+            <Link href="/" className="inline-block group focus-visible:outline-2 focus-visible:outline-[#25C176]">
+              <div className="bg-white/95 px-4 py-2.5 rounded-xl inline-flex items-center shadow-md hover:shadow-lg transition-all duration-200 group-hover:scale-[1.02]">
+                <Image
+                  src="/images/logo.png"
+                  alt="Himalayan Green Energy Expo"
+                  width={280}
+                  height={85}
+                  className="h-14 sm:h-18 lg:h-20 w-auto object-contain"
+                />
               </div>
             </Link>
 
