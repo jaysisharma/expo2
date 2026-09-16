@@ -21,6 +21,7 @@ import {
   getFirebaseInquiries,
   addFirebaseInquiry,
   updateFirebaseInquiryStatus,
+  deleteFirebaseInquiry,
   getFirebaseSettings,
   updateFirebaseSettings,
 } from "@/lib/firebaseDb";
@@ -369,6 +370,26 @@ export async function POST(req: Request) {
           return NextResponse.json({ success: true, message: "Inquiry status updated", data: inq });
         }
         return NextResponse.json({ success: false, message: "Inquiry not found" }, { status: 404 });
+      }
+
+      case "delete_inquiry": {
+        const { inquiryId } = payload;
+        data.inquiries = data.inquiries.filter((i: any) => i.id !== inquiryId);
+        await Promise.all([
+          saveAdminData(data),
+          deleteFirebaseInquiry(inquiryId).catch(() => {}),
+        ]);
+        return NextResponse.json({ success: true, message: "Inquiry deleted" });
+      }
+
+      case "clear_inquiries": {
+        const oldInqs = [...(data.inquiries || [])];
+        data.inquiries = [];
+        await Promise.all([
+          saveAdminData(data),
+          ...oldInqs.map((i: any) => deleteFirebaseInquiry(i.id).catch(() => {})),
+        ]);
+        return NextResponse.json({ success: true, message: "All inquiries cleared" });
       }
 
       case "add_inquiry": {

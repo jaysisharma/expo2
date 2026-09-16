@@ -156,6 +156,17 @@ export async function updateFirebaseInquiryStatus(inquiryId: string, status: str
   }
 }
 
+export async function deleteFirebaseInquiry(inquiryId: string) {
+  try {
+    const ref = doc(db, COLLECTIONS.INQUIRIES, inquiryId);
+    await deleteDoc(ref);
+    return true;
+  } catch (error) {
+    console.warn("Firestore deleteInquiry error:", error);
+    return false;
+  }
+}
+
 // ----------------- SETTINGS -----------------
 export async function getFirebaseSettings() {
   try {

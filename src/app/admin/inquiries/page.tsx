@@ -10,6 +10,7 @@ import {
   Building,
   Reply,
   RefreshCw,
+  Trash2,
 } from "lucide-react";
 
 export default function AdminInquiriesPage() {
@@ -79,6 +80,48 @@ export default function AdminInquiriesPage() {
     }
   };
 
+  const handleDeleteInquiry = async (inquiryId: string, subject: string) => {
+    if (!confirm(`Delete inquiry "${subject}"?`)) return;
+    try {
+      const res = await fetch("/api/admin/data", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "delete_inquiry",
+          payload: { inquiryId },
+        }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        notify("Inquiry deleted");
+        fetchInquiries();
+      }
+    } catch (e) {
+      notify("Failed to delete inquiry");
+    }
+  };
+
+  const handleClearAllInquiries = async () => {
+    if (!confirm("Are you sure you want to clear ALL inquiries? This action cannot be undone.")) return;
+    try {
+      const res = await fetch("/api/admin/data", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "clear_inquiries",
+          payload: {},
+        }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        notify("All inquiries cleared");
+        fetchInquiries();
+      }
+    } catch (e) {
+      notify("Failed to clear inquiries");
+    }
+  };
+
   const newCount = inquiries.filter((i: any) => i.status === "New").length;
   const inProgressCount = inquiries.filter((i: any) => i.status === "In Progress").length;
   const resolvedCount = inquiries.filter((i: any) => i.status === "Resolved").length;
@@ -109,13 +152,25 @@ export default function AdminInquiriesPage() {
           </p>
         </div>
 
-        <button
-          onClick={fetchInquiries}
-          className="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 shadow-xs flex items-center gap-1.5 transition-colors self-start sm:self-auto cursor-pointer"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 text-[#218A59] ${isLoading ? "animate-spin" : ""}`} />
-          <span>Refresh</span>
-        </button>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          {inquiries.length > 0 && (
+            <button
+              onClick={handleClearAllInquiries}
+              className="px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold border border-rose-200 shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+              <span>Clear All</span>
+            </button>
+          )}
+
+          <button
+            onClick={fetchInquiries}
+            className="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 text-[#218A59] ${isLoading ? "animate-spin" : ""}`} />
+            <span>Refresh</span>
+          </button>
+        </div>
       </div>
 
       {/* KPI Row */}
@@ -225,6 +280,14 @@ export default function AdminInquiriesPage() {
                     <option value="In Progress">Mark In Progress</option>
                     <option value="Resolved">Mark Resolved</option>
                   </select>
+
+                  <button
+                    onClick={() => handleDeleteInquiry(inq.id, inq.subject)}
+                    title="Delete Inquiry"
+                    className="p-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 transition-colors cursor-pointer"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               </div>
 

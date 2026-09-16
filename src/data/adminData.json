@@ -40,42 +40,7 @@
       "registeredAt": "2026-09-16T18:54:27.802Z"
     }
   ],
-  "inquiries": [
-    {
-      "id": "INQ-2026-001",
-      "name": "Hans Schneider",
-      "email": "h.schneider@siemens-energy.com",
-      "phone": "+49 89 2072",
-      "company": "Siemens Energy Global",
-      "subject": "36m² Island Stall Booking & 3-Phase 32A Power",
-      "message": "We are interested in booking Stall A-105 or A-106 for transformer and grid automation demo. Please provide bank wire details and space allotment confirmation.",
-      "stallInterest": "A-105",
-      "status": "In Progress",
-      "submittedAt": "2026-08-30T13:45:00.000Z"
-    },
-    {
-      "id": "INQ-2026-002",
-      "name": "Pradip Thapa",
-      "email": "pradip@himalayanclean.com.np",
-      "phone": "+977 9851098765",
-      "company": "Himalayan Clean Hydro Pvt.",
-      "subject": "Conference Sponsorship & Speaking Slot Query",
-      "message": "We would like to explore the Gold Sponsorship tier along with a speaking presentation slot on Session 2 (Cross-Border Power Wheeling).",
-      "status": "New",
-      "submittedAt": "2026-09-01T09:30:00.000Z"
-    },
-    {
-      "id": "INQ-2026-003",
-      "name": "Dr. Ananya Roy",
-      "email": "ananya.roy@iitd.ac.in",
-      "phone": "+91 9811223344",
-      "company": "IIT Delhi Energy Center",
-      "subject": "Student CleanTech Innovation Entry Submission",
-      "message": "Our student research team wants to submit a prototype for high-silt abrasive resistant Pelton turbine nozzle. What is the submission deadline?",
-      "status": "Resolved",
-      "submittedAt": "2026-08-28T11:15:00.000Z"
-    }
-  ],
+  "inquiries": [],
   "boothOverrides": {},
   "settings": {
     "eventName": "Himalayan Green Energy Expo Nepal 2027",
