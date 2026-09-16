@@ -183,10 +183,10 @@ export function ConferenceThemesSection() {
                     </div>
                   </div>
 
-                  {/* Bottom Content: Minimal Title & Tagline */}
-                  <div className="relative z-10 text-white space-y-1">
+                  {/* Bottom Content: Title by default, description revealed on hover */}
+                  <div className="relative z-10 text-white">
                     <h3
-                      className={`font-display font-bold text-lg sm:text-xl text-white tracking-tight leading-snug drop-shadow-md transition-colors duration-300 ${
+                      className={`font-display font-bold text-base sm:text-lg text-white tracking-tight leading-snug drop-shadow-md transition-colors duration-300 ${
                         isGreen
                           ? 'group-hover:text-[#4ADE80]'
                           : 'group-hover:text-[#93C5FD]'
@@ -194,9 +194,11 @@ export function ConferenceThemesSection() {
                     >
                       {sector.title}
                     </h3>
-                    <p className="text-xs text-white/80 font-mono tracking-wide drop-shadow-sm group-hover:text-white transition-colors">
-                      {sector.tagline}
-                    </p>
+                    <div className="overflow-hidden transition-all duration-300 ease-out max-h-0 opacity-0 -translate-y-1 group-hover:max-h-28 group-hover:opacity-100 group-hover:translate-y-0 group-hover:mt-1.5">
+                      <p className="text-xs text-slate-200 font-mono tracking-wide drop-shadow-sm leading-relaxed">
+                        {sector.tagline}
+                      </p>
+                    </div>
                   </div>
                 </div>
               );
