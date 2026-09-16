@@ -93,6 +93,24 @@ export default function InteractiveFloorPlan({
     (el) => el.type === "stall" || el.type === "custom-shape" || !el.type
   );
 
+  // Drawing elements (lines, arcs, pencil strokes, text labels, circles, walls)
+  const drawingElements = elements.filter(
+    (el) =>
+      el.type === "line" ||
+      el.type === "pencil" ||
+      el.type === "arc" ||
+      el.type === "text" ||
+      el.type === "circle" ||
+      el.type === "wall"
+  );
+
+  const getPencilPathData = (points: { x: number; y: number }[]): string => {
+    if (!points || points.length === 0) return "";
+    return points.reduce((acc, pt, idx) => {
+      return idx === 0 ? `M ${pt.x} ${pt.y}` : `${acc} L ${pt.x} ${pt.y}`;
+    }, "");
+  };
+
   const toggleStall = (stall: any) => {
     if (stall.status === "Booked" || stall.category === "SEMINAR HALL") return;
 
@@ -195,7 +213,7 @@ export default function InteractiveFloorPlan({
       </div>
 
       {/* =========================================================================
-          02: CUSTOM BUILT FLOOR PLAN CANVAS WITH INTERACTIVE STALLS
+          02: CUSTOM BUILT FLOOR PLAN CANVAS WITH INTERACTIVE STALLS & DRAWN LINES
          ========================================================================= */}
       <div className="relative w-full rounded-2xl overflow-hidden bg-slate-900 border-2 border-slate-200 shadow-md">
         <div className="relative w-full overflow-auto bg-slate-950 p-2 sm:p-6 flex items-center justify-center min-h-[600px]">
@@ -234,6 +252,94 @@ export default function InteractiveFloorPlan({
                   : "bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)]"
               } bg-[size:20px_20px]`}
             />
+
+            {/* SVG Drawing Layer for Lines, Arcs, Freehand Pencil, Text Labels & Shapes */}
+            <svg
+              viewBox={`0 0 ${canvasWidth} ${canvasHeight}`}
+              className="absolute inset-0 w-full h-full pointer-events-none z-10"
+            >
+              {drawingElements.map((el) => {
+                // 1. Straight Line / Wall
+                if (el.type === "line" && el.points && el.points.length >= 2) {
+                  return (
+                    <line
+                      key={el.id}
+                      x1={el.points[0].x}
+                      y1={el.points[0].y}
+                      x2={el.points[1].x}
+                      y2={el.points[1].y}
+                      stroke={el.borderColor || "#38BDF8"}
+                      strokeWidth={el.strokeWidth || 2}
+                      strokeLinecap="round"
+                    />
+                  );
+                }
+
+                // 2. Freehand Pencil Path
+                if (el.type === "pencil" && el.points && el.points.length > 0) {
+                  return (
+                    <path
+                      key={el.id}
+                      d={getPencilPathData(el.points)}
+                      fill="none"
+                      stroke={el.borderColor || "#38BDF8"}
+                      strokeWidth={el.strokeWidth || 2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  );
+                }
+
+                // 3. Arc / Curve
+                if (el.type === "arc" && el.points && el.points.length >= 2 && el.arcControl) {
+                  return (
+                    <path
+                      key={el.id}
+                      d={`M ${el.points[0].x} ${el.points[0].y} Q ${el.arcControl.x} ${el.arcControl.y} ${el.points[1].x} ${el.points[1].y}`}
+                      fill="none"
+                      stroke={el.borderColor || "#38BDF8"}
+                      strokeWidth={el.strokeWidth || 2}
+                      strokeLinecap="round"
+                    />
+                  );
+                }
+
+                // 4. Text Label
+                if (el.type === "text") {
+                  return (
+                    <text
+                      key={el.id}
+                      x={el.x}
+                      y={el.y}
+                      fill={el.textColor || (canvasBgMode === "clean-white" ? "#0F172A" : "#FFFFFF")}
+                      fontSize="13"
+                      fontWeight="bold"
+                      fontFamily="sans-serif"
+                    >
+                      {el.number || el.category || ""}
+                    </text>
+                  );
+                }
+
+                // 5. Circle / Zone
+                if (el.type === "circle") {
+                  return (
+                    <circle
+                      key={el.id}
+                      cx={el.x + el.width / 2}
+                      cy={el.y + el.height / 2}
+                      r={Math.min(el.width, el.height) / 2}
+                      fill={el.color || "transparent"}
+                      fillOpacity={el.fillOpacity ?? 0.5}
+                      stroke={el.borderColor || "#38BDF8"}
+                      strokeWidth={el.strokeWidth || 2}
+                    />
+                  );
+                }
+
+                return null;
+              })}
+            </svg>
 
             {/* Render All Custom Drawn Stalls */}
             {stallElements.map((el) => {
