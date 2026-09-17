@@ -68,24 +68,7 @@ export default function VishwakarmaPujaModal() {
         </button>
       </div>
 
-      {/* Floating Bottom Re-open Ribbon */}
-      {!isOpen && (
-        <motion.div
-          initial={{ y: 50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.3 }}
-          className="fixed bottom-5 left-5 z-[9990]"
-        >
-          <button
-            onClick={() => setIsOpen(true)}
-            className="flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-gradient-to-r from-amber-600 via-red-600 to-amber-700 text-white font-sans text-xs font-bold shadow-2xl border-2 border-amber-300 hover:scale-105 active:scale-95 transition-all cursor-pointer group"
-          >
-            <span className="text-base animate-bounce">🌺</span>
-            <span>विश्वकर्मा पूजा शुभकामना</span>
-            <Sparkles className="w-3.5 h-3.5 text-amber-200 group-hover:rotate-12 transition-transform" />
-          </button>
-        </motion.div>
-      )}
+
 
       {/* Main Festive Modal */}
       <AnimatePresence>
