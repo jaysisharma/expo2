@@ -188,7 +188,7 @@ export function Navbar() {
               className="group inline-flex flex-col items-start focus-visible:outline-2 focus-visible:outline-[#218A59] focus-visible:rounded-md transition-opacity hover:opacity-95"
             >
               <Image
-                src="/images/logo.jpeg"
+                src="/images/logo.png"
                 alt="Himalayan Green Energy Expo"
                 width={320}
                 height={95}
