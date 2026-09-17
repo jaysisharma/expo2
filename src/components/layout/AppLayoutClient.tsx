@@ -8,6 +8,7 @@ import SmoothScrollProvider from "@/components/providers/SmoothScrollProvider";
 
 import WelcomeExpoModal from "@/components/modals/WelcomeExpoModal";
 import PdfDownloadModal from "@/components/modals/PdfDownloadModal";
+import VishwakarmaPujaModal from "@/components/modals/VishwakarmaPujaModal";
 import HydroLoadingScreen from "@/components/ui/HydroLoadingScreen";
 import TurbineCursor from "@/components/ui/TurbineCursor";
 
@@ -36,6 +37,7 @@ export default function AppLayoutClient({
       <Navbar />
       <div className="flex-grow w-full">{children}</div>
       <Footer />
+      <VishwakarmaPujaModal />
       <WelcomeExpoModal />
       <PdfDownloadModal />
     </SmoothScrollProvider>
