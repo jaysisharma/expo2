@@ -40,8 +40,70 @@
       "registeredAt": "2026-09-16T18:54:27.802Z"
     }
   ],
-  "inquiries": [],
-  "boothOverrides": {},
+  "inquiries": [
+    {
+      "id": "INQ-STALL-2688",
+      "name": "Johann Meyer",
+      "email": "johann@andritz.com",
+      "phone": "+977 9801234568",
+      "company": "Andritz Hydro GmbH",
+      "subject": "Stall Reservation [C2] - Method: FONEPAY",
+      "message": "Booking Ref: HHE26-STALL-FONE88. Stalls: C2. Fascia: Andritz Hydro GmbH. Total: NPR 875,000 / USD 6,500. Power: Standard 15A Included. Notes: None.",
+      "stallInterest": "C2",
+      "status": "New",
+      "submittedAt": "2026-09-17T00:37:12.551Z"
+    },
+    {
+      "id": "INQ-STALL-2688",
+      "name": "Johann Meyer",
+      "email": "johann@andritz.com",
+      "phone": "+977 9801234568",
+      "company": "Andritz Hydro GmbH",
+      "subject": "Stall Reservation [C2] - Method: FONEPAY",
+      "message": "Booking Ref: HHE26-STALL-FONE88. Stalls: C2. Fascia: Andritz Hydro GmbH. Total: NPR 875,000 / USD 6,500. Power: Standard 15A Included. Notes: None.",
+      "stallInterest": "C2",
+      "status": "New",
+      "submittedAt": "2026-09-17T00:36:54.880Z"
+    },
+    {
+      "id": "INQ-STALL-2699",
+      "name": "Dr. Markus Weber",
+      "email": "markus.weber@voith.com",
+      "phone": "+977 9801234567",
+      "company": "Voith Hydro International",
+      "subject": "Stall Reservation [C1] - Method: KHALTI",
+      "message": "Booking Ref: HHE26-STALL-TEST99. Stalls: C1. Fascia: VOITH HYDRO GERMANY. Total: NPR 875,000 / USD 6,500. Power: Standard 15A Included. Notes: None.",
+      "stallInterest": "C1",
+      "status": "New",
+      "submittedAt": "2026-09-17T00:36:46.271Z"
+    },
+    {
+      "id": "INQ-STALL-123",
+      "name": "Markus Weber",
+      "email": "markus@voith.com",
+      "phone": "9801234567",
+      "company": "Voith Hydro",
+      "subject": "Stall Reservation [C1] - Method: KHALTI",
+      "message": "Booking Ref: TEST-STALL-123. Stalls: C1. Fascia: Voith Hydro. Total: NPR 875,000 / USD 6,500. Power: Standard 15A Included. Notes: None.",
+      "stallInterest": "C1",
+      "status": "New",
+      "submittedAt": "2026-09-17T00:35:16.009Z"
+    }
+  ],
+  "boothOverrides": {
+    "C1": {
+      "status": "Booked",
+      "exhibitorName": "Voith Hydro International",
+      "bookingRef": "HHE26-STALL-TEST99",
+      "updatedAt": "2026-09-17T00:36:46.742Z"
+    },
+    "C2": {
+      "status": "Booked",
+      "exhibitorName": "Andritz Hydro GmbH",
+      "bookingRef": "HHE26-STALL-FONE88",
+      "updatedAt": "2026-09-17T00:37:12.862Z"
+    }
+  },
   "settings": {
     "eventName": "Himalayan Green Energy Expo Nepal 2027",
     "eventDates": "Magh 2 - 4 · 16–18 Jan 2027",
@@ -51,5 +113,78 @@
     "contactEmail": "expo@ippan.org.np",
     "contactPhone": "+977-1-4412345",
     "currencyRateUSD_NPR": 134.5
-  }
+  },
+  "stallBookings": [
+    {
+      "id": "HHE26-STALL-FONE88",
+      "stalls": [
+        "C2"
+      ],
+      "amountNPR": 875000,
+      "amountUSD": 6500,
+      "company": "Andritz Hydro GmbH",
+      "contactPerson": "Johann Meyer",
+      "email": "johann@andritz.com",
+      "phone": "+977 9801234568",
+      "country": "Austria",
+      "fasciaName": "Andritz Hydro GmbH",
+      "boothType": "Shell Scheme",
+      "powerOption": "Standard 15A Included",
+      "industryCategory": "Turbines & Electro-Mechanical",
+      "specialRequirements": "",
+      "paymentMethod": "fonepay",
+      "paymentStatus": "PAID",
+      "bookingStatus": "Confirmed",
+      "createdAt": "2026-09-17T00:37:12.551Z",
+      "transactionId": "FONE_1789605432552",
+      "paidAt": "2026-09-17T00:37:12.862Z"
+    },
+    {
+      "id": "HHE26-STALL-TEST99",
+      "stalls": [
+        "C1"
+      ],
+      "amountNPR": 875000,
+      "amountUSD": 6500,
+      "company": "Voith Hydro International",
+      "contactPerson": "Dr. Markus Weber",
+      "email": "markus.weber@voith.com",
+      "phone": "+977 9801234567",
+      "country": "Germany",
+      "fasciaName": "VOITH HYDRO GERMANY",
+      "boothType": "Shell Scheme",
+      "powerOption": "Standard 15A Included",
+      "industryCategory": "Turbines & Electro-Mechanical",
+      "specialRequirements": "",
+      "paymentMethod": "khalti",
+      "paymentStatus": "PAID",
+      "bookingStatus": "Confirmed",
+      "createdAt": "2026-09-17T00:36:46.271Z",
+      "pidx": "KHALTI_DEV_1789605406272_cw22xx",
+      "transactionId": "TXN_1789605406272",
+      "paidAt": "2026-09-17T00:36:46.742Z"
+    },
+    {
+      "id": "TEST-STALL-123",
+      "stalls": [
+        "C1"
+      ],
+      "amountNPR": 875000,
+      "amountUSD": 6500,
+      "company": "Voith Hydro",
+      "contactPerson": "Markus Weber",
+      "email": "markus@voith.com",
+      "phone": "9801234567",
+      "country": "Nepal",
+      "fasciaName": "Voith Hydro",
+      "boothType": "Shell Scheme",
+      "powerOption": "Standard 15A Included",
+      "industryCategory": "Turbines & Electro-Mechanical",
+      "specialRequirements": "",
+      "paymentMethod": "khalti",
+      "paymentStatus": "INITIATED",
+      "bookingStatus": "Reserved",
+      "createdAt": "2026-09-17T00:35:16.008Z"
+    }
+  ]
 }

@@ -31,8 +31,8 @@ export async function getFirebaseRegistrations() {
     );
     const snap = await getDocs(q);
     return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-  } catch (error) {
-    console.warn("Firestore getRegistrations error, fallback to local:", error);
+  } catch (error: any) {
+    // Graceful fallback to local data when Firestore permissions are restricted
     return null;
   }
 }
@@ -86,8 +86,7 @@ export async function getFirebaseBoothOverrides() {
       overrides[doc.id] = doc.data();
     });
     return overrides;
-  } catch (error) {
-    console.warn("Firestore getBoothOverrides error:", error);
+  } catch {
     return null;
   }
 }
@@ -105,8 +104,7 @@ export async function setFirebaseBoothOverride(
     };
     await setDoc(ref, payload, { merge: true });
     return payload;
-  } catch (error) {
-    console.warn("Firestore setBoothOverride error:", error);
+  } catch {
     return null;
   }
 }
@@ -121,8 +119,7 @@ export async function getFirebaseInquiries() {
     );
     const snap = await getDocs(q);
     return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-  } catch (error) {
-    console.warn("Firestore getInquiries error:", error);
+  } catch {
     return null;
   }
 }
@@ -139,8 +136,7 @@ export async function addFirebaseInquiry(inquiryData: any) {
     };
     await setDoc(ref, payload);
     return payload;
-  } catch (error) {
-    console.warn("Firestore addInquiry error:", error);
+  } catch {
     return null;
   }
 }
@@ -150,8 +146,7 @@ export async function updateFirebaseInquiryStatus(inquiryId: string, status: str
     const ref = doc(db, COLLECTIONS.INQUIRIES, inquiryId);
     await updateDoc(ref, { status, updatedAt: new Date().toISOString() });
     return true;
-  } catch (error) {
-    console.warn("Firestore updateInquiryStatus error:", error);
+  } catch {
     return false;
   }
 }
@@ -161,8 +156,7 @@ export async function deleteFirebaseInquiry(inquiryId: string) {
     const ref = doc(db, COLLECTIONS.INQUIRIES, inquiryId);
     await deleteDoc(ref);
     return true;
-  } catch (error) {
-    console.warn("Firestore deleteInquiry error:", error);
+  } catch {
     return false;
   }
 }
@@ -176,8 +170,7 @@ export async function getFirebaseSettings() {
       return snap.data();
     }
     return null;
-  } catch (error) {
-    console.warn("Firestore getSettings error:", error);
+  } catch {
     return null;
   }
 }
@@ -191,8 +184,7 @@ export async function updateFirebaseSettings(settingsData: any) {
     };
     await setDoc(ref, payload, { merge: true });
     return payload;
-  } catch (error) {
-    console.warn("Firestore updateSettings error:", error);
+  } catch {
     return null;
   }
 }
