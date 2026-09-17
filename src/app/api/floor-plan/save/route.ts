@@ -35,8 +35,12 @@ export async function GET() {
         success: true,
         data: {
           ...json,
+          canvasWidth: json.canvasWidth || 1200,
+          canvasHeight: json.canvasHeight || 850,
           canvasBgMode: json.canvasBgMode || "cad-dark",
           showBgImage: json.showBgImage !== undefined ? json.showBgImage : true,
+          bgImageSrc: json.bgImageSrc || "/images/floor-plan-official.png",
+          blueprintOpacity: json.blueprintOpacity ?? 0.65,
         },
       });
     }
@@ -44,6 +48,8 @@ export async function GET() {
       success: true,
       data: {
         elements: [],
+        canvasWidth: 1200,
+        canvasHeight: 850,
         bgImageSrc: "/images/floor-plan-official.png",
         blueprintOpacity: 0.65,
         canvasBgMode: "cad-dark",
@@ -68,6 +74,8 @@ export async function POST(request: Request) {
       blueprintOpacity: body.blueprintOpacity ?? 0.65,
       canvasBgMode: body.canvasBgMode || "cad-dark",
       showBgImage: body.showBgImage !== undefined ? body.showBgImage : true,
+      canvasWidth: Number(body.canvasWidth) || 1200,
+      canvasHeight: Number(body.canvasHeight) || 850,
     };
 
     const content = JSON.stringify(dataToSave, null, 2);

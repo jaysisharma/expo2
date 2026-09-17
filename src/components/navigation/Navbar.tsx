@@ -178,22 +178,22 @@ export function Navbar() {
     <>
       {/* ── Non-Sticky Navbar with Border Bottom ───────────────────────────── */}
       <nav className="relative w-full z-40 bg-[var(--c-bg)] border-b border-black/[0.08] transition-colors duration-200">
-        <div className="max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-10 h-[88px] sm:h-[98px] grid grid-cols-[auto_1fr_auto] gap-4 items-center">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-10 h-[96px] sm:h-[110px] lg:h-[120px] grid grid-cols-[auto_1fr_auto] gap-4 items-center">
 
           {/* ── Col 1: Single Logo (Left) ─────────────────────────────────── */}
           <div className="flex items-center justify-start shrink-0">
             <Link
               href="/"
               aria-label="Himalayan Hydro Expo — Home"
-              className="inline-flex items-center focus-visible:outline-2 focus-visible:outline-[#218A59] focus-visible:rounded-md transition-opacity hover:opacity-90"
+              className="inline-flex items-center focus-visible:outline-2 focus-visible:outline-[#218A59] focus-visible:rounded-md transition-opacity hover:opacity-95"
             >
               <Image
                 src="/images/logo.png"
                 alt="Himalayan Green Energy Expo"
-                width={300}
-                height={95}
+                width={360}
+                height={120}
                 priority
-                className="h-16 sm:h-20 lg:h-22 w-auto object-contain transition-transform duration-200"
+                className="h-20 sm:h-24 lg:h-28 w-auto object-contain transition-transform duration-200 hover:scale-[1.02]"
               />
             </Link>
           </div>
@@ -315,11 +315,11 @@ export function Navbar() {
       {/* ── Mobile Drawer ─────────────────────────────────────────────────── */}
       <div
         aria-hidden={!mobileOpen}
-        className={`lg:hidden fixed top-[88px] sm:top-[98px] left-0 right-0 bottom-0 z-40 bg-white border-t border-black/[0.06] overflow-y-auto transition-transform duration-300 ease-out ${mobileOpen ? 'translate-x-0' : 'translate-x-full'
+        className={`lg:hidden fixed top-[96px] sm:top-[110px] left-0 right-0 bottom-0 z-40 bg-white border-t border-black/[0.06] overflow-y-auto transition-transform duration-300 ease-out ${mobileOpen ? 'translate-x-0' : 'translate-x-full'
           }`}
         style={{ display: mobileOpen ? 'block' : undefined }}
       >
-        <div className="px-6 py-6 flex flex-col gap-1 min-h-[calc(100vh-88px)] sm:min-h-[calc(100vh-98px)] justify-between">
+        <div className="px-6 py-6 flex flex-col gap-1 min-h-[calc(100vh-96px)] sm:min-h-[calc(100vh-110px)] justify-between">
           <div className="flex flex-col">
             {NAV_ITEMS.map((item) => (
               <div key={item.label} className="border-b border-black/[0.06]">

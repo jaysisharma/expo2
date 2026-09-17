@@ -6,6 +6,13 @@ import AppLayoutClient from '@/components/layout/AppLayoutClient';
 export const metadata: Metadata = {
   title: 'Himalayan Hydro Expo 2027 — 5th Edition',
   description: "South Asia's apex clean energy convergence. 16–18 January 2027, Kathmandu, Nepal.",
+  icons: {
+    icon: [
+      { url: '/images/logo.png', type: 'image/png' },
+    ],
+    shortcut: '/images/logo.png',
+    apple: '/images/logo.png',
+  },
 };
 
 export default function RootLayout({

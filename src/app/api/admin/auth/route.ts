@@ -145,6 +145,14 @@ export async function POST(req: Request) {
         );
       }
 
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      if (!emailRegex.test(cleanEmail)) {
+        return NextResponse.json(
+          { success: false, message: "Please provide a valid email address." },
+          { status: 400 }
+        );
+      }
+
       if (cleanPass.length < 6) {
         return NextResponse.json(
           { success: false, message: "Password must be at least 6 characters." },

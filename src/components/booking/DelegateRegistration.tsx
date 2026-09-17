@@ -130,8 +130,19 @@ export default function DelegateRegistration() {
     }
 
     if (step === 2) {
-      if (!formData.email.trim()) {
+      const emailTrimmed = formData.email.trim();
+      if (!emailTrimmed) {
         setFormError("Please enter your email address to receive your confirmation.");
+        return;
+      }
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      if (!emailRegex.test(emailTrimmed)) {
+        setFormError("Please enter a valid email address (e.g. name@company.com).");
+        return;
+      }
+      const phoneDigits = formData.phone.replace(/\D/g, "");
+      if (phoneDigits.length < 7) {
+        setFormError("Please enter a valid phone or mobile number (at least 7 digits).");
         return;
       }
     }

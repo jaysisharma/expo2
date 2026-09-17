@@ -57,6 +57,13 @@ export default function InteractiveFloorPlan({
       : true
   );
 
+  const [canvasWidth, setCanvasWidth] = useState<number>(
+    (savedFloorPlanFallback as any).canvasWidth || 1200
+  );
+  const [canvasHeight, setCanvasHeight] = useState<number>(
+    (savedFloorPlanFallback as any).canvasHeight || 850
+  );
+
   const [internalSelectedStalls, setInternalSelectedStalls] = useState<string[]>(["C1"]);
   const isControlled = controlledSelectedStalls !== undefined;
   const selectedStalls = isControlled ? controlledSelectedStalls : internalSelectedStalls;
@@ -80,6 +87,8 @@ export default function InteractiveFloorPlan({
             setBlueprintOpacity(json.data.blueprintOpacity);
           if (json.data.canvasBgMode) setCanvasBgMode(json.data.canvasBgMode);
           if (json.data.showBgImage !== undefined) setShowBgImage(json.data.showBgImage);
+          if (json.data.canvasWidth) setCanvasWidth(Number(json.data.canvasWidth) || 1200);
+          if (json.data.canvasHeight) setCanvasHeight(Number(json.data.canvasHeight) || 850);
         }
       } catch (err) {
         console.warn("Using local fallback custom floor plan:", err);
@@ -88,12 +97,19 @@ export default function InteractiveFloorPlan({
     loadFloorPlan();
   }, []);
 
-  // Filter stall elements (both rectangular and polygon stalls)
+  // Filter stall elements (ONLY rectangular stalls, never polygons and never boundary outlines)
   const stallElements = elements.filter(
-    (el) => el.type === "stall" || el.type === "custom-shape" || (el.type === "polygon" && (el.priceNPR > 0 || el.priceUSD > 0 || (el.number && !el.number.startsWith("WALL")))) || !el.type
+    (el) =>
+      el.type !== "polygon" &&
+      (!el.points || el.points.length < 3) &&
+      el.category !== "Hollow Wall / Boundary" &&
+      el.category !== "Zone / Functional Area" &&
+      el.color !== "transparent" &&
+      el.fillOpacity !== 0 &&
+      (el.type === "stall" || el.type === "custom-shape" || !el.type)
   );
 
-  // Drawing elements (lines, arcs, pencil strokes, text labels, circles, walls, boundary polygons)
+  // Drawing elements (lines, arcs, pencil strokes, text labels, circles, walls, boundary polygons, zone boxes, and outlines)
   const drawingElements = elements.filter(
     (el) =>
       el.type === "line" ||
@@ -102,7 +118,13 @@ export default function InteractiveFloorPlan({
       el.type === "text" ||
       el.type === "circle" ||
       el.type === "wall" ||
-      el.type === "polygon"
+      el.type === "polygon" ||
+      el.type === "zone" ||
+      el.category === "Hollow Wall / Boundary" ||
+      el.category === "Zone / Functional Area" ||
+      el.color === "transparent" ||
+      el.fillOpacity === 0 ||
+      Boolean(el.points && el.points.length >= 3)
   );
 
   const getPencilPathData = (points: { x: number; y: number }[]): string => {
@@ -149,9 +171,6 @@ export default function InteractiveFloorPlan({
     (acc, curr) => acc + (curr.priceUSD || 6500),
     0
   );
-
-  const canvasWidth = 1200;
-  const canvasHeight = 850;
 
   return (
     <div className="w-full font-sans select-none space-y-6">
@@ -338,29 +357,40 @@ export default function InteractiveFloorPlan({
                   );
                 }
 
-                // 6. Polygon (Boundary, Wall, or Custom Polygon Stall)
-                if (el.type === "polygon" && el.points && el.points.length >= 3) {
+                // 6. Polygon (Boundary Outline, Functional Zone, or Bookable Polygon Stall)
+                if ((el.type === "polygon" || (el.points && el.points.length >= 3)) && el.points) {
                   const pointsStr = el.points.map((p: any) => `${p.x},${p.y}`).join(" ");
+                  const isOutline =
+                    el.category === "Hollow Wall / Boundary" ||
+                    el.color === "transparent" ||
+                    el.color === "none" ||
+                    el.fillOpacity === 0;
+                  const isZone = el.category === "Zone / Functional Area" || el.type === "zone";
+                  const isBookable =
+                    !isOutline &&
+                    !isZone &&
+                    ((el.priceNPR && el.priceNPR > 0) ||
+                      (el.priceUSD && el.priceUSD > 0) ||
+                      (el.number && !el.number.startsWith("WALL") && !el.number.startsWith("OUTLINE")));
+
                   const stallNumber = el.number || el.id;
-                  const isSelected = selectedStalls.includes(stallNumber);
-                  const isHovered = hoveredStall?.id === el.id;
-                  const isInteractive =
-                    (el.priceNPR && el.priceNPR > 0) ||
-                    (el.priceUSD && el.priceUSD > 0) ||
-                    (el.number && !el.number.startsWith("WALL"));
+                  const isSelected = isBookable && selectedStalls.includes(stallNumber);
+                  const isHovered = isBookable && hoveredStall?.id === el.id;
 
                   return (
                     <g
                       key={el.id}
-                      className={isInteractive ? "cursor-pointer pointer-events-auto" : ""}
-                      onClick={() => isInteractive && toggleStall(el)}
-                      onMouseEnter={() => isInteractive && setHoveredStall(el)}
-                      onMouseLeave={() => isInteractive && setHoveredStall(null)}
+                      className={isBookable ? "cursor-pointer pointer-events-auto" : ""}
+                      onClick={() => isBookable && toggleStall(el)}
+                      onMouseEnter={() => isBookable && setHoveredStall(el)}
+                      onMouseLeave={() => isBookable && setHoveredStall(null)}
                     >
                       <polygon
                         points={pointsStr}
                         fill={
-                          isSelected
+                          isOutline
+                            ? "none"
+                            : isSelected
                             ? "#10B981"
                             : isHovered
                             ? "#38BDF8"
@@ -369,26 +399,29 @@ export default function InteractiveFloorPlan({
                             : el.color || "#0284C7"
                         }
                         fillOpacity={
-                          el.color === "transparent" || el.color === "none"
+                          isOutline
                             ? 0
                             : isSelected
                             ? 0.9
                             : isHovered
                             ? 0.85
-                            : el.fillOpacity ?? 0.85
+                            : el.fillOpacity ?? (isZone ? 0.45 : 0.85)
                         }
                         stroke={
-                          isSelected
+                          isOutline
+                            ? el.borderColor || "#38BDF8"
+                            : isSelected
                             ? "#34D399"
                             : isHovered
                             ? "#FFFFFF"
                             : el.borderColor || "#38BDF8"
                         }
-                        strokeWidth={isSelected ? 3 : isHovered ? 2.5 : el.strokeWidth || 2}
+                        strokeWidth={isOutline ? el.strokeWidth || 2 : isSelected ? 3 : isHovered ? 2.5 : el.strokeWidth || 2}
                         strokeLinejoin="round"
                         strokeLinecap="round"
+                        pointerEvents={isOutline ? "none" : undefined}
                       />
-                      {el.number && (
+                      {el.number && !isOutline && (
                         <text
                           x={el.x + el.width / 2}
                           y={el.y + el.height / 2 + 4}
@@ -397,10 +430,65 @@ export default function InteractiveFloorPlan({
                           fill={el.textColor || "#FFFFFF"}
                           fontSize="12"
                           fontWeight="bold"
-                          fontFamily="monospace"
+                          fontFamily={isZone ? "sans-serif" : "monospace"}
                           className="select-none pointer-events-none drop-shadow-md"
                         >
                           {isSelected ? `✓ ${stallNumber}` : stallNumber}
+                        </text>
+                      )}
+                    </g>
+                  );
+                }
+
+                // 7. Rectangular Outline or Zone (Hollow Wall / Boundary Box)
+                if (
+                  (el.category === "Hollow Wall / Boundary" ||
+                    el.type === "zone" ||
+                    el.category === "Zone / Functional Area" ||
+                    el.color === "transparent" ||
+                    el.color === "none" ||
+                    el.fillOpacity === 0) &&
+                  (!el.points || el.points.length < 3)
+                ) {
+                  const isOutline =
+                    el.category === "Hollow Wall / Boundary" ||
+                    el.color === "transparent" ||
+                    el.color === "none" ||
+                    el.fillOpacity === 0;
+                  return (
+                    <g
+                      key={el.id}
+                      transform={
+                        el.rotation
+                          ? `rotate(${el.rotation}, ${el.x + el.width / 2}, ${el.y + el.height / 2})`
+                          : undefined
+                      }
+                      className={isOutline ? "pointer-events-none" : undefined}
+                    >
+                      <rect
+                        x={el.x}
+                        y={el.y}
+                        width={el.width}
+                        height={el.height}
+                        rx={el.borderRadius || 4}
+                        fill={isOutline || el.color === "transparent" || el.color === "none" ? "none" : el.color || "#0284C7"}
+                        fillOpacity={isOutline ? 0 : el.fillOpacity ?? 0.45}
+                        stroke={el.borderColor || "#38BDF8"}
+                        strokeWidth={el.strokeWidth || 2}
+                        pointerEvents={isOutline ? "none" : undefined}
+                      />
+                      {el.number && !isOutline && (
+                        <text
+                          x={el.x + el.width / 2}
+                          y={el.y + el.height / 2 + 4}
+                          textAnchor="middle"
+                          dominantBaseline="middle"
+                          fill={el.textColor || "#FFFFFF"}
+                          fontSize="11"
+                          fontWeight="bold"
+                          fontFamily="sans-serif"
+                        >
+                          {el.number}
                         </text>
                       )}
                     </g>

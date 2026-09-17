@@ -18,9 +18,9 @@ export function Footer() {
                 <Image
                   src="/images/logo.png"
                   alt="Himalayan Green Energy Expo"
-                  width={280}
-                  height={85}
-                  className="h-14 sm:h-18 lg:h-20 w-auto object-contain"
+                  width={360}
+                  height={110}
+                  className="h-16 sm:h-20 lg:h-24 w-auto object-contain"
                 />
               </div>
             </Link>

@@ -98,9 +98,9 @@ export function OrganizersSection() {
           <div className="lg:col-span-2 flex flex-col items-center justify-center py-2 lg:py-0">
             <div className="flex flex-col items-center justify-center gap-2">
               <div className="w-px h-10 bg-black/15 dark:bg-white/15 hidden lg:block" />
-              <div className="w-10 h-10 rounded-full bg-white dark:bg-[#0E1A29] border-2 border-black/15 dark:border-white/15 flex items-center justify-center shadow-sm">
-                <span className="font-mono text-lg font-black text-[#218A59] dark:text-[#25C176] leading-none">
-                  ×
+              <div className="px-3 py-1.5 rounded-full bg-white dark:bg-[#0E1A29] border-2 border-black/15 dark:border-white/15 flex items-center justify-center shadow-sm">
+                <span className="font-display text-xs sm:text-sm font-black text-[#218A59] dark:text-[#25C176] tracking-wide lowercase">
+                  and
                 </span>
               </div>
               <div className="w-px h-10 bg-black/15 dark:bg-white/15 hidden lg:block" />

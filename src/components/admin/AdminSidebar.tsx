@@ -125,13 +125,13 @@ export default function AdminSidebar({
             className="flex items-center gap-2.5 overflow-hidden group"
             onClick={handleLinkClick}
           >
-            <div className="relative w-8 h-8 shrink-0 rounded-xl bg-slate-50 border border-slate-200 p-1 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
+            <div className="relative w-10 h-10 shrink-0 rounded-xl bg-slate-50 border border-slate-200 p-1 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
               <Image
                 src="/images/logo.png"
                 alt="Expo Logo"
-                width={24}
-                height={24}
-                className="object-contain"
+                width={36}
+                height={36}
+                className="object-contain max-h-8 max-w-8"
               />
             </div>
             {!isCollapsed && (
