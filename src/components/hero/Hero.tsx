@@ -99,6 +99,14 @@ export function Hero() {
   };
 
   useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.play().catch(() => {
+        // Autoplay policy fallback
+      });
+    }
+  }, []);
+
+  useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
 
     const ctx = gsap.context(() => {
@@ -353,15 +361,32 @@ export function Hero() {
           className="absolute top-[30vh] bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 z-10 w-[92vw] max-w-[1360px] rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl shadow-black/25 border border-black/10 bg-black"
           style={{ willChange: 'top, bottom, width, border-radius' }}
         >
-          <iframe
-            src="https://drive.google.com/file/d/1ddIs5UcaQHcE5fdAy-Su0KK5q38s5Wig/preview?autoplay=1"
-            allow="autoplay; fullscreen"
-            allowFullScreen
-            className="w-full h-full border-none"
-            title="Himalayan Hydro Expo Video Showcase"
+          <video
+            ref={videoRef}
+            src="/videos/hero_showcase.mp4"
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="auto"
+            className="w-full h-full object-cover"
           />
 
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-black/10 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/10 pointer-events-none" />
+
+          {/* Sound Toggle Button */}
+          <button
+            type="button"
+            onClick={toggleAudio}
+            aria-label={isMuted ? 'Unmute video audio' : 'Mute video audio'}
+            className="absolute bottom-4 right-4 z-20 p-3 rounded-full bg-black/60 hover:bg-black/90 text-white border border-white/20 backdrop-blur-md transition-all duration-200 hover:scale-110 active:scale-95 shadow-lg cursor-pointer"
+          >
+            {isMuted ? (
+              <VolumeX size={18} className="text-white/80" />
+            ) : (
+              <Volume2 size={18} className="text-[#34D399]" />
+            )}
+          </button>
         </div>
 
         {/* ── RECTANGLE CONTAINER 1: Emerges from center to 100vw & 100vh ─── */}
