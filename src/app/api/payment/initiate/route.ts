@@ -118,8 +118,9 @@ export async function POST(req: Request) {
 
     // Log corresponding inquiry for admin leads
     if (!adminData.inquiries) adminData.inquiries = [];
+    const uniqueInqSuffix = `${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
     adminData.inquiries.unshift({
-      id: `INQ-STALL-${orderId.replace(/[^0-9]/g, "") || Date.now()}`,
+      id: `INQ-STALL-${orderId.replace(/[^0-9]/g, "") || "BOOK"}-${uniqueInqSuffix}`,
       name: contactPerson,
       email,
       phone,

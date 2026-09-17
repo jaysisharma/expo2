@@ -688,9 +688,9 @@ export default function AdminDashboardPage() {
 
           {/* Inquiries items */}
           {(activityTab === "all" || activityTab === "inquiries") &&
-            filteredInquiries.slice(0, activityTab === "inquiries" ? 10 : 3).map((inq: any) => (
+            filteredInquiries.slice(0, activityTab === "inquiries" ? 10 : 3).map((inq: any, idx: number) => (
               <div
-                key={inq.id}
+                key={inq.id ? `${inq.id}-${idx}` : `inq-${idx}`}
                 className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50 transition-colors px-2 rounded-xl"
               >
                 <div className="truncate flex-1">

@@ -234,9 +234,9 @@ export default function AdminInquiriesPage() {
             No inquiries found matching the search criteria.
           </div>
         ) : (
-          filteredInquiries.map((inq: any) => (
+          filteredInquiries.map((inq: any, idx: number) => (
             <div
-              key={inq.id}
+              key={inq.id ? `${inq.id}-${idx}` : `inq-${idx}`}
               className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200 hover:border-slate-300 transition-all shadow-xs space-y-4"
             >
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">

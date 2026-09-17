@@ -400,7 +400,7 @@ export async function POST(req: Request) {
 
       case "add_inquiry": {
         const newInq = {
-          id: `INQ-2026-${String(data.inquiries.length + 1).padStart(3, "0")}`,
+          id: `INQ-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
           name: payload.name,
           email: payload.email,
           phone: payload.phone || "",
