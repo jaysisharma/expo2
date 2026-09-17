@@ -14,14 +14,17 @@ export function Footer() {
           {/* Brand & Organizers (Col 1-5) */}
           <div className="lg:col-span-5 space-y-5">
             <Link href="/" className="inline-block group focus-visible:outline-2 focus-visible:outline-[#25C176]">
-              <div className="bg-white/95 px-4 py-2.5 rounded-xl inline-flex items-center shadow-md hover:shadow-lg transition-all duration-200 group-hover:scale-[1.02]">
+              <div className="bg-white/95 px-4 py-3 rounded-xl flex flex-col items-start gap-1 shadow-md hover:shadow-lg transition-all duration-200 group-hover:scale-[1.01]">
                 <Image
                   src="/images/logo.png"
                   alt="Himalayan Green Energy Expo"
-                  width={360}
-                  height={110}
-                  className="h-16 sm:h-20 lg:h-24 w-auto object-contain"
+                  width={300}
+                  height={90}
+                  className="h-12 sm:h-14 lg:h-16 w-auto object-contain"
                 />
+                <span className="text-[10px] sm:text-[11px] font-mono font-bold tracking-wider text-[#218A59] uppercase pl-0.5 whitespace-nowrap">
+                  Resilient Energy, Prosperous Nepal
+                </span>
               </div>
             </Link>
 
