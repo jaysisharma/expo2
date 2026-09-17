@@ -10,39 +10,11 @@ export default function WelcomeExpoModal() {
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   useEffect(() => {
-    const handleLoaderComplete = () => {
-      try {
-        const dismissed = sessionStorage.getItem("expo_welcome_modal_dismissed");
-        if (!dismissed) {
-          setTimeout(() => {
-            setIsOpen(true);
-          }, 300);
-        }
-      } catch {
-        setTimeout(() => {
-          setIsOpen(true);
-        }, 300);
-      }
-    };
-
-    window.addEventListener("hydro-loader-complete", handleLoaderComplete);
-
-    // Fallback timer if event already fired
-    const fallbackTimer = setTimeout(() => {
-      try {
-        const dismissed = sessionStorage.getItem("expo_welcome_modal_dismissed");
-        if (!dismissed) {
-          setIsOpen(true);
-        }
-      } catch {
-        setIsOpen(true);
-      }
-    }, 2000);
-
-    return () => {
-      window.removeEventListener("hydro-loader-complete", handleLoaderComplete);
-      clearTimeout(fallbackTimer);
-    };
+    // Avoid conflicting popup on initial load while Vishwakarma Puja celebration is active
+    const dismissed = sessionStorage.getItem("expo_welcome_modal_dismissed");
+    if (dismissed === "active") {
+      setIsOpen(true);
+    }
   }, []);
 
   const handleClose = () => {
