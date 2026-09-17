@@ -185,19 +185,16 @@ export function Navbar() {
             <Link
               href="/"
               aria-label="Himalayan Hydro Expo — Home"
-              className="group inline-flex flex-col items-start focus-visible:outline-2 focus-visible:outline-[#218A59] focus-visible:rounded-md transition-opacity hover:opacity-95"
+              className="group inline-flex items-center focus-visible:outline-2 focus-visible:outline-[#218A59] focus-visible:rounded-md transition-opacity hover:opacity-95"
             >
               <Image
                 src="/images/logo.png"
                 alt="Himalayan Green Energy Expo"
-                width={320}
-                height={95}
+                width={360}
+                height={110}
                 priority
-                className="h-14 sm:h-16 lg:h-[70px] w-auto object-contain transition-transform duration-200 group-hover:scale-[1.01]"
+                className="h-16 sm:h-20 lg:h-[84px] w-auto object-contain transition-transform duration-200 group-hover:scale-[1.02]"
               />
-              <span className="text-[10px] sm:text-[11px] font-mono font-bold tracking-wider text-[#218A59] dark:text-[#25C176] uppercase pl-0.5 -mt-0.5 whitespace-nowrap">
-                Resilient Energy, Prosperous Nepal
-              </span>
             </Link>
           </div>
 
