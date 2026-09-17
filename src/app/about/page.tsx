@@ -676,7 +676,7 @@ export default function AboutPage() {
           <div className="flex justify-center">
             <div className="relative w-28 h-28 sm:w-36 sm:h-36">
               <Image
-                src="/images/logo.png"
+                src="/images/logo.jpeg"
                 alt="Himalayan Green Energy Expo"
                 fill
                 className="object-contain drop-shadow-[0_0_40px_rgba(16,185,129,0.5)]"

@@ -127,7 +127,7 @@ export default function AdminSidebar({
           >
             <div className="relative w-10 h-10 shrink-0 rounded-xl bg-slate-50 border border-slate-200 p-1 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
               <Image
-                src="/images/logo.png"
+                src="/images/logo.jpeg"
                 alt="Expo Logo"
                 width={36}
                 height={36}

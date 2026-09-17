@@ -106,7 +106,7 @@ export async function GET() {
         name: account.name,
         role: account.role,
         organization: account.org,
-        avatar: "/images/logo.png",
+        avatar: "/images/logo.jpeg",
       },
     });
   } catch (error: any) {
@@ -195,7 +195,7 @@ export async function POST(req: Request) {
           name: newUser.name,
           role: newUser.role,
           organization: newUser.org,
-          avatar: "/images/logo.png",
+          avatar: "/images/logo.jpeg",
         },
       });
     }
@@ -228,7 +228,7 @@ export async function POST(req: Request) {
         name: account.name,
         role: account.role,
         organization: account.org,
-        avatar: "/images/logo.png",
+        avatar: "/images/logo.jpeg",
       };
 
       const token = createServerToken(cleanEmail);

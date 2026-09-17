@@ -34,7 +34,7 @@ export default function AdminSponsorsPage() {
 
     const newSponsor = {
       name,
-      logo: "/images/logo.png",
+      logo: "/images/logo.jpeg",
       type: type || "Official Partner",
       url: url || "https://example.com",
     };

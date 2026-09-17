@@ -37,7 +37,7 @@ export const DEFAULT_ADMIN: AdminUser = {
   name: "IPPAN Secretariat Admin",
   email: "admin@hydroexpo.org.np",
   role: "Super Admin",
-  avatar: "/images/logo.png",
+  avatar: "/images/logo.jpeg",
   organization: "Independent Power Producers' Association, Nepal",
 };
 

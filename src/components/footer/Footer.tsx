@@ -16,7 +16,7 @@ export function Footer() {
             <Link href="/" className="inline-block group focus-visible:outline-2 focus-visible:outline-[#25C176]">
               <div className="bg-white/95 px-4 py-3 rounded-xl flex flex-col items-start gap-1 shadow-md hover:shadow-lg transition-all duration-200 group-hover:scale-[1.01]">
                 <Image
-                  src="/images/logo.png"
+                  src="/images/logo.jpeg"
                   alt="Himalayan Green Energy Expo"
                   width={300}
                   height={90}
