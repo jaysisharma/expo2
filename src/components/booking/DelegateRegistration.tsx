@@ -519,7 +519,7 @@ export default function DelegateRegistration() {
               <button
                 type="button"
                 onClick={handleNext}
-                className={`px-7 py-3.5 rounded-xl text-xs font-bold tracking-wider shadow-md transition-all flex items-center gap-2 text-white cursor-pointer ${step === 3
+                className={`px-7 py-3.5 rounded-xl text-xs font-bold tracking-wider shadow-md transition-all flex items-center gap-2 text-black cursor-pointer ${step === 3
                   ? "bg-[#19A974] hover:bg-[#158f62] shadow-emerald-700/20"
                   : "bg-[#218A59] hover:bg-[#186a43] shadow-emerald-900/20"
                   }`}
@@ -528,7 +528,7 @@ export default function DelegateRegistration() {
                   {step === 3 ? "COMPLETE & GENERATE ID CARD" : "CONTINUE NEXT"}
                 </span>
 
-                <ArrowRight className="w-4 h-4 text-white" />
+                <ArrowRight className="w-4 h-4 text-black" />
               </button>
             </div>
           </div>

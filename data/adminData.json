@@ -1,6 +1,30 @@
 {
   "registrations": [
     {
+      "id": "HHE26-397793",
+      "name": "Jaysi Sharma",
+      "email": "a@gmail.com",
+      "phone": "1234567890",
+      "organization": "Awaso",
+      "jobTitle": "ASSD",
+      "stallNumber": "",
+      "country": "Nepal",
+      "passType": "Trade Visitor (Free)",
+      "interests": [
+        "Hydropower & Turbines",
+        "Cross-Border Energy Trade",
+        "Transmission & 400kV Substations",
+        "Project Finance & Green Bonds",
+        "SCADA & AI Dispatch",
+        "Generators & Electro-Mechanical",
+        "Tunneling & TBM Infrastructure",
+        "Green Hydrogen & Storage",
+        "Solar-Hydro Hybrids"
+      ],
+      "checkedIn": false,
+      "registeredAt": "2026-09-17T02:38:38.733Z"
+    },
+    {
       "id": "HHE26-626743",
       "name": "Jaysi Sharma",
       "email": "a@dfdgf",

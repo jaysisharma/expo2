@@ -326,18 +326,31 @@ export default function InteractiveFloorPlan({
 
                 // 4. Text Label
                 if (el.type === "text") {
+                  const textW = el.width || 120;
+                  const textH = el.height || 24;
+                  const centerX = el.x + textW / 2;
+                  const centerY = el.y - 14 + textH / 2;
+
                   return (
-                    <text
+                    <g
                       key={el.id}
-                      x={el.x}
-                      y={el.y}
-                      fill={el.textColor || (canvasBgMode === "clean-white" ? "#0F172A" : "#FFFFFF")}
-                      fontSize="13"
-                      fontWeight="bold"
-                      fontFamily="sans-serif"
+                      transform={
+                        el.rotation
+                          ? `rotate(${el.rotation}, ${centerX}, ${centerY})`
+                          : undefined
+                      }
                     >
-                      {el.number || el.category || ""}
-                    </text>
+                      <text
+                        x={el.x}
+                        y={el.y}
+                        fill={el.textColor || (canvasBgMode === "clean-white" ? "#0F172A" : "#FFFFFF")}
+                        fontSize={el.fontSize || 13}
+                        fontWeight="bold"
+                        fontFamily="sans-serif"
+                      >
+                        {el.number || el.category || ""}
+                      </text>
+                    </g>
                   );
                 }
 

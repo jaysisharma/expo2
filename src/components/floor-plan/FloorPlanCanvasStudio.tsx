@@ -3504,9 +3504,19 @@ export default function FloorPlanCanvasStudio() {
 
                   // 5. Text Label
                   if (el.type === "text") {
+                    const textW = el.width || 120;
+                    const textH = el.height || 24;
+                    const centerX = el.x + textW / 2;
+                    const centerY = el.y - 14 + textH / 2;
+
                     return (
                       <g
                         key={el.id}
+                        transform={
+                          el.rotation
+                            ? `rotate(${el.rotation}, ${centerX}, ${centerY})`
+                            : undefined
+                        }
                         onMouseDown={(e) => {
                           if (!isSelectOrEraser) return;
                           e.stopPropagation();
@@ -3517,7 +3527,13 @@ export default function FloorPlanCanvasStudio() {
                           }
                           setSelectedIds([el.id]);
                           setIsDragging(true);
-                          setInitialElementState(el);
+                          setInitialElementState({
+                            ...el,
+                            width: textW,
+                            height: textH,
+                            x: el.x,
+                            y: el.y - 14,
+                          });
                           setDragStartPos(getCoordinates(e));
                         }}
                         className={isSelectOrEraser ? "cursor-grab active:cursor-grabbing pointer-events-auto" : "pointer-events-none"}
@@ -3533,16 +3549,76 @@ export default function FloorPlanCanvasStudio() {
                           {el.number}
                         </text>
                         {isSelected && (
-                          <rect
-                            x={el.x - 4}
-                            y={el.y - 14}
-                            width={el.width || 100}
-                            height={20}
-                            fill="none"
-                            stroke="#38BDF8"
-                            strokeWidth="1.5"
-                            strokeDasharray="3 3"
-                          />
+                          <>
+                            <rect
+                              x={el.x - 4}
+                              y={el.y - 14}
+                              width={textW}
+                              height={textH}
+                              fill="none"
+                              stroke="#38BDF8"
+                              strokeWidth="1.5"
+                              strokeDasharray="3 3"
+                            />
+                            {/* Top Rotation Stem & Handle for Text */}
+                            {selectedIds.length === 1 && (
+                              <>
+                                <line
+                                  x1={centerX}
+                                  y1={el.y - 14}
+                                  x2={centerX}
+                                  y2={el.y - 34}
+                                  stroke="#38BDF8"
+                                  strokeWidth="1.5"
+                                  strokeDasharray="2 2"
+                                  pointerEvents="none"
+                                />
+                                {el.rotation !== 0 && (
+                                  <text
+                                    x={centerX}
+                                    y={el.y - 40}
+                                    fill="#38BDF8"
+                                    fontSize="10"
+                                    fontWeight="700"
+                                    fontFamily="sans-serif"
+                                    textAnchor="middle"
+                                    className="select-none pointer-events-none"
+                                  >
+                                    {el.rotation}°
+                                  </text>
+                                )}
+                                <circle
+                                  cx={centerX}
+                                  cy={el.y - 34}
+                                  r="6"
+                                  fill="#10B981"
+                                  stroke="#FFFFFF"
+                                  strokeWidth="2"
+                                  className="cursor-grab active:cursor-grabbing hover:scale-125 transition-transform pointer-events-auto"
+                                  onMouseDown={(e) => {
+                                    e.stopPropagation();
+                                    if (!svgRef.current) return;
+                                    const rect = svgRef.current.getBoundingClientRect();
+                                    const scaleX = canvasWidth / (rect.width || 1);
+                                    const scaleY = canvasHeight / (rect.height || 1);
+                                    const rawMouseX = (e.clientX - rect.left) * scaleX;
+                                    const rawMouseY = (e.clientY - rect.top) * scaleY;
+
+                                    const initialMouseAngle = Math.atan2(rawMouseY - centerY, rawMouseX - centerX) * (180 / Math.PI);
+                                    setInitialAngleOffset(initialMouseAngle - (el.rotation || 0));
+                                    setIsRotating(true);
+                                    setInitialElementState({
+                                      ...el,
+                                      width: textW,
+                                      height: textH,
+                                      x: el.x,
+                                      y: el.y - 14,
+                                    });
+                                  }}
+                                />
+                              </>
+                            )}
+                          </>
                         )}
                       </g>
                     );

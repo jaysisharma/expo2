@@ -1648,9 +1648,366 @@
       "width": 30,
       "height": 30,
       "rotation": -32
+    },
+    {
+      "id": "STALL_1789621725102",
+      "type": "stall",
+      "number": "C1",
+      "category": "10m × 7m Bare Space",
+      "dimensions": "10m × 7m",
+      "sizeSqM": 70,
+      "sizeSqFt": 753,
+      "priceNPR": 875000,
+      "priceUSD": 6500,
+      "status": "Available",
+      "color": "#0284C7",
+      "fillOpacity": 0.85,
+      "borderColor": "#38BDF8",
+      "textColor": "#FFFFFF",
+      "strokeWidth": 2,
+      "borderRadius": 4,
+      "x": 260,
+      "y": 460,
+      "width": 30,
+      "height": 30,
+      "rotation": -34
+    },
+    {
+      "id": "STALL_1789621745664_0",
+      "type": "stall",
+      "number": "C31",
+      "category": "10m × 7m Bare Space",
+      "dimensions": "10m × 7m",
+      "sizeSqM": 70,
+      "sizeSqFt": 753,
+      "priceNPR": 875000,
+      "priceUSD": 6500,
+      "status": "Available",
+      "color": "#0284C7",
+      "fillOpacity": 0.85,
+      "borderColor": "#38BDF8",
+      "textColor": "#FFFFFF",
+      "strokeWidth": 2,
+      "borderRadius": 4,
+      "x": 285,
+      "y": 443,
+      "width": 30,
+      "height": 30,
+      "rotation": -34
+    },
+    {
+      "id": "STALL_1789621746348_0",
+      "type": "stall",
+      "number": "C32",
+      "category": "10m × 7m Bare Space",
+      "dimensions": "10m × 7m",
+      "sizeSqM": 70,
+      "sizeSqFt": 753,
+      "priceNPR": 875000,
+      "priceUSD": 6500,
+      "status": "Available",
+      "color": "#0284C7",
+      "fillOpacity": 0.85,
+      "borderColor": "#38BDF8",
+      "textColor": "#FFFFFF",
+      "strokeWidth": 2,
+      "borderRadius": 4,
+      "x": 310,
+      "y": 426,
+      "width": 30,
+      "height": 30,
+      "rotation": -34
+    },
+    {
+      "id": "STALL_1789621746898_0",
+      "type": "stall",
+      "number": "C33",
+      "category": "10m × 7m Bare Space",
+      "dimensions": "10m × 7m",
+      "sizeSqM": 70,
+      "sizeSqFt": 753,
+      "priceNPR": 875000,
+      "priceUSD": 6500,
+      "status": "Available",
+      "color": "#0284C7",
+      "fillOpacity": 0.85,
+      "borderColor": "#38BDF8",
+      "textColor": "#FFFFFF",
+      "strokeWidth": 2,
+      "borderRadius": 4,
+      "x": 335,
+      "y": 409,
+      "width": 30,
+      "height": 30,
+      "rotation": -34
+    },
+    {
+      "id": "STALL_1789621788168",
+      "type": "stall",
+      "number": "C2",
+      "category": "10m × 7m Bare Space",
+      "dimensions": "10m × 7m",
+      "sizeSqM": 70,
+      "sizeSqFt": 753,
+      "priceNPR": 875000,
+      "priceUSD": 6500,
+      "status": "Available",
+      "color": "#0284C7",
+      "fillOpacity": 0.85,
+      "borderColor": "#38BDF8",
+      "textColor": "#FFFFFF",
+      "strokeWidth": 2,
+      "borderRadius": 4,
+      "x": 214,
+      "y": 545,
+      "width": 30,
+      "height": 30,
+      "rotation": 0
+    },
+    {
+      "id": "STALL_1789621807346_0",
+      "type": "stall",
+      "number": "C34",
+      "category": "10m × 7m Bare Space",
+      "dimensions": "10m × 7m",
+      "sizeSqM": 70,
+      "sizeSqFt": 753,
+      "priceNPR": 875000,
+      "priceUSD": 6500,
+      "status": "Available",
+      "color": "#0284C7",
+      "fillOpacity": 0.85,
+      "borderColor": "#38BDF8",
+      "textColor": "#FFFFFF",
+      "strokeWidth": 2,
+      "borderRadius": 4,
+      "x": 214,
+      "y": 575,
+      "width": 30,
+      "height": 30,
+      "rotation": 0
+    },
+    {
+      "id": "STALL_1789621808031_0",
+      "type": "stall",
+      "number": "C35",
+      "category": "10m × 7m Bare Space",
+      "dimensions": "10m × 7m",
+      "sizeSqM": 70,
+      "sizeSqFt": 753,
+      "priceNPR": 875000,
+      "priceUSD": 6500,
+      "status": "Available",
+      "color": "#0284C7",
+      "fillOpacity": 0.85,
+      "borderColor": "#38BDF8",
+      "textColor": "#FFFFFF",
+      "strokeWidth": 2,
+      "borderRadius": 4,
+      "x": 214,
+      "y": 605,
+      "width": 30,
+      "height": 30,
+      "rotation": 0
+    },
+    {
+      "id": "POLY_1789621834812",
+      "type": "polygon",
+      "number": "C3",
+      "category": "10m × 7m Bare Space",
+      "dimensions": "10m × 7m",
+      "sizeSqM": 70,
+      "sizeSqFt": 753,
+      "priceNPR": 875000,
+      "priceUSD": 6500,
+      "status": "Available",
+      "color": "#0284C7",
+      "fillOpacity": 0.85,
+      "borderColor": "#38BDF8",
+      "textColor": "#FFFFFF",
+      "strokeWidth": 2,
+      "borderRadius": 4,
+      "x": 210,
+      "y": 640,
+      "width": 40,
+      "height": 60,
+      "rotation": 0,
+      "points": [
+        {
+          "x": 210,
+          "y": 640
+        },
+        {
+          "x": 210,
+          "y": 700
+        },
+        {
+          "x": 240,
+          "y": 670
+        },
+        {
+          "x": 250,
+          "y": 640
+        }
+      ]
+    },
+    {
+      "id": "POLY_1789621864128",
+      "type": "polygon",
+      "number": "C4",
+      "category": "10m × 7m Bare Space",
+      "dimensions": "10m × 7m",
+      "sizeSqM": 70,
+      "sizeSqFt": 753,
+      "priceNPR": 875000,
+      "priceUSD": 6500,
+      "status": "Available",
+      "color": "#0284C7",
+      "fillOpacity": 0.85,
+      "borderColor": "#38BDF8",
+      "textColor": "#FFFFFF",
+      "strokeWidth": 2,
+      "borderRadius": 4,
+      "x": 150,
+      "y": 450,
+      "width": 60,
+      "height": 60,
+      "rotation": 0,
+      "points": [
+        {
+          "x": 150,
+          "y": 500
+        },
+        {
+          "x": 190,
+          "y": 510
+        },
+        {
+          "x": 210,
+          "y": 470
+        },
+        {
+          "x": 180,
+          "y": 450
+        }
+      ]
+    },
+    {
+      "id": "POLY_1789621891445",
+      "type": "polygon",
+      "number": "C5",
+      "category": "10m × 7m Bare Space",
+      "dimensions": "10m × 7m",
+      "sizeSqM": 70,
+      "sizeSqFt": 753,
+      "priceNPR": 875000,
+      "priceUSD": 6500,
+      "status": "Available",
+      "color": "#0284C7",
+      "fillOpacity": 0.85,
+      "borderColor": "#38BDF8",
+      "textColor": "#FFFFFF",
+      "strokeWidth": 2,
+      "borderRadius": 4,
+      "x": 300,
+      "y": 420,
+      "width": 130,
+      "height": 110,
+      "rotation": 0,
+      "points": [
+        {
+          "x": 300,
+          "y": 490
+        },
+        {
+          "x": 330,
+          "y": 530
+        },
+        {
+          "x": 350,
+          "y": 500
+        },
+        {
+          "x": 400,
+          "y": 480
+        },
+        {
+          "x": 430,
+          "y": 460
+        },
+        {
+          "x": 430,
+          "y": 450
+        },
+        {
+          "x": 410,
+          "y": 440
+        },
+        {
+          "x": 400,
+          "y": 420
+        }
+      ]
+    },
+    {
+      "id": "POLY_1789621907245",
+      "type": "polygon",
+      "number": "C6",
+      "category": "10m × 7m Bare Space",
+      "dimensions": "10m × 7m",
+      "sizeSqM": 70,
+      "sizeSqFt": 753,
+      "priceNPR": 875000,
+      "priceUSD": 6500,
+      "status": "Available",
+      "color": "#0284C7",
+      "fillOpacity": 0.85,
+      "borderColor": "#38BDF8",
+      "textColor": "#FFFFFF",
+      "strokeWidth": 2,
+      "borderRadius": 4,
+      "x": 250,
+      "y": 560,
+      "width": 60,
+      "height": 130,
+      "rotation": 0,
+      "points": [
+        {
+          "x": 250,
+          "y": 570
+        },
+        {
+          "x": 250,
+          "y": 680
+        },
+        {
+          "x": 270,
+          "y": 690
+        },
+        {
+          "x": 290,
+          "y": 690
+        },
+        {
+          "x": 290,
+          "y": 640
+        },
+        {
+          "x": 310,
+          "y": 570
+        },
+        {
+          "x": 300,
+          "y": 560
+        },
+        {
+          "x": 290,
+          "y": 570
+        }
+      ]
     }
   ],
-  "updatedAt": "2026-09-17T00:11:33.758Z",
+  "updatedAt": "2026-09-17T05:11:52.410Z",
   "bgImageSrc": "/images/floor-plan-official.png",
   "blueprintOpacity": 0.65,
   "canvasBgMode": "clean-white",
