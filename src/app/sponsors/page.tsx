@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { sponsorsData } from "@/data/sponsors";
+import OfficialTariffsSection from "@/components/sponsors/OfficialTariffsSection";
 import {
   ArrowRight,
   ExternalLink,
@@ -196,6 +197,11 @@ export default function SponsorsPage() {
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Official Sponsorship & Space Tariff Tables (Verified Brochure Data) */}
+          <div className="pt-8 border-t border-slate-200">
+            <OfficialTariffsSection />
           </div>
 
           {/* Section 2: Sponsorship Packages Matrix */}

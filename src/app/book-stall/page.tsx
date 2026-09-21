@@ -1,6 +1,7 @@
 import React, { Suspense } from "react";
 import type { Metadata } from "next";
 import StallBookingWizard from "@/components/booking/StallBookingWizard";
+import OfficialTariffsSection from "@/components/sponsors/OfficialTariffsSection";
 import Link from "next/link";
 import {
   Calendar,
@@ -17,9 +18,9 @@ import {
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Exhibitor Stall Booking & Reservation | Himalayan Hydro & Green Energy Expo 2026",
+  title: "Exhibitor Stall Booking & Reservation | Himalayan Green Energy Expo 2027",
   description:
-    "Reserve your premium exhibition booth at Bhrikutimandap, Kathmandu for Nepal's 5th Edition Himalayan Hydro & Green Energy Expo.",
+    "Reserve your premium exhibition booth at Bhrikutimandap, Kathmandu for Nepal's 5th Edition Himalayan Green Energy Expo 2027.",
 };
 
 export default function BookStallPage() {
@@ -56,7 +57,7 @@ export default function BookStallPage() {
             <div className="flex flex-wrap items-center gap-2.5 text-xs font-mono text-emerald-100/80 shrink-0">
               <span className="px-3.5 py-2 rounded-xl bg-emerald-900/60 border border-emerald-500/30 flex items-center gap-2 shadow-xs">
                 <Calendar className="w-4 h-4 text-[#34D399]" />
-                <span>Magh 2–4, 2083 · Jan 16–18, 2027</span>
+                <span>17th–19th Jan, 2027 · 3rd–5th Magh, 2083</span>
               </span>
               <span className="px-3.5 py-2 rounded-xl bg-emerald-900/60 border border-emerald-500/30 flex items-center gap-2 shadow-xs">
                 <MapPin className="w-4 h-4 text-[#34D399]" />
@@ -83,6 +84,11 @@ export default function BookStallPage() {
             >
               <StallBookingWizard />
             </Suspense>
+          </div>
+
+          {/* Official Sponsorship & Space Tariff Tables */}
+          <div className="p-8 sm:p-10 rounded-3xl bg-white border border-slate-200 shadow-xs">
+            <OfficialTariffsSection />
           </div>
 
           {/* Informational Cards & Secretariat Inclusions Grid */}
