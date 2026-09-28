@@ -51,9 +51,9 @@ export const CONTACT_DETAILS = {
 
   // VIP Gala Dinner
   galaDinner: {
-    venue: 'Royal Tulip, Kathmandu',
-    date: 'Saturday, 17 January 2027',
-    time: 'After 6:00 PM NPT',
+    venue: 'Royal Tulip Kathmandu (Gwarko)',
+    date: 'Monday, 18 January 2027',
+    time: '6:00 PM onwards',
     nationalPrice: 'NPR 6,000',
     nationalPriceNum: 6000,
     internationalPrice: 'USD 50',

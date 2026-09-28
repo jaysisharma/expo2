@@ -28,6 +28,15 @@
   --color-secondary:       #234679;
   --color-secondary-dark:  #162E52;
   --color-secondary-light: #325FA3;
+
+  /* Legacy theme aliases for backward compatibility */
+  --color-hydro-primary:   #005C42;
+  --color-hydro-deep:      #033826;
+  --color-hydro-light:     #F8FAFB;
+  --color-hydro-wash:      #F1F5F4;
+  --color-hydro-water:     #E6F4F0;
+  --color-hydro-sky:       #A7F3D0;
+  --font-technical:        ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 /* ── Base reset & typography defaults ───────────────────────────────────── */

@@ -69,7 +69,7 @@ const storyEditions: StoryEdition[] = [
     story:
       'Featured over 100 global brands, official trilateral trade delegations from India and Bangladesh, and landmark power purchase agreements.',
     meta: '100+ Global Brands · Trilateral Delegations',
-    image: '/images/WhatsApp Image 2026-08-27 at 06.52.07.jpeg',
+    image: '/images/event-photo-6.webp',
     caption: 'Ministers and delegations exploring global pavilions.',
   },
 ];
@@ -226,7 +226,7 @@ export function ExpoJourney() {
 
                 {/* Subtitle / Paragraph */}
                 <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-2xl">
-                  Under the theme &quot;<strong className="text-white font-semibold">Resilient Energy, Prosperous Nepal,</strong>&quot; the 5th edition expands into an integrated Green Energy Marketplace &mdash; placing climate resilience, sustainable infrastructure, cross-border trade, and disaster-resilient clean tech at the center of the conversation.
+                  Under the theme &quot;<strong className="text-white font-semibold">Resilient Energy, Prosperous Nepal,</strong>&quot; HIGEX 2027 expands into an Integrated Green Energy Marketplace, bringing together hydropower, renewable energy, green technologies, investment, innovation and sustainable infrastructure, with climate-resilient energy development at its centre.
                 </p>
 
                 {/* Confirmed Date & Venue Cards */}
@@ -238,10 +238,10 @@ export function ExpoJourney() {
                     </div>
                     <div>
                       <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-                        CONFIRMED DATE
+                        DATE
                       </div>
                       <div className="text-xs sm:text-sm font-bold text-white tracking-tight">
-                        Magh 3 – 5 · 17–19 January 2027
+                        Magh 3–5 · 17–19 January 2027
                       </div>
                     </div>
                   </div>
@@ -256,7 +256,7 @@ export function ExpoJourney() {
                         VENUE
                       </div>
                       <div className="text-xs sm:text-sm font-bold text-white tracking-tight">
-                        Bhrikutimandap Exhibition Hall, Kathmandu
+                        Bhrikutimandap, Kathmandu
                       </div>
                     </div>
                   </div>
@@ -268,7 +268,7 @@ export function ExpoJourney() {
                     href="/register"
                     className="group inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#12B981] hover:bg-[#0ea372] text-[#051D2C] text-xs font-bold tracking-wider uppercase shadow-lg shadow-[#12B981]/25 transition-all duration-200"
                   >
-                    <span>REGISTER FOR 5TH EDITION</span>
+                    <span>REGISTER FOR HIGEX 2027</span>
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                   </Link>
 
@@ -308,31 +308,15 @@ export function ExpoJourney() {
                 </div>
 
                 {/* Creative Poster Container */}
-                <div className="relative rounded-2xl overflow-hidden border border-sky-400/25 shadow-2xl bg-black group aspect-[16/10.5]">
+                <div className="relative rounded-2xl overflow-hidden border border-sky-400/25 shadow-2xl bg-[#071322]">
                   <Image
-                    src="/images/press_meet.jpeg"
-                    alt="Himalayan Green Energy Expo 2027 Official Creative"
-                    fill
-                    sizes="(max-width: 1024px) 100vw, 550px"
-                    className="object-cover object-center group-hover:scale-102 transition-transform duration-700"
+                    src="/fifth_edition.jpeg"
+                    alt="Himalayan Green Energy Expo 2027 5th Edition Announcement Creative"
+                    width={1600}
+                    height={999}
+                    priority
+                    className="w-full h-auto object-contain block"
                   />
-
-                  {/* Top Right Pill Badge */}
-                  <div className="absolute top-3.5 right-3.5 z-10">
-                    <span className="px-3 py-1 rounded-full bg-[#12B981] text-[#051D2C] text-[10px] font-bold uppercase tracking-wider shadow-md">
-                      OFFICIAL CREATIVE
-                    </span>
-                  </div>
-
-                  {/* Bottom Dock Overlay */}
-                  <div className="absolute bottom-2.5 left-2.5 right-2.5 z-10 p-3 sm:p-3.5 rounded-xl bg-[#0A1218]/90 backdrop-blur-md border border-white/10 shadow-lg">
-                    <div className="text-[#12B981] text-xs font-bold uppercase tracking-wider">
-                      PRESS MEET · 17–19 JAN 2027 · MAGH 3–5, 2083
-                    </div>
-                    <div className="text-white text-xs font-semibold mt-0.5 truncate">
-                      Resilient Energy, Prosperous Nepal · Bhrikutimandap
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>

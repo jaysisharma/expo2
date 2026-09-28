@@ -405,8 +405,8 @@ export default function DelegateRegistration() {
         {registrationRole === "gala" && (
           <div className="p-3 bg-amber-50/70 border border-amber-200/80 rounded-xl space-y-2">
             <div className="flex items-center justify-between text-[11px] text-amber-900">
-              <span className="font-semibold">Royal Tulip, Kathmandu · 17 Jan 2027</span>
-              <span>7:00 PM</span>
+              <span className="font-semibold">Royal Tulip Kathmandu (Gwarko) · Monday, 18 Jan 2027</span>
+              <span>6:00 PM onwards</span>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <button

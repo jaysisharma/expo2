@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { boothsData } from "@/data/booths";
 import { officialStalls, OfficialStall } from "@/data/officialFloorPlanData";
+import savedFloorPlanFallback from "@/data/savedCustomFloorPlan.json";
 import InteractiveFloorPlan from "@/components/floor-plan/InteractiveFloorPlan";
 import confetti from "canvas-confetti";
 import {
@@ -67,47 +68,134 @@ export default function StallBookingWizard() {
       if (parsed.length > 0) {
         setSelectedBoothNumbers(parsed);
       }
-    } else if (selectedBoothNumbers.length === 0) {
-      setSelectedBoothNumbers(["C1"]);
     }
   }, [queryStall]);
 
-  // Aggregate selected stalls metadata
-  const selectedStallObjects = selectedBoothNumbers.map((num) => {
-    const official = officialStalls.find(
-      (s) => s.id.toLowerCase() === num.toLowerCase() || s.number.toLowerCase() === num.toLowerCase()
+  // Load custom elements configured from Admin Floor Plan Studio
+  const [elements, setElements] = useState<any[]>(
+    (savedFloorPlanFallback as any).elements || []
+  );
+
+  useEffect(() => {
+    async function loadAdminFloorPlan() {
+      try {
+        const res = await fetch("/api/floor-plan/save");
+        const json = await res.json();
+        if (json.success && json.data?.elements && Array.isArray(json.data.elements) && json.data.elements.length > 0) {
+          setElements(json.data.elements);
+        }
+      } catch (err) {
+        console.warn("Using fallback floor plan elements in StallBookingWizard", err);
+      }
+    }
+    loadAdminFloorPlan();
+  }, []);
+
+  // Helper to filter valid exhibition stalls
+  const isActualStall = (el: any) => {
+    if (el.type === "text" || el.type === "line" || el.type === "arc" || el.type === "pencil") return false;
+    if (el.category === "Hollow Wall / Boundary" || el.category === "Boundary Wall" || el.category === "Curved Wall") return false;
+    if (el.category === "Zone / Functional Area" || el.type === "zone") return false;
+    if (el.number === "WALL" || el.number === "CURVE" || el.number === "OUTLINE" || !el.number) return false;
+    return true;
+  };
+
+  // Helper to resolve exact stall metadata (prioritizing Admin Studio configuration)
+  const findStall = (num: string) => {
+    const cleanNum = (num || "").trim().toLowerCase();
+    const custom = elements.find(
+      (el: any) =>
+        isActualStall(el) &&
+        ((el.number && el.number.toLowerCase() === cleanNum) ||
+          (el.id && el.id.toLowerCase() === cleanNum))
+    ) || elements.find(
+      (el: any) =>
+        (el.number && el.number.toLowerCase() === cleanNum) ||
+        (el.id && el.id.toLowerCase() === cleanNum)
     );
-    const fallback = boothsData.find((b) => b.number.toLowerCase() === num.toLowerCase()) || {
-      number: num,
-      dimensions: "10m × 7m",
-      sizeSqM: 70,
-      sizeSqFt: 753,
-      priceUSD: 6500,
-      priceNPR: 875000,
-      hall: "Bhrikutimandap Main Pavilion",
-      type: "Standard Exhibition Stall",
-    };
+    const official = officialStalls.find(
+      (s) => s.id.toLowerCase() === cleanNum || s.number.toLowerCase() === cleanNum
+    );
+    const fallback = boothsData.find((b) => b.number.toLowerCase() === cleanNum);
+
+    const number = custom?.number || official?.number || fallback?.number || num;
+    const category = custom?.category || official?.category || fallback?.type || "Standard Exhibition Stall";
+    const dimensions = custom?.dimensions || official?.dimensions || fallback?.dimensions || "3m × 3m";
+    const sizeSqM = Number(custom?.sizeSqM ?? official?.sizeSqM ?? fallback?.sizeSqM ?? 9);
+    const sizeSqFt = Number(custom?.sizeSqFt ?? official?.sizeSqFt ?? Math.round(sizeSqM * 10.76));
+
+    let priceNPR = 180000;
+    if (custom?.priceNPR !== undefined && custom?.priceNPR !== null && !isNaN(Number(custom.priceNPR))) {
+      priceNPR = Number(custom.priceNPR);
+    } else if (official?.priceNPR !== undefined && !isNaN(Number(official.priceNPR))) {
+      priceNPR = Number(official.priceNPR);
+    } else if (fallback?.priceNPR !== undefined && !isNaN(Number(fallback.priceNPR))) {
+      priceNPR = Number(fallback.priceNPR);
+    }
+
+    let priceUSD = 1350;
+    if (custom?.priceUSD !== undefined && custom?.priceUSD !== null && !isNaN(Number(custom.priceUSD))) {
+      priceUSD = Number(custom.priceUSD);
+    } else if (official?.priceUSD !== undefined && !isNaN(Number(official.priceUSD))) {
+      priceUSD = Number(official.priceUSD);
+    } else if (fallback?.priceUSD !== undefined && !isNaN(Number(fallback.priceUSD))) {
+      priceUSD = Number(fallback.priceUSD);
+    }
+
+    const block = custom?.block || official?.block || fallback?.hall || (number ? `Block ${number.charAt(0).toUpperCase()}` : "Main Pavilion");
+    const status = custom?.status || official?.status || fallback?.status || "Available";
 
     return {
-      number: official ? official.number : fallback.number,
-      displayName: official ? `STALL ${official.number}` : `BOOTH ${fallback.number}`,
-      block: official ? official.block : fallback.hall,
-      dimensions: official ? official.dimensions : fallback.dimensions,
-      sizeSqM: official ? official.sizeSqM : fallback.sizeSqM,
-      priceUSD: official ? official.priceUSD : fallback.priceUSD,
-      priceNPR: official ? official.priceNPR : fallback.priceNPR,
-      category: official ? official.category : fallback.type,
+      number,
+      displayName: `STALL ${number}`,
+      block,
+      dimensions,
+      sizeSqM,
+      sizeSqFt,
+      priceNPR,
+      priceUSD,
+      category,
+      status,
+      powerIncluded: custom?.powerIncluded || official?.powerIncluded || "Standard 15A Included",
     };
-  });
+  };
 
-  const totalAreaSqM = selectedStallObjects.reduce((acc, curr) => acc + (curr.sizeSqM || 70), 0);
-  const totalPriceNPR = selectedStallObjects.reduce((acc, curr) => acc + (curr.priceNPR || 875000), 0);
-  const totalPriceUSD = selectedStallObjects.reduce((acc, curr) => acc + (curr.priceUSD || 6500), 0);
+  // Aggregate selected stalls metadata using Admin-configured details
+  const selectedStallObjects = selectedBoothNumbers.map(findStall);
+
+  const totalAreaSqM = selectedStallObjects.reduce((acc, curr) => acc + (curr.sizeSqM || 0), 0);
+  const totalPriceNPR = selectedStallObjects.reduce((acc, curr) => acc + (curr.priceNPR || 0), 0);
+  const totalPriceUSD = selectedStallObjects.reduce((acc, curr) => acc + (curr.priceUSD || 0), 0);
+
+  // Available stalls list for List View (derived from Admin elements)
+  const availableStallsList = React.useMemo(() => {
+    const customStalls = elements.filter((el: any) => {
+      if (el.type === "text" || el.type === "line" || el.type === "arc" || el.type === "pencil") return false;
+      if (el.category === "Hollow Wall / Boundary" || el.category === "Zone / Functional Area" || el.type === "zone") return false;
+      if (el.type === "polygon" || (el.points && el.points.length >= 3)) return false;
+      return Boolean(el.number);
+    });
+
+    if (customStalls.length > 0) {
+      const seen = new Set<string>();
+      return customStalls
+        .filter((el: any) => {
+          const num = (el.number || el.id).toLowerCase();
+          if (seen.has(num)) return false;
+          seen.add(num);
+          return el.status !== "Booked";
+        })
+        .map((el: any) => findStall(el.number || el.id));
+    }
+
+    return officialStalls
+      .filter((s) => s.status !== "Booked")
+      .map((s) => findStall(s.number || s.id));
+  }, [elements]);
 
   const toggleStallSelection = (stallNum: string) => {
     setSelectedBoothNumbers((prev) => {
       if (prev.includes(stallNum)) {
-        if (prev.length === 1) return prev; // keep at least 1
         return prev.filter((id) => id !== stallNum);
       } else {
         return [...prev, stallNum];
@@ -297,6 +385,21 @@ export default function StallBookingWizard() {
                 selectedStalls={selectedBoothNumbers}
                 onSelectStall={(stall) => {
                   const sNum = stall.number || stall.id;
+                  if (stall) {
+                    setElements((prev) => {
+                      const idx = prev.findIndex(
+                        (e) =>
+                          (e.number && e.number.toLowerCase() === sNum.toLowerCase()) ||
+                          e.id === stall.id
+                      );
+                      if (idx >= 0) {
+                        const next = [...prev];
+                        next[idx] = { ...next[idx], ...stall };
+                        return next;
+                      }
+                      return [...prev, stall];
+                    });
+                  }
                   toggleStallSelection(sNum);
                 }}
                 showCheckoutBar={false}
@@ -305,36 +408,36 @@ export default function StallBookingWizard() {
           ) : (
             <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
               <label className="block text-xs font-mono text-slate-700 font-bold uppercase">
-                AVAILABLE EXHIBITION STALLS
+                AVAILABLE EXHIBITION STALLS ({availableStallsList.length})
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 max-h-80 overflow-y-auto pr-1">
-                {officialStalls
-                  .filter((s) => s.status !== "Booked")
-                  .map((s) => {
-                    const isSelected = selectedBoothNumbers.includes(s.id);
-                    return (
-                      <button
-                        key={s.id}
-                        type="button"
-                        onClick={() => toggleStallSelection(s.id)}
-                        className={`p-3 rounded-xl border text-left text-xs font-mono transition-all cursor-pointer ${
-                          isSelected
-                            ? "bg-[#F0FDF4] border-[#10B981] text-[#044E3B] font-bold shadow-xs"
-                            : "bg-white border-slate-200 text-slate-700 hover:border-slate-300"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="font-sans font-bold text-sm">Stall {s.number}</span>
-                          <span className="text-[10px] text-emerald-700 font-bold">
-                            NPR {s.priceNPR.toLocaleString()}
-                          </span>
-                        </div>
-                        <div className="text-[11px] text-slate-500 mt-1">
-                          {s.sizeSqM}m² · {s.block} ({s.category})
-                        </div>
-                      </button>
-                    );
-                  })}
+                {availableStallsList.map((s) => {
+                  const isSelected = selectedBoothNumbers.some(
+                    (num) => num.toLowerCase() === s.number.toLowerCase()
+                  );
+                  return (
+                    <button
+                      key={s.number}
+                      type="button"
+                      onClick={() => toggleStallSelection(s.number)}
+                      className={`p-3 rounded-xl border text-left text-xs font-mono transition-all cursor-pointer ${
+                        isSelected
+                          ? "bg-[#F0FDF4] border-[#10B981] text-[#044E3B] font-bold shadow-xs"
+                          : "bg-white border-slate-200 text-slate-700 hover:border-slate-300"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-sans font-bold text-sm">Stall {s.number}</span>
+                        <span className="text-[10px] text-emerald-700 font-bold">
+                          NPR {s.priceNPR.toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-slate-500 mt-1">
+                        {s.sizeSqM}m² ({s.dimensions}) · {s.block}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -346,24 +449,29 @@ export default function StallBookingWizard() {
                 SELECTED STALL ALLOCATION ({selectedBoothNumbers.length})
               </span>
               <div className="flex flex-wrap items-center gap-2 pt-1">
-                {selectedStallObjects.map((s) => (
-                  <span
-                    key={s.number}
-                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white border border-emerald-300 font-mono text-xs font-bold text-[#15803D] shadow-xs"
-                  >
-                    <span>{s.displayName}</span>
-                    <span className="text-[10px] text-slate-500">({s.dimensions})</span>
-                    {selectedBoothNumbers.length > 1 && (
+                {selectedStallObjects.length > 0 ? (
+                  selectedStallObjects.map((s) => (
+                    <span
+                      key={s.number}
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white border border-emerald-300 font-mono text-xs font-bold text-[#15803D] shadow-xs"
+                    >
+                      <span>{s.displayName}</span>
+                      <span className="text-[10px] text-slate-500">({s.dimensions})</span>
                       <button
                         type="button"
                         onClick={() => toggleStallSelection(s.number)}
                         className="text-slate-400 hover:text-red-500 cursor-pointer"
+                        title="Deselect stall"
                       >
                         <X className="w-3.5 h-3.5" />
                       </button>
-                    )}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-xs text-slate-500 font-sans italic">
+                    No stall selected yet. Click any stall on the floor plan above or list to select.
                   </span>
-                ))}
+                )}
               </div>
             </div>
 
@@ -371,7 +479,7 @@ export default function StallBookingWizard() {
               <div>
                 <span className="text-[10px] font-mono text-emerald-700 font-bold uppercase">TOTAL AREA</span>
                 <div className="font-sans font-bold text-sm text-slate-900 mt-0.5">
-                  {totalAreaSqM} m² ({totalAreaSqM * 10.76} sq.ft)
+                  {totalAreaSqM > 0 ? `${totalAreaSqM} m² (${(totalAreaSqM * 10.76).toFixed(0)} sq.ft)` : "0 m²"}
                 </div>
               </div>
               <div>
@@ -835,15 +943,15 @@ export default function StallBookingWizard() {
             <button
               type="button"
               onClick={handleNext}
-              disabled={isSubmitting}
-              className={`px-8 py-3.5 rounded-full font-mono text-xs font-bold tracking-wider shadow-md transition-all flex items-center gap-2 text-white cursor-pointer ${
-                isSubmitting
-                  ? "bg-slate-400 cursor-not-allowed"
+              disabled={isSubmitting || (step === 1 && selectedBoothNumbers.length === 0)}
+              className={`px-8 py-3.5 rounded-full font-mono text-xs font-bold tracking-wider shadow-md transition-all flex items-center gap-2 text-white ${
+                isSubmitting || (step === 1 && selectedBoothNumbers.length === 0)
+                  ? "bg-slate-300 text-slate-500 cursor-not-allowed shadow-none"
                   : paymentMethod === "khalti" && step === 4
-                  ? "bg-[#5D2E8E] hover:bg-[#482370]"
+                  ? "bg-[#5D2E8E] hover:bg-[#482370] cursor-pointer"
                   : paymentMethod === "fonepay" && step === 4
-                  ? "bg-[#D92525] hover:bg-[#b01c1c]"
-                  : "bg-[#218A59] hover:bg-[#186a43]"
+                  ? "bg-[#D92525] hover:bg-[#b01c1c] cursor-pointer"
+                  : "bg-[#218A59] hover:bg-[#186a43] cursor-pointer"
               }`}
             >
               {isSubmitting ? (
@@ -854,7 +962,9 @@ export default function StallBookingWizard() {
               ) : (
                 <>
                   <span>
-                    {step === 4
+                    {step === 1 && selectedBoothNumbers.length === 0
+                      ? "SELECT A STALL TO CONTINUE"
+                      : step === 4
                       ? paymentMethod === "bank"
                         ? "CONFIRM RESERVATION"
                         : `PAY WITH ${paymentMethod.toUpperCase()} (NPR ${totalPriceNPR.toLocaleString()})`

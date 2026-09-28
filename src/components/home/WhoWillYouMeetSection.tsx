@@ -152,7 +152,7 @@ export function WhoWillYouMeetSection() {
               {/* Dam & Mountain Landscape: Bleeds to left edge, unzoomed natural aspect ratio, no card container */}
               <div className="relative -ml-4 sm:-ml-6 lg:-ml-12 w-[calc(100%+1rem)] sm:w-[calc(100%+1.5rem)] lg:w-[calc(100%+3rem)] aspect-[3/4] select-none mt-4">
                 <Image
-                  src="/images/higex_brush_dam.jpg"
+                  src="/images/higex_brush_dam.webp"
                   alt="Himalayan Dam and Mountain Reservoir in Nepal with Brush Edge"
                   fill
                   className="object-contain object-left-bottom"
@@ -168,7 +168,7 @@ export function WhoWillYouMeetSection() {
               {/* Wide Exhibition Hall Panoramic Photo with Authentic Dry Brush Stroke Edge */}
               <div className="relative w-full h-56 sm:h-72 lg:h-84 overflow-hidden group">
                 <Image
-                  src="/images/higex_brush_hall.jpg"
+                  src="/images/higex_brush_hall.webp"
                   alt="HIGEX 2027 Clean Energy Trade Exhibition Hall with Brush Stroke Edge"
                   fill
                   className="object-cover object-right group-hover:scale-105 transition-transform duration-700"

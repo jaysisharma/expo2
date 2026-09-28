@@ -15,7 +15,7 @@ export function AboutExpoPlatform() {
       {/* ── Background Mountain Wash (Bottom Left Himalayan Peaks & Pines fading softly) ── */}
       <div className="absolute -bottom-8 -left-12 w-[340px] sm:w-[480px] lg:w-[580px] h-[320px] sm:h-[400px] pointer-events-none select-none z-0 opacity-40">
         <Image
-          src="/images/nepal_machhapuchhre.jpg"
+          src="/images/nepal_machhapuchhre.webp"
           alt="Himalayan Mountains"
           fill
           className="object-cover object-bottom mix-blend-multiply"
@@ -124,7 +124,7 @@ export function AboutExpoPlatform() {
               {/* Main Image: Hydro Dam with Turquoise Reservoir */}
               <div className="relative w-full h-[260px] sm:h-[340px] lg:h-[380px] rounded-3xl sm:rounded-[32px] overflow-hidden shadow-xl border border-slate-100 group">
                 <Image
-                  src="/images/dam_reservoir_himalaya.jpg"
+                  src="/images/dam_reservoir_himalaya.webp"
                   alt="Himalayan Hydro Dam & Turquoise Reservoir"
                   fill
                   className="object-cover object-center group-hover:scale-105 transition-transform duration-700"
@@ -185,7 +185,7 @@ export function AboutExpoPlatform() {
                 {/* Secondary Overlapping Image: Solar Panels at Sunrise */}
                 <div className="relative w-44 sm:w-60 lg:w-64 h-32 sm:h-44 rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border-4 border-white shrink-0 group">
                   <Image
-                    src="/images/sectors/solar_energy_show.jpg"
+                    src="/images/sectors/solar_energy_show.webp"
                     alt="Solar Panels in the Himalayas"
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-700"

@@ -280,16 +280,16 @@ export function Navbar() {
         {/* ── Left: Official Expo Logo ───────────────────────────────── */}
         <Link
           href="/"
-          className="group inline-flex items-center shrink-0 focus-visible:outline-2 focus-visible:outline-[#00A370] rounded-lg transition-transform hover:opacity-95"
+          className="group inline-flex items-center shrink-0 focus-visible:outline-2 focus-visible:outline-[#00A370] rounded-xl transition-transform hover:opacity-95"
           aria-label="Himalayan Green Energy Expo 2027 — Home"
         >
           <Image
-            src="/images/logo.png"
+            src="/images/logo-expo.webp"
             alt="Himalayan Green Energy Expo"
-            width={280}
-            height={90}
+            width={220}
+            height={150}
             priority
-            className="h-13 sm:h-16 lg:h-[76px] w-auto object-contain transition-transform duration-200 group-hover:scale-[1.02]"
+            className="h-12 sm:h-14 lg:h-16 w-auto object-contain transition-transform duration-200 group-hover:scale-[1.02]"
           />
         </Link>
 

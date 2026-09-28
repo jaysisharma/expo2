@@ -23,7 +23,7 @@ export function Footer() {
             <Link href="/" className="inline-block group focus-visible:outline-2 focus-visible:outline-emerald-400 rounded-xl">
               <div className="bg-white rounded-xl px-3.5 py-2.5 inline-flex items-center justify-center shadow-sm group-hover:bg-slate-50 transition-colors">
                 <Image
-                  src="/images/logo-expo.png"
+                  src="/images/logo-expo.webp"
                   alt="Himalayan Green Energy Expo 2027"
                   width={220}
                   height={150}

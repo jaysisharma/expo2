@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { galleryData as initialGallery } from "@/data/gallery";
 import { GalleryItem } from "@/lib/types";
+import { ImageUploadField } from "@/components/admin/ImageUploadField";
 
 export default function AdminGalleryPage() {
   const [items, setItems] = useState<GalleryItem[]>(initialGallery);
@@ -29,6 +30,7 @@ export default function AdminGalleryPage() {
   const [editingItem, setEditingItem] = useState<GalleryItem | null>(null);
   const [previewingItem, setPreviewingItem] = useState<GalleryItem | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [addModalImage, setAddModalImage] = useState("/images/gallery/2022/DSC_6673.webp");
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
   const notify = (msg: string) => {
@@ -509,18 +511,13 @@ export default function AdminGalleryPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-[11px] font-mono font-bold text-slate-700 mb-1">
-                  IMAGE PATH / URL
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={editingItem.image}
-                  onChange={(e) => setEditingItem({ ...editingItem, image: e.target.value })}
-                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59]"
-                />
-              </div>
+              <ImageUploadField
+                label="Gallery Photo"
+                value={editingItem.image}
+                onChange={(url) => setEditingItem({ ...editingItem, image: url })}
+                folder="gallery"
+                required
+              />
 
               <div>
                 <label className="block text-[11px] font-mono font-bold text-slate-700 mb-1">
@@ -612,19 +609,14 @@ export default function AdminGalleryPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-[11px] font-mono font-bold text-slate-700 mb-1">
-                  IMAGE PATH OR URL
-                </label>
-                <input
-                  type="text"
-                  name="image"
-                  required
-                  defaultValue="/images/WhatsApp Image 2026-08-27 at 06.52.06.jpeg"
-                  placeholder="/images/... or https://..."
-                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59]"
-                />
-              </div>
+              <ImageUploadField
+                name="image"
+                label="Gallery Photo"
+                value={addModalImage}
+                onChange={setAddModalImage}
+                folder="gallery"
+                required
+              />
 
               <div>
                 <label className="block text-[11px] font-mono font-bold text-slate-700 mb-1">

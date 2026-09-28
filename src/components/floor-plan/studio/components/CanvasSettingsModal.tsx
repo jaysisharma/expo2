@@ -287,7 +287,7 @@ export function CanvasSettingsModal({
                   <button
                     type="button"
                     onClick={() => {
-                      setBgImageSrc("/images/floor-plan-official.png");
+                      setBgImageSrc("/images/floor-plan-official.webp");
                       notify("Reset to official blueprint image");
                     }}
                     className="text-[10px] text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-1 cursor-pointer font-semibold"

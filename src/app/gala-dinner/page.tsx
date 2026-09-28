@@ -43,8 +43,8 @@ export default function GalaDinnerPage() {
     },
     {
       icon: Wine,
-      title: '5-Star Gourmet Banquet at Royal Tulip',
-      desc: 'Multi-course international culinary showcase, curated wine & beverage pairings, and five-star hospitality at Royal Tulip, Kathmandu.',
+      title: '5-Star Gourmet Banquet at Royal Tulip (Gwarko)',
+      desc: 'Multi-course international culinary showcase, curated wine & beverage pairings, and five-star hospitality at Royal Tulip Kathmandu (Gwarko).',
     },
     {
       icon: Music,
@@ -59,8 +59,8 @@ export default function GalaDinnerPage() {
       <section className="relative pt-32 pb-20 sm:pt-40 sm:pb-28 px-4 sm:px-6 lg:px-8 overflow-hidden border-b border-emerald-500/20">
         <div className="absolute inset-0 pointer-events-none select-none z-0">
           <Image
-            src="/images/nepal_machhapuchhre.jpg"
-            alt="Royal Tulip Kathmandu Gala Evening"
+            src="/images/nepal_machhapuchhre.webp"
+            alt="Royal Tulip Kathmandu (Gwarko) Gala Evening"
             fill
             className="object-cover object-center opacity-20 mix-blend-luminosity scale-105"
             priority
@@ -84,24 +84,24 @@ export default function GalaDinnerPage() {
           </h1>
 
           <p className="text-base sm:text-lg text-emerald-100/80 max-w-2xl leading-relaxed">
-            The flagship social and executive climax of the Himalayan Green Energy Expo 2027. Hosted at the prestigious <strong className="text-white">Royal Tulip</strong>, Kathmandu.
+            The flagship social and executive climax of the Himalayan Green Energy Expo 2027. Hosted at the prestigious <strong className="text-white">Royal Tulip Kathmandu (Gwarko)</strong>.
           </p>
 
           {/* Quick Date, Time & Venues Bar */}
           <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-xs sm:text-sm text-emerald-100 py-4 px-5 rounded-2xl bg-white/[0.06] border border-white/10 backdrop-blur-md">
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4 text-amber-300" />
-              <span className="font-semibold">Saturday, 17 January 2027</span>
+              <span className="font-semibold">Monday, 18 January 2027</span>
             </div>
             <span className="text-white/20 hidden sm:inline">|</span>
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 text-amber-300" />
-              <span>After 6:00 PM NPT</span>
+              <span>6:00 PM onwards</span>
             </div>
             <span className="text-white/20 hidden sm:inline">|</span>
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-[#00E599]" />
-              <span className="font-bold text-white">Gala Venue: Royal Tulip, Kathmandu</span>
+              <span className="font-bold text-white">Gala Venue: Royal Tulip Kathmandu (Gwarko)</span>
             </div>
           </div>
 
@@ -127,7 +127,7 @@ export default function GalaDinnerPage() {
             Gala Dinner Delegate Passes
           </h2>
           <p className="text-xs sm:text-sm text-slate-300">
-            Main summit and trade exhibition is hosted at <strong className="text-white">Bhrikuti Mandap</strong>. Gala Dinner takes place at <strong className="text-white">Royal Tulip</strong> on 17 January.
+            Main summit and trade exhibition is hosted at <strong className="text-white">Bhrikuti Mandap</strong>. Gala Dinner takes place at <strong className="text-white">Royal Tulip Kathmandu (Gwarko)</strong> on Monday, 18 January.
           </p>
         </div>
 
@@ -160,7 +160,7 @@ export default function GalaDinnerPage() {
               <ul className="space-y-2.5 text-xs text-slate-300">
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                  <span>Full evening banquet &amp; beverage pairings at Royal Tulip</span>
+                  <span>Full evening banquet &amp; beverage pairings at Royal Tulip (Gwarko)</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
@@ -215,7 +215,7 @@ export default function GalaDinnerPage() {
               <ul className="space-y-2.5 text-xs text-slate-300">
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-sky-400 shrink-0 mt-0.5" />
-                  <span>Executive Banquet &amp; premium drinks at Royal Tulip</span>
+                  <span>Executive Banquet &amp; premium drinks at Royal Tulip (Gwarko)</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-sky-400 shrink-0 mt-0.5" />

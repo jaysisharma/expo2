@@ -1,6 +1,39 @@
 {
   "registrations": [
     {
+      "id": "GALA-2027-817220",
+      "name": "Jaysi Sharma",
+      "email": "jaisysharma9817@gmail.com",
+      "phone": "+9779814817571",
+      "organization": "Awaso",
+      "jobTitle": "Delegate",
+      "stallNumber": "",
+      "country": "Nepal",
+      "passType": "Gala Dinner Pass (Royal Tulip) - National [1 Pax]",
+      "ticketDetails": {
+        "category": "Gala Dinner",
+        "venue": "Royal Tulip Kathmandu (Gwarko)",
+        "date": "Monday, 18 January 2027",
+        "time": "6:00 PM onwards",
+        "passTier": "national",
+        "quantity": 1,
+        "unitPriceNPR": 6000,
+        "totalAmountNPR": 6000,
+        "unitPriceUSD": 45,
+        "totalAmountUSD": 45,
+        "dietary": "Standard",
+        "specialRequests": ""
+      },
+      "paymentMethod": "khalti",
+      "paymentStatus": "PAID",
+      "checkedIn": false,
+      "registeredAt": "2026-09-28T07:32:15.744Z",
+      "status": "Confirmed",
+      "pidx": "KHALTI_DEV_1790580735747_05ncge",
+      "transactionId": "TXN_1790580735747",
+      "paidAt": "2026-09-28T07:32:16.364Z"
+    },
+    {
       "id": "HHE27-236435",
       "name": "Jaysi Sharma",
       "email": "jaisysharma9817@gmail.com",
@@ -18,7 +51,20 @@
       "registeredAt": "2026-09-28T04:15:51.918Z"
     }
   ],
-  "inquiries": [],
+  "inquiries": [
+    {
+      "id": "INQ-GALA-GALA-2027-817220",
+      "name": "Jaysi Sharma",
+      "email": "jaisysharma9817@gmail.com",
+      "phone": "+9779814817571",
+      "company": "Awaso",
+      "subject": "Gala Dinner Reservation [1x NATIONAL] - KHALTI",
+      "message": "Order: GALA-2027-817220. Pass: Gala Dinner Pass (Royal Tulip) - National [1 Pax]. Quantity: 1. Total: NPR 6,000 (USD 45). Dietary: Standard. Payment: KHALTI.",
+      "stallInterest": "Gala Dinner (Royal Tulip)",
+      "status": "New",
+      "submittedAt": "2026-09-28T07:32:15.744Z"
+    }
+  ],
   "boothOverrides": {
     "C1": {
       "status": "Booked",
@@ -118,6 +164,23 @@
     }
   ],
   "news": [
+    {
+      "id": "news-1790581304957",
+      "slug": "himalayan-green-energy-expo-to-be-held-from-january-17-19-targeting-30-000-visitors",
+      "title": "Himalayan Green Energy Expo to Be Held from January 17-19, Targeting 30,000 Visitors",
+      "summary": "Himalayan Green Energy Expo to Be Held from January 17-19, Targeting 30,000 Visitors",
+      "image": "https://www.spotlightnepal.com/media/images/IPPn_HImal.width-1024.jpg",
+      "sourceName": "SpotlightNepal",
+      "sourceUrl": "https://www.spotlightnepal.com/2026/09/18/himalayan-green-energy-expo-be-held-january-17-19-targeting-30000-visitors/",
+      "date": "Sep 28, 2026",
+      "category": "News Coverage",
+      "author": "SpotlightNepal",
+      "readTime": "3 min read",
+      "featured": false,
+      "content": [
+        "Himalayan Green Energy Expo to Be Held from January 17-19, Targeting 30,000 Visitors"
+      ]
+    },
     {
       "id": "news-1790574764244",
       "slug": "himalayan-green-energy-expo-2027-in-kathmandu-news-detail-sharehub",

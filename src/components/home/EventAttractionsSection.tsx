@@ -21,21 +21,21 @@ export const ALL_11_ATTRACTIONS: EventAttractionItem[] = [
     title: 'B2B Business Meetings',
     pillar: 'business',
     desc: 'Executive suites for bilateral PPAs, EPC contracts & project financing.',
-    image: '/images/why-participate/b2b-contracts.jpg',
+    image: '/images/why-participate/b2b-contracts.webp',
   },
   {
     id: 'country-pavilions',
     title: 'International Country Pavilions',
     pillar: 'business',
     desc: 'National delegations showcasing cross-border clean energy transmission.',
-    image: '/images/attractions/country-pavilions.jpg',
+    image: '/images/attractions/country-pavilions.webp',
   },
   {
     id: 'gala-dinner',
     title: 'Gala Networking Dinner',
     pillar: 'business',
     desc: 'High-level diplomatic banquet and sovereign clean energy networking.',
-    image: '/images/attractions/gala-dinner.jpg',
+    image: '/images/attractions/gala-dinner.webp',
   },
 
   // ── Pillar 2: Knowledge & Policy ───────────────────────────────
@@ -44,21 +44,21 @@ export const ALL_11_ATTRACTIONS: EventAttractionItem[] = [
     title: 'Himalayan Green Energy Conference',
     pillar: 'knowledge',
     desc: 'High-level ministerial dialogues on regional power trade and green tariffs.',
-    image: '/images/why-participate/finance-plenary.jpg',
+    image: '/images/why-participate/finance-plenary.webp',
   },
   {
     id: 'knowledge-hub',
     title: 'Green Energy Knowledge Hub',
     pillar: 'knowledge',
     desc: 'Technical paper presentations, whitepapers, and academic innovations.',
-    image: '/images/attractions/knowledge-hub.jpg',
+    image: '/images/attractions/knowledge-hub.webp',
   },
   {
     id: 'site-visits',
     title: 'Project Site Visits',
     pillar: 'knowledge',
     desc: 'Guided delegation tours to operational Himalayan alpine hydro cascades.',
-    image: '/images/dam_reservoir_himalaya.jpg',
+    image: '/images/dam_reservoir_himalaya.webp',
   },
 
   // ── Pillar 3: Technology & Innovation ──────────────────────────
@@ -67,7 +67,7 @@ export const ALL_11_ATTRACTIONS: EventAttractionItem[] = [
     title: 'Live Technology Demonstrations',
     pillar: 'technology',
     desc: 'Real-time turbine tests, battery storage demos, and grid automation.',
-    image: '/images/why-participate/machinery-pavilion.jpg',
+    image: '/images/why-participate/machinery-pavilion.webp',
   },
   {
     id: 'startup-hub',
@@ -81,7 +81,7 @@ export const ALL_11_ATTRACTIONS: EventAttractionItem[] = [
     title: 'Hydro Con Show',
     pillar: 'technology',
     desc: 'Specialized hydropower engineering, equipment components & contractors.',
-    image: '/images/attractions/hydro-con.jpg',
+    image: '/images/attractions/hydro-con.webp',
   },
 
   // ── Pillar 4: Engagement & Competition ─────────────────────────
@@ -90,14 +90,14 @@ export const ALL_11_ATTRACTIONS: EventAttractionItem[] = [
     title: 'Energy Product & Service Competition',
     pillar: 'engagement',
     desc: 'National jury contest recognizing breakthrough clean energy products.',
-    image: '/images/why-participate/delegates-networking.jpg',
+    image: '/images/why-participate/delegates-networking.webp',
   },
   {
     id: 'ev-rally',
     title: 'EV Rally',
     pillar: 'engagement',
     desc: 'Zero-emission electric vehicle roadshow through the Kathmandu Valley.',
-    image: '/images/attractions/ev-rally.jpg',
+    image: '/images/attractions/ev-rally.webp',
   },
 ];
 

@@ -22,6 +22,7 @@ import {
   Eye,
 } from "lucide-react";
 import { NewsArticle } from "@/lib/types";
+import { ImageUploadField } from "@/components/admin/ImageUploadField";
 
 export default function AdminNewsPage() {
   const [articles, setArticles] = useState<NewsArticle[]>([]);
@@ -41,6 +42,9 @@ export default function AdminNewsPage() {
   const [urlInput, setUrlInput] = useState("");
   const [isUrlExtracting, setIsUrlExtracting] = useState(false);
   const [urlExtractError, setUrlExtractError] = useState<string | null>(null);
+  const [addModalImage, setAddModalImage] = useState(
+    "https://images.unsplash.com/photo-1509391365360-2e959784a276?auto=format&fit=crop&w=1200&q=80"
+  );
 
   // Toast
   const [toastMsg, setToastMsg] = useState<{ text: string; type?: "success" | "error" } | null>(null);
@@ -913,19 +917,14 @@ export default function AdminNewsPage() {
                 />
               </div>
 
-              <div>
-                <label className="block text-[11px] font-mono font-medium text-slate-700 mb-1">
-                  IMAGE URL
-                </label>
-                <input
-                  type="url"
-                  value={editingArticle.image}
-                  onChange={(e) =>
-                    setEditingArticle({ ...editingArticle, image: e.target.value })
-                  }
-                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59] focus:bg-white"
-                />
-              </div>
+              <ImageUploadField
+                label="Cover Image"
+                value={editingArticle.image || ""}
+                onChange={(url) =>
+                  setEditingArticle({ ...editingArticle, image: url })
+                }
+                folder="news"
+              />
 
               <div className="flex items-center gap-2 pt-1">
                 <input
@@ -1109,29 +1108,24 @@ export default function AdminNewsPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-[11px] font-mono font-medium text-slate-700 mb-1">
-                      COVER IMAGE URL
-                    </label>
-                    <input
-                      type="url"
-                      name="image"
-                      defaultValue="https://images.unsplash.com/photo-1509391365360-2e959784a276?auto=format&fit=crop&w=1200&q=80"
-                      className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59] focus:bg-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-mono font-medium text-slate-700 mb-1">
-                      SOURCE LINK (OPTIONAL)
-                    </label>
-                    <input
-                      type="url"
-                      name="sourceUrl"
-                      placeholder="https://..."
-                      className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59] focus:bg-white"
-                    />
-                  </div>
+                <ImageUploadField
+                  name="image"
+                  label="Cover Image"
+                  value={addModalImage}
+                  onChange={setAddModalImage}
+                  folder="news"
+                />
+
+                <div>
+                  <label className="block text-[11px] font-mono font-medium text-slate-700 mb-1">
+                    SOURCE LINK (OPTIONAL)
+                  </label>
+                  <input
+                    type="url"
+                    name="sourceUrl"
+                    placeholder="https://..."
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59] focus:bg-white"
+                  />
                 </div>
 
                 <div className="flex items-center gap-2 pt-1">

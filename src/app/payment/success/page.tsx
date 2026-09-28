@@ -69,8 +69,8 @@ function PaymentSuccessContent() {
           <p className="text-sm sm:text-base text-emerald-100/80 max-w-xl mx-auto leading-relaxed">
             {isGala
               ? isBank
-                ? "Your Gala Dinner seats at Royal Tulip have been provisionally held. Please complete the bank wire remittance within 48 hours to finalize guest seating."
-                : "Your Khalti payment has been successfully verified. Your VIP delegate credential for the Royal Tulip Gala Dinner is officially locked in."
+                ? "Your Gala Dinner seats at Royal Tulip Kathmandu (Gwarko) have been provisionally held. Please complete the bank wire remittance within 48 hours to finalize guest seating."
+                : "Your Khalti payment has been successfully verified. Your VIP delegate credential for the Royal Tulip Kathmandu (Gwarko) Gala Dinner is officially locked in."
               : isBank
                 ? "Your booth allocation has been provisionally reserved. Please complete the bank wire remittance within 48 hours to finalize badge and pro-forma issuance."
                 : "Your payment has been successfully verified. Your exhibition booth is now officially locked in for the Himalayan Green Energy Expo 2027."}
@@ -150,7 +150,7 @@ function PaymentSuccessContent() {
               <div>
                 <span className="text-slate-500 text-[10px] uppercase font-bold">VENUE & LOCATION</span>
                 <div className="font-sans font-bold text-slate-800 mt-0.5">
-                  {isGala ? "Royal Tulip Luxury Hotel, Kathmandu" : "Bhrikutimandap Exhibition Hall, Kathmandu"}
+                  {isGala ? "Royal Tulip Kathmandu (Gwarko)" : "Bhrikutimandap Exhibition Hall, Kathmandu"}
                 </div>
               </div>
 
@@ -159,7 +159,7 @@ function PaymentSuccessContent() {
                   {isGala ? "GALA DINNER DATE & TIME" : "EXPO DATES"}
                 </span>
                 <div className="font-sans font-bold text-slate-800 mt-0.5">
-                  {isGala ? "Saturday, 17 Jan 2027 · 6:00 PM NPT" : "Magh 3–5, 2083 · Jan 17–19, 2027"}
+                  {isGala ? "Monday, 18 Jan 2027 · 6:00 PM onwards" : "Magh 3–5, 2083 · Jan 17–19, 2027"}
                 </div>
               </div>
 

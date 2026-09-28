@@ -6,6 +6,7 @@ import { InspectorPriceAndSize } from "./inspector/InspectorPriceAndSize";
 import { InspectorStyling } from "./inspector/InspectorStyling";
 import { InspectorExhibitorInfo } from "./inspector/InspectorExhibitorInfo";
 import { InspectorActions } from "./inspector/InspectorActions";
+import { InspectorTextSettings } from "./inspector/InspectorTextSettings";
 
 interface InspectorPanelProps {
   selectedElements: CanvasElement[];
@@ -27,6 +28,8 @@ interface InspectorPanelProps {
   duplicateSelected: (direction?: "right" | "left" | "down" | "up" | "auto") => void;
   deleteSelected: () => void;
   selectAllStalls: () => void;
+  groupSelected: () => void;
+  ungroupSelected: () => void;
 }
 
 export function InspectorPanel({
@@ -49,6 +52,8 @@ export function InspectorPanel({
   duplicateSelected,
   deleteSelected,
   selectAllStalls,
+  groupSelected,
+  ungroupSelected,
 }: InspectorPanelProps) {
   if (selectedElements.length === 0 || !primarySelected) {
     return (
@@ -65,6 +70,26 @@ export function InspectorPanel({
           Select All Stalls
         </button>
       </div>
+    );
+  }
+
+  if (primarySelected.type === "text" || primarySelected.category === "Label") {
+    return (
+      <InspectorTextSettings
+        primarySelected={primarySelected}
+        selectedElements={selectedElements}
+        onDeselect={onDeselect}
+        updateSelectedBatch={updateSelectedBatch}
+        alignSelected={alignSelected}
+        bringToFront={bringToFront}
+        sendToBack={sendToBack}
+        bringForward={bringForward}
+        sendBackward={sendBackward}
+        duplicateSelected={duplicateSelected}
+        deleteSelected={deleteSelected}
+        groupSelected={groupSelected}
+        ungroupSelected={ungroupSelected}
+      />
     );
   }
 
@@ -108,6 +133,8 @@ export function InspectorPanel({
         sendBackward={sendBackward}
         duplicateSelected={duplicateSelected}
         deleteSelected={deleteSelected}
+        groupSelected={groupSelected}
+        ungroupSelected={ungroupSelected}
       />
     </div>
   );

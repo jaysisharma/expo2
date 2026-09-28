@@ -37,7 +37,7 @@ export const DEFAULT_ADMIN: AdminUser = {
   name: "HIGEX Admin",
   email: "admin@hydroexpo.org.np",
   role: "Super Admin",
-  avatar: "/images/logo.png",
+  avatar: "/images/logo.webp",
   organization: "Himalayan Green Energy Expo",
 };
 

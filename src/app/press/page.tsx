@@ -104,7 +104,7 @@ export default function PressPage() {
           <div className="relative rounded-3xl overflow-hidden border border-white/20 shadow-2xl bg-slate-950 group">
             <div className="relative w-full aspect-[16/9] sm:aspect-[21/10]">
               <Image
-                src="/images/press_meet.jpeg"
+                src="/images/press_meet.webp"
                 alt="Himalayan Green Energy Expo 2027 Official Press Meet Announcement Creative"
                 fill
                 priority
@@ -137,7 +137,7 @@ export default function PressPage() {
 
                 <div className="flex flex-wrap items-center gap-2.5">
                   <a
-                    href="/images/invitation.jpeg"
+                    href="/images/invitation.webp"
                     download="Himalayan_Green_Energy_Expo_Invitation.jpeg"
                     className="px-3.5 py-2 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-mono text-xs font-bold tracking-wider inline-flex items-center gap-1.5 transition-all shadow-md active:scale-95"
                   >
@@ -145,7 +145,7 @@ export default function PressPage() {
                     <span>Invitation Card</span>
                   </a>
                   <a
-                    href="/images/press_meet.jpeg"
+                    href="/images/press_meet.webp"
                     download="Himalayan_Green_Energy_Expo_2027_Press_Meet.jpeg"
                     className="px-3.5 py-2 rounded-full bg-white hover:bg-slate-100 text-slate-950 font-mono text-xs font-bold tracking-wider inline-flex items-center gap-1.5 transition-all shadow-md active:scale-95"
                   >
@@ -288,7 +288,7 @@ export default function PressPage() {
             </button>
             <div className="relative w-full aspect-[16/10] max-h-[80vh] rounded-2xl overflow-hidden border border-white/20 shadow-2xl">
               <Image
-                src="/images/press_meet.jpeg"
+                src="/images/press_meet.webp"
                 alt="Full resolution press meet creative"
                 fill
                 className="object-contain"

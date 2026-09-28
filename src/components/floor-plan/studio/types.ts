@@ -22,6 +22,12 @@ export interface CanvasElement {
   width: number;
   height: number;
   rotation: number;
+  textRotation?: number;
+  textOffsetX?: number;
+  textOffsetY?: number;
+  fontSize?: number;
+  fontWeight?: string;
+  groupId?: string;
   points?: { x: number; y: number }[];
   arcControl?: { x: number; y: number };
 

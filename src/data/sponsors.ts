@@ -7,7 +7,7 @@ export const sponsorsData: SponsorCategory[] = [
     sponsors: [
       {
         name: "Ministry of Energy, Water Resources & Irrigation",
-        logo: "/images/sponsors/patron/moewri.png",
+        logo: "/images/sponsors/patron/moewri.webp",
         type: "Patron Ministry",
         url: "https://moewri.gov.np",
       },
@@ -19,7 +19,7 @@ export const sponsorsData: SponsorCategory[] = [
       },
       {
         name: "Electricity Regulatory Commission (ERC)",
-        logo: "/images/sponsors/endorsed_by/Electricity_Regulatory_Commission.png",
+        logo: "/images/sponsors/endorsed_by/Electricity_Regulatory_Commission.webp",
         type: "Regulatory Body",
         url: "https://erc.gov.np",
       },
@@ -43,7 +43,7 @@ export const sponsorsData: SponsorCategory[] = [
       },
       {
         name: "PTC India Limited",
-        logo: "/images/sponsors/sponsor/ptc-india.jpeg",
+        logo: "/images/sponsors/sponsor/ptc-india.webp",
         type: "Power Trading Partner",
         url: "https://www.ptcindia.com",
       },
@@ -109,7 +109,7 @@ export const sponsorsData: SponsorCategory[] = [
       },
       {
         name: "Urja Developers",
-        logo: "/images/sponsors/sponsor/urja.png",
+        logo: "/images/sponsors/sponsor/urja.webp",
         type: "Clean Energy Developer",
         url: "https://urjadevelopers.com",
       },

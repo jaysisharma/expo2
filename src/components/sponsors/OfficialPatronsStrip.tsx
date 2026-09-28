@@ -10,7 +10,7 @@ export function OfficialPatronsStrip() {
   const keyPartners = [
     {
       name: 'Ministry of Energy, Water Resources & Irrigation',
-      logo: '/images/sponsors/patron/moewri.png',
+      logo: '/images/sponsors/patron/moewri.webp',
       url: 'https://moewri.gov.np',
     },
     {
@@ -20,7 +20,7 @@ export function OfficialPatronsStrip() {
     },
     {
       name: 'Electricity Regulatory Commission',
-      logo: '/images/sponsors/endorsed_by/Electricity_Regulatory_Commission.png',
+      logo: '/images/sponsors/endorsed_by/Electricity_Regulatory_Commission.webp',
       url: 'https://erc.gov.np',
     },
     {
@@ -55,7 +55,7 @@ export function OfficialPatronsStrip() {
     },
     {
       name: 'PTC India Limited',
-      logo: '/images/sponsors/sponsor/ptc-india.jpeg',
+      logo: '/images/sponsors/sponsor/ptc-india.webp',
       url: 'https://www.ptcindia.com',
     },
   ];

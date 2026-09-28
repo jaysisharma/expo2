@@ -16,10 +16,10 @@ export const metadata: Metadata = {
   description: "South Asia's apex clean energy convergence. 17–19 January 2027, Kathmandu, Nepal.",
   icons: {
     icon: [
-      { url: '/images/logo.png', type: 'image/png' },
+      { url: '/images/logo.webp', type: 'image/png' },
     ],
-    shortcut: '/images/logo.png',
-    apple: '/images/logo.png',
+    shortcut: '/images/logo.webp',
+    apple: '/images/logo.webp',
   },
 };
 

@@ -5,36 +5,59 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 
-const committeeMembers = [
+const ippanCommitteeMembers = [
   {
     name: "Mr. Mohan Kumar Dangi",
     title: "President, IPPAN",
-    photo: "/images/committee/mohan-kumar-dangi.png",
+    photo: "/images/committee/mohan-kumar-dangi.webp",
   },
   {
     name: "Mr. Uttam Bhlon Lama",
     title: "Senior Vice President, IPPAN",
-    photo: "/images/committee/uttam-bhlon-lama.jpg",
+    photo: "/images/committee/uttam-bhlon-lama.webp",
   },
   {
     name: "Mr. Bikram Bista",
     title: "Vice President, IPPAN",
-    photo: "/images/committee/bikram-bista.png",
+    photo: "/images/committee/bikram-bista.webp",
   },
   {
     name: "Mr. Him Prasad Pathak",
     title: "Vice President, IPPAN",
-    photo: "/images/committee/him-prasad-pathak.png",
+    photo: "/images/committee/him-prasad-pathak.webp",
   },
   {
     name: "Mr. Narendra Ballav Panth",
     title: "Vice President, IPPAN",
-    photo: "/images/committee/narendra-ballav-panth.png",
+    photo: "/images/committee/narendra-ballav-panth.webp",
+  },
+];
+
+const eventSolutionMembers = [
+  {
+    name: "Sunil Bhandari",
+    title: "Chairman, Event Solution",
+    photo: "/images/eventsolution/sunil-bhandari.webp",
   },
   {
-    name: "Ms. Susan Karmacharya",
-    title: "Vice President, IPPAN",
-    photo: "/images/committee/susan-karmacharya.png",
+    name: "Bijay Sagar Pradhan",
+    title: "Managing Director",
+    photo: "/images/eventsolution/bijay-sagar-pradhan.webp",
+  },
+  {
+    name: "Nabin Bhatta",
+    title: "Marketing Director",
+    photo: "/images/eventsolution/nabin-bhatta.webp",
+  },
+  {
+    name: "Vinesh Chordia",
+    title: "Finance Director",
+    photo: "/images/eventsolution/vinesh-chordia.webp",
+  },
+  {
+    name: "Bishal Prajapati",
+    title: "Chief Event Officer",
+    photo: "/images/eventsolution/bishal-prajapati.webp",
   },
 ];
 
@@ -60,7 +83,7 @@ const editions = [
   {
     year: "2024",
     edition: "4TH EDITION",
-    image: "/images/WhatsApp Image 2026-08-27 at 06.52.06.jpeg",
+    image: "/images/event-photo-3.webp",
     desc: "Ministerial plenary, tri-nation power export framework discussions, and 250+ exhibitors across 3 days.",
   },
 ];
@@ -199,7 +222,7 @@ export default function AboutPage() {
          ===================================================================== */}
       <section className="bg-[#03160F] py-20 sm:py-28 px-4 sm:px-10 lg:px-20 relative overflow-hidden">
         <div className="absolute inset-0 opacity-20">
-          <Image src="/images/background/5.jpg" alt="" fill className="object-cover" />
+          <Image src="/images/background/5.webp" alt="" fill className="object-cover" />
           <div className="absolute inset-0 bg-[#03160F]/85" />
         </div>
 
@@ -221,7 +244,7 @@ export default function AboutPage() {
             {/* Card 1: 1911 AD */}
             <div className="relative rounded-3xl overflow-hidden min-h-[420px] border border-emerald-500/20 bg-emerald-950/40 p-6 sm:p-7 flex flex-col justify-between group shadow-xl">
               <Image
-                src="/images/hydro_1911.jpg"
+                src="/images/hydro_1911.webp"
                 alt="1911 Pharping Hydropower Genesis"
                 fill
                 className="object-cover group-hover:scale-105 transition-transform duration-700 opacity-45"
@@ -252,12 +275,12 @@ export default function AboutPage() {
             {/* Card 2: 2035 AD Target (Existing 4,145 MW) */}
             <div className="relative rounded-3xl overflow-hidden min-h-[420px] border-2 border-[#10B981] bg-emerald-950/50 p-6 sm:p-7 flex flex-col justify-between group shadow-xl ring-2 ring-[#10B981]/20">
               <Image
-                src="/images/illustrations/solar_hydro_hybrid.jpg"
+                src="/images/illustrations/solar_hydro_hybrid.webp"
                 alt="2035 Clean Power Target"
                 fill
-                className="object-cover group-hover:scale-105 transition-transform duration-700 opacity-40"
+                className="object-cover group-hover:scale-105 transition-transform duration-700 opacity-55"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#03160F] via-[#03160F]/70 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#03160F] via-[#03160F]/65 to-transparent" />
 
               <div className="relative z-10 flex items-center justify-between">
                 <span className="px-3 py-1 rounded-xl bg-[#059669] text-white font-mono text-xs font-bold shadow-md border border-[#34D399]">
@@ -289,12 +312,12 @@ export default function AboutPage() {
             {/* Card 3: 2035 AD Allocation (India 10k, Bangladesh 5k, Domestic 13.5k) */}
             <div className="relative rounded-3xl overflow-hidden min-h-[420px] border border-emerald-500/20 bg-emerald-950/40 p-6 sm:p-7 flex flex-col justify-between group shadow-xl">
               <Image
-                src="/images/illustrations/transmission_grid_substation.jpg"
+                src="/images/illustrations/transmission_grid_substation.webp"
                 alt="Regional Power Trade"
                 fill
-                className="object-cover group-hover:scale-105 transition-transform duration-700 opacity-35"
+                className="object-cover group-hover:scale-105 transition-transform duration-700 opacity-55"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#03160F] via-[#03160F]/70 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#03160F] via-[#03160F]/65 to-transparent" />
 
               <div className="relative z-10 flex items-center justify-between">
                 <span className="px-3 py-1 rounded-xl bg-[#04281E] text-[#34D399] font-mono text-xs font-bold shadow-md border border-[#34D399]/40">
@@ -424,7 +447,7 @@ export default function AboutPage() {
               <div className="lg:col-span-6">
                 <div className="relative aspect-[16/10] w-full rounded-2xl overflow-hidden border border-white/20 shadow-2xl group">
                   <Image
-                    src="/images/press_meet.jpeg"
+                    src="/images/press_meet.webp"
                     alt="Himalayan Green Energy Expo 2027 Official Press Meet Banner"
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-700"
@@ -497,18 +520,15 @@ export default function AboutPage() {
             </div>
           </div>
 
-          {/* Ecosystem stakeholders grid for mobile & structured browsing */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 pt-4 max-w-4xl mx-auto text-left">
+          {/* Mobile: rounded pill tags (only visible on mobile below md) */}
+          <div className="md:hidden flex flex-wrap justify-center gap-2 pt-2 max-w-md mx-auto">
             {ecosystem.map((item) => (
-              <div
+              <span
                 key={item}
-                className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/10 hover:border-emerald-500/40 hover:bg-emerald-500/[0.08] transition-all group"
+                className="px-3 py-1.5 rounded-full bg-[#04281E]/90 border border-emerald-500/30 text-[10px] font-mono font-bold text-emerald-200/90 uppercase tracking-wider"
               >
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0 group-hover:scale-125 transition-transform" />
-                <span className="text-[11px] font-mono font-bold text-emerald-100/90 uppercase tracking-wide leading-tight">
-                  {item}
-                </span>
-              </div>
+                {item}
+              </span>
             ))}
           </div>
         </div>
@@ -531,7 +551,7 @@ export default function AboutPage() {
             {/* Big photo */}
             <div className="lg:col-span-7 relative h-72 sm:h-96 lg:h-full min-h-[360px] rounded-3xl overflow-hidden">
               <Image
-                src="/images/WhatsApp Image 2026-08-27 at 06.52.07.jpeg"
+                src="/images/event-photo-6.webp"
                 alt="VIP delegation on exhibition floor"
                 fill
                 className="object-cover object-center"
@@ -548,9 +568,9 @@ export default function AboutPage() {
             <div className="lg:col-span-5 grid grid-cols-2 gap-4">
               {[
                 { label: "EXHIBITION", desc: "Explore technologies, equipment and solutions from across the industry.", img: "/images/gallery/2022/DSC_6546.webp" },
-                { label: "CONFERENCE", desc: "Hear from industry leaders, engineers and policymakers across 12 plenaries.", img: "/images/WhatsApp Image 2026-08-27 at 06.52.06.jpeg" },
+                { label: "CONFERENCE", desc: "Hear from industry leaders, engineers and policymakers across 12 plenaries.", img: "/images/event-photo-3.webp" },
                 { label: "NETWORKING", desc: "Meet the people behind Nepal's energy ecosystem.", img: "/images/gallery/2022/DSC_6648.webp" },
-                { label: "BUSINESS", desc: "Build partnerships and discover new opportunities.", img: "/images/WhatsApp Image 2026-08-27 at 06.52.07 (1).jpeg" },
+                { label: "BUSINESS", desc: "Build partnerships and discover new opportunities.", img: "/images/event-photo-7.webp" },
               ].map((block) => (
                 <div key={block.label} className="relative rounded-2xl overflow-hidden group h-44 sm:h-52">
                   <Image
@@ -584,48 +604,72 @@ export default function AboutPage() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-11 gap-8 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-11 gap-6 sm:gap-8 items-stretch">
             {/* IPPAN */}
-            <div className="lg:col-span-5 p-8 rounded-3xl bg-emerald-900/30 border border-emerald-500/20 space-y-5">
-              <div className="relative h-12 w-32">
-                <Image src="/images/ippan_vector.svg" alt="IPPAN" fill className="object-contain object-left" />
-              </div>
+            <div className="lg:col-span-5 p-8 sm:p-9 rounded-3xl bg-emerald-950/40 border border-emerald-500/25 flex flex-col justify-between h-full shadow-lg hover:border-emerald-500/40 transition-all">
               <div>
-                <p className="text-[10px] font-mono font-bold text-[#34D399] uppercase tracking-widest mb-2">INDUSTRY KNOWLEDGE</p>
-                <h3 className="text-lg font-bold text-white mb-3">
-                  Independent Power Producers&apos; Association, Nepal
-                </h3>
-                <p className="text-sm text-emerald-100/70 leading-relaxed">
-                  Established in 2001, IPPAN is a non-profit, non-government autonomous organization established to encourage private-sector participation in Nepal&apos;s hydropower sector. It serves as a link between private power developers and government organizations, while supporting the exchange of technology, expertise, knowledge, financial and management information among independent power producers.
-                </p>
+                <div className="relative h-14 w-36 mb-6">
+                  <Image src="/images/ippan_vector.svg" alt="IPPAN" fill className="object-contain object-left" />
+                </div>
+                <div>
+                  <p className="text-[10.5px] font-mono font-bold text-[#34D399] uppercase tracking-widest mb-2.5">
+                    INDUSTRY KNOWLEDGE
+                  </p>
+                  <h3 className="text-xl font-bold text-white mb-3 min-h-[56px] flex items-center leading-snug">
+                    Independent Power Producers&apos; Association, Nepal
+                  </h3>
+                  <p className="text-sm text-emerald-100/75 leading-relaxed">
+                    Established in 2001, IPPAN is a non-profit, non-government autonomous organization established to encourage private-sector participation in Nepal&apos;s hydropower sector. It serves as a link between private power developers and government organizations, while supporting the exchange of technology, expertise, knowledge, financial and management information among independent power producers.
+                  </p>
+                </div>
               </div>
-              <a href="https://www.ippan.org.np/" target="_blank" rel="noopener noreferrer" className="text-xs font-mono font-bold text-[#34D399] hover:underline inline-flex items-center gap-1">
-                ippan.org.np <ArrowUpRight className="w-3 h-3" />
-              </a>
+              <div className="pt-6 mt-6 border-t border-emerald-500/20">
+                <a
+                  href="https://www.ippan.org.np/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs font-mono font-bold text-[#34D399] hover:text-white inline-flex items-center gap-1.5 transition-colors group"
+                >
+                  <span>ippan.org.np</span>
+                  <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                </a>
+              </div>
             </div>
 
             {/* Divider × */}
-            <div className="lg:col-span-1 flex items-center justify-center">
-              <span className="text-4xl font-bold text-emerald-500/40">×</span>
+            <div className="lg:col-span-1 flex items-center justify-center self-center py-2 lg:py-0">
+              <span className="text-3xl sm:text-4xl font-light text-emerald-400/50 select-none">×</span>
             </div>
 
             {/* Event Solution */}
-            <div className="lg:col-span-5 p-8 rounded-3xl bg-emerald-900/30 border border-emerald-500/20 space-y-5">
-              <div className="relative h-12 w-40">
-                <Image src="/images/event_solution_vector.svg" alt="Event Solution" fill className="object-contain object-left" />
-              </div>
+            <div className="lg:col-span-5 p-8 sm:p-9 rounded-3xl bg-emerald-950/40 border border-emerald-500/25 flex flex-col justify-between h-full shadow-lg hover:border-emerald-500/40 transition-all">
               <div>
-                <p className="text-[10px] font-mono font-bold text-[#34D399] uppercase tracking-widest mb-2">EVENT EXECUTION</p>
-                <h3 className="text-lg font-bold text-white mb-3">
-                  Event Solution Nepal Pvt. Ltd.
-                </h3>
-                <p className="text-sm text-emerald-100/70 leading-relaxed">
-                  Founded in 2014, Event Solution Nepal is an event management company focused on creating and delivering events from planning through execution. Its services include event planning and consulting, event management and coordination, event production and setup, event rentals, logistics and event operations, and sound, lighting and LED solutions.
-                </p>
+                <div className="relative h-14 w-44 mb-6">
+                  <Image src="/images/event_solution_vector.svg" alt="Event Solution" fill className="object-contain object-left" />
+                </div>
+                <div>
+                  <p className="text-[10.5px] font-mono font-bold text-[#34D399] uppercase tracking-widest mb-2.5">
+                    EVENT EXECUTION
+                  </p>
+                  <h3 className="text-xl font-bold text-white mb-3 min-h-[56px] flex items-center leading-snug">
+                    Event Solution Nepal Pvt. Ltd.
+                  </h3>
+                  <p className="text-sm text-emerald-100/75 leading-relaxed">
+                    Founded in 2014, Event Solution Nepal is an event management company focused on creating and delivering events from planning through execution. Its services include event planning and consulting, event management and coordination, event production and setup, event rentals, logistics and event operations, and sound, lighting and LED solutions.
+                  </p>
+                </div>
               </div>
-              <a href="https://eventsolutionnepal.com.np/" target="_blank" rel="noopener noreferrer" className="text-xs font-mono font-bold text-[#34D399] hover:underline inline-flex items-center gap-1">
-                eventsolutionnepal.com.np <ArrowUpRight className="w-3 h-3" />
-              </a>
+              <div className="pt-6 mt-6 border-t border-emerald-500/20">
+                <a
+                  href="https://eventsolutionnepal.com.np/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs font-mono font-bold text-[#34D399] hover:text-white inline-flex items-center gap-1.5 transition-colors group"
+                >
+                  <span>eventsolutionnepal.com.np</span>
+                  <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -652,22 +696,64 @@ export default function AboutPage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-            {committeeMembers.map((person) => (
-              <div key={person.name} className="group text-center">
-                <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-slate-100 mb-3">
-                  <Image
-                    src={person.photo}
-                    alt={person.name}
-                    fill
-                    className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#061A2A]/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                </div>
-                <p className="text-xs font-bold text-[#061A2A] leading-snug">{person.name}</p>
-                <p className="text-[10px] font-mono text-[#087EA4] mt-0.5">{person.title}</p>
+          <div className="space-y-12">
+            {/* 01: IPPAN Leadership */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2.5">
+                <span className="px-2.5 py-0.5 rounded-md bg-emerald-50 text-[#005C42] border border-emerald-200 text-xs font-mono font-bold uppercase tracking-wider">
+                  IPPAN LEADERSHIP
+                </span>
+                <span className="text-xs text-slate-500 font-medium hidden sm:inline">
+                  Independent Power Producers&apos; Association, Nepal
+                </span>
               </div>
-            ))}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                {ippanCommitteeMembers.map((person) => (
+                  <div key={person.name} className="group text-center">
+                    <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-slate-100 mb-3 border border-slate-200/80 shadow-2xs group-hover:shadow-md group-hover:border-emerald-300 transition-all duration-300">
+                      <Image
+                        src={person.photo}
+                        alt={person.name}
+                        fill
+                        className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#061A2A]/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                    <p className="text-xs font-bold text-[#061A2A] leading-snug line-clamp-1">{person.name}</p>
+                    <p className="text-[10px] font-mono text-[#005C42] mt-0.5 font-medium line-clamp-1">{person.title}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 02: Event Solution Management Team */}
+            <div className="space-y-4 pt-6 border-t border-slate-100">
+              <div className="flex items-center gap-2.5">
+                <span className="px-2.5 py-0.5 rounded-md bg-sky-50 text-sky-900 border border-sky-200 text-xs font-mono font-bold uppercase tracking-wider">
+                  EVENT SOLUTION TEAM
+                </span>
+                <span className="text-xs text-slate-500 font-medium hidden sm:inline">
+                  Event Solution Nepal Pvt. Ltd. (Operations &amp; Management)
+                </span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                {eventSolutionMembers.map((person) => (
+                  <div key={person.name} className="group text-center">
+                    <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-slate-100 mb-3 border border-slate-200/80 shadow-2xs group-hover:shadow-md group-hover:border-sky-300 transition-all duration-300">
+                      <Image
+                        src={person.photo}
+                        alt={person.name}
+                        fill
+                        className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#061A2A]/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                    <p className="text-xs font-bold text-[#061A2A] leading-snug line-clamp-1">{person.name}</p>
+                    <p className="text-[10px] font-mono text-[#087EA4] mt-0.5 font-medium line-clamp-1">{person.title}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -679,7 +765,7 @@ export default function AboutPage() {
         {/* Full-bleed background */}
         <div className="absolute inset-0">
           <Image
-            src="/images/background/22.jpg"
+            src="/images/background/22.webp"
             alt="Himalayan hydropower backdrop"
             fill
             className="object-cover object-center"
@@ -695,7 +781,7 @@ export default function AboutPage() {
           <div className="flex justify-center">
             <div className="relative w-28 h-28 sm:w-36 sm:h-36">
               <Image
-                src="/images/logo.png"
+                src="/images/logo.webp"
                 alt="Himalayan Green Energy Expo"
                 fill
                 className="object-contain drop-shadow-[0_0_40px_rgba(16,185,129,0.5)]"

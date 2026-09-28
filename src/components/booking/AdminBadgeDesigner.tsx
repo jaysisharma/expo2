@@ -513,11 +513,25 @@ export default function AdminBadgeDesigner({ onClose, onSaved }: AdminBadgeDesig
     notify(`Processing & uploading ${activeRole} badge artwork...`);
 
     try {
-      const optimizedImage = await compressBadgeImage(file);
+      let finalImage: string;
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("folder", "badges");
+        const uploadRes = await fetch("/api/upload", { method: "POST", body: formData });
+        const uploadJson = await uploadRes.json();
+        if (uploadJson.success && uploadJson.url) {
+          finalImage = uploadJson.url;
+        } else {
+          finalImage = await compressBadgeImage(file);
+        }
+      } catch {
+        finalImage = await compressBadgeImage(file);
+      }
 
       const updatedRoleConfig = {
         ...templates[activeRole],
-        bgImage: optimizedImage,
+        bgImage: finalImage,
       };
 
       const updatedTemplates = {

@@ -190,6 +190,8 @@ export function useCanvasDrawing({
         width: 140,
         height: 30,
         rotation: 0,
+        fontSize: 18,
+        fontWeight: "700",
       };
       recordHistory([...elements, newText]);
       setSelectedIds([newText.id]);

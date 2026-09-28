@@ -16,6 +16,35 @@ import {
   X,
 } from "lucide-react";
 
+function cleanHeadline(title: string, sourceName?: string): string {
+  if (!title) return "";
+  let text = title.trim();
+
+  // Strip trailing source name patterns e.g. " | ShareHub", " - New Business Age", " : ShareHub"
+  if (sourceName) {
+    const rawName = sourceName
+      .replace(/^https?:\/\//i, "")
+      .replace(/^www\./i, "")
+      .replace(/\.[a-z]{2,}(\.[a-z]{2,})?$/i, "")
+      .trim();
+
+    const variants = [sourceName.trim(), rawName];
+    for (const s of variants) {
+      if (!s || s.length < 3) continue;
+      const escaped = s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      text = text.replace(
+        new RegExp(`\\s*(\\||-|—|–|:)\\s*(?:News Detail\\s*(\\||-|—|–)\\s*)?${escaped}\\s*$`, "i"),
+        ""
+      );
+    }
+  }
+
+  // Strip generic suffixes like " | News Detail | ...", " - News Detail"
+  text = text.replace(/\s*\|\s*News Detail(\s*\|\s*.*)?$/i, "");
+  text = text.replace(/\s*-\s*News Detail(\s*-\s*.*)?$/i, "");
+  return text.trim() || title;
+}
+
 export default function NewsPage() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [articles, setArticles] = useState<NewsArticle[]>([]);
@@ -212,27 +241,10 @@ export default function NewsPage() {
 
                     {/* Top Floating Badge */}
                     <div className="absolute top-4 left-4 flex items-center gap-2">
-                      <span className="px-3 py-1 rounded-full bg-white/95 backdrop-blur-md text-[11px] font-bold text-slate-900 shadow-xs border border-white/60 flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                        <span className="truncate max-w-[160px]">{leadArticle.sourceName || "Media Coverage"}</span>
+                      <span className="px-3.5 py-1.5 rounded-full bg-[#005C42] text-white text-[10.5px] font-mono font-bold tracking-wider uppercase shadow-md flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        <span>FEATURED DISPATCH</span>
                       </span>
-                      <span className="px-3 py-1 rounded-full bg-[#005C42] text-white text-[10.5px] font-mono font-bold tracking-wider uppercase shadow-xs">
-                        FEATURED
-                      </span>
-                    </div>
-
-                    {/* Bottom Image Date Overlay */}
-                    <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between text-xs text-white/90">
-                      <span className="flex items-center gap-1.5">
-                        <Calendar className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>{leadArticle.date}</span>
-                      </span>
-                      {leadArticle.readTime && (
-                        <span className="flex items-center gap-1 text-slate-200">
-                          <Clock className="w-3 h-3 text-slate-300" />
-                          <span>{leadArticle.readTime}</span>
-                        </span>
-                      )}
                     </div>
                   </div>
 
@@ -247,7 +259,7 @@ export default function NewsPage() {
                       </div>
 
                       <h2 className="text-xl sm:text-2xl font-bold font-inter-tight text-slate-900 group-hover:text-[#005C42] leading-snug transition-colors duration-200">
-                        {leadArticle.title}
+                        {cleanHeadline(leadArticle.title, leadArticle.sourceName)}
                       </h2>
 
                       <p className="text-xs sm:text-sm text-slate-600 font-normal leading-relaxed line-clamp-3 lg:line-clamp-4">
@@ -256,11 +268,17 @@ export default function NewsPage() {
                     </div>
 
                     <div className="pt-4 border-t border-slate-200/80 flex items-center justify-between">
-                      <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-                        <Globe className="w-3.5 h-3.5 text-emerald-600" />
-                        <span className="truncate max-w-[140px] sm:max-w-[170px]">
-                          {leadArticle.sourceName || "Official Publication"}
+                      <div className="flex items-center gap-2 text-xs text-slate-500 font-mono">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>{leadArticle.date}</span>
                         </span>
+                        {leadArticle.readTime && (
+                          <>
+                            <span>·</span>
+                            <span>{leadArticle.readTime}</span>
+                          </>
+                        )}
                       </div>
 
                       <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#005C42] group-hover:bg-[#004833] text-white text-xs font-bold uppercase tracking-wider transition-all shadow-xs group-hover:shadow-md">
@@ -306,43 +324,27 @@ export default function NewsPage() {
                               <Newspaper className="w-10 h-10 opacity-40" />
                             </div>
                           )}
-                          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-slate-950/20 to-transparent" />
-
-                          {/* Top Floating Source Badge */}
-                          <div className="absolute top-3.5 left-3.5 flex items-center gap-1.5">
-                            <span className="px-3 py-1 rounded-full bg-white/95 backdrop-blur-md text-[11px] font-bold text-slate-800 tracking-tight shadow-xs border border-white/60 flex items-center gap-1.5">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                              <span className="truncate max-w-[150px]">
-                                {article.sourceName || "Media Coverage"}
-                              </span>
-                            </span>
-                          </div>
+                          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/50 to-transparent" />
 
                           {/* Top Right External Arrow Indicator */}
                           <div className="absolute top-3.5 right-3.5 w-8 h-8 rounded-full bg-black/40 backdrop-blur-md text-white flex items-center justify-center border border-white/20 group-hover:bg-[#005C42] group-hover:border-[#005C42] group-hover:scale-110 transition-all duration-300">
                             <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                           </div>
-
-                          {/* Bottom Image Date & Read Time Overlay */}
-                          <div className="absolute bottom-3 left-3.5 right-3.5 flex items-center justify-between text-[11px] font-medium text-white/90">
-                            <span className="flex items-center gap-1.5">
-                              <Calendar className="w-3.5 h-3.5 text-emerald-400" />
-                              <span>{article.date}</span>
-                            </span>
-                            {article.readTime && (
-                              <span className="flex items-center gap-1 text-slate-200 text-[10.5px]">
-                                <Clock className="w-3 h-3 text-slate-300" />
-                                <span>{article.readTime}</span>
-                              </span>
-                            )}
-                          </div>
                         </div>
 
                         {/* Card Content */}
                         <div className="p-5 sm:p-6 space-y-2.5">
-                          {/* Title */}
+                          {/* Single Outlet Attribution */}
+                          <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-800 mb-1">
+                            <Globe className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                            <span className="truncate max-w-[200px]">
+                              {article.sourceName || "Official Dispatch"}
+                            </span>
+                          </div>
+
+                          {/* Cleaned Title */}
                           <h3 className="font-bold text-[17px] sm:text-[18px] text-slate-900 font-inter-tight group-hover:text-[#005C42] transition-colors duration-200 leading-[1.35] line-clamp-2">
-                            {article.title}
+                            {cleanHeadline(article.title, article.sourceName)}
                           </h3>
 
                           {/* Excerpt */}
@@ -353,12 +355,16 @@ export default function NewsPage() {
                       </div>
 
                       {/* Card Footer Bar */}
-                      <div className="px-5 sm:px-6 py-4 border-t border-slate-100 bg-slate-50/60 flex items-center justify-between text-xs mt-auto">
-                        <div className="flex items-center gap-1.5 text-slate-500 font-medium">
-                          <Globe className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                          <span className="truncate max-w-[130px] sm:max-w-[150px]">
-                            {article.sourceName || "Official Release"}
-                          </span>
+                      <div className="px-5 sm:px-6 py-3.5 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between text-xs mt-auto">
+                        <div className="flex items-center gap-1.5 text-slate-400 font-mono text-[11px]">
+                          <Calendar className="w-3 h-3 text-slate-400" />
+                          <span>{article.date}</span>
+                          {article.readTime && (
+                            <>
+                              <span>·</span>
+                              <span>{article.readTime}</span>
+                            </>
+                          )}
                         </div>
                         <span className="inline-flex items-center gap-1 font-bold text-xs uppercase tracking-wider text-[#005C42] group-hover:text-emerald-700 transition-colors">
                           <span>Read Story</span>

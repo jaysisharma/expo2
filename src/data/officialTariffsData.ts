@@ -30,7 +30,7 @@ export const EXPO_EVENT_META = {
   datesEnglish: "17th–19th Jan, 2027",
   datesNepali: "3rd–5th Magh, 2083",
   venue: "Bhrikuti Mandap (Bhrikutimandap Exhibition Hall), Kathmandu, Nepal",
-  galaDinnerVenue: "Royal Tulip, Kathmandu",
+  galaDinnerVenue: "Royal Tulip Kathmandu (Gwarko)",
   galaDinnerNationalPrice: "NPR 6,000",
   galaDinnerInternationalPrice: "USD 50",
   notes: [

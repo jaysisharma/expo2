@@ -132,14 +132,14 @@ export function GalaBookingModal({
           <div className="space-y-1.5 pr-8">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[11px] font-mono font-bold text-emerald-400 uppercase">
               <Sparkles className="w-3 h-3 text-[#00E599]" />
-              <span>Royal Tulip Luxury Hotel, Kathmandu</span>
+              <span>Royal Tulip Kathmandu (Gwarko)</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white flex items-center gap-2.5">
               <span>Gala Dinner Pass Booking</span>
               <Wine className="w-6 h-6 text-amber-300 hidden sm:inline" />
             </h2>
             <p className="text-xs text-emerald-100/70 font-normal">
-              Saturday, 17 January 2027 · 6:00 PM onwards · Executive Banquet &amp; VIP Networking
+              Monday, 18 January 2027 · 6:00 PM onwards · Executive Banquet &amp; VIP Networking
             </p>
           </div>
 
@@ -412,7 +412,7 @@ export function GalaBookingModal({
             </div>
             <div className="flex items-center justify-between text-[11px] text-slate-400 border-t border-white/10 pt-2">
               <span>Venue &amp; Entry:</span>
-              <span className="text-emerald-300">Royal Tulip, Kathmandu + 3-Day Expo Pass</span>
+              <span className="text-emerald-300">Royal Tulip Kathmandu (Gwarko) + 3-Day Expo Pass</span>
             </div>
             <div className="flex items-center justify-between font-mono font-bold text-sm text-white pt-1">
               <span>Grand Total:</span>

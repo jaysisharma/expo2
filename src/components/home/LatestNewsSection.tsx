@@ -59,7 +59,7 @@ export function LatestNewsSection() {
               item.summary ||
               (Array.isArray(item.content) ? item.content[0] : '') ||
               '',
-            image: item.image || '/images/press_meet.jpeg',
+            image: item.image || '/images/press_meet.webp',
             href,
             isExternal,
           });
@@ -107,7 +107,7 @@ export function LatestNewsSection() {
       <div className="absolute inset-0 pointer-events-none select-none overflow-hidden">
         <div className="absolute -top-10 left-0 right-0 h-96 opacity-15">
           <Image
-            src="/images/nepal_machhapuchhre.jpg"
+            src="/images/nepal_machhapuchhre.webp"
             alt="Himalayan Background"
             fill
             className="object-cover object-top mix-blend-luminosity"

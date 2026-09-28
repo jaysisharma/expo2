@@ -48,7 +48,7 @@ export async function POST(req: Request) {
       quantity = 1,
       dietary = 'Standard',
       specialRequests = '',
-      paymentMethod = 'khalti', // 'khalti' | 'bank'
+      paymentMethod = 'khalti', // 'khalti' | 'qr'
     } = body;
 
     if (!name || !email || !phone) {
@@ -59,10 +59,6 @@ export async function POST(req: Request) {
     }
 
     const qty = Math.max(1, parseInt(String(quantity), 10) || 1);
-    
-    // Official Pricing from Proposal & Tariffs:
-    // National: NPR 6,000 / person
-    // International: USD 50 / person (NPR 6,750 for Khalti conversion @ 135)
     const unitPriceNPR = passType === 'international' ? 6750 : 6000;
     const unitPriceUSD = passType === 'international' ? 50 : 45;
     const totalAmountNPR = unitPriceNPR * qty;
@@ -70,11 +66,8 @@ export async function POST(req: Request) {
 
     const orderId = `GALA-2027-${Math.floor(100000 + Math.random() * 900000)}`;
 
-    // 1. Record registration in admin store
     const adminData = await getAdminData();
-    if (!adminData.registrations) {
-      adminData.registrations = [];
-    }
+    if (!adminData.registrations) adminData.registrations = [];
 
     const resolvedPassTitle =
       passType === 'international'
@@ -93,9 +86,9 @@ export async function POST(req: Request) {
       passType: resolvedPassTitle,
       ticketDetails: {
         category: 'Gala Dinner',
-        venue: 'Royal Tulip, Kathmandu',
-        date: 'Saturday, 17 January 2027',
-        time: '6:00 PM NPT onwards',
+        venue: 'Royal Tulip Kathmandu (Gwarko)',
+        date: 'Monday, 18 January 2027',
+        time: '6:00 PM onwards',
         passTier: passType,
         quantity: qty,
         unitPriceNPR,
@@ -106,7 +99,8 @@ export async function POST(req: Request) {
         specialRequests,
       },
       paymentMethod,
-      paymentStatus: paymentMethod === 'bank' ? 'PENDING_WIRE' : 'UNPAID',
+      paymentStatus: paymentMethod === 'qr' ? 'PENDING_QR_VERIFICATION' : 'UNPAID',
+      screenshotUrl: body.screenshotUrl || '',
       checkedIn: false,
       registeredAt: new Date().toISOString(),
     };
@@ -185,15 +179,15 @@ export async function POST(req: Request) {
       }
     }
 
-    // 3. Bank Wire transfer requested
+    // QR payment — reservation saved, pending screenshot verification
     return NextResponse.json({
       success: true,
       orderId,
-      paymentMethod: 'bank',
+      paymentMethod: 'qr',
       totalAmountNPR,
       redirectUrl: `/payment/success?id=${encodeURIComponent(
         orderId
-      )}&gateway=bank&type=gala&amount=${totalAmountNPR}&qty=${qty}`,
+      )}&gateway=qr&type=gala&amount=${totalAmountNPR}&qty=${qty}`,
     });
   } catch (error: any) {
     console.error('Gala payment initiate error:', error);

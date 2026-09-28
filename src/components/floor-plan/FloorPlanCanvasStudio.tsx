@@ -118,6 +118,8 @@ export default function FloorPlanCanvasStudio() {
     sendBackward,
     moveSelectedBy,
     clearCanvas,
+    groupSelected,
+    ungroupSelected,
   } = useCanvasBatchOps({
     elements,
     setElements,
@@ -212,6 +214,8 @@ export default function FloorPlanCanvasStudio() {
     sendToBack,
     bringForward,
     sendBackward,
+    groupSelected,
+    ungroupSelected,
     recordHistory,
     notify,
   });
@@ -270,6 +274,8 @@ export default function FloorPlanCanvasStudio() {
                 duplicateSelected={duplicateSelected}
                 deleteSelected={deleteSelected}
                 selectAllStalls={selectAllStalls}
+                groupSelected={groupSelected}
+                ungroupSelected={ungroupSelected}
               />
             ) : (
               <ToolsPalette

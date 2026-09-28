@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { speakersData as initialIPPANMembers } from "@/data/speakers";
 import { eventSolutionTeam as initialEventSolutionTeam } from "@/data/eventSolutionTeam";
+import { ImageUploadField } from "@/components/admin/ImageUploadField";
 
 export interface UnifiedMember {
   id: string;
@@ -44,7 +45,7 @@ const defaultMembers: UnifiedMember[] = [
     title: s.title,
     organization: "Independent Power Producers' Association, Nepal (IPPAN)",
     orgType: "IPPAN" as const,
-    photo: s.photo || "/images/committee/mohan-kumar-dangi.png",
+    photo: s.photo || "/images/committee/mohan-kumar-dangi.webp",
     category: s.category || "IPPAN Leadership",
     bio: s.bio,
     featured: s.featured ?? false,
@@ -55,7 +56,7 @@ const defaultMembers: UnifiedMember[] = [
     title: e.position,
     organization: "Event Solution Pvt. Ltd.",
     orgType: "Event Solution" as const,
-    photo: e.photo || "/images/committee/mohan-kumar-dangi.png",
+    photo: e.photo || "/images/committee/mohan-kumar-dangi.webp",
     category: e.category || "Executive",
     bio: `${e.position} at Event Solution Pvt. Ltd., organizing the Himalayan Green Energy Expo.`,
     featured: e.category === "Executive",
@@ -71,6 +72,7 @@ export default function AdminMembersPage() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [editingMember, setEditingMember] = useState<UnifiedMember | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [addModalPhoto, setAddModalPhoto] = useState("/images/committee/mohan-kumar-dangi.webp");
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
   // Load from localStorage or defaults
@@ -212,7 +214,7 @@ export default function AdminMembersPage() {
     const category = formData.get("category") as string;
     const bio = formData.get("bio") as string;
     const photo =
-      (formData.get("photo") as string) || "/images/committee/mohan-kumar-dangi.png";
+      (formData.get("photo") as string) || "/images/committee/mohan-kumar-dangi.webp";
     const featured = formData.get("featured") === "on";
 
     const defaultOrgName =
@@ -556,7 +558,7 @@ export default function AdminMembersPage() {
                           <div className="flex items-center gap-3">
                             <div className="relative w-9 h-9 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
                               <Image
-                                src={m.photo || "/images/committee/mohan-kumar-dangi.png"}
+                                src={m.photo || "/images/committee/mohan-kumar-dangi.webp"}
                                 alt={m.name}
                                 fill
                                 sizes="36px"
@@ -564,7 +566,7 @@ export default function AdminMembersPage() {
                                 onError={(e) => {
                                   // Fallback handled gracefully
                                   const target = e.target as HTMLImageElement;
-                                  target.src = "/images/committee/mohan-kumar-dangi.png";
+                                  target.src = "/images/committee/mohan-kumar-dangi.webp";
                                 }}
                               />
                             </div>
@@ -701,7 +703,7 @@ export default function AdminMembersPage() {
                 <div className="flex items-start gap-3">
                   <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
                     <Image
-                      src={m.photo || "/images/committee/mohan-kumar-dangi.png"}
+                      src={m.photo || "/images/committee/mohan-kumar-dangi.webp"}
                       alt={m.name}
                       fill
                       sizes="48px"
@@ -855,19 +857,16 @@ export default function AdminMembersPage() {
                     className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59]"
                   />
                 </div>
-                <div>
-                  <label className="block text-[11px] font-mono text-slate-600 mb-1">
-                    PHOTO PATH / URL
-                  </label>
-                  <input
-                    type="text"
-                    value={editingMember.photo}
-                    onChange={(e) =>
-                      setEditingMember({ ...editingMember, photo: e.target.value })
-                    }
-                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59]"
-                  />
-                </div>
+              <div className="pt-1">
+                <ImageUploadField
+                  label="Member Photo"
+                  value={editingMember.photo}
+                  onChange={(url) =>
+                    setEditingMember({ ...editingMember, photo: url })
+                  }
+                  folder="speakers"
+                />
+              </div>
               </div>
 
               <div>
@@ -1001,17 +1000,15 @@ export default function AdminMembersPage() {
                     className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#218A59]"
                   />
                 </div>
-                <div>
-                  <label className="block text-[11px] font-mono text-slate-600 mb-1">
-                    PHOTO PATH / URL
-                  </label>
-                  <input
-                    type="text"
-                    name="photo"
-                    placeholder="/images/committee/... or https://..."
-                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#218A59]"
-                  />
-                </div>
+              <div className="pt-1">
+                <ImageUploadField
+                  name="photo"
+                  label="Member Photo"
+                  value={addModalPhoto}
+                  onChange={setAddModalPhoto}
+                  folder="speakers"
+                />
+              </div>
               </div>
 
               <div>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { DollarSign, Maximize2 } from "lucide-react";
 import { CanvasElement } from "../../../types";
 
@@ -13,6 +13,8 @@ export function InspectorPriceAndSize({
   selectedElementsCount,
   updateSelectedBatch,
 }: InspectorPriceAndSizeProps) {
+  const [resizeCanvasBox, setResizeCanvasBox] = useState(false);
+
   return (
     <>
       {/* 1. PRICE CONFIGURATION (NPR & USD) */}
@@ -87,15 +89,26 @@ export function InspectorPriceAndSize({
           </span>
         </div>
 
+        {/* Width & Height Pixel Sliders + Direct Number Inputs */}
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <div className="flex justify-between text-[10px] text-slate-600 dark:text-slate-400 mb-1">
+            <div className="flex justify-between items-center text-[10px] text-slate-600 dark:text-slate-400 mb-1">
               <span>Width</span>
-              <span className="font-mono text-slate-800 dark:text-slate-200">{primarySelected.width}px</span>
+              <div className="flex items-center gap-1">
+                <input
+                  type="number"
+                  min="5"
+                  max="600"
+                  value={primarySelected.width}
+                  onChange={(e) => updateSelectedBatch({ width: Math.max(5, Number(e.target.value)) })}
+                  className="w-12 px-1 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-mono text-right text-[10px]"
+                />
+                <span className="font-mono text-slate-400">px</span>
+              </div>
             </div>
             <input
               type="range"
-              min="20"
+              min="5"
               max="300"
               value={primarySelected.width}
               onChange={(e) => updateSelectedBatch({ width: Number(e.target.value) })}
@@ -103,13 +116,23 @@ export function InspectorPriceAndSize({
             />
           </div>
           <div>
-            <div className="flex justify-between text-[10px] text-slate-600 dark:text-slate-400 mb-1">
+            <div className="flex justify-between items-center text-[10px] text-slate-600 dark:text-slate-400 mb-1">
               <span>Height</span>
-              <span className="font-mono text-slate-800 dark:text-slate-200">{primarySelected.height}px</span>
+              <div className="flex items-center gap-1">
+                <input
+                  type="number"
+                  min="5"
+                  max="600"
+                  value={primarySelected.height}
+                  onChange={(e) => updateSelectedBatch({ height: Math.max(5, Number(e.target.value)) })}
+                  className="w-12 px-1 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-mono text-right text-[10px]"
+                />
+                <span className="font-mono text-slate-400">px</span>
+              </div>
             </div>
             <input
               type="range"
-              min="20"
+              min="5"
               max="300"
               value={primarySelected.height}
               onChange={(e) => updateSelectedBatch({ height: Number(e.target.value) })}
@@ -120,7 +143,18 @@ export function InspectorPriceAndSize({
 
         {/* Standard Meter Size Presets */}
         <div>
-          <span className="text-[10px] text-slate-500 dark:text-slate-400 block mb-1">Standard Physical Sizes:</span>
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold">Standard Physical Sizes:</span>
+            <label className="flex items-center gap-1.5 text-[9.5px] text-slate-500 dark:text-slate-400 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={resizeCanvasBox}
+                onChange={(e) => setResizeCanvasBox(e.target.checked)}
+                className="rounded text-sky-500 w-3 h-3 cursor-pointer"
+              />
+              <span>Also resize canvas box</span>
+            </label>
+          </div>
           <div className="grid grid-cols-2 gap-1.5">
             {[
               { label: "3m × 3m (9 sq.m)", w: 45, h: 45, sqm: 9, dim: "3m × 3m" },
@@ -129,24 +163,30 @@ export function InspectorPriceAndSize({
               { label: "5m × 6m (30 sq.m)", w: 75, h: 90, sqm: 30, dim: "5m × 6m" },
               { label: "8m × 8m (64 sq.m)", w: 120, h: 120, sqm: 64, dim: "8m × 8m" },
               { label: "20ft × 60ft Bare", w: 180, h: 60, sqm: 111, dim: "20ft × 60ft" },
-            ].map((dim) => (
-              <button
-                key={dim.label}
-                type="button"
-                onClick={() =>
-                  updateSelectedBatch({
-                    width: dim.w,
-                    height: dim.h,
-                    sizeSqM: dim.sqm,
-                    sizeSqFt: Math.round(dim.sqm * 10.764),
-                    dimensions: dim.dim,
-                  })
-                }
-                className="p-1.5 rounded bg-white dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-[10px] text-left truncate font-mono border border-slate-200 dark:border-slate-800 transition-colors cursor-pointer"
-              >
-                {dim.label}
-              </button>
-            ))}
+            ].map((dim) => {
+              const isCurrent = primarySelected.dimensions === dim.dim;
+              return (
+                <button
+                  key={dim.label}
+                  type="button"
+                  onClick={() =>
+                    updateSelectedBatch({
+                      sizeSqM: dim.sqm,
+                      sizeSqFt: Math.round(dim.sqm * 10.764),
+                      dimensions: dim.dim,
+                      ...(resizeCanvasBox ? { width: dim.w, height: dim.h } : {}),
+                    })
+                  }
+                  className={`p-1.5 rounded text-left truncate font-mono border transition-colors cursor-pointer text-[10px] ${
+                    isCurrent
+                      ? "bg-sky-50 dark:bg-sky-950/60 border-sky-500 text-sky-600 dark:text-sky-300 font-bold shadow-xs"
+                      : "bg-white dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800"
+                  }`}
+                >
+                  {dim.label}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

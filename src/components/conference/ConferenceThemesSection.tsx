@@ -32,7 +32,7 @@ const exhibitionSectors: SectorItem[] = [
     number: '01',
     title: 'HYDROPOWER',
     tagline: 'Hydropower projects, IPPs, turbines, generators and power infrastructure.',
-    image: '/images/sectors/green_energy_show.jpg',
+    image: '/images/sectors/green_energy_show.webp',
     AnimatedSvg: HydroTurbineSvg,
   },
   {
@@ -40,7 +40,7 @@ const exhibitionSectors: SectorItem[] = [
     number: '02',
     title: 'SOLAR & WIND',
     tagline: 'Solar PV, wind energy and renewable-energy technologies.',
-    image: '/images/sectors/solar_energy_show.jpg',
+    image: '/images/sectors/solar_energy_show.webp',
     AnimatedSvg: SolarPhotovoltaicSvg,
   },
   {
@@ -48,7 +48,7 @@ const exhibitionSectors: SectorItem[] = [
     number: '03',
     title: 'ENERGY STORAGE',
     tagline: 'Batteries, energy storage systems and related power technologies.',
-    image: '/images/sectors/alternative_energy_show.jpg',
+    image: '/images/sectors/alternative_energy_show.webp',
     AnimatedSvg: EnergyStorageSvg,
   },
   {
@@ -56,7 +56,7 @@ const exhibitionSectors: SectorItem[] = [
     number: '04',
     title: 'GREEN HYDROGEN',
     tagline: 'Green hydrogen and emerging clean-energy technologies.',
-    image: '/images/sectors/green_hydrogen_show.jpg',
+    image: '/images/sectors/green_hydrogen_show.webp',
     AnimatedSvg: HydrogenMoleculeSvg,
   },
   {
@@ -64,7 +64,7 @@ const exhibitionSectors: SectorItem[] = [
     number: '05',
     title: 'E-MOBILITY',
     tagline: 'Electric mobility and technologies supporting the transition to cleaner transportation.',
-    image: '/images/sectors/ev_show.jpg',
+    image: '/images/sectors/ev_show.webp',
     AnimatedSvg: EvMobilitySvg,
   },
   {
@@ -72,7 +72,7 @@ const exhibitionSectors: SectorItem[] = [
     number: '06',
     title: 'DIGITAL & SMART ENERGY',
     tagline: 'Digital energy, IoT, AI, automation and smart-energy solutions.',
-    image: '/images/sectors/windmill_energy_show.jpg',
+    image: '/images/sectors/windmill_energy_show.webp',
     AnimatedSvg: SmartEnergySvg,
   },
 ];

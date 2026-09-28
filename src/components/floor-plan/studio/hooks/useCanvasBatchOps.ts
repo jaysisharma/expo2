@@ -82,8 +82,6 @@ export function useCanvasBatchOps({
       fillOpacity: cat.color === "transparent" ? 0 : cat.fillOpacity,
       borderColor: cat.border,
       textColor: cat.color === "transparent" ? cat.border : "#FFFFFF",
-      width: cat.defaultW,
-      height: cat.defaultH,
     });
     notify(`Applied ${cat.name} to ${selectedIds.length} stall(s)`);
   };
@@ -346,6 +344,36 @@ export function useCanvasBatchOps({
     }
   };
 
+  const groupSelected = () => {
+    if (selectedIds.length < 2) {
+      notify("Select 2 or more elements to group");
+      return;
+    }
+    const gid = `GRP_${Date.now()}`;
+    const updated = elements.map((el) =>
+      selectedIds.includes(el.id) ? { ...el, groupId: gid } : el
+    );
+    recordHistory(updated);
+    notify(`Grouped ${selectedIds.length} elements (${gid})`);
+  };
+
+  const ungroupSelected = () => {
+    if (selectedIds.length === 0) return;
+    // Find all groupIds that the selected elements belong to
+    const selectedEls = elements.filter((el) => selectedIds.includes(el.id));
+    const groupIds = new Set(selectedEls.map((el) => el.groupId).filter(Boolean) as string[]);
+    if (groupIds.size === 0) {
+      notify("No groups in selection to ungroup");
+      return;
+    }
+    // Clear groupId from all elements in those groups
+    const updated = elements.map((el) =>
+      el.groupId && groupIds.has(el.groupId) ? { ...el, groupId: undefined } : el
+    );
+    recordHistory(updated);
+    notify(`Ungrouped ${groupIds.size} group(s)`);
+  };
+
   return {
     updateSelectedBatch,
     handleBatchRenumber,
@@ -360,5 +388,7 @@ export function useCanvasBatchOps({
     sendBackward,
     moveSelectedBy,
     clearCanvas,
+    groupSelected,
+    ungroupSelected,
   };
 }

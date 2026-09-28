@@ -163,7 +163,7 @@ export function HimalayanEcosystemGraphic() {
     hydro: {
       name: 'Upper Tamakoshi Glacial Cascade', category: 'HYDROELECTRIC',
       elevation: '3,820m Intake · 822m Head', basin: 'Tamakoshi River Basin, Dolakha',
-      image: '/images/nepal_tamakoshi.jpg', coords: "27°51'N 86°12'E",
+      image: '/images/nepal_tamakoshi.webp', coords: "27°51'N 86°12'E",
       turbine: '6× Vertical Pelton Turbines', gridRoute: '220kV → 400kV Dhalkebar',
       desc: 'High-head run-of-river project harnessing glacial snowmelt through twin 372m penstock shafts into an underground powerhouse.',
       highlights: ['822m hydraulic head drop', 'Twin vertical pressure shafts', 'Winter baseload firming'],
@@ -172,7 +172,7 @@ export function HimalayanEcosystemGraphic() {
     wind: {
       name: 'Mustang Mountain Wind Corridor', category: 'WIND HARVESTING',
       elevation: '2,850m MASL', basin: 'Kali Gandaki Gorge, Mustang',
-      image: '/images/sectors/windmill_energy_show.jpg', coords: "28°47'N 83°43'E",
+      image: '/images/sectors/windmill_energy_show.webp', coords: "28°47'N 83°43'E",
       turbine: 'Anti-Icing High Altitude Turbines', gridRoute: '132kV Kali Gandaki → Butwal',
       desc: 'High-altitude wind turbines in the world’s deepest gorge where valley thermal gradients create dependable daytime wind corridors.',
       highlights: ['Anti-icing electro-thermal blades', 'Thermal diurnal wind corridors', 'Complements dry winter hydro'],
@@ -181,7 +181,7 @@ export function HimalayanEcosystemGraphic() {
     solar: {
       name: 'Trishuli & Kulekhani Floating Solar', category: 'PHOTOVOLTAIC HYBRID',
       elevation: '1,450m MASL', basin: 'Trishuli Watershed & Reservoir',
-      image: '/images/sectors/solar_energy_show.jpg', coords: "27°42'N 85°08'E",
+      image: '/images/sectors/solar_energy_show.webp', coords: "27°42'N 85°08'E",
       turbine: 'N-Type TOPCon Bifacial Panels', gridRoute: '66kV/132kV Inverter Station',
       desc: 'Floating solar arrays on reservoir surfaces leveraging water cooling for +12% conversion boost while cutting water evaporation.',
       highlights: ['Evaporation suppression on reservoirs', 'Albedo capture from mountain snow', 'Utilizes existing grid substations'],
@@ -190,7 +190,7 @@ export function HimalayanEcosystemGraphic() {
     hydrogen: {
       name: 'Monsoon Surplus Green H₂ Facility', category: 'CLEAN MOLECULAR',
       elevation: '450m MASL', basin: 'Kathmandu-Hetauda Industrial Corridor',
-      image: '/images/sectors/green_hydrogen_show.jpg', coords: "27°25'N 85°02'E",
+      image: '/images/sectors/green_hydrogen_show.webp', coords: "27°25'N 85°02'E",
       turbine: 'Modular PEM Electrolyzers (30 bar)', gridRoute: '132kV Industrial Substation',
       desc: 'Absorbs wet-season surplus hydropower and converts spilled electrons into green hydrogen for clean industry and green urea fertilizer.',
       highlights: ['Absorbs monsoon hydro spill', 'Zero-carbon ammonia feedstock', '15-second flexible grid ramping'],
@@ -199,7 +199,7 @@ export function HimalayanEcosystemGraphic() {
     grid: {
       name: 'Dhalkebar 400kV Synchronous Supergrid', category: 'INTERCONNECTION',
       elevation: '95m Terai Basin', basin: 'Dhanusha Cross-Border Corridor',
-      image: '/images/hydro_transmission.jpg', coords: "26°55'N 85°52'E",
+      image: '/images/hydro_transmission.webp', coords: "26°55'N 85°52'E",
       turbine: '960 MVA Gas-Insulated Substation', gridRoute: 'Dhalkebar–Muzaffarpur 400kV',
       desc: 'Strategic 400kV corridor synchronizing Nepal’s clean power generation to the Indian National Grid and Bangladesh under regional treaties.',
       highlights: ['50.00 Hz synchronous interconnect', 'Quad Moose high-capacity conductors', '10,000 MW bilateral export treaty'],
@@ -297,7 +297,7 @@ export function HimalayanEcosystemGraphic() {
 
               {/* Photo background layer */}
               <Image
-                src="/images/dam_reservoir_himalaya.jpg"
+                src="/images/dam_reservoir_himalaya.webp"
                 alt="Himalayan landscape"
                 fill
                 priority

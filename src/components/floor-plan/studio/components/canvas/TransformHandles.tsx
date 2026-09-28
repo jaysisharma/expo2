@@ -12,6 +12,7 @@ interface TransformHandlesProps {
   setDragStartPos: (pos: { x: number; y: number }) => void;
   setInitialAngleOffset: (offset: number) => void;
   setIsRotating: (rotating: boolean) => void;
+  onRotateText?: (id: string) => void;
 }
 
 export function TransformHandles({
@@ -25,6 +26,7 @@ export function TransformHandles({
   setDragStartPos,
   setInitialAngleOffset,
   setIsRotating,
+  onRotateText,
 }: TransformHandlesProps) {
   const handleResizeStart = (e: React.MouseEvent, handle: string) => {
     e.stopPropagation();
@@ -129,6 +131,64 @@ export function TransformHandles({
         className="cursor-grab active:cursor-grabbing hover:scale-125 transition-transform pointer-events-auto"
         onMouseDown={handleRotateStart}
       />
+
+      {/* Bottom Text Rotation Handle */}
+      {el.number && onRotateText && (
+        <g
+          className="cursor-pointer pointer-events-auto"
+          onClick={(e) => {
+            e.stopPropagation();
+            onRotateText(el.id);
+          }}
+        >
+          <line
+            x1={el.x + el.width / 2}
+            y1={el.y + el.height}
+            x2={el.x + el.width / 2}
+            y2={el.y + el.height + 20}
+            stroke="#38BDF8"
+            strokeWidth="1.5"
+            strokeDasharray="2 2"
+            pointerEvents="none"
+          />
+          <circle
+            cx={el.x + el.width / 2}
+            cy={el.y + el.height + 20}
+            r="8.5"
+            fill="#0284C7"
+            stroke="#FFFFFF"
+            strokeWidth="2"
+            className="hover:scale-125 transition-transform"
+          />
+          <text
+            x={el.x + el.width / 2}
+            y={el.y + el.height + 20}
+            textAnchor="middle"
+            dominantBaseline="central"
+            fill="#FFFFFF"
+            fontSize="8.5"
+            fontWeight="bold"
+            fontFamily="sans-serif"
+            className="select-none pointer-events-none"
+          >
+            T↻
+          </text>
+          {el.textRotation !== undefined && el.textRotation !== 0 && (
+            <text
+              x={el.x + el.width / 2}
+              y={el.y + el.height + 34}
+              fill="#0284C7"
+              fontSize="9"
+              fontWeight="700"
+              fontFamily="sans-serif"
+              textAnchor="middle"
+              className="select-none pointer-events-none"
+            >
+              text: {el.textRotation}°
+            </text>
+          )}
+        </g>
+      )}
     </>
   );
 }

@@ -20,13 +20,13 @@ export function Hero() {
         {/* Full-bleed High-Definition Drone Hydro Background Video */}
         <div className="absolute inset-0 w-full h-full pointer-events-none select-none z-0 overflow-hidden bg-slate-950">
           <video
-            src="/videos/drone_hydroelectric.mp4"
+            src="https://res.cloudinary.com/gztboref/video/upload/v1790580687/higex/videos/drone_hydroelectric.mp4"
             autoPlay
             loop
             muted
             playsInline
             preload="auto"
-            poster="/images/himalayan_dam_hero.jpg"
+            poster="/images/himalayan_dam_hero.webp"
             className="w-full h-full object-cover object-center scale-[1.01]"
           />
         </div>

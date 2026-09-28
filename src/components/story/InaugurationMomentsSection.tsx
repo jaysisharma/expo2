@@ -20,61 +20,61 @@ export interface InauguralMoment {
 export const INAUGURAL_MOMENTS: InauguralMoment[] = [
   {
     id: 'm1',
-    image: '/images/WhatsApp Image 2026-08-27 at 06.52.05.jpeg',
+    image: '/images/event-photo-1.webp',
     title: 'Official Chief Guest Inaugural Address & Keynote',
     subtitle: 'Rt. Hon. Prime Minister addressing the assembly on national energy sovereignty',
   },
   {
     id: 'm2',
-    image: '/images/WhatsApp Image 2026-08-27 at 06.52.05 (1).jpeg',
+    image: '/images/event-photo-2.webp',
     title: 'Auspicious Lamp Lighting Ceremony',
     subtitle: 'Traditional ceremonial Panas lighting marking the formal commencement',
   },
   {
     id: 'm3',
-    image: '/images/WhatsApp Image 2026-08-27 at 06.52.06.jpeg',
+    image: '/images/event-photo-3.webp',
     title: 'Sovereign Energy Leaders & Ministers on Dais',
     subtitle: 'Cabinet Ministers and diplomatic mission heads convened at the leadership summit',
   },
   {
     id: 'm4',
-    image: '/images/WhatsApp Image 2026-08-27 at 06.52.06 (2).jpeg',
+    image: '/images/event-photo-5.webp',
     title: 'Unveiling the Official Himalayan Expo Directory',
     subtitle: 'Official release of the comprehensive national clean energy industry registry',
   },
   {
     id: 'm5',
-    image: '/images/WhatsApp Image 2026-08-27 at 06.52.07.jpeg',
+    image: '/images/event-photo-6.webp',
     title: 'VIP Ministerial Exhibition Hall Walkthrough',
     subtitle: 'Dignitaries touring high-technology pavilions and turbine manufacturing displays',
   },
   {
     id: 'm6',
-    image: '/images/WhatsApp Image 2026-08-27 at 06.52.07 (1).jpeg',
+    image: '/images/event-photo-7.webp',
     title: 'Honoring Apex Patrons & Foundational Sponsors',
     subtitle: 'State recognition presented to foundational developers and power utilities',
   },
   {
     id: 'm7',
-    image: '/images/WhatsApp Image 2026-08-27 at 06.52.06 (1).jpeg',
+    image: '/images/event-photo-4.webp',
     title: 'High-Level Policy Address & Clean Energy Vision',
     subtitle: 'Ministerial roadmap toward regional power trade and cross-border transmission',
   },
   {
     id: 'm8',
-    image: '/images/WhatsApp Image 2026-08-27 at 06.52.07 (2).jpeg',
+    image: '/images/event-photo-8.webp',
     title: 'National & Regional Press Briefing',
     subtitle: 'Joint address announcing milestone bilateral energy partnerships',
   },
   {
     id: 'm9',
-    image: '/images/WhatsApp Image 2026-08-27 at 06.52.08.jpeg',
+    image: '/images/event-photo-9.webp',
     title: '10,000+ Energy Delegates Plenary Assembly',
     subtitle: 'Convention floor gathering of international investors, developers, and engineers',
   },
   {
     id: 'm10',
-    image: '/images/WhatsApp Image 2026-08-27 at 06.52.08 (1).jpeg',
+    image: '/images/event-photo-10.webp',
     title: 'National Clean Energy Milestone Celebration',
     subtitle: 'Commemorating landmark achievements in sustainable Himalayan energy',
   },
@@ -112,7 +112,7 @@ export function InaugurationMomentsSection() {
           <div className="space-y-2 max-w-2xl mb-10 sm:mb-14">
             <div className="flex items-center gap-3">
               <span className="text-xs font-bold text-[#007A5E] uppercase tracking-wider font-mono">
-                STATE PATRONAGE &bull; HISTORICAL RECORD
+                STATE PATRONAGE • HISTORICAL RECORD
               </span>
               <div className="w-12 h-0.5 bg-[#007A5E]/40 rounded-full" />
             </div>

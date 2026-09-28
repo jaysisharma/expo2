@@ -47,7 +47,7 @@ export default function VenuePage() {
             {/* Venue Image */}
             <div className="lg:col-span-6 relative min-h-[300px] sm:min-h-[380px] bg-slate-900">
               <Image
-                src="/images/gallery/2024_expo.jpg"
+                src="/images/gallery/2024_expo.webp"
                 alt="Bhrikutimandap Exhibition Hall Kathmandu - Himalayan Green Energy Expo 2027"
                 fill
                 priority

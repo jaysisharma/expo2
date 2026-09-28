@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { sponsorsData as initialSponsors } from "@/data/sponsors";
 import { SponsorCategory } from "@/lib/types";
+import { ImageUploadField } from "@/components/admin/ImageUploadField";
 
 interface FlatSponsor {
   id: string;
@@ -47,6 +48,7 @@ export default function AdminSponsorsPage() {
   // Modals & Editing
   const [editingSponsor, setEditingSponsor] = useState<FlatSponsor | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [addModalLogo, setAddModalLogo] = useState("/images/logo.webp");
   const [isSaving, setIsSaving] = useState(false);
 
   // Toast
@@ -112,7 +114,7 @@ export default function AdminSponsorsPage() {
         list.push({
           id: `${cat.tier}:::${s.name}`,
           name: s.name,
-          logo: s.logo || "/images/logo.png",
+          logo: s.logo || "/images/logo.webp",
           type: s.type || "Official Partner",
           url: s.url || "",
           tier: cat.tier,
@@ -216,7 +218,7 @@ export default function AdminSponsorsPage() {
     const tier = formData.get("tier") as string;
     const type = (formData.get("type") as string)?.trim() || "Official Partner";
     const url = (formData.get("url") as string)?.trim() || "";
-    const logo = (formData.get("logo") as string)?.trim() || "/images/logo.png";
+    const logo = (formData.get("logo") as string)?.trim() || "/images/logo.webp";
 
     if (!name || !tier) {
       setIsSaving(false);
@@ -887,18 +889,13 @@ export default function AdminSponsorsPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-[11px] font-mono font-medium text-slate-700 mb-1">
-                  LOGO IMAGE URL
-                </label>
-                <input
-                  type="text"
-                  name="logo"
-                  placeholder="/images/sponsors/... or https://..."
-                  defaultValue="/images/logo.png"
-                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#218A59] focus:bg-white"
-                />
-              </div>
+              <ImageUploadField
+                name="logo"
+                label="Sponsor Logo"
+                value={addModalLogo}
+                onChange={setAddModalLogo}
+                folder="sponsors"
+              />
 
               <div>
                 <label className="block text-[11px] font-mono font-medium text-slate-700 mb-1">
@@ -992,17 +989,15 @@ export default function AdminSponsorsPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-[11px] font-mono font-medium text-slate-700 mb-1">
-                  LOGO IMAGE URL
-                </label>
-                <input
-                  type="text"
-                  name="logo"
-                  defaultValue={editingSponsor.logo}
-                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59] focus:bg-white"
-                />
-              </div>
+              <ImageUploadField
+                name="logo"
+                label="Sponsor Logo"
+                value={editingSponsor.logo}
+                onChange={(url) =>
+                  setEditingSponsor({ ...editingSponsor, logo: url })
+                }
+                folder="sponsors"
+              />
 
               <div>
                 <label className="block text-[11px] font-mono font-medium text-slate-700 mb-1">

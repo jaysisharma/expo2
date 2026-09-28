@@ -39,7 +39,7 @@ export async function GET() {
           canvasHeight: json.canvasHeight || 850,
           canvasBgMode: json.canvasBgMode || "cad-dark",
           showBgImage: json.showBgImage !== undefined ? json.showBgImage : true,
-          bgImageSrc: json.bgImageSrc || "/images/floor-plan-official.png",
+          bgImageSrc: json.bgImageSrc || "/images/floor-plan-official.webp",
           blueprintOpacity: json.blueprintOpacity ?? 0.65,
         },
       });
@@ -50,7 +50,7 @@ export async function GET() {
         elements: [],
         canvasWidth: 1200,
         canvasHeight: 850,
-        bgImageSrc: "/images/floor-plan-official.png",
+        bgImageSrc: "/images/floor-plan-official.webp",
         blueprintOpacity: 0.65,
         canvasBgMode: "cad-dark",
         showBgImage: true,
@@ -70,7 +70,7 @@ export async function POST(request: Request) {
     const dataToSave = {
       elements: body.elements || [],
       updatedAt: new Date().toISOString(),
-      bgImageSrc: body.bgImageSrc || "/images/floor-plan-official.png",
+      bgImageSrc: body.bgImageSrc || "/images/floor-plan-official.webp",
       blueprintOpacity: body.blueprintOpacity ?? 0.65,
       canvasBgMode: body.canvasBgMode || "cad-dark",
       showBgImage: body.showBgImage !== undefined ? body.showBgImage : true,

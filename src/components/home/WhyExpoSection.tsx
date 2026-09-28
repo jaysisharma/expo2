@@ -86,7 +86,7 @@ export function WhyExpoSection() {
           {/* Right: Image with overlay stats */}
           <div className="relative rounded-2xl overflow-hidden border border-slate-200 shadow-md aspect-[4/3] bg-slate-900 group">
             <Image
-              src="/images/nepal_tamakoshi.jpg"
+              src="/images/nepal_tamakoshi.webp"
               alt="Upper Tamakoshi Hydropower — Nepal"
               fill
               sizes="(max-width: 1024px) 100vw, 600px"

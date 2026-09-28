@@ -58,20 +58,27 @@ export function CanvasElementRenderer({
 
     const isSelected = selectedIds.includes(el.id);
 
+    // If element belongs to a group, resolve all group member IDs
+    const groupMemberIds: string[] = el.groupId
+      ? elements.filter((item) => item.groupId === el.groupId).map((item) => item.id)
+      : [el.id];
+
     if (e.shiftKey || e.metaKey || e.ctrlKey) {
       if (isSelected) {
-        setSelectedIds((prev) => prev.filter((id) => id !== el.id));
+        // Remove the whole group from selection
+        setSelectedIds((prev) => prev.filter((id) => !groupMemberIds.includes(id)));
       } else {
-        setSelectedIds((prev) => [...prev, el.id]);
+        setSelectedIds((prev) => Array.from(new Set([...prev, ...groupMemberIds])));
       }
       return;
     }
 
+    // If not already selected, select the whole group
     if (!isSelected) {
-      setSelectedIds([el.id]);
+      setSelectedIds(groupMemberIds);
     }
 
-    const currentSelectedIds = isSelected ? selectedIds : [el.id];
+    const currentSelectedIds = isSelected ? selectedIds : groupMemberIds;
     const posMap: {
       [id: string]: { x: number; y: number; points?: { x: number; y: number }[]; arcControl?: { x: number; y: number } };
     } = {};
@@ -141,13 +148,19 @@ export function CanvasElementRenderer({
 
               {/* Label */}
               <text
-                x={el.x + el.width / 2}
-                y={el.y + el.height / 2 + 4}
-                fill={el.textColor || "#FFFFFF"}
-                fontWeight="700"
-                fontSize={el.width > 60 ? 11 : el.width > 30 ? 9 : 7.5}
-                fontFamily="sans-serif"
+                x={el.x + el.width / 2 + (el.textOffsetX || 0)}
+                y={el.y + el.height / 2 + (el.textOffsetY || 0)}
+                dominantBaseline="central"
                 textAnchor="middle"
+                transform={
+                  el.textRotation
+                    ? `rotate(${el.textRotation}, ${el.x + el.width / 2 + (el.textOffsetX || 0)}, ${el.y + el.height / 2 + (el.textOffsetY || 0)})`
+                    : undefined
+                }
+                fill={el.textColor || "#FFFFFF"}
+                fontWeight={el.fontWeight || "700"}
+                fontSize={el.fontSize || (el.width > 60 ? 11 : el.width > 30 ? 9 : 7.5)}
+                fontFamily="sans-serif"
                 pointerEvents="none"
               >
                 {el.number}
@@ -166,6 +179,15 @@ export function CanvasElementRenderer({
                   setDragStartPos={setDragStartPos}
                   setInitialAngleOffset={setInitialAngleOffset}
                   setIsRotating={setIsRotating}
+                  onRotateText={(id) => {
+                    const nextAngle = ((el.textRotation || 0) + 90) % 360;
+                    recordHistory(
+                      elements.map((item) =>
+                        item.id === id ? { ...item, textRotation: nextAngle } : item
+                      )
+                    );
+                    notify(`Rotated text to ${nextAngle}°`);
+                  }}
                 />
               )}
             </g>
@@ -224,10 +246,16 @@ export function CanvasElementRenderer({
 
         // 5. Text Label
         if (el.type === "text") {
-          const textW = el.width || 120;
-          const textH = el.height || 24;
+          const fontSize = el.fontSize || 16;
+          const fontWeight = el.fontWeight || "700";
+          const textContent = el.number || "Text Label";
+          const approxCharWidth = fontSize * 0.65;
+          const textW = Math.max(el.width || 0, Math.ceil(textContent.length * approxCharWidth) + 20);
+          const textH = Math.max(el.height || 0, Math.ceil(fontSize * 1.35));
+          const baselineOffset = fontSize * 0.85;
+          const topY = el.y - baselineOffset;
           const centerX = el.x + textW / 2;
-          const centerY = el.y - 14 + textH / 2;
+          const centerY = topY + textH / 2;
 
           return (
             <g
@@ -237,34 +265,26 @@ export function CanvasElementRenderer({
                   ? `rotate(${el.rotation}, ${centerX}, ${centerY})`
                   : undefined
               }
-              onMouseDown={(e) => {
-                if (!isSelectOrEraser) return;
-                e.stopPropagation();
-                if (activeTool === "eraser") {
-                  recordHistory(elements.filter((item) => item.id !== el.id));
-                  notify("Deleted text");
-                  return;
-                }
-                setSelectedIds([el.id]);
-                setIsDragging(true);
-                setInitialElementState({
-                  ...el,
-                  width: textW,
-                  height: textH,
-                  x: el.x,
-                  y: el.y - 14,
-                });
-                setDragStartPos(getCoordinates(e));
-              }}
+              onMouseDown={(e) => handleElementMouseDown(e, el)}
               className={isSelectOrEraser ? "cursor-grab active:cursor-grabbing pointer-events-auto" : "pointer-events-none"}
             >
+              {/* Invisible Hitbox Rect so clicking anywhere on or around the text easily selects & drags it */}
+              <rect
+                x={el.x - 8}
+                y={topY - 8}
+                width={textW + 16}
+                height={textH + 16}
+                fill="transparent"
+                pointerEvents="all"
+              />
               <text
                 x={el.x}
                 y={el.y}
                 fill={el.textColor || "#FFFFFF"}
-                fontSize="13"
-                fontWeight="bold"
+                fontSize={fontSize}
+                fontWeight={fontWeight}
                 fontFamily="sans-serif"
+                pointerEvents="none"
               >
                 {el.number}
               </text>
@@ -272,9 +292,9 @@ export function CanvasElementRenderer({
                 <>
                   <rect
                     x={el.x - 4}
-                    y={el.y - 14}
-                    width={textW}
-                    height={textH}
+                    y={topY - 4}
+                    width={textW + 8}
+                    height={textH + 8}
                     fill="none"
                     stroke="#38BDF8"
                     strokeWidth="1.5"
@@ -284,9 +304,9 @@ export function CanvasElementRenderer({
                     <>
                       <line
                         x1={centerX}
-                        y1={el.y - 14}
+                        y1={topY - 4}
                         x2={centerX}
-                        y2={el.y - 34}
+                        y2={topY - 24}
                         stroke="#38BDF8"
                         strokeWidth="1.5"
                         strokeDasharray="2 2"
@@ -295,7 +315,7 @@ export function CanvasElementRenderer({
                       {el.rotation !== 0 && (
                         <text
                           x={centerX}
-                          y={el.y - 40}
+                          y={topY - 28}
                           fill="#38BDF8"
                           fontSize="10"
                           fontWeight="700"
@@ -308,7 +328,7 @@ export function CanvasElementRenderer({
                       )}
                       <circle
                         cx={centerX}
-                        cy={el.y - 34}
+                        cy={topY - 24}
                         r="6"
                         fill="#10B981"
                         stroke="#FFFFFF"
@@ -331,7 +351,7 @@ export function CanvasElementRenderer({
                             width: textW,
                             height: textH,
                             x: el.x,
-                            y: el.y - 14,
+                            y: el.y,
                           });
                         }}
                       />
@@ -378,13 +398,18 @@ export function CanvasElementRenderer({
               {/* Stall Number / Label */}
               {el.number && (
                 <text
-                  x={centerX}
-                  y={centerY + 4}
+                  x={centerX + (el.textOffsetX || 0)}
+                  y={centerY + (el.textOffsetY || 0)}
                   textAnchor="middle"
-                  dominantBaseline="middle"
+                  dominantBaseline="central"
+                  transform={
+                    el.textRotation
+                      ? `rotate(${el.textRotation}, ${centerX + (el.textOffsetX || 0)}, ${centerY + (el.textOffsetY || 0)})`
+                      : undefined
+                  }
                   fill={el.textColor || "#FFFFFF"}
-                  fontSize="12"
-                  fontWeight="bold"
+                  fontSize={el.fontSize || (el.width > 60 ? 11 : el.width > 30 ? 9 : 7.5)}
+                  fontWeight={el.fontWeight || "bold"}
                   fontFamily="monospace"
                   className="select-none pointer-events-none drop-shadow-md"
                 >
@@ -426,6 +451,68 @@ export function CanvasElementRenderer({
 
         return null;
       })}
+
+      {/* GROUP BOUNDING BOXES — drawn once per unique groupId */}
+      {(() => {
+        const groupIds = Array.from(
+          new Set(elements.filter((el) => el.groupId).map((el) => el.groupId as string))
+        );
+        return groupIds.map((gid) => {
+          const members = elements.filter((el) => el.groupId === gid);
+          if (members.length < 2) return null;
+
+          // Compute bounding box across all members
+          let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+          members.forEach((el) => {
+            const ex = el.x, ey = el.y;
+            const ew = el.width || 0, eh = el.height || 0;
+            minX = Math.min(minX, ex);
+            minY = Math.min(minY, ey);
+            maxX = Math.max(maxX, ex + ew);
+            maxY = Math.max(maxY, ey + eh);
+          });
+
+          const pad = 8;
+          const isGroupSelected = members.some((el) => selectedIds.includes(el.id));
+
+          return (
+            <g key={`group-${gid}`} pointerEvents="none">
+              <rect
+                x={minX - pad}
+                y={minY - pad}
+                width={maxX - minX + pad * 2}
+                height={maxY - minY + pad * 2}
+                fill="none"
+                stroke={isGroupSelected ? "#F59E0B" : "#94A3B880"}
+                strokeWidth={isGroupSelected ? 2 : 1}
+                strokeDasharray={isGroupSelected ? "6 4" : "4 4"}
+                rx={6}
+                ry={6}
+              />
+              {/* Group label badge */}
+              <rect
+                x={minX - pad}
+                y={minY - pad - 17}
+                width={56}
+                height={17}
+                rx={4}
+                fill={isGroupSelected ? "#F59E0B" : "#334155"}
+                opacity={0.92}
+              />
+              <text
+                x={minX - pad + 6}
+                y={minY - pad - 5}
+                fill={isGroupSelected ? "#0F172A" : "#94A3B8"}
+                fontSize={10}
+                fontWeight="700"
+                fontFamily="sans-serif"
+              >
+                📦 Group ({members.length})
+              </text>
+            </g>
+          );
+        });
+      })()}
     </>
   );
 }

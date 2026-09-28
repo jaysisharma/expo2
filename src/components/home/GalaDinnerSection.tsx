@@ -1,29 +1,25 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import {
   Calendar,
   Clock,
   MapPin,
   ArrowRight,
+  Sparkles,
 } from 'lucide-react';
 import { ScrollReveal } from '@/components/ui';
-import { GalaBookingModal } from '@/components/booking/GalaBookingModal';
 
 export function GalaDinnerSection() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
   return (
     <section
       id="gala-dinner"
-      className="relative w-full py-16 sm:py-24 bg-white text-slate-900 font-inter-tight border-b border-slate-100 transition-colors duration-300"
+      className="relative w-full py-16 sm:py-24 bg-white text-slate-900 font-inter-tight border-b border-slate-100"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
         <ScrollReveal direction="up" distance={30} duration={0.8}>
-          <div className="relative rounded-[28px] bg-gradient-to-br from-[#091f2e] via-[#071824] to-[#040f18] border border-[#16354b] p-6 sm:p-10 lg:p-12 shadow-2xl overflow-hidden text-white">
-            {/* Subtle Atmospheric Glows */}
-            <div className="absolute -top-32 -left-32 w-96 h-96 bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-[#F5B544]/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="relative rounded-[28px] bg-[#091f2e] border border-[#16354b] p-6 sm:p-10 lg:p-12 shadow-2xl overflow-hidden text-white">
 
             <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
               {/* Left Column: Heading & Metadata */}
@@ -36,28 +32,33 @@ export function GalaDinnerSection() {
                     <div className="w-12 h-0.5 bg-[#F5B544]/40 rounded-full" />
                   </div>
 
-                  {/* Heading */}
                   <h2 className="text-3xl sm:text-4xl lg:text-[44px] font-bold text-white tracking-tight leading-[1.15]">
                     Himalayan Green Energy Expo <br />
                     <span className="text-[#F5B544]">Gala Dinner</span>
                   </h2>
                 </div>
 
-                {/* Date, Time & Venue Metadata */}
-                <div className="py-4 border-y border-slate-700/50 flex flex-wrap items-center gap-4 sm:gap-6 text-xs sm:text-sm text-slate-300">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-[#F5B544]" />
-                    <span className="font-semibold text-slate-200">Saturday, 17 January 2027</span>
+                {/* Date, Time & Venue */}
+                <div className="py-4 border-y border-slate-700/50 space-y-3">
+                  <div className="flex items-center gap-2 text-sm text-slate-200">
+                    <MapPin className="w-4 h-4 text-[#00E599] shrink-0" />
+                    <span className="font-semibold">Royal Tulip Kathmandu (Gwarko)</span>
                   </div>
-                  <span className="text-slate-600 hidden sm:inline">|</span>
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-[#F5B544]" />
-                    <span className="font-semibold text-slate-200">After 6:00 PM NPT</span>
-                  </div>
-                  <span className="text-slate-600 hidden sm:inline">|</span>
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-[#00E599]" />
-                    <span className="font-medium text-slate-200">Royal Tulip Hotel, Kathmandu</span>
+                  <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-xs sm:text-sm text-slate-300">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-[#F5B544]" />
+                      <span className="font-semibold text-slate-200">Monday, 18 January 2027</span>
+                    </div>
+                    <span className="text-slate-600 hidden sm:inline">|</span>
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-[#F5B544]" />
+                      <span className="font-semibold text-slate-200">6:00 PM onwards</span>
+                    </div>
+                    <span className="text-slate-600 hidden sm:inline">|</span>
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-amber-300" />
+                      <span className="font-medium text-slate-200">Executive Banquet & VIP Networking</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -69,7 +70,7 @@ export function GalaDinnerSection() {
                   <div>
                     {/* Overline */}
                     <div className="text-[11px] font-mono tracking-widest uppercase text-slate-400 font-semibold">
-                      GALA DINNER PASS
+                      GALA DINNER PASS BOOKING
                     </div>
 
                     {/* Card Title */}
@@ -93,44 +94,24 @@ export function GalaDinnerSection() {
                     </p>
                   </div>
 
-                  {/* CTA Button */}
-                  <div>
-                    <button
-                      type="button"
-                      onClick={() => setIsModalOpen(true)}
-                      className="w-full py-3.5 px-6 rounded-xl bg-[#F5B544] hover:bg-[#e5a83b] active:scale-[0.99] text-[#071722] font-bold text-xs sm:text-sm uppercase tracking-wider text-center flex items-center justify-center gap-2 shadow-lg shadow-amber-500/10 transition-all duration-200 cursor-pointer"
-                    >
-                      <span>BOOK GALA DINNER (NPR 6,000)</span>
-                      <ArrowRight className="w-4 h-4 text-[#071722]" />
-                    </button>
+                  {/* CTA Button — navigates to dedicated page */}
+                  <Link
+                    href="/book-gala-dinner"
+                    className="w-full py-3.5 px-6 rounded-xl bg-[#F5B544] hover:bg-[#e5a83b] active:scale-[0.99] text-[#071722] font-bold text-xs sm:text-sm uppercase tracking-wider text-center flex items-center justify-center gap-2 shadow-lg shadow-amber-500/10 transition-all duration-200 cursor-pointer"
+                  >
+                    <span>BOOK GALA DINNER PASS</span>
+                    <ArrowRight className="w-4 h-4 text-[#071722]" />
+                  </Link>
 
-                    {/* Reservation Note */}
-                    <div className="text-center mt-4 space-y-1">
-                      <p className="text-[11px] font-mono text-slate-400">
-                        Instant Khalti ePayment &amp; corporate table reservations.
-                      </p>
-                      <Link
-                        href="/book-gala-dinner"
-                        className="inline-flex items-center gap-1 text-[11px] font-mono text-[#F5B544] hover:underline"
-                      >
-                        <span>Open dedicated booking page</span>
-                        <ArrowRight className="w-3 h-3" />
-                      </Link>
-                    </div>
-                  </div>
+                  <p className="text-center text-[11px] font-mono text-slate-400 mt-4">
+                    Instant Khalti ePayment & corporate table reservations.
+                  </p>
                 </div>
               </div>
             </div>
           </div>
         </ScrollReveal>
       </div>
-
-      {/* Gala Booking Modal with Khalti Gateway */}
-      <GalaBookingModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        initialTier="national"
-      />
     </section>
   );
 }

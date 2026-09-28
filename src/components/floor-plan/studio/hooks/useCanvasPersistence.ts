@@ -25,7 +25,7 @@ export function useCanvasPersistence({
   // Background and Canvas dimensions
   const [canvasBgMode, setCanvasBgMode] = useState<CanvasBgMode>("cad-dark");
   const [showBgImage, setShowBgImage] = useState<boolean>(true);
-  const [bgImageSrc, setBgImageSrc] = useState<string>("/images/floor-plan-official.png");
+  const [bgImageSrc, setBgImageSrc] = useState<string>("/images/floor-plan-official.webp");
   const [blueprintOpacity, setBlueprintOpacity] = useState<number>(0.65);
   const [canvasWidth, setCanvasWidth] = useState<number>(1200);
   const [canvasHeight, setCanvasHeight] = useState<number>(850);

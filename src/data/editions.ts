@@ -62,7 +62,7 @@ export const editionsData: EditionItem[] = [
     theme: "Now, The Fifth Milestone.",
     description:
       "The landmark 5th edition uniting 10,000+ delegates, multi-billion dollar clean energy concessions, and cutting-edge regional grid technologies.",
-    primaryImage: "/images/hero.png",
+    primaryImage: "/images/hero.webp",
     highlightStat: "Magh 3 – 5 · 17–19 Jan 2027 · Kathmandu, Nepal",
     isUpcoming: true,
   },

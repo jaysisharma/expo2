@@ -20,6 +20,8 @@ interface UseKeyboardShortcutsParams {
   sendToBack: () => void;
   bringForward: () => void;
   sendBackward: () => void;
+  groupSelected: () => void;
+  ungroupSelected: () => void;
   recordHistory: (newElements: CanvasElement[]) => void;
   notify: (msg: string) => void;
 }
@@ -43,6 +45,8 @@ export function useKeyboardShortcuts({
   sendToBack,
   bringForward,
   sendBackward,
+  groupSelected,
+  ungroupSelected,
   recordHistory,
   notify,
 }: UseKeyboardShortcutsParams) {
@@ -128,6 +132,16 @@ export function useKeyboardShortcuts({
         if (selectedIdsRef.current.length > 0) {
           e.preventDefault();
           duplicateSelected("auto");
+        }
+      }
+
+      // 1.7. GROUP (Ctrl+G / Cmd+G) and UNGROUP (Ctrl+Shift+G / Cmd+Shift+G)
+      else if (isCmdOrCtrl && e.key.toLowerCase() === "g") {
+        e.preventDefault();
+        if (e.shiftKey) {
+          ungroupSelected();
+        } else {
+          groupSelected();
         }
       }
 
@@ -285,6 +299,8 @@ export function useKeyboardShortcuts({
     sendToBack,
     bringForward,
     sendBackward,
+    groupSelected,
+    ungroupSelected,
     recordHistory,
     notify,
     elementsRef,

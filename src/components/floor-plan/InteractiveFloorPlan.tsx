@@ -43,7 +43,7 @@ export default function InteractiveFloorPlan({
 }: InteractiveFloorPlanProps) {
   const [elements, setElements] = useState<any[]>(savedFloorPlanFallback.elements || []);
   const [bgImageSrc, setBgImageSrc] = useState<string>(
-    (savedFloorPlanFallback as any).bgImageSrc || "/images/floor-plan-official.png"
+    (savedFloorPlanFallback as any).bgImageSrc || "/images/floor-plan-official.webp"
   );
   const [blueprintOpacity, setBlueprintOpacity] = useState<number>(
     (savedFloorPlanFallback as any).blueprintOpacity ?? 0.65
@@ -64,7 +64,7 @@ export default function InteractiveFloorPlan({
     (savedFloorPlanFallback as any).canvasHeight || 850
   );
 
-  const [internalSelectedStalls, setInternalSelectedStalls] = useState<string[]>(["C1"]);
+  const [internalSelectedStalls, setInternalSelectedStalls] = useState<string[]>([]);
   const isControlled = controlledSelectedStalls !== undefined;
   const selectedStalls = isControlled ? controlledSelectedStalls : internalSelectedStalls;
 
@@ -156,19 +156,19 @@ export default function InteractiveFloorPlan({
   });
 
   const totalAreaSqM = selectedStallObjects.reduce(
-    (acc, curr) => acc + (curr.sizeSqM || 70),
+    (acc, curr) => acc + (curr.sizeSqM !== undefined && curr.sizeSqM !== null ? Number(curr.sizeSqM) : 9),
     0
   );
   const totalAreaSqFt = selectedStallObjects.reduce(
-    (acc, curr) => acc + (curr.sizeSqFt || 753),
+    (acc, curr) => acc + (curr.sizeSqFt !== undefined && curr.sizeSqFt !== null ? Number(curr.sizeSqFt) : Math.round((Number(curr.sizeSqM) || 9) * 10.76)),
     0
   );
   const totalPriceNPR = selectedStallObjects.reduce(
-    (acc, curr) => acc + (curr.priceNPR || 875000),
+    (acc, curr) => acc + (curr.priceNPR !== undefined && curr.priceNPR !== null ? Number(curr.priceNPR) : 180000),
     0
   );
   const totalPriceUSD = selectedStallObjects.reduce(
-    (acc, curr) => acc + (curr.priceUSD || 6500),
+    (acc, curr) => acc + (curr.priceUSD !== undefined && curr.priceUSD !== null ? Number(curr.priceUSD) : 1350),
     0
   );
 
@@ -326,10 +326,16 @@ export default function InteractiveFloorPlan({
 
                 // 4. Text Label
                 if (el.type === "text") {
-                  const textW = el.width || 120;
-                  const textH = el.height || 24;
+                  const fontSize = el.fontSize || 16;
+                  const fontWeight = el.fontWeight || "bold";
+                  const textContent = el.number || el.category || "";
+                  const approxCharWidth = fontSize * 0.65;
+                  const textW = Math.max(el.width || 0, Math.ceil(textContent.length * approxCharWidth) + 20);
+                  const textH = Math.max(el.height || 0, Math.ceil(fontSize * 1.35));
+                  const baselineOffset = fontSize * 0.85;
+                  const topY = el.y - baselineOffset;
                   const centerX = el.x + textW / 2;
-                  const centerY = el.y - 14 + textH / 2;
+                  const centerY = topY + textH / 2;
 
                   return (
                     <g
@@ -344,11 +350,11 @@ export default function InteractiveFloorPlan({
                         x={el.x}
                         y={el.y}
                         fill={el.textColor || (canvasBgMode === "clean-white" ? "#0F172A" : "#FFFFFF")}
-                        fontSize={el.fontSize || 13}
-                        fontWeight="bold"
+                        fontSize={fontSize}
+                        fontWeight={fontWeight}
                         fontFamily="sans-serif"
                       >
-                        {el.number || el.category || ""}
+                        {textContent}
                       </text>
                     </g>
                   );
@@ -436,13 +442,18 @@ export default function InteractiveFloorPlan({
                       />
                       {el.number && !isOutline && (
                         <text
-                          x={el.x + el.width / 2}
-                          y={el.y + el.height / 2 + 4}
+                          x={el.x + el.width / 2 + (el.textOffsetX || 0)}
+                          y={el.y + el.height / 2 + (el.textOffsetY || 0)}
                           textAnchor="middle"
-                          dominantBaseline="middle"
+                          dominantBaseline="central"
+                          transform={
+                            el.textRotation
+                              ? `rotate(${el.textRotation}, ${el.x + el.width / 2 + (el.textOffsetX || 0)}, ${el.y + el.height / 2 + (el.textOffsetY || 0)})`
+                              : undefined
+                          }
                           fill={el.textColor || "#FFFFFF"}
-                          fontSize="12"
-                          fontWeight="bold"
+                          fontSize={el.fontSize || (el.width > 60 ? 11 : el.width > 30 ? 9 : 7.5)}
+                          fontWeight={el.fontWeight || "bold"}
                           fontFamily={isZone ? "sans-serif" : "monospace"}
                           className="select-none pointer-events-none drop-shadow-md"
                         >
@@ -492,13 +503,18 @@ export default function InteractiveFloorPlan({
                       />
                       {el.number && !isOutline && (
                         <text
-                          x={el.x + el.width / 2}
-                          y={el.y + el.height / 2 + 4}
+                          x={el.x + el.width / 2 + (el.textOffsetX || 0)}
+                          y={el.y + el.height / 2 + (el.textOffsetY || 0)}
                           textAnchor="middle"
-                          dominantBaseline="middle"
+                          dominantBaseline="central"
+                          transform={
+                            el.textRotation
+                              ? `rotate(${el.textRotation}, ${el.x + el.width / 2 + (el.textOffsetX || 0)}, ${el.y + el.height / 2 + (el.textOffsetY || 0)})`
+                              : undefined
+                          }
                           fill={el.textColor || "#FFFFFF"}
-                          fontSize="11"
-                          fontWeight="bold"
+                          fontSize={el.fontSize || (el.width > 60 ? 11 : el.width > 30 ? 9 : 7.5)}
+                          fontWeight={el.fontWeight || "bold"}
                           fontFamily="sans-serif"
                         >
                           {el.number}
@@ -525,6 +541,14 @@ export default function InteractiveFloorPlan({
                 q !== "" &&
                 (stallNumber.toLowerCase().includes(q) ||
                   (el.category && el.category.toLowerCase().includes(q)));
+
+              const computedFontSize = el.fontSize || (el.width > 60 ? 11 : el.width > 30 ? 9 : 7.5);
+              const computedFontWeight = el.fontWeight || "bold";
+              const textTranslate = (el.textOffsetX || el.textOffsetY)
+                ? `translate(${el.textOffsetX || 0}px, ${el.textOffsetY || 0}px)`
+                : "";
+              const textRotate = el.textRotation ? `rotate(${el.textRotation}deg)` : "";
+              const combinedTextTransform = [textTranslate, textRotate].filter(Boolean).join(" ") || undefined;
 
               return (
                 <div
@@ -567,13 +591,25 @@ export default function InteractiveFloorPlan({
                   } ${isMatchSearch ? "ring-4 ring-amber-400" : ""}`}
                 >
                   <span
-                    style={{ color: el.textColor || "#FFFFFF" }}
-                    className="font-mono font-bold text-xs sm:text-sm drop-shadow-md select-none pointer-events-none"
+                    style={{
+                      color: el.textColor || "#FFFFFF",
+                      fontSize: `${computedFontSize}px`,
+                      fontWeight: computedFontWeight,
+                      lineHeight: 1.1,
+                      transform: combinedTextTransform,
+                    }}
+                    className="font-mono drop-shadow-md select-none pointer-events-none inline-block transition-transform text-center"
                   >
                     {isSelected ? `✓ ${stallNumber}` : stallNumber}
                   </span>
                   {el.dimensions && el.width >= 50 && el.height >= 40 && (
-                    <span className="text-[9px] font-mono text-white/80 select-none pointer-events-none">
+                    <span
+                      style={{
+                        transform: combinedTextTransform,
+                        fontSize: `${Math.max(7, Math.round(computedFontSize * 0.75))}px`,
+                      }}
+                      className="font-mono text-white/80 select-none pointer-events-none inline-block transition-transform"
+                    >
                       {el.dimensions}
                     </span>
                   )}
@@ -603,13 +639,13 @@ export default function InteractiveFloorPlan({
               </span>
             </div>
             <div className="text-emerald-400 font-bold text-[11px]">
-              {hoveredStall.category || "Exhibition Booth"} · {hoveredStall.dimensions || "10m × 7m"}
+              {hoveredStall.category || "Exhibition Booth"} · {hoveredStall.dimensions || (hoveredStall.sizeSqM ? `${Math.round(Math.sqrt(hoveredStall.sizeSqM))}m × ${Math.round(Math.sqrt(hoveredStall.sizeSqM))}m` : "3m × 3m")}
             </div>
             <div className="text-slate-300 text-[10px]">
-              Area: {hoveredStall.sizeSqM || 70} m² ({hoveredStall.sizeSqFt || 753} sq.ft)
+              Area: {hoveredStall.sizeSqM ?? 9} m² ({hoveredStall.sizeSqFt ?? Math.round((hoveredStall.sizeSqM ?? 9) * 10.76)} sq.ft)
             </div>
             <div className="text-[#34D399] font-bold text-xs pt-0.5">
-              NPR {(hoveredStall.priceNPR || 875000).toLocaleString()} / USD ${(hoveredStall.priceUSD || 6500).toLocaleString()}
+              NPR {(hoveredStall.priceNPR !== undefined && hoveredStall.priceNPR !== null ? Number(hoveredStall.priceNPR) : 180000).toLocaleString()} / USD ${(hoveredStall.priceUSD !== undefined && hoveredStall.priceUSD !== null ? Number(hoveredStall.priceUSD) : 1350).toLocaleString()}
             </div>
           </div>
         )}
@@ -644,7 +680,7 @@ export default function InteractiveFloorPlan({
                     >
                       <span className="text-emerald-400 font-bold">{sId}</span>
                       <span className="text-slate-300 text-[10px]">
-                        ({s.dimensions || "10m × 7m"})
+                        ({s.dimensions || "3m × 3m"})
                       </span>
                       <button
                         onClick={() => toggleStall(s)}
