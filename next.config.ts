@@ -24,6 +24,22 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: "/Proposal.pdf",
+        destination: "/files/Proposal.pdf",
+      },
+      {
+        source: "/proposal.pdf",
+        destination: "/files/Proposal.pdf",
+      },
+      {
+        source: "/files/proposal.pdf",
+        destination: "/files/Proposal.pdf",
+      },
+    ];
+  },
 };
 
 export default nextConfig;

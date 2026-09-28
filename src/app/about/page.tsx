@@ -1,113 +1,45 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
-
-const ippanCommitteeMembers = [
-  {
-    name: "Mr. Mohan Kumar Dangi",
-    title: "President, IPPAN",
-    photo: "/images/committee/mohan-kumar-dangi.webp",
-  },
-  {
-    name: "Mr. Uttam Bhlon Lama",
-    title: "Senior Vice President, IPPAN",
-    photo: "/images/committee/uttam-bhlon-lama.webp",
-  },
-  {
-    name: "Mr. Bikram Bista",
-    title: "Vice President, IPPAN",
-    photo: "/images/committee/bikram-bista.webp",
-  },
-  {
-    name: "Mr. Him Prasad Pathak",
-    title: "Vice President, IPPAN",
-    photo: "/images/committee/him-prasad-pathak.webp",
-  },
-  {
-    name: "Mr. Narendra Ballav Panth",
-    title: "Vice President, IPPAN",
-    photo: "/images/committee/narendra-ballav-panth.webp",
-  },
-];
-
-const eventSolutionMembers = [
-  {
-    name: "Sunil Bhandari",
-    title: "Chairman, Event Solution",
-    photo: "/images/eventsolution/sunil-bhandari.webp",
-  },
-  {
-    name: "Bijay Sagar Pradhan",
-    title: "Managing Director",
-    photo: "/images/eventsolution/bijay-sagar-pradhan.webp",
-  },
-  {
-    name: "Nabin Bhatta",
-    title: "Marketing Director",
-    photo: "/images/eventsolution/nabin-bhatta.webp",
-  },
-  {
-    name: "Vinesh Chordia",
-    title: "Finance Director",
-    photo: "/images/eventsolution/vinesh-chordia.webp",
-  },
-  {
-    name: "Bishal Prajapati",
-    title: "Chief Event Officer",
-    photo: "/images/eventsolution/bishal-prajapati.webp",
-  },
-];
-
-const editions = [
-  {
-    year: "2018",
-    edition: "1ST EDITION",
-    image: "/images/gallery/2018/IMG_0005.webp",
-    desc: "Inaugural gathering of Nepal's independent hydropower developers — the beginning of an annual industry platform.",
-  },
-  {
-    year: "2019",
-    edition: "2ND EDITION",
-    image: "/images/gallery/2019/IMG_0030.webp",
-    desc: "International technology pavilions expanded. Chinese, Indian and European OEMs joined Nepal's growing energy floor.",
-  },
-  {
-    year: "2022",
-    edition: "3RD EDITION",
-    image: "/images/gallery/2022/DSC_6305.webp",
-    desc: "Post-pandemic return marked a surge in energy sector investment interest and regional trade discussions.",
-  },
-  {
-    year: "2024",
-    edition: "4TH EDITION",
-    image: "/images/event-photo-3.webp",
-    desc: "Ministerial plenary, tri-nation power export framework discussions, and 250+ exhibitors across 3 days.",
-  },
-];
-
-
-const ecosystem = [
-  "PROJECT DEVELOPERS / IPPs",
-  "EQUIPMENT & TECHNOLOGY PROVIDERS",
-  "EPC CONTRACTORS",
-  "INVESTORS & FINANCIAL INSTITUTIONS",
-  "GOVERNMENT & REGULATORS",
-  "ELECTRIC UTILITIES",
-  "ENGINEERS & CONSULTANTS",
-  "CONSTRUCTION COMPANIES",
-  "INTERNATIONAL DELEGATIONS",
-  "RESEARCHERS & UNIVERSITIES",
-  "INDUSTRY ASSOCIATIONS",
-  "STARTUPS & INNOVATION HUBS",
-];
+import defaultAboutData from "@/data/aboutPageData.json";
 
 export default function AboutPage() {
+  const [data, setData] = useState<any>(defaultAboutData);
+
+  useEffect(() => {
+    async function loadDynamicAbout() {
+      try {
+        const res = await fetch("/api/about");
+        const json = await res.json();
+        if (json.success && json.data) {
+          setData(json.data);
+        }
+      } catch (err) {
+        console.warn("Using fallback default about data:", err);
+      }
+    }
+    loadDynamicAbout();
+  }, []);
+
+  const {
+    header,
+    whyExpo,
+    energyJourney,
+    journeyExpo,
+    ecosystemSection,
+    experienceSection,
+    organizersSection,
+    peopleSection,
+    fifthEditionDark,
+  } = data || defaultAboutData;
+
+  const ecosystemItems: string[] = ecosystemSection?.items || defaultAboutData.ecosystemSection.items;
+
   return (
     <div className="min-h-screen font-sans text-[#061A2A] overflow-x-hidden">
-
       {/* =========================================================================
           01: CLEAN HEADER BANNER (GREEN THEME — MATCHING ALL PAGES)
          ========================================================================= */}
@@ -125,26 +57,26 @@ export default function AboutPage() {
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
             <div>
               <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white">
-                About The Expo
+                {header?.title || "About The Expo"}
               </h1>
               <p className="mt-3 text-sm sm:text-base text-emerald-100/75 max-w-xl">
-                Bhrikutimandap Exhibition Hall, Kathmandu · 17–19 January 2027
+                {header?.subtitle || "Bhrikutimandap Exhibition Hall, Kathmandu · 17–19 January 2027"}
               </p>
 
               {/* Quick Metrics */}
               <div className="mt-4 flex flex-wrap items-center gap-2 text-xs font-mono text-emerald-100/80">
-                <span className="px-2.5 py-1 rounded bg-emerald-900/60 border border-emerald-500/30">
-                  5th Edition
-                </span>
-                <span className="px-2.5 py-1 rounded bg-emerald-900/60 border border-emerald-500/30">
-                  150+ Exhibitors
-                </span>
-                <span className="px-2.5 py-1 rounded bg-emerald-900/60 border border-emerald-500/30">
-                  12 Plenaries
-                </span>
-                <span className="px-2.5 py-1 rounded bg-[#10B981]/25 text-[#34D399] border border-[#10B981]/50 font-bold">
-                  10,000+ Delegates
-                </span>
+                {(header?.metrics || []).map((m: any, idx: number) => (
+                  <span
+                    key={idx}
+                    className={`px-2.5 py-1 rounded ${
+                      m.isHighlighted
+                        ? "bg-[#10B981]/25 text-[#34D399] border border-[#10B981]/50 font-bold"
+                        : "bg-emerald-900/60 border border-emerald-500/30"
+                    }`}
+                  >
+                    {m.label}
+                  </span>
+                ))}
               </div>
             </div>
 
@@ -153,14 +85,14 @@ export default function AboutPage() {
                 href="/register"
                 className="px-5 py-2.5 rounded-lg bg-[#007A5E] hover:bg-[#005C42] text-white text-xs font-bold flex items-center gap-2 transition-colors shadow-md"
               >
-                <span>Register Badge</span>
+                <span>{header?.ctaRegisterText || "Register Badge"}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
               <Link
                 href="/book-stall"
                 className="px-5 py-2.5 rounded-lg bg-emerald-900/60 hover:bg-emerald-800/60 border border-emerald-500/30 text-white font-mono text-xs font-bold transition-all"
               >
-                Book a Stall
+                {header?.ctaStallText || "Book a Stall"}
               </Link>
             </div>
           </div>
@@ -174,189 +106,215 @@ export default function AboutPage() {
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           {/* Left: Large statement */}
           <div className="space-y-6">
-            <p className="text-[11px] font-mono font-bold text-[#10B981] uppercase tracking-[0.2em]">02 / WHY HIMALAYAN GREEN ENERGY EXPO</p>
+            <p className="text-[11px] font-mono font-bold text-[#10B981] uppercase tracking-[0.2em]">
+              {whyExpo?.badge || "02 / WHY HIMALAYAN GREEN ENERGY EXPO"}
+            </p>
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[#061A2A] leading-tight tracking-tight">
-              RESILIENT ENERGY,<br />
-              <span className="text-[#10B981]">PROSPEROUS NEPAL.</span>
+              {whyExpo?.titleLine1 || "RESILIENT ENERGY,"}<br />
+              <span className="text-[#10B981]">{whyExpo?.titleLine2 || "PROSPEROUS NEPAL."}</span>
             </h2>
             <p className="text-2xl sm:text-3xl font-bold text-[#061A2A]/50 leading-snug">
-              Building an energy future that is sustainable and disaster-resilient.
+              {whyExpo?.substatement || "Building an energy future that is sustainable and disaster-resilient."}
             </p>
           </div>
 
           {/* Right: Editorial paragraphs grounded in official background */}
           <div className="space-y-5 text-sm sm:text-base text-slate-600 leading-relaxed border-l-2 border-slate-100 pl-8">
-            <p>
-              Nepal&apos;s energy sector is entering a pivotal phase. Hydropower capacity has grown to approximately 4,145.7 MW, with a national target of 30,000 MW by 2035 — expanding beyond domestic power needs toward industrial growth, electric mobility, renewable energy, and cross-border power trade with India and Bangladesh.
-            </p>
-            <p>
-              But this growth is now being tested. Recent flash floods and debris flows have damaged hydropower projects across the country, exposing the vulnerability of energy infrastructure to climate-related disasters. The sector&apos;s future depends not only on scaling capacity, but on building it to withstand a changing climate.
-            </p>
-            <p>
-              Since 2018, the Himalayan Hydro Expo has connected key stakeholders across four editions through 2024. Himalayan Green Energy Expo 2027 marks the next chapter, expanding this established platform into a broader green-energy forum, while placing resilience at the center of the conversation.
-            </p>
+            {(whyExpo?.paragraphs || []).map((para: string, idx: number) => (
+              <p key={idx}>{para}</p>
+            ))}
           </div>
         </div>
 
         {/* Full-width editorial image */}
-        <div className="max-w-6xl mx-auto mt-14">
-          <div className="relative h-72 sm:h-96 lg:h-[480px] rounded-3xl overflow-hidden">
-            <Image
-              src="/images/gallery/2022/FOTO5680.webp"
-              alt="Expo visitors and exhibitors on the floor"
-              fill
-              className="object-cover object-center"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#061A2A]/60 to-transparent" />
-            <div className="absolute bottom-6 left-6">
-              <span className="text-[10px] font-mono text-emerald-300 uppercase tracking-widest bg-[#061A2A]/70 px-3 py-1 rounded-full border border-emerald-500/30">
-                BHRIKUTIMANDAP · KATHMANDU
-              </span>
+        {whyExpo?.featureImage && (
+          <div className="max-w-6xl mx-auto mt-14">
+            <div className="relative h-72 sm:h-96 lg:h-[480px] rounded-3xl overflow-hidden">
+              <Image
+                src={whyExpo.featureImage}
+                alt="Expo visitors and exhibitors on the floor"
+                fill
+                className="object-cover object-center"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#061A2A]/60 to-transparent" />
+              {whyExpo?.featureCaption && (
+                <div className="absolute bottom-6 left-6">
+                  <span className="text-[10px] font-mono text-emerald-300 uppercase tracking-widest bg-[#061A2A]/70 px-3 py-1 rounded-full border border-emerald-500/30">
+                    {whyExpo.featureCaption}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
-        </div>
+        )}
       </section>
 
       {/* =====================================================================
           03 — NEPAL'S ENERGY JOURNEY: 3 MILESTONE CARDS
          ===================================================================== */}
       <section className="bg-[#03160F] py-20 sm:py-28 px-4 sm:px-10 lg:px-20 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-20">
-          <Image src="/images/background/5.webp" alt="" fill className="object-cover" />
-          <div className="absolute inset-0 bg-[#03160F]/85" />
-        </div>
+        {energyJourney?.backgroundImage && (
+          <div className="absolute inset-0 opacity-20">
+            <Image src={energyJourney.backgroundImage} alt="" fill className="object-cover" />
+            <div className="absolute inset-0 bg-[#03160F]/85" />
+          </div>
+        )}
 
         <div className="relative z-10 max-w-6xl mx-auto space-y-12">
           {/* Header */}
           <div className="space-y-4 max-w-3xl">
-            <p className="text-[11px] font-mono font-bold text-[#34D399] uppercase tracking-[0.2em]">03 / NEPAL&apos;S ENERGY JOURNEY</p>
+            <p className="text-[11px] font-mono font-bold text-[#34D399] uppercase tracking-[0.2em]">
+              {energyJourney?.badge || "03 / NEPAL'S ENERGY JOURNEY"}
+            </p>
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight tracking-tight">
-              A COUNTRY<br />
-              <span className="text-[#34D399]">POWERING</span> FORWARD.
+              {energyJourney?.titleLine1 || "A COUNTRY"}<br />
+              <span className="text-[#34D399]">{energyJourney?.titleLine2 || "POWERING FORWARD."}</span>
             </h2>
             <p className="text-sm text-emerald-100/70 leading-relaxed">
-              From the historic 500 kW origin to sovereign cross-border power syndication across South Asia.
+              {energyJourney?.description || "From the historic 500 kW origin to sovereign cross-border power syndication across South Asia."}
             </p>
           </div>
 
           {/* 3 Milestone Cards Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Card 1: 1911 AD */}
-            <div className="relative rounded-3xl overflow-hidden min-h-[420px] border border-emerald-500/20 bg-emerald-950/40 p-6 sm:p-7 flex flex-col justify-between group shadow-xl">
-              <Image
-                src="/images/hydro_1911.webp"
-                alt="1911 Pharping Hydropower Genesis"
-                fill
-                className="object-cover group-hover:scale-105 transition-transform duration-700 opacity-45"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#03160F] via-[#03160F]/70 to-transparent" />
+            {energyJourney?.card1 && (
+              <div className="relative rounded-3xl overflow-hidden min-h-[420px] border border-emerald-500/20 bg-emerald-950/40 p-6 sm:p-7 flex flex-col justify-between group shadow-xl">
+                {energyJourney.card1.image && (
+                  <Image
+                    src={energyJourney.card1.image}
+                    alt={energyJourney.card1.title || "1911 Pharping Hydropower"}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-700 opacity-45"
+                  />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#03160F] via-[#03160F]/70 to-transparent" />
 
-              <div className="relative z-10 flex items-center justify-between">
-                <span className="px-3 py-1 rounded-xl bg-[#087EA4] text-white font-mono text-xs font-bold shadow-md border border-[#38BDF8]">
-                  1911 AD
-                </span>
-                <span className="px-2 py-0.5 rounded-md bg-black/40 text-slate-300 font-mono text-[10px] font-bold uppercase tracking-wider border border-white/10">
-                  HISTORIC ORIGIN
-                </span>
-              </div>
-
-              <div className="relative z-10 space-y-2 text-white">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-4xl sm:text-5xl font-bold font-sans text-[#38BDF8]">0.5</span>
-                  <span className="text-xs font-mono font-bold text-slate-300 px-2 py-0.5 rounded bg-white/10 border border-white/15">MW</span>
-                </div>
-                <h3 className="font-bold text-lg text-white">Pharping Powerhouse</h3>
-                <p className="text-xs text-emerald-100/70 leading-relaxed">
-                  Nepal&apos;s clean energy journey commenced in 1911 AD with the commissioning of the 500 kW Pharping powerhouse, Asia&apos;s second hydropower plant.
-                </p>
-              </div>
-            </div>
-
-            {/* Card 2: 2035 AD Target (Existing 4,145 MW) */}
-            <div className="relative rounded-3xl overflow-hidden min-h-[420px] border-2 border-[#10B981] bg-emerald-950/50 p-6 sm:p-7 flex flex-col justify-between group shadow-xl ring-2 ring-[#10B981]/20">
-              <Image
-                src="/images/illustrations/solar_hydro_hybrid.webp"
-                alt="2035 Clean Power Target"
-                fill
-                className="object-cover group-hover:scale-105 transition-transform duration-700 opacity-55"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#03160F] via-[#03160F]/65 to-transparent" />
-
-              <div className="relative z-10 flex items-center justify-between">
-                <span className="px-3 py-1 rounded-xl bg-[#059669] text-white font-mono text-xs font-bold shadow-md border border-[#34D399]">
-                  2035 AD
-                </span>
-                <span className="px-2 py-0.5 rounded-md bg-emerald-950/80 text-[#34D399] font-mono text-[10px] font-bold uppercase tracking-wider border border-emerald-500/30">
-                  NATIONAL TARGET
-                </span>
-              </div>
-
-              <div className="relative z-10 space-y-2 text-white">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-4xl sm:text-5xl font-bold font-sans text-[#34D399]">30,000</span>
-                  <span className="text-xs font-mono font-bold text-slate-300 px-2 py-0.5 rounded bg-white/10 border border-white/15">MW</span>
+                <div className="relative z-10 flex items-center justify-between">
+                  <span className="px-3 py-1 rounded-xl bg-[#087EA4] text-white font-mono text-xs font-bold shadow-md border border-[#38BDF8]">
+                    {energyJourney.card1.year}
+                  </span>
+                  <span className="px-2 py-0.5 rounded-md bg-black/40 text-slate-300 font-mono text-[10px] font-bold uppercase tracking-wider border border-white/10">
+                    {energyJourney.card1.badge}
+                  </span>
                 </div>
 
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-white/10 border border-white/20 backdrop-blur-sm text-xs font-mono">
-                  <span className="text-slate-300">Existing Installed:</span>
-                  <span className="text-[#38BDF8] font-bold">4,145.7 MW</span>
-                </div>
-
-                <h3 className="font-bold text-lg text-white">Sovereign Clean Power Target</h3>
-                <p className="text-xs text-emerald-100/70 leading-relaxed">
-                  Scaling from 4,145.7 MW existing capacity towards the 30,000 MW national target by 2035 AD — expanding beyond domestic power needs toward industrial growth, e-mobility, and regional power trade.
-                </p>
-              </div>
-            </div>
-
-            {/* Card 3: 2035 AD Allocation (India 10k, Bangladesh 5k, Domestic 13.5k) */}
-            <div className="relative rounded-3xl overflow-hidden min-h-[420px] border border-emerald-500/20 bg-emerald-950/40 p-6 sm:p-7 flex flex-col justify-between group shadow-xl">
-              <Image
-                src="/images/illustrations/transmission_grid_substation.webp"
-                alt="Regional Power Trade"
-                fill
-                className="object-cover group-hover:scale-105 transition-transform duration-700 opacity-55"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#03160F] via-[#03160F]/65 to-transparent" />
-
-              <div className="relative z-10 flex items-center justify-between">
-                <span className="px-3 py-1 rounded-xl bg-[#04281E] text-[#34D399] font-mono text-xs font-bold shadow-md border border-[#34D399]/40">
-                  2035 AD
-                </span>
-                <span className="px-2 py-0.5 rounded-md bg-black/40 text-emerald-300 font-mono text-[10px] font-bold uppercase tracking-wider border border-emerald-500/20">
-                  ALLOCATION BREAKDOWN
-                </span>
-              </div>
-
-              <div className="relative z-10 space-y-2 text-white">
-                <h3 className="font-bold text-base text-white">Power Flow & Regional Trade</h3>
-                <div className="space-y-1.5 pt-1">
-                  <div className="flex items-center justify-between p-2 rounded-xl bg-white/10 border border-white/15 backdrop-blur-md text-xs">
-                    <span className="text-slate-200 font-mono flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-[#38BDF8]" />
-                      India Export
+                <div className="relative z-10 space-y-2 text-white">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl sm:text-5xl font-bold font-sans text-[#38BDF8]">
+                      {energyJourney.card1.capacity}
                     </span>
-                    <span className="font-mono font-bold text-[#38BDF8]">10,000 MW</span>
+                    <span className="text-xs font-mono font-bold text-slate-300 px-2 py-0.5 rounded bg-white/10 border border-white/15">
+                      {energyJourney.card1.capacityUnit || "MW"}
+                    </span>
+                  </div>
+                  <h3 className="font-bold text-lg text-white">{energyJourney.card1.title}</h3>
+                  <p className="text-xs text-emerald-100/70 leading-relaxed">
+                    {energyJourney.card1.description}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Card 2: 2035 AD Target */}
+            {energyJourney?.card2 && (
+              <div className="relative rounded-3xl overflow-hidden min-h-[420px] border-2 border-[#10B981] bg-emerald-950/50 p-6 sm:p-7 flex flex-col justify-between group shadow-xl ring-2 ring-[#10B981]/20">
+                {energyJourney.card2.image && (
+                  <Image
+                    src={energyJourney.card2.image}
+                    alt={energyJourney.card2.title || "2035 Clean Power Target"}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-700 opacity-55"
+                  />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#03160F] via-[#03160F]/65 to-transparent" />
+
+                <div className="relative z-10 flex items-center justify-between">
+                  <span className="px-3 py-1 rounded-xl bg-[#059669] text-white font-mono text-xs font-bold shadow-md border border-[#34D399]">
+                    {energyJourney.card2.year}
+                  </span>
+                  <span className="px-2 py-0.5 rounded-md bg-emerald-950/80 text-[#34D399] font-mono text-[10px] font-bold uppercase tracking-wider border border-emerald-500/30">
+                    {energyJourney.card2.badge}
+                  </span>
+                </div>
+
+                <div className="relative z-10 space-y-2 text-white">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl sm:text-5xl font-bold font-sans text-[#34D399]">
+                      {energyJourney.card2.targetCapacity}
+                    </span>
+                    <span className="text-xs font-mono font-bold text-slate-300 px-2 py-0.5 rounded bg-white/10 border border-white/15">
+                      MW
+                    </span>
                   </div>
 
-                  <div className="flex items-center justify-between p-2 rounded-xl bg-white/10 border border-white/15 backdrop-blur-md text-xs">
-                    <span className="text-slate-200 font-mono flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-[#34D399]" />
-                      Bangladesh Export
-                    </span>
-                    <span className="font-mono font-bold text-[#34D399]">5,000 MW</span>
-                  </div>
+                  {energyJourney.card2.installedCapacity && (
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-white/10 border border-white/20 backdrop-blur-sm text-xs font-mono">
+                      <span className="text-slate-300">Existing Installed:</span>
+                      <span className="text-[#38BDF8] font-bold">{energyJourney.card2.installedCapacity}</span>
+                    </div>
+                  )}
 
-                  <div className="flex items-center justify-between p-2 rounded-xl bg-white/10 border border-white/15 backdrop-blur-md text-xs">
-                    <span className="text-slate-200 font-mono flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-amber-400" />
-                      Domestic Demand
-                    </span>
-                    <span className="font-mono font-bold text-amber-300">15,000 MW</span>
+                  <h3 className="font-bold text-lg text-white">{energyJourney.card2.title}</h3>
+                  <p className="text-xs text-emerald-100/70 leading-relaxed">
+                    {energyJourney.card2.description}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Card 3: 2035 AD Regional Trade Allocation */}
+            {energyJourney?.card3 && (
+              <div className="relative rounded-3xl overflow-hidden min-h-[420px] border border-emerald-500/20 bg-emerald-950/40 p-6 sm:p-7 flex flex-col justify-between group shadow-xl">
+                {energyJourney.card3.image && (
+                  <Image
+                    src={energyJourney.card3.image}
+                    alt={energyJourney.card3.title || "Regional Power Trade"}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-700 opacity-55"
+                  />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#03160F] via-[#03160F]/65 to-transparent" />
+
+                <div className="relative z-10 flex items-center justify-between">
+                  <span className="px-3 py-1 rounded-xl bg-[#04281E] text-[#34D399] font-mono text-xs font-bold shadow-md border border-[#34D399]/40">
+                    {energyJourney.card3.year}
+                  </span>
+                  <span className="px-2 py-0.5 rounded-md bg-black/40 text-emerald-300 font-mono text-[10px] font-bold uppercase tracking-wider border border-emerald-500/20">
+                    {energyJourney.card3.badge}
+                  </span>
+                </div>
+
+                <div className="relative z-10 space-y-2 text-white">
+                  <h3 className="font-bold text-base text-white">{energyJourney.card3.title}</h3>
+                  <div className="space-y-1.5 pt-1">
+                    <div className="flex items-center justify-between p-2 rounded-xl bg-white/10 border border-white/15 backdrop-blur-md text-xs">
+                      <span className="text-slate-200 font-mono flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-[#38BDF8]" />
+                        India Export
+                      </span>
+                      <span className="font-mono font-bold text-[#38BDF8]">{energyJourney.card3.indiaExport}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between p-2 rounded-xl bg-white/10 border border-white/15 backdrop-blur-md text-xs">
+                      <span className="text-slate-200 font-mono flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-[#34D399]" />
+                        Bangladesh Export
+                      </span>
+                      <span className="font-mono font-bold text-[#34D399]">{energyJourney.card3.bangladeshExport}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between p-2 rounded-xl bg-white/10 border border-white/15 backdrop-blur-md text-xs">
+                      <span className="text-slate-200 font-mono flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-amber-400" />
+                        Domestic Demand
+                      </span>
+                      <span className="font-mono font-bold text-amber-300">{energyJourney.card3.domesticDemand}</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </section>
@@ -369,42 +327,46 @@ export default function AboutPage() {
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-slate-200 pb-8">
             <div className="space-y-3">
-              <p className="text-[11px] font-mono font-bold text-[#087EA4] uppercase tracking-[0.2em]">04 / THE JOURNEY OF THE EXPO</p>
+              <p className="text-[11px] font-mono font-bold text-[#087EA4] uppercase tracking-[0.2em]">
+                {journeyExpo?.badge || "04 / THE JOURNEY OF THE EXPO"}
+              </p>
               <h2 className="text-4xl sm:text-5xl font-bold text-[#061A2A] leading-tight tracking-tight">
-                FOUR EDITIONS.<br />ONE JOURNEY.
+                {journeyExpo?.titleLine1 || "FOUR EDITIONS."}<br />
+                {journeyExpo?.titleLine2 || "ONE JOURNEY."}
               </h2>
             </div>
             <Link
               href="/gallery"
               className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-[#087EA4] hover:text-[#061A2A] transition-colors uppercase tracking-wider shrink-0"
             >
-              <span>View Photo Gallery</span>
+              <span>{journeyExpo?.galleryLinkText || "View Photo Gallery"}</span>
               <ArrowUpRight className="w-4 h-4" />
             </Link>
           </div>
 
           {/* Edition cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {editions.map((ed) => (
-              <div key={ed.year} className="group flex flex-col">
-                {/* Photo */}
+            {(journeyExpo?.editions || []).map((ed: any, idx: number) => (
+              <div key={idx} className="group flex flex-col">
                 <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-slate-200">
-                  <Image
-                    src={ed.image}
-                    alt={`${ed.edition} — ${ed.year}`}
-                    fill
-                    className="object-cover object-center group-hover:scale-105 transition-transform duration-700"
-                  />
+                  {ed.image && (
+                    <Image
+                      src={ed.image}
+                      alt={`${ed.edition} — ${ed.year}`}
+                      fill
+                      className="object-cover object-center group-hover:scale-105 transition-transform duration-700"
+                    />
+                  )}
                   <div className="absolute inset-0 bg-gradient-to-t from-[#061A2A] via-[#061A2A]/30 to-transparent" />
-                  {/* Year badge */}
                   <div className="absolute top-3 left-3">
                     <span className="px-2 py-0.5 rounded-md bg-[#061A2A]/80 backdrop-blur-sm text-white font-mono text-[10px] font-bold">
                       {ed.year}
                     </span>
                   </div>
-                  {/* Edition label at bottom */}
                   <div className="absolute bottom-0 left-0 right-0 p-4">
-                    <p className="text-[10px] font-mono font-bold text-[#34D399] uppercase tracking-widest mb-1">{ed.edition}</p>
+                    <p className="text-[10px] font-mono font-bold text-[#34D399] uppercase tracking-widest mb-1">
+                      {ed.edition}
+                    </p>
                     <p className="text-xs text-white/85 leading-snug">{ed.desc}</p>
                   </div>
                 </div>
@@ -412,55 +374,63 @@ export default function AboutPage() {
             ))}
           </div>
 
-          {/* 5th Edition teaser — official announcement card with press_meet banner */}
-          <div className="rounded-3xl bg-gradient-to-br from-[#03160F] via-[#04281E] to-[#02130C] border border-emerald-500/30 p-8 sm:p-12 relative overflow-hidden shadow-2xl">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
-              <div className="lg:col-span-6 space-y-4 text-left">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-[#34D399] font-mono text-xs font-bold uppercase tracking-wider border border-emerald-500/30">
-                  <span className="w-2 h-2 rounded-full bg-[#34D399] animate-pulse" />
-                  <span>2027 · THE 5TH MILESTONE</span>
-                </div>
-                <h3 className="text-3xl sm:text-5xl font-bold text-white leading-tight">
-                  RESILIENT ENERGY, <br />
-                  <span className="text-[#34D399]">PROSPEROUS NEPAL.</span>
-                </h3>
-                <p className="text-sm text-emerald-100/80 leading-relaxed max-w-lg">
-                  17th–19th January 2027 (Magh 3–5, 2083) at Bhrikutimandap Exhibition Hall, Kathmandu. Jointly organized by IPPAN and Event Solution, spotlighting Green Hydrogen, Solar, Wind, EV, and Alternative Clean Energy.
-                </p>
-                <div className="pt-2 flex flex-wrap gap-3">
-                  <Link
-                    href="/register"
-                    className="px-5 py-2.5 rounded-full bg-[#007A5E] hover:bg-[#005C42] text-white font-mono text-xs font-bold tracking-wider transition-all shadow-md inline-flex items-center gap-2"
-                  >
-                    <span>REGISTER AS VISITOR</span>
-                    <ArrowUpRight className="w-4 h-4" />
-                  </Link>
-                  <Link
-                    href="/news"
-                    className="px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white font-mono text-xs font-bold tracking-wider transition-all border border-white/20"
-                  >
-                    <span>READ PRESS RELEASE</span>
-                  </Link>
-                </div>
-              </div>
-
-              <div className="lg:col-span-6">
-                <div className="relative aspect-[16/10] w-full rounded-2xl overflow-hidden border border-white/20 shadow-2xl group">
-                  <Image
-                    src="/images/press_meet.webp"
-                    alt="Himalayan Green Energy Expo 2027 Official Press Meet Banner"
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-700"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
-                  <div className="absolute bottom-3 left-3 right-3 px-3 py-2 rounded-lg bg-black/70 backdrop-blur-md border border-white/10 text-left">
-                    <span className="text-[10px] font-mono text-[#34D399] uppercase font-bold tracking-wider block">OFFICIAL PRESS MEET CREATIVE</span>
-                    <span className="text-xs text-white font-medium">Bhrikutimandap, Kathmandu · IPPAN × Event Solution</span>
+          {/* 5th Edition teaser — official announcement card */}
+          {journeyExpo?.milestoneCard && (
+            <div className="rounded-3xl bg-gradient-to-br from-[#03160F] via-[#04281E] to-[#02130C] border border-emerald-500/30 p-8 sm:p-12 relative overflow-hidden shadow-2xl">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
+                <div className="lg:col-span-6 space-y-4 text-left">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-[#34D399] font-mono text-xs font-bold uppercase tracking-wider border border-emerald-500/30">
+                    <span className="w-2 h-2 rounded-full bg-[#34D399] animate-pulse" />
+                    <span>{journeyExpo.milestoneCard.badge}</span>
+                  </div>
+                  <h3 className="text-3xl sm:text-5xl font-bold text-white leading-tight">
+                    {journeyExpo.milestoneCard.titleLine1} <br />
+                    <span className="text-[#34D399]">{journeyExpo.milestoneCard.titleLine2}</span>
+                  </h3>
+                  <p className="text-sm text-emerald-100/80 leading-relaxed max-w-lg">
+                    {journeyExpo.milestoneCard.description}
+                  </p>
+                  <div className="pt-2 flex flex-wrap gap-3">
+                    <Link
+                      href="/register"
+                      className="px-5 py-2.5 rounded-full bg-[#007A5E] hover:bg-[#005C42] text-white font-mono text-xs font-bold tracking-wider transition-all shadow-md inline-flex items-center gap-2"
+                    >
+                      <span>{journeyExpo.milestoneCard.button1Text || "REGISTER AS VISITOR"}</span>
+                      <ArrowUpRight className="w-4 h-4" />
+                    </Link>
+                    <Link
+                      href="/news"
+                      className="px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white font-mono text-xs font-bold tracking-wider transition-all border border-white/20"
+                    >
+                      <span>{journeyExpo.milestoneCard.button2Text || "READ PRESS RELEASE"}</span>
+                    </Link>
                   </div>
                 </div>
+
+                {journeyExpo.milestoneCard.bannerImage && (
+                  <div className="lg:col-span-6">
+                    <div className="relative aspect-[16/10] w-full rounded-2xl overflow-hidden border border-white/20 shadow-2xl group">
+                      <Image
+                        src={journeyExpo.milestoneCard.bannerImage}
+                        alt="Himalayan Green Energy Expo 2027 Official Press Meet Banner"
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-700"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+                      <div className="absolute bottom-3 left-3 right-3 px-3 py-2 rounded-lg bg-black/70 backdrop-blur-md border border-white/10 text-left">
+                        <span className="text-[10px] font-mono text-[#34D399] uppercase font-bold tracking-wider block">
+                          {journeyExpo.milestoneCard.bannerBadge || "OFFICIAL PRESS MEET CREATIVE"}
+                        </span>
+                        <span className="text-xs text-white font-medium">
+                          {journeyExpo.milestoneCard.bannerCaption || "Bhrikutimandap, Kathmandu · IPPAN × Event Solution"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
-          </div>
+          )}
         </div>
       </section>
 
@@ -475,10 +445,12 @@ export default function AboutPage() {
 
         <div className="relative z-10 max-w-5xl mx-auto text-center space-y-10 sm:space-y-12">
           <div className="space-y-4">
-            <p className="text-[11px] font-mono font-bold text-[#34D399] uppercase tracking-[0.2em]">05 / WHAT THE EXPO CONNECTS</p>
+            <p className="text-[11px] font-mono font-bold text-[#34D399] uppercase tracking-[0.2em]">
+              {ecosystemSection?.badge || "05 / WHAT THE EXPO CONNECTS"}
+            </p>
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight tracking-tight">
-              ONE PLATFORM.<br />
-              <span className="text-[#34D399]">AN ENTIRE ENERGY ECOSYSTEM.</span>
+              {ecosystemSection?.titleLine1 || "ONE PLATFORM."}<br />
+              <span className="text-[#34D399]">{ecosystemSection?.titleLine2 || "AN ENTIRE ENERGY ECOSYSTEM."}</span>
             </h2>
           </div>
 
@@ -491,23 +463,26 @@ export default function AboutPage() {
             {/* Hub */}
             <div className="relative z-10 flex flex-col items-center justify-center w-36 h-36 sm:w-44 sm:h-44 rounded-full border-2 border-[#10B981] bg-[#04281E] shadow-2xl shadow-emerald-900/60 p-4">
               <p className="text-[11px] sm:text-xs font-mono font-bold text-[#34D399] uppercase tracking-widest text-center leading-snug">
-                HIMALAYAN<br />
-                GREEN ENERGY<br />
-                EXPO
+                {(ecosystemSection?.hubText || ["HIMALAYAN", "GREEN ENERGY", "EXPO"]).map((line: string, i: number) => (
+                  <React.Fragment key={i}>
+                    {line}
+                    <br />
+                  </React.Fragment>
+                ))}
               </p>
             </div>
 
             {/* Radial ring of tags — visible on md+ */}
             <div className="absolute inset-0 hidden md:block pointer-events-none">
-              {ecosystem.map((item, idx) => {
-                const angle = (idx / ecosystem.length) * 2 * Math.PI - Math.PI / 2;
+              {ecosystemItems.map((item, idx) => {
+                const angle = (idx / ecosystemItems.length) * 2 * Math.PI - Math.PI / 2;
                 const radiusX = 42; // percentage
                 const radiusY = 38; // percentage
                 const x = 50 + radiusX * Math.cos(angle);
                 const y = 50 + radiusY * Math.sin(angle);
                 return (
                   <div
-                    key={item}
+                    key={idx}
                     className="absolute transform -translate-x-1/2 -translate-y-1/2 pointer-events-auto"
                     style={{ left: `${x}%`, top: `${y}%` }}
                   >
@@ -522,9 +497,9 @@ export default function AboutPage() {
 
           {/* Mobile: rounded pill tags (only visible on mobile below md) */}
           <div className="md:hidden flex flex-wrap justify-center gap-2 pt-2 max-w-md mx-auto">
-            {ecosystem.map((item) => (
+            {ecosystemItems.map((item, idx) => (
               <span
-                key={item}
+                key={idx}
                 className="px-3 py-1.5 rounded-full bg-[#04281E]/90 border border-emerald-500/30 text-[10px] font-mono font-bold text-emerald-200/90 uppercase tracking-wider"
               >
                 {item}
@@ -540,45 +515,48 @@ export default function AboutPage() {
       <section className="bg-white py-20 sm:py-28 px-4 sm:px-10 lg:px-20">
         <div className="max-w-6xl mx-auto space-y-12">
           <div className="space-y-3">
-            <p className="text-[11px] font-mono font-bold text-[#087EA4] uppercase tracking-[0.2em]">06 / THE EXPERIENCE</p>
+            <p className="text-[11px] font-mono font-bold text-[#087EA4] uppercase tracking-[0.2em]">
+              {experienceSection?.badge || "06 / THE EXPERIENCE"}
+            </p>
             <h2 className="text-4xl sm:text-5xl font-bold text-[#061A2A] leading-tight tracking-tight">
-              MORE THAN<br />AN EXHIBITION.
+              {experienceSection?.titleLine1 || "MORE THAN"}<br />
+              {experienceSection?.titleLine2 || "AN EXHIBITION."}
             </h2>
           </div>
 
-          {/* Main large image + 4 editorial blocks */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Big photo */}
-            <div className="lg:col-span-7 relative h-72 sm:h-96 lg:h-full min-h-[360px] rounded-3xl overflow-hidden">
-              <Image
-                src="/images/event-photo-6.webp"
-                alt="VIP delegation on exhibition floor"
-                fill
-                className="object-cover object-center"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#061A2A]/60 to-transparent" />
-              <div className="absolute bottom-5 left-5">
-                <span className="text-[10px] font-mono text-emerald-300 bg-[#061A2A]/75 px-3 py-1 rounded-full border border-emerald-500/30 uppercase tracking-widest">
-                  EXHIBITION FLOOR · 2024
-                </span>
+            {experienceSection?.mainImage && (
+              <div className="lg:col-span-7 relative h-72 sm:h-96 lg:h-full min-h-[360px] rounded-3xl overflow-hidden">
+                <Image
+                  src={experienceSection.mainImage}
+                  alt="VIP delegation on exhibition floor"
+                  fill
+                  className="object-cover object-center"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#061A2A]/60 to-transparent" />
+                {experienceSection?.mainCaption && (
+                  <div className="absolute bottom-5 left-5">
+                    <span className="text-[10px] font-mono text-emerald-300 bg-[#061A2A]/75 px-3 py-1 rounded-full border border-emerald-500/30 uppercase tracking-widest">
+                      {experienceSection.mainCaption}
+                    </span>
+                  </div>
+                )}
               </div>
-            </div>
+            )}
 
             {/* 4 editorial blocks */}
             <div className="lg:col-span-5 grid grid-cols-2 gap-4">
-              {[
-                { label: "EXHIBITION", desc: "Explore technologies, equipment and solutions from across the industry.", img: "/images/gallery/2022/DSC_6546.webp" },
-                { label: "CONFERENCE", desc: "Hear from industry leaders, engineers and policymakers across 12 plenaries.", img: "/images/event-photo-3.webp" },
-                { label: "NETWORKING", desc: "Meet the people behind Nepal's energy ecosystem.", img: "/images/gallery/2022/DSC_6648.webp" },
-                { label: "BUSINESS", desc: "Build partnerships and discover new opportunities.", img: "/images/event-photo-7.webp" },
-              ].map((block) => (
-                <div key={block.label} className="relative rounded-2xl overflow-hidden group h-44 sm:h-52">
-                  <Image
-                    src={block.img}
-                    alt={block.label}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
+              {(experienceSection?.blocks || []).map((block: any, idx: number) => (
+                <div key={idx} className="relative rounded-2xl overflow-hidden group h-44 sm:h-52">
+                  {block.img && (
+                    <Image
+                      src={block.img}
+                      alt={block.label}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  )}
                   <div className="absolute inset-0 bg-gradient-to-t from-[#061A2A] via-[#061A2A]/40 to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-3">
                     <p className="text-[10px] font-mono font-bold text-[#34D399] uppercase tracking-widest">{block.label}</p>
@@ -597,44 +575,52 @@ export default function AboutPage() {
       <section className="bg-[#04281E] py-20 sm:py-28 px-4 sm:px-10 lg:px-20 border-t border-emerald-500/15">
         <div className="max-w-5xl mx-auto space-y-14">
           <div className="text-center space-y-3">
-            <p className="text-[11px] font-mono font-bold text-[#34D399] uppercase tracking-[0.2em]">07 / THE ORGANIZERS</p>
+            <p className="text-[11px] font-mono font-bold text-[#34D399] uppercase tracking-[0.2em]">
+              {organizersSection?.badge || "07 / THE ORGANIZERS"}
+            </p>
             <h2 className="text-4xl sm:text-5xl font-bold text-white leading-tight tracking-tight">
-              POWERED BY INDUSTRY.<br />
-              <span className="text-[#34D399]">DELIVERED WITH EXPERIENCE.</span>
+              {organizersSection?.titleLine1 || "POWERED BY INDUSTRY."}<br />
+              <span className="text-[#34D399]">{organizersSection?.titleLine2 || "DELIVERED WITH EXPERIENCE."}</span>
             </h2>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-11 gap-6 sm:gap-8 items-stretch">
             {/* IPPAN */}
-            <div className="lg:col-span-5 p-8 sm:p-9 rounded-3xl bg-emerald-950/40 border border-emerald-500/25 flex flex-col justify-between h-full shadow-lg hover:border-emerald-500/40 transition-all">
-              <div>
-                <div className="relative h-14 w-36 mb-6">
-                  <Image src="/images/ippan_vector.svg" alt="IPPAN" fill className="object-contain object-left" />
-                </div>
+            {organizersSection?.ippan && (
+              <div className="lg:col-span-5 p-8 sm:p-9 rounded-3xl bg-emerald-950/40 border border-emerald-500/25 flex flex-col justify-between h-full shadow-lg hover:border-emerald-500/40 transition-all">
                 <div>
-                  <p className="text-[10.5px] font-mono font-bold text-[#34D399] uppercase tracking-widest mb-2.5">
-                    INDUSTRY KNOWLEDGE
-                  </p>
-                  <h3 className="text-xl font-bold text-white mb-3 min-h-[56px] flex items-center leading-snug">
-                    Independent Power Producers&apos; Association, Nepal
-                  </h3>
-                  <p className="text-sm text-emerald-100/75 leading-relaxed">
-                    Established in 2001, IPPAN is a non-profit, non-government autonomous organization established to encourage private-sector participation in Nepal&apos;s hydropower sector. It serves as a link between private power developers and government organizations, while supporting the exchange of technology, expertise, knowledge, financial and management information among independent power producers.
-                  </p>
+                  {organizersSection.ippan.logo && (
+                    <div className="relative h-14 w-36 mb-6">
+                      <Image src={organizersSection.ippan.logo} alt="IPPAN" fill className="object-contain object-left" />
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-[10.5px] font-mono font-bold text-[#34D399] uppercase tracking-widest mb-2.5">
+                      {organizersSection.ippan.subtitle || "INDUSTRY KNOWLEDGE"}
+                    </p>
+                    <h3 className="text-xl font-bold text-white mb-3 min-h-[56px] flex items-center leading-snug">
+                      {organizersSection.ippan.title}
+                    </h3>
+                    <p className="text-sm text-emerald-100/75 leading-relaxed">
+                      {organizersSection.ippan.description}
+                    </p>
+                  </div>
                 </div>
+                {organizersSection.ippan.website && (
+                  <div className="pt-6 mt-6 border-t border-emerald-500/20">
+                    <a
+                      href={organizersSection.ippan.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs font-mono font-bold text-[#34D399] hover:text-white inline-flex items-center gap-1.5 transition-colors group"
+                    >
+                      <span>{organizersSection.ippan.websiteLabel || "ippan.org.np"}</span>
+                      <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                    </a>
+                  </div>
+                )}
               </div>
-              <div className="pt-6 mt-6 border-t border-emerald-500/20">
-                <a
-                  href="https://www.ippan.org.np/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs font-mono font-bold text-[#34D399] hover:text-white inline-flex items-center gap-1.5 transition-colors group"
-                >
-                  <span>ippan.org.np</span>
-                  <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                </a>
-              </div>
-            </div>
+            )}
 
             {/* Divider × */}
             <div className="lg:col-span-1 flex items-center justify-center self-center py-2 lg:py-0">
@@ -642,35 +628,41 @@ export default function AboutPage() {
             </div>
 
             {/* Event Solution */}
-            <div className="lg:col-span-5 p-8 sm:p-9 rounded-3xl bg-emerald-950/40 border border-emerald-500/25 flex flex-col justify-between h-full shadow-lg hover:border-emerald-500/40 transition-all">
-              <div>
-                <div className="relative h-14 w-44 mb-6">
-                  <Image src="/images/event_solution_vector.svg" alt="Event Solution" fill className="object-contain object-left" />
-                </div>
+            {organizersSection?.eventSolution && (
+              <div className="lg:col-span-5 p-8 sm:p-9 rounded-3xl bg-emerald-950/40 border border-emerald-500/25 flex flex-col justify-between h-full shadow-lg hover:border-emerald-500/40 transition-all">
                 <div>
-                  <p className="text-[10.5px] font-mono font-bold text-[#34D399] uppercase tracking-widest mb-2.5">
-                    EVENT EXECUTION
-                  </p>
-                  <h3 className="text-xl font-bold text-white mb-3 min-h-[56px] flex items-center leading-snug">
-                    Event Solution Nepal Pvt. Ltd.
-                  </h3>
-                  <p className="text-sm text-emerald-100/75 leading-relaxed">
-                    Founded in 2014, Event Solution Nepal is an event management company focused on creating and delivering events from planning through execution. Its services include event planning and consulting, event management and coordination, event production and setup, event rentals, logistics and event operations, and sound, lighting and LED solutions.
-                  </p>
+                  {organizersSection.eventSolution.logo && (
+                    <div className="relative h-14 w-44 mb-6">
+                      <Image src={organizersSection.eventSolution.logo} alt="Event Solution" fill className="object-contain object-left" />
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-[10.5px] font-mono font-bold text-[#34D399] uppercase tracking-widest mb-2.5">
+                      {organizersSection.eventSolution.subtitle || "EVENT EXECUTION"}
+                    </p>
+                    <h3 className="text-xl font-bold text-white mb-3 min-h-[56px] flex items-center leading-snug">
+                      {organizersSection.eventSolution.title}
+                    </h3>
+                    <p className="text-sm text-emerald-100/75 leading-relaxed">
+                      {organizersSection.eventSolution.description}
+                    </p>
+                  </div>
                 </div>
+                {organizersSection.eventSolution.website && (
+                  <div className="pt-6 mt-6 border-t border-emerald-500/20">
+                    <a
+                      href={organizersSection.eventSolution.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs font-mono font-bold text-[#34D399] hover:text-white inline-flex items-center gap-1.5 transition-colors group"
+                    >
+                      <span>{organizersSection.eventSolution.websiteLabel || "eventsolutionnepal.com.np"}</span>
+                      <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                    </a>
+                  </div>
+                )}
               </div>
-              <div className="pt-6 mt-6 border-t border-emerald-500/20">
-                <a
-                  href="https://eventsolutionnepal.com.np/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs font-mono font-bold text-[#34D399] hover:text-white inline-flex items-center gap-1.5 transition-colors group"
-                >
-                  <span>eventsolutionnepal.com.np</span>
-                  <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                </a>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </section>
@@ -682,16 +674,19 @@ export default function AboutPage() {
         <div className="max-w-6xl mx-auto space-y-10">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-slate-100 pb-8">
             <div className="space-y-3">
-              <p className="text-[11px] font-mono font-bold text-[#087EA4] uppercase tracking-[0.2em]">08 / THE PEOPLE</p>
+              <p className="text-[11px] font-mono font-bold text-[#087EA4] uppercase tracking-[0.2em]">
+                {peopleSection?.badge || "08 / THE PEOPLE"}
+              </p>
               <h2 className="text-4xl sm:text-5xl font-bold text-[#061A2A] leading-tight tracking-tight">
-                THE PEOPLE<br />BEHIND THE PLATFORM.
+                {peopleSection?.titleLine1 || "THE PEOPLE"}<br />
+                {peopleSection?.titleLine2 || "BEHIND THE PLATFORM."}
               </h2>
             </div>
             <Link
               href="/speakers"
               className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-[#087EA4] hover:text-[#061A2A] transition-colors uppercase tracking-wider shrink-0"
             >
-              <span>View Full Committee</span>
+              <span>{peopleSection?.speakersLinkText || "View Full Committee"}</span>
               <ArrowUpRight className="w-4 h-4" />
             </Link>
           </div>
@@ -701,22 +696,24 @@ export default function AboutPage() {
             <div className="space-y-4">
               <div className="flex items-center gap-2.5">
                 <span className="px-2.5 py-0.5 rounded-md bg-emerald-50 text-[#005C42] border border-emerald-200 text-xs font-mono font-bold uppercase tracking-wider">
-                  IPPAN LEADERSHIP
+                  {peopleSection?.ippanBadge || "IPPAN LEADERSHIP"}
                 </span>
                 <span className="text-xs text-slate-500 font-medium hidden sm:inline">
-                  Independent Power Producers&apos; Association, Nepal
+                  {peopleSection?.ippanSubtitle || "Independent Power Producers' Association, Nepal"}
                 </span>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-                {ippanCommitteeMembers.map((person) => (
-                  <div key={person.name} className="group text-center">
+                {(peopleSection?.ippanMembers || []).map((person: any, idx: number) => (
+                  <div key={idx} className="group text-center">
                     <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-slate-100 mb-3 border border-slate-200/80 shadow-2xs group-hover:shadow-md group-hover:border-emerald-300 transition-all duration-300">
-                      <Image
-                        src={person.photo}
-                        alt={person.name}
-                        fill
-                        className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
-                      />
+                      {person.photo && (
+                        <Image
+                          src={person.photo}
+                          alt={person.name}
+                          fill
+                          className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                        />
+                      )}
                       <div className="absolute inset-0 bg-gradient-to-t from-[#061A2A]/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
                     <p className="text-xs font-bold text-[#061A2A] leading-snug line-clamp-1">{person.name}</p>
@@ -730,22 +727,24 @@ export default function AboutPage() {
             <div className="space-y-4 pt-6 border-t border-slate-100">
               <div className="flex items-center gap-2.5">
                 <span className="px-2.5 py-0.5 rounded-md bg-sky-50 text-sky-900 border border-sky-200 text-xs font-mono font-bold uppercase tracking-wider">
-                  EVENT SOLUTION TEAM
+                  {peopleSection?.eventSolutionBadge || "EVENT SOLUTION TEAM"}
                 </span>
                 <span className="text-xs text-slate-500 font-medium hidden sm:inline">
-                  Event Solution Nepal Pvt. Ltd. (Operations &amp; Management)
+                  {peopleSection?.eventSolutionSubtitle || "Event Solution Nepal Pvt. Ltd. (Operations & Management)"}
                 </span>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-                {eventSolutionMembers.map((person) => (
-                  <div key={person.name} className="group text-center">
+                {(peopleSection?.eventSolutionMembers || []).map((person: any, idx: number) => (
+                  <div key={idx} className="group text-center">
                     <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-slate-100 mb-3 border border-slate-200/80 shadow-2xs group-hover:shadow-md group-hover:border-sky-300 transition-all duration-300">
-                      <Image
-                        src={person.photo}
-                        alt={person.name}
-                        fill
-                        className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
-                      />
+                      {person.photo && (
+                        <Image
+                          src={person.photo}
+                          alt={person.name}
+                          fill
+                          className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                        />
+                      )}
                       <div className="absolute inset-0 bg-gradient-to-t from-[#061A2A]/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
                     <p className="text-xs font-bold text-[#061A2A] leading-snug line-clamp-1">{person.name}</p>
@@ -765,7 +764,7 @@ export default function AboutPage() {
         {/* Full-bleed background */}
         <div className="absolute inset-0">
           <Image
-            src="/images/background/22.webp"
+            src={fifthEditionDark?.backgroundImage || "/images/background/22.webp"}
             alt="Himalayan hydropower backdrop"
             fill
             className="object-cover object-center"
@@ -777,12 +776,12 @@ export default function AboutPage() {
         </div>
 
         <div className="relative z-10 max-w-4xl mx-auto text-center space-y-7">
-          {/* Logo */}
+          {/* Logo (Navbar expo logo) */}
           <div className="flex justify-center">
-            <div className="relative w-28 h-28 sm:w-36 sm:h-36">
+            <div className="relative w-48 h-28 sm:w-64 sm:h-36">
               <Image
-                src="/images/logo.webp"
-                alt="Himalayan Green Energy Expo"
+                src={fifthEditionDark?.logo || "/images/logo-expo.webp"}
+                alt={fifthEditionDark?.badge1 || "Himalayan Green Energy Expo"}
                 fill
                 className="object-contain drop-shadow-[0_0_40px_rgba(16,185,129,0.5)]"
               />
@@ -791,27 +790,29 @@ export default function AboutPage() {
 
           {/* Expo full name */}
           <p className="text-xs sm:text-sm font-mono font-bold text-[#34D399] uppercase tracking-[0.3em]">
-            Himalayan Green Energy Expo
+            {fifthEditionDark?.badge1 || "Himalayan Green Energy Expo"}
           </p>
 
           <p className="text-[11px] font-mono text-emerald-300/60 uppercase tracking-[0.2em]">
-            2027 / 5TH EDITION
+            {fifthEditionDark?.badge2 || "2027 / 5TH EDITION"}
           </p>
 
           <h2 className="text-5xl sm:text-7xl font-bold text-white leading-[1.0] tracking-tight">
-            THE NEXT<br />
-            <span className="text-[#34D399]">CHAPTER</span><br />
-            STARTS HERE.
+            {fifthEditionDark?.titleLine1 || "THE NEXT"}<br />
+            <span className="text-[#34D399]">{fifthEditionDark?.titleHighlight || "CHAPTER"}</span><br />
+            {fifthEditionDark?.titleLine2 || "STARTS HERE."}
           </h2>
 
           <div className="flex flex-wrap justify-center gap-3 text-xs font-mono text-emerald-200/70">
-            <span className="px-4 py-2 rounded-xl bg-emerald-900/50 border border-emerald-500/25 backdrop-blur-sm">16–18 JANUARY 2027</span>
-            <span className="px-4 py-2 rounded-xl bg-emerald-900/50 border border-emerald-500/25 backdrop-blur-sm">KATHMANDU, NEPAL</span>
-            <span className="px-4 py-2 rounded-xl bg-emerald-900/50 border border-emerald-500/25 backdrop-blur-sm">5TH EDITION</span>
+            {(fifthEditionDark?.pills || ["16–18 JANUARY 2027", "KATHMANDU, NEPAL", "5TH EDITION"]).map((pill: string, idx: number) => (
+              <span key={idx} className="px-4 py-2 rounded-xl bg-emerald-900/50 border border-emerald-500/25 backdrop-blur-sm">
+                {pill}
+              </span>
+            ))}
           </div>
 
           <p className="text-sm sm:text-base text-emerald-100/70 max-w-xl mx-auto leading-relaxed">
-            Under the theme <strong className="text-white">&ldquo;Resilient Energy, Prosperous Nepal,&rdquo;</strong> the fifth edition marks the next chapter — uniting clean energy innovation, sustainable infrastructure, and disaster resilience to power Nepal and the region.
+            {fifthEditionDark?.description}
           </p>
 
           <div className="flex flex-wrap justify-center gap-4 pt-2">
@@ -819,19 +820,17 @@ export default function AboutPage() {
               href="/expo"
               className="px-8 py-3.5 rounded-xl bg-emerald-900/60 border border-emerald-500/30 text-white font-mono text-xs font-bold hover:bg-emerald-800/70 transition-all backdrop-blur-sm"
             >
-              EXPLORE THE 5TH EDITION
+              {fifthEditionDark?.exploreButtonText || "EXPLORE THE 5TH EDITION"}
             </Link>
             <Link
               href="/register"
               className="px-8 py-3.5 rounded-xl bg-[#007A5E] hover:bg-[#005C42] text-white font-mono text-xs font-bold transition-all shadow-[0_0_30px_rgba(0,122,94,0.4)]"
             >
-              REGISTER NOW
+              {fifthEditionDark?.registerButtonText || "REGISTER NOW"}
             </Link>
           </div>
         </div>
       </section>
-
     </div>
   );
 }
-

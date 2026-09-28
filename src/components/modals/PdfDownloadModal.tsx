@@ -86,44 +86,52 @@ export default function PdfDownloadModal() {
     };
   }, []);
 
-  const downloadPdfFile = (url: string) => {
+  const downloadPdfFile = async (url: string) => {
     const filename = url.split("/").pop() || "Himalayan-Green-Energy-Expo-Proposal.pdf";
+    const candidates = [
+      url,
+      "/files/Proposal.pdf",
+      "/Proposal.pdf",
+      "/api/proposal",
+    ].filter((u, i, arr) => arr.indexOf(u) === i);
 
-    // Try blob download first to force native save prompt
-    fetch(url)
-      .then((res) => {
-        if (!res.ok) throw new Error("Fetch failed");
-        return res.blob();
-      })
-      .then((blob) => {
-        const blobUrl = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.style.display = "none";
-        a.href = blobUrl;
-        a.download = filename;
-        a.setAttribute("data-no-intercept", "true");
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(() => {
-          document.body.removeChild(a);
-          window.URL.revokeObjectURL(blobUrl);
-        }, 1000);
-      })
-      .catch(() => {
-        // Fallback: direct anchor download
-        const a = document.createElement("a");
-        a.style.display = "none";
-        a.href = url;
-        a.download = filename;
-        a.target = "_blank";
-        a.rel = "noopener noreferrer";
-        a.setAttribute("data-no-intercept", "true");
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(() => {
-          document.body.removeChild(a);
-        }, 1000);
-      });
+    for (const targetUrl of candidates) {
+      try {
+        const res = await fetch(targetUrl);
+        if (res.ok) {
+          const blob = await res.blob();
+          const blobUrl = window.URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.style.display = "none";
+          a.href = blobUrl;
+          a.download = filename;
+          a.setAttribute("data-no-intercept", "true");
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(() => {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(blobUrl);
+          }, 1000);
+          return;
+        }
+      } catch (err) {
+        console.warn(`Download attempt failed from ${targetUrl}:`, err);
+      }
+    }
+
+    // Direct anchor fallback
+    const a = document.createElement("a");
+    a.style.display = "none";
+    a.href = "/files/Proposal.pdf";
+    a.download = filename;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    a.setAttribute("data-no-intercept", "true");
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+    }, 1000);
   };
 
   const validate = () => {

@@ -22,6 +22,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ClipboardList,
+  FileText,
 } from "lucide-react";
 import { useAdminAuth } from "./AdminAuthContext";
 
@@ -78,6 +79,7 @@ export default function AdminSidebar({
     {
       group: "Communication",
       items: [
+        { label: "About Page CMS", href: "/admin/about", icon: FileText },
         { label: "News & Articles", href: "/admin/news", icon: Newspaper },
         { label: "Photo Gallery", href: "/admin/gallery", icon: ImageIcon },
         { label: "Inquiries", href: "/admin/inquiries", icon: MessageSquareQuote },

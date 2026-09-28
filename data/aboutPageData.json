@@ -1,0 +1,251 @@
+{
+  "header": {
+    "title": "About The Expo",
+    "subtitle": "Bhrikutimandap Exhibition Hall, Kathmandu · 17–19 January 2027",
+    "metrics": [
+      { "label": "5th Edition", "isHighlighted": false },
+      { "label": "150+ Exhibitors", "isHighlighted": false },
+      { "label": "12 Plenaries", "isHighlighted": false },
+      { "label": "10,000+ Delegates", "isHighlighted": true }
+    ],
+    "ctaRegisterText": "Register Badge",
+    "ctaStallText": "Book a Stall"
+  },
+  "whyExpo": {
+    "badge": "02 / WHY HIMALAYAN GREEN ENERGY EXPO",
+    "titleLine1": "RESILIENT ENERGY,",
+    "titleLine2": "PROSPEROUS NEPAL.",
+    "substatement": "Building an energy future that is sustainable and disaster-resilient.",
+    "paragraphs": [
+      "Nepal's energy sector is entering a pivotal phase. Hydropower capacity has grown to approximately 4,145.7 MW, with a national target of 30,000 MW by 2035 — expanding beyond domestic power needs toward industrial growth, electric mobility, renewable energy, and cross-border power trade with India and Bangladesh.",
+      "But this growth is now being tested. Recent flash floods and debris flows have damaged hydropower projects across the country, exposing the vulnerability of energy infrastructure to climate-related disasters. The sector's future depends not only on scaling capacity, but on building it to withstand a changing climate.",
+      "Since 2018, the Himalayan Hydro Expo has connected key stakeholders across four editions through 2024. Himalayan Green Energy Expo 2027 marks the next chapter, expanding this established platform into a broader green-energy forum, while placing resilience at the center of the conversation."
+    ],
+    "featureImage": "/images/gallery/2022/FOTO5680.webp",
+    "featureCaption": "BHRIKUTIMANDAP · KATHMANDU"
+  },
+  "energyJourney": {
+    "badge": "03 / NEPAL'S ENERGY JOURNEY",
+    "titleLine1": "A COUNTRY",
+    "titleLine2": "POWERING FORWARD.",
+    "description": "From the historic 500 kW origin to sovereign cross-border power syndication across South Asia.",
+    "backgroundImage": "/images/background/5.webp",
+    "card1": {
+      "year": "1911 AD",
+      "badge": "HISTORIC ORIGIN",
+      "capacity": "0.5",
+      "capacityUnit": "MW",
+      "title": "Pharping Powerhouse",
+      "description": "Nepal's clean energy journey commenced in 1911 AD with the commissioning of the 500 kW Pharping powerhouse, Asia's second hydropower plant.",
+      "image": "/images/hydro_1911.webp"
+    },
+    "card2": {
+      "year": "2035 AD",
+      "badge": "NATIONAL TARGET",
+      "targetCapacity": "30,000",
+      "installedCapacity": "4,145.7 MW",
+      "title": "Sovereign Clean Power Target",
+      "description": "Scaling from 4,145.7 MW existing capacity towards the 30,000 MW national target by 2035 AD — expanding beyond domestic power needs toward industrial growth, e-mobility, and regional power trade.",
+      "image": "/images/illustrations/solar_hydro_hybrid.webp"
+    },
+    "card3": {
+      "year": "2035 AD",
+      "badge": "ALLOCATION BREAKDOWN",
+      "title": "Power Flow & Regional Trade",
+      "indiaExport": "10,000 MW",
+      "bangladeshExport": "5,000 MW",
+      "domesticDemand": "15,000 MW",
+      "image": "/images/illustrations/transmission_grid_substation.webp"
+    }
+  },
+  "journeyExpo": {
+    "badge": "04 / THE JOURNEY OF THE EXPO",
+    "titleLine1": "FOUR EDITIONS.",
+    "titleLine2": "ONE JOURNEY.",
+    "galleryLinkText": "View Photo Gallery",
+    "editions": [
+      {
+        "year": "2018",
+        "edition": "1ST EDITION",
+        "image": "/images/gallery/2018/IMG_0005.webp",
+        "desc": "Inaugural gathering of Nepal's independent hydropower developers — the beginning of an annual industry platform."
+      },
+      {
+        "year": "2019",
+        "edition": "2ND EDITION",
+        "image": "/images/gallery/2019/IMG_0030.webp",
+        "desc": "International technology pavilions expanded. Chinese, Indian and European OEMs joined Nepal's growing energy floor."
+      },
+      {
+        "year": "2022",
+        "edition": "3RD EDITION",
+        "image": "/images/gallery/2022/DSC_6305.webp",
+        "desc": "Post-pandemic return marked a surge in energy sector investment interest and regional trade discussions."
+      },
+      {
+        "year": "2024",
+        "edition": "4TH EDITION",
+        "image": "/images/event-photo-3.webp",
+        "desc": "Ministerial plenary, tri-nation power export framework discussions, and 250+ exhibitors across 3 days."
+      }
+    ],
+    "milestoneCard": {
+      "badge": "2027 · THE 5TH MILESTONE",
+      "titleLine1": "RESILIENT ENERGY,",
+      "titleLine2": "PROSPEROUS NEPAL.",
+      "description": "17th–19th January 2027 (Magh 3–5, 2083) at Bhrikutimandap Exhibition Hall, Kathmandu. Jointly organized by IPPAN and Event Solution, spotlighting Green Hydrogen, Solar, Wind, EV, and Alternative Clean Energy.",
+      "button1Text": "REGISTER AS VISITOR",
+      "button2Text": "READ PRESS RELEASE",
+      "bannerImage": "/images/press_meet.webp",
+      "bannerBadge": "OFFICIAL PRESS MEET CREATIVE",
+      "bannerCaption": "Bhrikutimandap, Kathmandu · IPPAN × Event Solution"
+    }
+  },
+  "ecosystemSection": {
+    "badge": "05 / WHAT THE EXPO CONNECTS",
+    "titleLine1": "ONE PLATFORM.",
+    "titleLine2": "AN ENTIRE ENERGY ECOSYSTEM.",
+    "hubText": ["HIMALAYAN", "GREEN ENERGY", "EXPO"],
+    "items": [
+      "PROJECT DEVELOPERS / IPPs",
+      "EQUIPMENT & TECHNOLOGY PROVIDERS",
+      "EPC CONTRACTORS",
+      "INVESTORS & FINANCIAL INSTITUTIONS",
+      "GOVERNMENT & REGULATORS",
+      "ELECTRIC UTILITIES",
+      "ENGINEERS & CONSULTANTS",
+      "CONSTRUCTION COMPANIES",
+      "INTERNATIONAL DELEGATIONS",
+      "RESEARCHERS & UNIVERSITIES",
+      "INDUSTRY ASSOCIATIONS",
+      "STARTUPS & INNOVATION HUBS"
+    ]
+  },
+  "experienceSection": {
+    "badge": "06 / THE EXPERIENCE",
+    "titleLine1": "MORE THAN",
+    "titleLine2": "AN EXHIBITION.",
+    "mainImage": "/images/event-photo-6.webp",
+    "mainCaption": "EXHIBITION FLOOR · 2024",
+    "blocks": [
+      {
+        "label": "EXHIBITION",
+        "desc": "Explore technologies, equipment and solutions from across the industry.",
+        "img": "/images/gallery/2022/DSC_6546.webp"
+      },
+      {
+        "label": "CONFERENCE",
+        "desc": "Hear from industry leaders, engineers and policymakers across 12 plenaries.",
+        "img": "/images/event-photo-3.webp"
+      },
+      {
+        "label": "NETWORKING",
+        "desc": "Meet the people behind Nepal's energy ecosystem.",
+        "img": "/images/gallery/2022/DSC_6648.webp"
+      },
+      {
+        "label": "BUSINESS",
+        "desc": "Build partnerships and discover new opportunities.",
+        "img": "/images/event-photo-7.webp"
+      }
+    ]
+  },
+  "organizersSection": {
+    "badge": "07 / THE ORGANIZERS",
+    "titleLine1": "POWERED BY INDUSTRY.",
+    "titleLine2": "DELIVERED WITH EXPERIENCE.",
+    "ippan": {
+      "logo": "/images/ippan_vector.svg",
+      "subtitle": "INDUSTRY KNOWLEDGE",
+      "title": "Independent Power Producers' Association, Nepal",
+      "description": "Established in 2001, IPPAN is a non-profit, non-government autonomous organization established to encourage private-sector participation in Nepal's hydropower sector. It serves as a link between private power developers and government organizations, while supporting the exchange of technology, expertise, knowledge, financial and management information among independent power producers.",
+      "website": "https://www.ippan.org.np/",
+      "websiteLabel": "ippan.org.np"
+    },
+    "eventSolution": {
+      "logo": "/images/event_solution_vector.svg",
+      "subtitle": "EVENT EXECUTION",
+      "title": "Event Solution Nepal Pvt. Ltd.",
+      "description": "Founded in 2014, Event Solution Nepal is an event management company focused on creating and delivering events from planning through execution. Its services include event planning and consulting, event management and coordination, event production and setup, event rentals, logistics and event operations, and sound, lighting and LED solutions.",
+      "website": "https://eventsolutionnepal.com.np/",
+      "websiteLabel": "eventsolutionnepal.com.np"
+    }
+  },
+  "peopleSection": {
+    "badge": "08 / THE PEOPLE",
+    "titleLine1": "THE PEOPLE",
+    "titleLine2": "BEHIND THE PLATFORM.",
+    "speakersLinkText": "View Full Committee",
+    "ippanBadge": "IPPAN LEADERSHIP",
+    "ippanSubtitle": "Independent Power Producers' Association, Nepal",
+    "ippanMembers": [
+      {
+        "name": "Mr. Mohan Kumar Dangi",
+        "title": "President, IPPAN",
+        "photo": "/images/committee/mohan-kumar-dangi.webp"
+      },
+      {
+        "name": "Mr. Uttam Bhlon Lama",
+        "title": "Senior Vice President, IPPAN",
+        "photo": "/images/committee/uttam-bhlon-lama.webp"
+      },
+      {
+        "name": "Mr. Bikram Bista",
+        "title": "Vice President, IPPAN",
+        "photo": "/images/committee/bikram-bista.webp"
+      },
+      {
+        "name": "Mr. Him Prasad Pathak",
+        "title": "Vice President, IPPAN",
+        "photo": "/images/committee/him-prasad-pathak.webp"
+      },
+      {
+        "name": "Mr. Narendra Ballav Panth",
+        "title": "Vice President, IPPAN",
+        "photo": "/images/committee/narendra-ballav-panth.webp"
+      }
+    ],
+    "eventSolutionBadge": "EVENT SOLUTION TEAM",
+    "eventSolutionSubtitle": "Event Solution Nepal Pvt. Ltd. (Operations & Management)",
+    "eventSolutionMembers": [
+      {
+        "name": "Sunil Bhandari",
+        "title": "Chairman, Event Solution",
+        "photo": "/images/eventsolution/sunil-bhandari.webp"
+      },
+      {
+        "name": "Bijay Sagar Pradhan",
+        "title": "Managing Director",
+        "photo": "/images/eventsolution/bijay-sagar-pradhan.webp"
+      },
+      {
+        "name": "Nabin Bhatta",
+        "title": "Marketing Director",
+        "photo": "/images/eventsolution/nabin-bhatta.webp"
+      },
+      {
+        "name": "Vinesh Chordia",
+        "title": "Finance Director",
+        "photo": "/images/eventsolution/vinesh-chordia.webp"
+      },
+      {
+        "name": "Bishal Prajapati",
+        "title": "Chief Event Officer",
+        "photo": "/images/eventsolution/bishal-prajapati.webp"
+      }
+    ]
+  },
+  "fifthEditionDark": {
+    "badge1": "Himalayan Green Energy Expo",
+    "badge2": "2027 / 5TH EDITION",
+    "logo": "/images/logo-expo.webp",
+    "titleLine1": "THE NEXT",
+    "titleHighlight": "CHAPTER",
+    "titleLine2": "STARTS HERE.",
+    "pills": ["16–18 JANUARY 2027", "KATHMANDU, NEPAL", "5TH EDITION"],
+    "description": "Under the theme \"Resilient Energy, Prosperous Nepal,\" the fifth edition marks the next chapter — uniting clean energy innovation, sustainable infrastructure, and disaster resilience to power Nepal and the region.",
+    "exploreButtonText": "EXPLORE THE 5TH EDITION",
+    "registerButtonText": "REGISTER NOW",
+    "backgroundImage": "/images/background/22.webp"
+  }
+}
