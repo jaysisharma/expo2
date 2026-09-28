@@ -57,7 +57,7 @@ export default function ConferencePage() {
                 Conference & Summit
               </h1>
               <p className="mt-3 text-sm sm:text-base text-emerald-100/75 max-w-xl">
-                Bhrikutimandap Exhibition Complex, Kathmandu · 16–18 January 2027
+                Bhrikutimandap Exhibition Hall, Kathmandu · 17–19 January 2027
               </p>
 
               {/* Quick Metrics */}
@@ -80,7 +80,7 @@ export default function ConferencePage() {
             <div className="flex items-center gap-3 shrink-0">
               <Link
                 href="/register"
-                className="px-5 py-2.5 rounded-lg bg-[#10B981] hover:bg-[#059669] text-slate-950 text-xs font-black flex items-center gap-2 transition-colors shadow-md"
+                className="px-5 py-2.5 rounded-lg bg-[#007A5E] hover:bg-[#005C42] text-white text-xs font-bold flex items-center gap-2 transition-colors shadow-md"
               >
                 <span>Register Delegate Pass</span>
                 <ArrowRight className="w-3.5 h-3.5" />

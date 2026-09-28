@@ -3,8 +3,18 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, ArrowUp, Calendar, MapPin, CheckCircle2 } from 'lucide-react';
-import { ScrollReveal } from '@/components/ui';
+import {
+  Globe2,
+  ShieldCheck,
+  Sun,
+  Zap,
+  ArrowUpRight,
+  ArrowRight,
+  Calendar,
+  MapPin,
+  Sparkles,
+} from 'lucide-react';
+import { ScrollReveal, TopographicContours, MountainCrestSvg } from '@/components/ui';
 
 interface StoryEdition {
   year: string;
@@ -15,107 +25,94 @@ interface StoryEdition {
   meta: string;
   image: string;
   caption: string;
-  aspect: string;
 }
 
 const storyEditions: StoryEdition[] = [
   {
     year: '2018',
     edition: '1ST EDITION',
-    phase: 'CHAPTER 01 · THE INAUGURAL CONVERGENCE',
+    phase: 'THE INAUGURAL CONVERGENCE',
     title: 'Where the clean energy movement began.',
     story:
-      "Nepal's pioneer independent power producers, state utility leaders, and international equipment makers gathered under one roof at Bhrikutimandap for the first time in national history.",
+      "Nepal's pioneer independent power producers, state utilities, and global equipment makers gathered under one roof at Bhrikutimandap.",
     meta: 'Inaugural Trade Floor · 10,000+ Visitors',
     image: '/images/gallery/2018/IMG_0047.webp',
-    caption: 'Inaugural ceremony uniting developers, global OEMs, and public utilities.',
-    aspect: 'h-[240px] sm:h-[320px]',
+    caption: 'Inaugural ceremony uniting developers and public utilities.',
   },
   {
     year: '2019',
     edition: '2ND EDITION',
-    phase: 'CHAPTER 02 · INTERNATIONAL EXPANSION',
+    phase: 'INTERNATIONAL EXPANSION',
     title: 'Building regional clean power momentum.',
     story:
-      'The exhibition doubled its international footprint with dedicated European and Asian technology pavilions, technical turbine symposia, and domestic commercial banking syndicates.',
-    meta: 'Global Technology Pavilions · Banking Syndicates',
+      'Doubled international footprint with dedicated European and Asian technology pavilions and commercial banking syndicates.',
+    meta: 'Global Pavilions · Banking Syndicates',
     image: '/images/gallery/2019/shankar(MATINA P & V)289.webp',
-    caption: 'International exhibition pavilions and cross-border clean trade plenaries.',
-    aspect: 'h-[240px] sm:h-[320px]',
+    caption: 'International exhibition pavilions & plenaries.',
   },
   {
     year: '2022',
     edition: '3RD EDITION',
-    phase: 'CHAPTER 03 · RESILIENCE & GREEN TECH',
+    phase: 'RESILIENCE & GREEN TECH',
     title: 'Reconvening the sector post-disruption.',
     story:
-      'Following the global disruption, the expo reconvened the regional sector with a powerful focus on silt-abrasion resistant turbines, 400kV gas-insulated substations, and cross-border power transmission.',
-    meta: 'Heavy Turbine Engineering · 400kV Switchgear',
+      'Focused on silt-abrasion resistant turbines, 400kV gas-insulated substations, and cross-border power transmission.',
+    meta: 'Turbine Engineering · 400kV Switchgear',
     image: '/images/gallery/2022/DSC_6673.webp',
-    caption: 'Official 2022 inaugural stage and high-tech hydro-mechanical exhibitions.',
-    aspect: 'h-[240px] sm:h-[320px]',
+    caption: 'Official 2022 inaugural stage & hydro exhibitions.',
   },
   {
     year: '2024',
     edition: '4TH EDITION',
-    phase: 'CHAPTER 04 · RECORD REGIONAL SCALE',
+    phase: 'RECORD REGIONAL SCALE',
     title: "South Asia's clean energy powerhouse.",
     story:
-      'The largest edition in history featured over 100 global brands, official trilateral trade delegations from India and Bangladesh, and landmark commercial power purchase agreements.',
+      'Featured over 100 global brands, official trilateral trade delegations from India and Bangladesh, and landmark power purchase agreements.',
     meta: '100+ Global Brands · Trilateral Delegations',
     image: '/images/WhatsApp Image 2026-08-27 at 06.52.07.jpeg',
-    caption: 'Ministers, ambassadors, and trade delegations exploring global turbine pavilions and clean tech stalls.',
-    aspect: 'h-[260px] sm:h-[340px]',
+    caption: 'Ministers and delegations exploring global pavilions.',
   },
 ];
 
 export function ExpoJourney() {
   return (
-    <section className="relative w-full py-12 sm:py-16 bg-[var(--c-bg)] text-[var(--c-text-primary)] transition-colors duration-300 border-b border-black/[0.08] dark:border-white/[0.1]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-        {/* ── 01: SECTION HEADER ────────────────────────────────────────── */}
+    <section
+      id="expo-journey"
+      className="relative w-full pt-16 sm:pt-24 pb-0 bg-[#FAFAFA] text-slate-900 font-inter-tight border-b border-slate-200/80 transition-colors duration-300 overflow-hidden"
+    >
+      {/* ── Topographic Elevation Contours ── */}
+      <TopographicContours opacity="opacity-[0.035] text-slate-700" />
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 mb-14 sm:mb-16">
+        {/* ── 01: SECTION HEADER (Giveon Style) ─────────────────────────── */}
         <ScrollReveal direction="up" distance={25}>
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10 sm:mb-14">
-            <div className="max-w-3xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#218A59]/10 text-[#218A59] dark:bg-[#25C176]/15 dark:text-[#25C176] border border-[#218A59]/25 dark:border-[#25C176]/30 text-xs font-mono font-bold uppercase tracking-wider mb-3">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#218A59] dark:bg-[#25C176]" />
-                <span>THE EXPO JOURNEY</span>
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-12 sm:mb-16">
+            <div className="max-w-2xl space-y-3">
+              <div className="flex items-center gap-3">
+                <span className="text-xs font-bold text-[#007A5E] uppercase tracking-wider font-mono">
+                  THE EXPO JOURNEY
+                </span>
+                <div className="w-12 h-0.5 bg-[#007A5E]/40 rounded-full" />
               </div>
 
-              <h2 className="font-display font-black text-3xl sm:text-5xl lg:text-6xl tracking-tight text-gray-900 dark:text-white leading-tight">
-                FOUR EDITIONS. <br />
-                <span className="text-[#234679] dark:text-[#4A7EC7]">ONE GREEN</span>{' '}
-                <span className="text-[#218A59] dark:text-[#25C176]">JOURNEY.</span>
+              <h2 className="text-3xl sm:text-4xl lg:text-[40px] font-bold text-slate-900 leading-[1.18] tracking-tight">
+                Four Editions. <span className="text-[#007A5E]">One Green Journey.</span>
               </h2>
 
-              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 font-normal mt-2 max-w-2xl leading-relaxed">
-                From its first edition in 2018 to the upcoming 5th milestone, Himalayan Green Energy Expo has evolved step-by-step with Nepal&apos;s clean energy transformation.
+              <p className="text-sm text-slate-500 font-normal">
+                A verified track record of advancing clean energy and cross-border power in Nepal.
               </p>
             </div>
 
-            <button
-              onClick={() => {
-                const lenis = (window as any).__lenis;
-                if (lenis) {
-                  lenis.scrollTo(0, { duration: 1.2 });
-                } else {
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }
-              }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-black/10 dark:border-white/15 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 text-xs font-mono font-bold uppercase tracking-wider shrink-0 transition-all cursor-pointer self-start"
-              title="Scroll back to top"
-            >
-              <ArrowUp size={14} className="text-[#218A59] dark:text-[#25C176]" />
-              <span>&uarr; Back to Top</span>
-            </button>
+            <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 text-xs font-bold text-slate-600 shadow-2xs">
+              <Sparkles className="w-3.5 h-3.5 text-[#007A5E]" />
+              <span>A Decade of Verified Clean Impact</span>
+            </div>
           </div>
         </ScrollReveal>
 
-        {/* ── 02: EDITORIAL DOCUMENTARY STORY TIMELINE (2018 -> 2024) ──────── */}
-        <div className="space-y-12 sm:space-y-16 relative mb-14">
-          {/* Vertical Connecting Timeline Spine */}
-          <div className="hidden lg:block absolute left-1/2 top-4 bottom-4 w-px bg-black/10 dark:bg-white/10 -translate-x-1/2" />
-
+        {/* ── 02: EDITORIAL DOCUMENTARY STORY TIMELINE (Clean, Uncluttered Cards) ── */}
+        <div className="space-y-6 sm:space-y-8 relative mb-14 sm:mb-16">
           {storyEditions.map((item, index) => {
             const isEven = index % 2 === 0;
 
@@ -123,162 +120,225 @@ export function ExpoJourney() {
               <ScrollReveal
                 key={item.year}
                 direction="up"
-                distance={35}
-                duration={0.7}
+                distance={25}
+                duration={0.65}
               >
-                <div
-                  className={`grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-center relative ${
-                    isEven ? '' : 'lg:flex-row-reverse'
-                  }`}
-                >
-                {/* Visual Column */}
-                <div
-                  className={`lg:col-span-6 ${
-                    isEven ? 'lg:order-1' : 'lg:order-2'
-                  }`}
-                >
-                  <div className="relative rounded-2xl overflow-hidden border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 shadow-sm group">
-                    <div className={`relative w-full ${item.aspect}`}>
-                      <Image
-                        src={item.image}
-                        alt={`Himalayan Green Energy Expo ${item.year}`}
-                        fill
-                        sizes="(max-width: 1024px) 100vw, 600px"
-                        className="object-cover group-hover:scale-105 transition-transform duration-700"
-                      />
+                <div className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-7 border border-slate-100/90 shadow-[0_6px_24px_-6px_rgba(0,0,0,0.06),0_12px_28px_-8px_rgba(0,122,94,0.06)] hover:shadow-[0_20px_45px_-10px_rgba(0,122,94,0.18)] hover:border-emerald-200/80 transition-all duration-300 group">
+                  <div
+                    className={`grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center ${
+                      isEven ? '' : 'lg:flex-row-reverse'
+                    }`}
+                  >
+                    {/* Visual Column */}
+                    <div
+                      className={`lg:col-span-5 ${
+                        isEven ? 'lg:order-1' : 'lg:order-2'
+                      }`}
+                    >
+                      <div className="relative h-48 sm:h-56 w-full rounded-xl sm:rounded-2xl overflow-hidden shadow-[0_8px_20px_rgba(0,0,0,0.1)]">
+                        <Image
+                          src={item.image}
+                          alt={`Himalayan Green Energy Expo ${item.year}`}
+                          fill
+                          sizes="(max-width: 1024px) 100vw, 500px"
+                          className="object-cover group-hover:scale-105 transition-transform duration-700"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                        <span className="absolute bottom-2.5 left-2.5 text-[10px] font-bold text-white bg-black/50 backdrop-blur-md px-2.5 py-0.5 rounded-full shadow-xs">
+                          {item.caption}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Editorial Story Column */}
+                    <div
+                      className={`lg:col-span-7 space-y-2.5 ${
+                        isEven ? 'lg:order-2' : 'lg:order-1'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl sm:text-3xl font-bold text-[#007A5E] tracking-tight leading-none">
+                          {item.year}
+                        </span>
+                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-[11px] font-bold text-[#007A5E] uppercase tracking-wider">
+                          {item.edition}
+                        </span>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider hidden sm:inline">
+                          {item.phase}
+                        </span>
+                      </div>
+
+                      <h3 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight leading-snug">
+                        {item.title}
+                      </h3>
+
+                      <p className="text-xs sm:text-sm text-slate-600 font-normal leading-relaxed">
+                        {item.story}
+                      </p>
+
+                      <div className="pt-1 flex items-center gap-2 text-xs text-[#007A5E] font-semibold">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#007A5E]" />
+                        <span>{item.meta}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </ScrollReveal>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── 03: 5TH EDITION MILESTONE SHOWCASE (Full Width Dark Teal Banner) ── */}
+      <div className="relative w-full bg-[#051D2C] border-t border-[#0C3952] py-14 sm:py-20 lg:py-24 text-white overflow-hidden">
+        {/* Subtle Topographic Accent in Teal across full width */}
+        <TopographicContours opacity="opacity-[0.04] text-emerald-400" />
+
+        {/* Ambient Radial Lights for Depth */}
+        <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-96 h-96 bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16">
+          <ScrollReveal direction="up" distance={25} duration={0.7}>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-16 items-center">
+              {/* Left Column: Official Announcement & CTAs */}
+              <div className="lg:col-span-7 space-y-6">
+                {/* Top Badge Tagline */}
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="inline-flex items-center px-3.5 py-1 rounded-full bg-[#12B981] text-[#051D2C] text-xs font-bold tracking-wider uppercase shadow-sm">
+                    NOW · THE 5TH EDITION
+                  </span>
+                  <span className="text-xs font-bold tracking-wider text-[#38BDF8] uppercase">
+                    HIMALAYAN GREEN ENERGY EXPO 2027
+                  </span>
+                </div>
+
+                {/* Main Headline */}
+                <div className="space-y-1.5">
+                  <h3 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white tracking-tight leading-none">
+                    NOW,
+                  </h3>
+                  <h3 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-none">
+                    <span className="text-[#38BDF8]">THE FIFTH </span>
+                    <span className="text-[#12B981]">MILESTONE.</span>
+                  </h3>
+                </div>
+
+                {/* Subtitle / Paragraph */}
+                <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-2xl">
+                  Under the theme &quot;<strong className="text-white font-semibold">Resilient Energy, Prosperous Nepal,</strong>&quot; the 5th edition expands into an integrated Green Energy Marketplace &mdash; placing climate resilience, sustainable infrastructure, cross-border trade, and disaster-resilient clean tech at the center of the conversation.
+                </p>
+
+                {/* Confirmed Date & Venue Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
+                  {/* Date Card */}
+                  <div className="flex items-center gap-3.5 p-4 rounded-xl bg-[#0D2839]/90 border border-sky-400/20 shadow-sm">
+                    <div className="p-2.5 rounded-lg bg-sky-500/10 text-[#38BDF8] shrink-0">
+                      <Calendar className="w-5 h-5 text-[#38BDF8]" />
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                        CONFIRMED DATE
+                      </div>
+                      <div className="text-xs sm:text-sm font-bold text-white tracking-tight">
+                        Magh 3 – 5 · 17–19 January 2027
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Venue Card */}
+                  <div className="flex items-center gap-3.5 p-4 rounded-xl bg-[#0D2839]/90 border border-sky-400/20 shadow-sm">
+                    <div className="p-2.5 rounded-lg bg-emerald-500/10 text-[#12B981] shrink-0">
+                      <MapPin className="w-5 h-5 text-[#12B981]" />
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                        VENUE
+                      </div>
+                      <div className="text-xs sm:text-sm font-bold text-white tracking-tight">
+                        Bhrikutimandap Exhibition Hall, Kathmandu
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Editorial Story Column */}
-                <div
-                  className={`lg:col-span-6 space-y-3 ${
-                    isEven ? 'lg:order-2' : 'lg:order-1'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="font-mono text-2xl sm:text-3xl font-black text-[#234679] dark:text-[#4A7EC7]">
-                      {item.year}
+                {/* Action Buttons */}
+                <div className="pt-2 flex flex-wrap items-center gap-3.5">
+                  <Link
+                    href="/register"
+                    className="group inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#12B981] hover:bg-[#0ea372] text-[#051D2C] text-xs font-bold tracking-wider uppercase shadow-lg shadow-[#12B981]/25 transition-all duration-200"
+                  >
+                    <span>REGISTER FOR 5TH EDITION</span>
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                  </Link>
+
+                  <Link
+                    href="/floor-plan"
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#085A79] hover:bg-[#0B6B8E] text-white text-xs font-bold tracking-wider uppercase border border-sky-400/20 transition-all duration-200 shadow-sm"
+                  >
+                    <span>VIEW FLOOR PLAN</span>
+                  </Link>
+                </div>
+              </div>
+
+              {/* Right Column: Pinwheel Motif + Official Creative Card */}
+              <div className="lg:col-span-5 space-y-3.5">
+                {/* Himalayan Clean Energy Pinwheel Motif */}
+                <div className="flex items-center justify-start pl-1">
+                  <div className="relative flex items-center justify-center w-8 h-8">
+                    <svg className="w-7 h-7 animate-[spin_12s_linear_infinite]" viewBox="0 0 40 40" fill="none">
+                      <circle cx="20" cy="4" r="1.5" fill="#38BDF8" opacity="0.8" />
+                      <circle cx="31.3" cy="8.7" r="1.5" fill="#12B981" opacity="0.8" />
+                      <circle cx="36" cy="20" r="1.5" fill="#38BDF8" opacity="0.8" />
+                      <circle cx="31.3" cy="31.3" r="1.5" fill="#12B981" opacity="0.8" />
+                      <circle cx="20" cy="36" r="1.5" fill="#38BDF8" opacity="0.8" />
+                      <circle cx="8.7" cy="31.3" r="1.5" fill="#12B981" opacity="0.8" />
+                      <circle cx="4" cy="20" r="1.5" fill="#38BDF8" opacity="0.8" />
+                      <circle cx="8.7" cy="8.7" r="1.5" fill="#12B981" opacity="0.8" />
+                      <path d="M20 20 C22 13 26 11 29 14 C26 17 22 18 20 20 Z" fill="#38BDF8" />
+                      <path d="M20 20 C27 20 29 24 26 27 C23 25 21 22 20 20 Z" fill="#12B981" />
+                      <path d="M20 20 C20 27 16 29 13 26 C15 23 18 21 20 20 Z" fill="#38BDF8" />
+                      <path d="M20 20 C13 20 11 16 14 13 C17 15 19 18 20 20 Z" fill="#12B981" />
+                      <path d="M20 20 C18 13 14 11 11 14 C14 17 18 18 20 20 Z" fill="#38BDF8" />
+                      <path d="M20 20 C22 27 26 29 29 26 C26 23 22 21 20 20 Z" fill="#12B981" />
+                      <circle cx="20" cy="20" r="3.5" fill="white" />
+                    </svg>
+                    <div className="absolute inset-0 bg-[#38BDF8]/20 blur-md rounded-full pointer-events-none" />
+                  </div>
+                </div>
+
+                {/* Creative Poster Container */}
+                <div className="relative rounded-2xl overflow-hidden border border-sky-400/25 shadow-2xl bg-black group aspect-[16/10.5]">
+                  <Image
+                    src="/images/press_meet.jpeg"
+                    alt="Himalayan Green Energy Expo 2027 Official Creative"
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 550px"
+                    className="object-cover object-center group-hover:scale-102 transition-transform duration-700"
+                  />
+
+                  {/* Top Right Pill Badge */}
+                  <div className="absolute top-3.5 right-3.5 z-10">
+                    <span className="px-3 py-1 rounded-full bg-[#12B981] text-[#051D2C] text-[10px] font-bold uppercase tracking-wider shadow-md">
+                      OFFICIAL CREATIVE
                     </span>
-                    <span className="px-2.5 py-0.5 rounded-full bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/10 font-mono text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider">
-                      {item.edition}
-                    </span>
                   </div>
 
-                  <div className="text-[10px] font-mono font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
-                    {item.phase}
-                  </div>
-
-                  <h3 className="font-display font-bold text-xl sm:text-2xl text-gray-900 dark:text-white tracking-tight leading-snug">
-                    {item.title}
-                  </h3>
-
-                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 font-normal leading-relaxed">
-                    {item.story}
-                  </p>
-
-                  <div className="pt-2 flex items-center gap-2 text-xs font-mono text-[#234679] dark:text-[#6FA0E8] font-bold">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#218A59] dark:bg-[#25C176]" />
-                    <span>{item.meta}</span>
-                  </div>
-                </div>
-              </div>
-            </ScrollReveal>
-          );
-        })}
-      </div>
-    </div>
-
-      {/* ── 03: FULL SCREEN WIDTH 5TH EDITION SHOWCASE BLOCK (MATCHING EXPO FOLDER) ── */}
-      <ScrollReveal direction="up" distance={35} duration={0.8}>
-        <div className="w-full bg-gradient-to-r from-[#061A2A] via-[#072B42] to-[#04201B] text-white py-12 sm:py-16 px-4 sm:px-6 lg:px-12 border-t border-b border-white/10 mt-4">
-          <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-            {/* Left Column */}
-            <div className="lg:col-span-7 space-y-5">
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="px-3 py-1 rounded-full bg-[#10B981] text-slate-950 font-mono text-xs font-black uppercase tracking-wider shadow-md">
-                  NOW · THE 5TH EDITION
-                </span>
-                <span className="text-xs font-mono text-[#38BDF8] uppercase tracking-widest font-bold">
-                  HIMALAYAN GREEN ENERGY EXPO 2027
-                </span>
-              </div>
-
-              <h3 className="font-display font-black text-3xl sm:text-5xl text-white tracking-tight leading-tight">
-                NOW, <br />
-                <span className="text-[#38BDF8]">THE FIFTH</span>{' '}
-                <span className="text-[#34D399]">MILESTONE.</span>
-              </h3>
-
-              <p className="text-xs sm:text-sm text-slate-300 font-normal max-w-xl leading-relaxed">
-                Under the theme <strong className="text-white">&ldquo;Resilient Energy, Prosperous Nepal,&rdquo;</strong> the 5th edition expands into an integrated Green Energy Marketplace — placing climate resilience, sustainable infrastructure, cross-border trade, and disaster-resilient clean tech at the center of the conversation.
-              </p>
-
-              {/* Confirmed Details */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 flex items-center gap-3">
-                  <Calendar className="w-4 h-4 text-[#38BDF8] shrink-0" />
-                  <div>
-                    <div className="text-[9px] font-mono text-slate-400 uppercase font-bold">CONFIRMED DATE</div>
-                    <div className="text-xs sm:text-sm font-bold text-white">Magh 2 - 4 · 16–18 January 2027</div>
-                  </div>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 flex items-center gap-3">
-                  <MapPin className="w-4 h-4 text-[#34D399] shrink-0" />
-                  <div>
-                    <div className="text-[9px] font-mono text-slate-400 uppercase font-bold">VENUE</div>
-                    <div className="text-xs sm:text-sm font-bold text-white">Bhrikutimandap Complex, Kathmandu</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* CTAs */}
-              <div className="pt-2 flex flex-wrap gap-3">
-                <Link
-                  href="/register"
-                  className="px-6 py-3 rounded-full bg-[#10B981] hover:bg-[#059669] text-slate-950 font-mono text-xs font-black tracking-wider transition-all shadow-lg hover:scale-105 inline-flex items-center gap-2 active:scale-95"
-                >
-                  <span>REGISTER FOR 5TH EDITION</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
-
-                <Link
-                  href="/floor-plan"
-                  className="px-6 py-3 rounded-full bg-[#087EA4]/60 hover:bg-[#087EA4] border border-[#38BDF8]/40 text-white text-xs font-mono font-bold tracking-wider transition-all hover:scale-105 active:scale-95"
-                >
-                  <span>VIEW FLOOR PLAN</span>
-                </Link>
-              </div>
-            </div>
-
-            {/* Right Column: Official Press Meet Announcement Graphic */}
-            <div className="lg:col-span-5 relative">
-              <div className="relative h-[260px] sm:h-[340px] w-full rounded-2xl border border-white/20 overflow-hidden bg-slate-950 shadow-2xl group cursor-pointer">
-                <Image
-                  src="/images/press_meet.jpeg"
-                  alt="Himalayan Green Energy Expo 2027 Official Press Meet Announcement"
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 550px"
-                  className="object-cover object-center group-hover:scale-105 transition-transform duration-700"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none" />
-                <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-[#10B981]/90 text-slate-950 font-mono text-[10px] font-black uppercase tracking-wider backdrop-blur-md shadow-md">
-                  OFFICIAL CREATIVE
-                </div>
-                <div className="absolute bottom-3 left-3 right-3 p-3 bg-black/75 backdrop-blur-md border border-white/10 rounded-xl">
-                  <div className="text-[10px] font-mono text-[#34D399] font-bold uppercase tracking-wider">
-                    PRESS MEET · 17–19 JAN 2027
-                  </div>
-                  <div className="text-xs text-white font-semibold mt-0.5">
-                    Resilient Energy, Prosperous Nepal · Bhrikutimandap
+                  {/* Bottom Dock Overlay */}
+                  <div className="absolute bottom-2.5 left-2.5 right-2.5 z-10 p-3 sm:p-3.5 rounded-xl bg-[#0A1218]/90 backdrop-blur-md border border-white/10 shadow-lg">
+                    <div className="text-[#12B981] text-xs font-bold uppercase tracking-wider">
+                      PRESS MEET · 17–19 JAN 2027 · MAGH 3–5, 2083
+                    </div>
+                    <div className="text-white text-xs font-semibold mt-0.5 truncate">
+                      Resilient Energy, Prosperous Nepal · Bhrikutimandap
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          </ScrollReveal>
         </div>
-      </ScrollReveal>
+      </div>
     </section>
   );
 }

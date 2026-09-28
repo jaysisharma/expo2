@@ -568,7 +568,7 @@ export default function InteractiveFloorPlan({
                 >
                   <span
                     style={{ color: el.textColor || "#FFFFFF" }}
-                    className="font-mono font-black text-xs sm:text-sm drop-shadow-md select-none pointer-events-none"
+                    className="font-mono font-bold text-xs sm:text-sm drop-shadow-md select-none pointer-events-none"
                   >
                     {isSelected ? `✓ ${stallNumber}` : stallNumber}
                   </span>
@@ -587,7 +587,7 @@ export default function InteractiveFloorPlan({
         {hoveredStall && (
           <div className="absolute top-4 left-4 z-40 pointer-events-none p-4 rounded-xl bg-slate-900/95 text-white backdrop-blur-md border border-white/20 shadow-2xl font-mono text-xs space-y-1">
             <div className="flex items-center gap-2">
-              <span className="font-sans font-black text-base text-white">
+              <span className="font-sans font-bold text-base text-white">
                 STALL {hoveredStall.number || hoveredStall.id}
               </span>
               <span
@@ -642,7 +642,7 @@ export default function InteractiveFloorPlan({
                       key={s.id}
                       className="flex items-center gap-2 px-3 py-1 rounded-lg bg-emerald-950/80 border border-emerald-500/50 text-xs font-bold text-white shadow-sm"
                     >
-                      <span className="text-emerald-400 font-black">{sId}</span>
+                      <span className="text-emerald-400 font-bold">{sId}</span>
                       <span className="text-slate-300 text-[10px]">
                         ({s.dimensions || "10m × 7m"})
                       </span>
@@ -673,7 +673,7 @@ export default function InteractiveFloorPlan({
               <div className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">
                 ESTIMATED INVESTMENT
               </div>
-              <div className="font-sans font-black text-2xl text-white">
+              <div className="font-sans font-bold text-2xl text-white">
                 NPR {totalPriceNPR.toLocaleString()}
               </div>
               <div className="text-[11px] font-bold text-emerald-400">

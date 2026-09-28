@@ -13,12 +13,12 @@ import {
 export default function AdminSettingsPage() {
   const [settings, setSettings] = useState({
     eventName: "Himalayan Green Energy Expo Nepal 2027",
-    eventDates: "Magh 2 - 4 · 16–18 Jan 2027",
-    venue: "Bhrikutimandap Exhibition Complex, Kathmandu",
+    eventDates: "Magh 3 – 5 · 17–19 Jan 2027",
+    venue: "Bhrikutimandap Exhibition Hall, Kathmandu",
     registrationsOpen: true,
     stallBookingsOpen: true,
-    contactEmail: "expo@ippan.org.np",
-    contactPhone: "+977-1-4412345",
+    contactEmail: "info@nepalenergyexpo.com",
+    contactPhone: "+977-9703606340",
     currencyRateUSD_NPR: 134.5,
   });
 
@@ -157,7 +157,7 @@ export default function AdminSettingsPage() {
 
             <div>
               <label className="block text-[11px] font-mono font-bold text-slate-700 mb-1">
-                VENUE & COMPLEX
+                VENUE & EXHIBITION HALL
               </label>
               <input
                 type="text"
@@ -184,7 +184,7 @@ export default function AdminSettingsPage() {
 
             <div>
               <label className="block text-[11px] font-mono font-bold text-slate-700 mb-1">
-                SECRETARIAT CONTACT EMAIL
+                OFFICIAL CONTACT EMAIL
               </label>
               <input
                 type="email"
@@ -196,7 +196,7 @@ export default function AdminSettingsPage() {
 
             <div>
               <label className="block text-[11px] font-mono font-bold text-slate-700 mb-1">
-                SECRETARIAT HOTLINE
+                OFFICIAL HOTLINE
               </label>
               <input
                 type="text"

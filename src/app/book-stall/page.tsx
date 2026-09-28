@@ -91,7 +91,7 @@ export default function BookStallPage() {
             <OfficialTariffsSection />
           </div>
 
-          {/* Informational Cards & Secretariat Inclusions Grid */}
+          {/* Informational Cards & Organizer Inclusions Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Card 1: Stall Packages & Official Standards */}
             <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-4">
@@ -145,7 +145,7 @@ export default function BookStallPage() {
               </div>
 
               <a
-                href="/files/hydroproposal-13-2-2024.pdf"
+                href="/Proposal.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full py-3 rounded-full bg-[#218A59] hover:bg-[#186a43] text-white font-mono text-xs font-bold text-center flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
@@ -155,11 +155,11 @@ export default function BookStallPage() {
               </a>
             </div>
 
-            {/* Card 3: IPPAN Secretariat Assistance */}
+            {/* Card 3: Organizer Support & Assistance */}
             <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-3">
               <div className="flex items-center gap-2 text-xs font-mono font-bold text-slate-900 uppercase">
                 <ShieldCheck className="w-4 h-4 text-[#10B981]" />
-                <span>Secretariat Help Desk</span>
+                <span>Organizer Help Desk</span>
               </div>
               <p className="text-xs text-slate-600 font-normal leading-relaxed">
                 For custom pavilions, bank wire transfers, or immediate assistance:
@@ -167,11 +167,11 @@ export default function BookStallPage() {
               <div className="space-y-2 pt-1 text-xs font-mono text-slate-700">
                 <div className="flex items-center gap-2">
                   <Phone className="w-3.5 h-3.5 text-[#218A59]" />
-                  <span>+977 1 4169175 / +977 9851458275</span>
+                  <span>+977-9703606340 | 9703606355</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Mail className="w-3.5 h-3.5 text-[#10B981]" />
-                  <span>expo@ippan.org.np</span>
+                  <span>info@nepalenergyexpo.com</span>
                 </div>
               </div>
             </div>

@@ -50,6 +50,16 @@ async function syncBookingAndStallStatus(
         }
       }
 
+      // Also check if this is a Gala Dinner registration or delegate pass
+      const registration = (adminData.registrations || []).find((r: any) => r.id === orderId);
+      if (registration) {
+        registration.paymentStatus = paymentStatus;
+        registration.status = paymentStatus === "PAID" ? "Confirmed" : "Failed";
+        registration.pidx = pidx || registration.pidx;
+        registration.transactionId = transactionId || registration.transactionId;
+        registration.paidAt = new Date().toISOString();
+      }
+
       const content = JSON.stringify(adminData, null, 2);
       try {
         await fs.writeFile(ROOT_ADMIN_DATA_PATH, content, "utf-8");
@@ -125,10 +135,14 @@ export async function GET(request: Request) {
         transaction_id || verification.transaction_id
       );
 
+      const isGala = searchParams.get("type") === "gala" || purchase_order_id.startsWith("GALA-");
       const successUrl = new URL(`/payment/success`, request.url);
       successUrl.searchParams.set("id", purchase_order_id);
       successUrl.searchParams.set("gateway", "khalti");
       successUrl.searchParams.set("pidx", pidx);
+      if (isGala) successUrl.searchParams.set("type", "gala");
+      if (searchParams.get("pass")) successUrl.searchParams.set("pass", searchParams.get("pass")!);
+      if (searchParams.get("qty")) successUrl.searchParams.set("qty", searchParams.get("qty")!);
       if (transaction_id || verification.transaction_id) {
         successUrl.searchParams.set("txn", (transaction_id || verification.transaction_id)!);
       }

@@ -198,6 +198,20 @@ export default function AdminBadgeDesigner({ onClose, onSaved }: AdminBadgeDesig
       }
     }
     loadTemplates();
+
+    // Listen for cross-tab storage events
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "hhe_badge_templates" && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (parsed.visitor && parsed.exhibitor) {
+            setTemplates(parsed);
+          }
+        } catch (err) {}
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
   const notify = (msg: string) => {
@@ -224,9 +238,13 @@ export default function AdminBadgeDesigner({ onClose, onSaved }: AdminBadgeDesig
       try {
         localStorage.setItem("hhe_badge_templates", JSON.stringify(updated));
       } catch (e) {}
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("hhe_badge_templates_updated", { detail: updated }));
+      }
       return updated;
     });
   };
+
 
   // --------------------------------------------------------------------------
   // PRECISION 1px / 1% NUDGE FUNCTION & KEYBOARD ARROW CONTROLS
@@ -440,19 +458,151 @@ export default function AdminBadgeDesigner({ onClose, onSaved }: AdminBadgeDesig
     };
   }, [isDragging, selectedElement, activeRole]);
 
-  // Upload Custom Badge Image
-  const handleUploadBgImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Helper: Resize and compress uploaded badge artwork to high-DPI 640x960 (retina badge 2:3)
+  const compressBadgeImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          // Standard badge print/screen aspect ratio: 2:3 (640x960 for 2x retina sharpness)
+          const targetWidth = 640;
+          const targetHeight = 960;
+          const canvas = document.createElement("canvas");
+          canvas.width = targetWidth;
+          canvas.height = targetHeight;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            resolve(event.target?.result as string);
+            return;
+          }
+
+          // Cover fill: center crop to exact 2:3 ratio
+          const imgRatio = img.width / img.height;
+          const targetRatio = targetWidth / targetHeight;
+          let sx = 0, sy = 0, sWidth = img.width, sHeight = img.height;
+
+          if (imgRatio > targetRatio) {
+            sWidth = img.height * targetRatio;
+            sx = (img.width - sWidth) / 2;
+          } else {
+            sHeight = img.width / targetRatio;
+            sy = (img.height - sHeight) / 2;
+          }
+
+          ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, targetWidth, targetHeight);
+
+          // Quality 0.92 provides crystal clear typography & graphics at ~120-180KB
+          const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.92);
+          resolve(compressedDataUrl);
+        };
+        img.onerror = () => reject(new Error("Failed to load image"));
+        img.src = event.target?.result as string;
+      };
+      reader.onerror = () => reject(new Error("Failed to read file"));
+      reader.readAsDataURL(file);
+    });
+  };
+
+  // Upload Custom Badge Image & Immediately Auto-Save to Server
+  const handleUploadBgImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      if (typeof event.target?.result === "string") {
-        updateCurrentConfig({ bgImage: event.target.result });
-        notify(`Uploaded custom ${activeRole} badge artwork`);
+
+    setIsSaving(true);
+    notify(`Processing & uploading ${activeRole} badge artwork...`);
+
+    try {
+      const optimizedImage = await compressBadgeImage(file);
+
+      const updatedRoleConfig = {
+        ...templates[activeRole],
+        bgImage: optimizedImage,
+      };
+
+      const updatedTemplates = {
+        ...templates,
+        [activeRole]: updatedRoleConfig,
+      };
+
+      setTemplates(updatedTemplates);
+
+      // 1. Immediately store in localStorage
+      try {
+        localStorage.setItem("hhe_badge_templates", JSON.stringify(updatedTemplates));
+      } catch (err) {}
+
+      // 2. Broadcast live event across components & tabs
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(
+          new CustomEvent("hhe_badge_templates_updated", { detail: updatedTemplates })
+        );
       }
-    };
-    reader.readAsDataURL(file);
+
+      // 3. Immediately persist to server API & Firebase
+      const res = await fetch("/api/badge-template", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedTemplates),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        notify(`✓ Custom ${activeRole} badge artwork uploaded & saved to server!`);
+        if (onSaved) onSaved(updatedTemplates);
+      } else {
+        notify(`Artwork updated locally. Click "Save Template" to confirm.`);
+      }
+    } catch (err) {
+      console.error("Upload error:", err);
+      notify("Failed to process image. Please try a standard PNG or JPG file.");
+    } finally {
+      setIsSaving(false);
+      e.target.value = "";
+    }
   };
+
+  // Remove Custom Badge Image & Auto-Save
+  const handleRemoveBgImage = async () => {
+    setIsSaving(true);
+    try {
+      const updatedRoleConfig = {
+        ...templates[activeRole],
+        bgImage: "",
+      };
+
+      const updatedTemplates = {
+        ...templates,
+        [activeRole]: updatedRoleConfig,
+      };
+
+      setTemplates(updatedTemplates);
+
+      try {
+        localStorage.setItem("hhe_badge_templates", JSON.stringify(updatedTemplates));
+      } catch (err) {}
+
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(
+          new CustomEvent("hhe_badge_templates_updated", { detail: updatedTemplates })
+        );
+      }
+
+      await fetch("/api/badge-template", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedTemplates),
+      });
+
+      notify(`Custom ${activeRole} artwork removed. Reverted to default gradient.`);
+      if (onSaved) onSaved(updatedTemplates);
+    } catch (err) {
+      notify(`Custom artwork removed.`);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
 
   // Add Custom Text Field
   const handleAddCustomText = () => {
@@ -1536,29 +1686,74 @@ export default function AdminBadgeDesigner({ onClose, onSaved }: AdminBadgeDesig
           </div>
 
           {/* Background Artwork Uploader */}
-          <div className="space-y-2 pt-2 border-t border-slate-800">
-            <label className="font-semibold text-slate-300 flex items-center gap-1.5">
-              <ImageIcon className="w-3.5 h-3.5 text-sky-400" />
-              <span>Background Artwork</span>
-            </label>
-            <div className="flex items-center gap-3">
-              <label className="flex-1 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-center font-medium text-slate-200 cursor-pointer transition-colors flex items-center justify-center gap-2">
-                <Upload className="w-4 h-4" />
-                <span>Upload Artwork (.PNG/.JPG)</span>
-                <input type="file" accept="image/*" onChange={handleUploadBgImage} className="hidden" />
+          <div className="space-y-3 pt-3 border-t border-slate-200">
+            <div className="flex items-center justify-between">
+              <label className="font-bold text-slate-800 flex items-center gap-1.5 text-xs">
+                <ImageIcon className="w-3.5 h-3.5 text-[#234679]" />
+                <span>Background Artwork ({activeRole === "visitor" ? "Trade Visitor" : "Exhibitor"})</span>
               </label>
-
-              {currentConfig.bgImage && (
-                <button
-                  onClick={() => updateCurrentConfig({ bgImage: "" })}
-                  className="p-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 transition-colors"
-                  title="Remove custom background image"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                </button>
+              {currentConfig.bgImage ? (
+                <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold">
+                  Custom Active
+                </span>
+              ) : (
+                <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200 text-[10px]">
+                  Default Theme Gradient
+                </span>
               )}
             </div>
+
+            {currentConfig.bgImage ? (
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-3">
+                {/* Thumbnail Preview */}
+                <div
+                  className="w-12 h-16 rounded-lg border border-slate-300 shrink-0 shadow-xs bg-slate-200"
+                  style={{ background: `url(${currentConfig.bgImage}) center/cover no-repeat` }}
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs font-bold text-slate-900 truncate">
+                    Custom {activeRole === "visitor" ? "Visitor" : "Exhibitor"} Artwork
+                  </div>
+                  <div className="text-[10px] text-emerald-600 font-semibold mt-0.5">
+                    ✓ Optimized & saved to server (640×960 retina)
+                  </div>
+                  <p className="text-[10px] text-slate-500 mt-1">
+                    Present on all digital & printable badges
+                  </p>
+                </div>
+                <div className="flex flex-col gap-1.5 shrink-0">
+                  <label
+                    className="p-2 rounded-lg bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold cursor-pointer transition-colors shadow-xs flex items-center justify-center gap-1"
+                    title="Upload new artwork to replace"
+                  >
+                    <Upload className="w-3.5 h-3.5 text-[#234679]" />
+                    <span className="text-[10px]">Replace</span>
+                    <input type="file" accept="image/*" onChange={handleUploadBgImage} className="hidden" />
+                  </label>
+                  <button
+                    onClick={handleRemoveBgImage}
+                    className="p-2 rounded-lg bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-600 text-xs font-semibold cursor-pointer transition-colors shadow-xs flex items-center justify-center gap-1"
+                    title="Remove custom artwork and revert to gradient"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span className="text-[10px]">Remove</span>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <label className="w-full px-4 py-3 rounded-xl bg-[#234679] hover:bg-[#1a3459] text-white text-center font-semibold text-xs cursor-pointer transition-colors flex items-center justify-center gap-2 shadow-xs">
+                  <Upload className="w-4 h-4" />
+                  <span>Upload Badge Artwork (.PNG / .JPG)</span>
+                  <input type="file" accept="image/*" onChange={handleUploadBgImage} className="hidden" />
+                </label>
+                <p className="text-[10px] text-slate-500 text-center">
+                  Recommended: 640×960px or 320×480px. Automatically optimized & saved to server.
+                </p>
+              </div>
+            )}
           </div>
+
         </div>
 
         {/* RIGHT INTERACTIVE ID CARD PREVIEW (DRAG & DROP CANVAS) */}
@@ -1784,7 +1979,7 @@ export default function AdminBadgeDesigner({ onClose, onSaved }: AdminBadgeDesig
                         ? "0px"
                         : `${currentConfig.roleBannerPlacement?.borderRadius ?? 6}px`,
                   }}
-                  className={`font-black uppercase tracking-widest px-4 shadow-md flex items-center justify-center w-full ${
+                  className={`font-bold uppercase tracking-widest px-4 shadow-md flex items-center justify-center w-full ${
                     currentConfig.roleBannerPlacement?.styleMode === "full-width" ? "rounded-none" : ""
                   }`}
                 >

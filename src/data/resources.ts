@@ -32,8 +32,8 @@ export const expoResources: ExpoResource[] = [
     title: "Himalayan Hydro Expo Event Background & Proposal",
     category: "Event Background & Proposal",
     fileType: "PDF",
-    fileSize: "3.5 MB",
-    url: "https://www.himalayanhydroexpo.com/files/hydroproposal-13-2-2024.pdf",
+    fileSize: "28 MB",
+    url: "/Proposal.pdf",
     description: "Strategic event prospectus, exhibitor profiles, stall classifications, and international patron endorsements.",
   },
   {

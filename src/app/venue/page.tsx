@@ -8,7 +8,7 @@ import { MapPin, Navigation, ExternalLink, Calendar, ArrowRight, Eye } from "luc
 export const metadata: Metadata = {
   title: "Exhibition Venue & 360° View | Himalayan Green Energy Expo Nepal 2026",
   description:
-    "Bhrikutimandap Exhibition Complex, Exhibition Road, Kathmandu, Nepal. Explore the official venue and interactive 360° view for Himalayan Green Energy Expo 2026.",
+    "Bhrikutimandap Exhibition Hall, Exhibition Road, Kathmandu, Nepal. Explore the official venue and interactive 360° view for Himalayan Green Energy Expo 2027.",
 };
 
 export default function VenuePage() {
@@ -32,7 +32,7 @@ export default function VenuePage() {
             Exhibition Venue
           </h1>
           <p className="mt-3 text-sm sm:text-base text-emerald-100/75 max-w-xl">
-            Bhrikutimandap Exhibition Complex, Exhibition Road, Kathmandu, Nepal.
+            Bhrikutimandap Exhibition Hall, Exhibition Road, Kathmandu, Nepal.
           </p>
         </div>
       </div>
@@ -48,7 +48,7 @@ export default function VenuePage() {
             <div className="lg:col-span-6 relative min-h-[300px] sm:min-h-[380px] bg-slate-900">
               <Image
                 src="/images/gallery/2024_expo.jpg"
-                alt="Bhrikutimandap Exhibition Complex Kathmandu - Himalayan Hydro Expo"
+                alt="Bhrikutimandap Exhibition Hall Kathmandu - Himalayan Green Energy Expo 2027"
                 fill
                 priority
                 className="object-cover"
@@ -66,7 +66,7 @@ export default function VenuePage() {
                   Official Expo Grounds
                 </span>
                 <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
-                  Bhrikutimandap Exhibition Complex
+                  Bhrikutimandap Exhibition Hall
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
                   Nepal&apos;s premier purpose-built exhibition arena located in central Kathmandu. Hosting 150+ international exhibitors, heavy hydropower machinery displays, and technical conference delegates.
@@ -87,7 +87,7 @@ export default function VenuePage() {
               {/* Actions */}
               <div className="pt-4 border-t border-slate-100 flex flex-wrap items-center gap-3">
                 <a
-                  href="https://maps.google.com/?q=Bhrikutimandap+Exhibition+Complex+Kathmandu"
+                  href="https://maps.google.com/?q=Bhrikutimandap+Exhibition+Hall+Kathmandu"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-4 py-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold flex items-center gap-2 transition-colors shadow-xs"
@@ -112,13 +112,13 @@ export default function VenuePage() {
           <VenueMapAnd360 />
 
           {/* =========================================================================
-              03: BHRIKUTIMANDAP COMPLEX PHOTO SHOWCASE
+              03: BHRIKUTIMANDAP HALL PHOTO SHOWCASE
              ========================================================================= */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100">
               <div>
                 <span className="text-xs font-semibold text-[#087EA4] uppercase tracking-wider block mb-1">
-                  On-Site Complex Facilities
+                  On-Site Hall Facilities
                 </span>
                 <h3 className="text-xl font-bold text-slate-900 tracking-tight">
                   Bhrikutimandap Exhibition Zones & Arenas
@@ -174,7 +174,7 @@ export default function VenuePage() {
                   <div>
                     <h4 className="font-bold text-sm text-slate-900">Plenary & Conference Hall</h4>
                     <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                      Main stage hosting ministerial addresses, policy keynotes, international power trade panels, and awards.
+                      Main stage hosting ministerial addresses, policy keynotes, and international power trade panels.
                     </p>
                   </div>
                 </div>

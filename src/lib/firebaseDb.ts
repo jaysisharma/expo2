@@ -188,3 +188,34 @@ export async function updateFirebaseSettings(settingsData: any) {
     return null;
   }
 }
+
+// ----------------- BADGE TEMPLATES -----------------
+export async function getFirebaseBadgeTemplates() {
+  try {
+    const ref = doc(db, COLLECTIONS.BADGE_TEMPLATES, "templates_config");
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+      return snap.data();
+    }
+    return null;
+  } catch (error) {
+    console.warn("Firestore getBadgeTemplates error:", error);
+    return null;
+  }
+}
+
+export async function saveFirebaseBadgeTemplates(templatesData: any) {
+  try {
+    const ref = doc(db, COLLECTIONS.BADGE_TEMPLATES, "templates_config");
+    const payload = {
+      ...templatesData,
+      updatedAt: new Date().toISOString(),
+    };
+    await setDoc(ref, payload, { merge: true });
+    return payload;
+  } catch (error) {
+    console.warn("Firestore saveBadgeTemplates error:", error);
+    return null;
+  }
+}
+

@@ -5,13 +5,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
   Download,
-  FileText,
   User,
   Building2,
   Phone,
   Mail,
   CheckCircle2,
-  Lock,
   ArrowRight,
 } from "lucide-react";
 
@@ -32,7 +30,7 @@ export function triggerPdfDownloadModal(pdfUrl: string, title?: string) {
 
 export default function PdfDownloadModal() {
   const [isOpen, setIsOpen] = useState(false);
-  const [pdfUrl, setPdfUrl] = useState<string>("/files/hydroproposal-13-2-2024.pdf");
+  const [pdfUrl, setPdfUrl] = useState<string>("/Proposal.pdf");
   const [documentTitle, setDocumentTitle] = useState<string>(
     "Himalayan Green Energy Expo Proposal (PDF)"
   );
@@ -52,7 +50,7 @@ export default function PdfDownloadModal() {
     const handleOpenModal = (event: Event) => {
       const customEvent = event as CustomEvent<PdfModalEventDetail>;
       if (customEvent.detail) {
-        setPdfUrl(customEvent.detail.pdfUrl || "/files/hydroproposal-13-2-2024.pdf");
+        setPdfUrl(customEvent.detail.pdfUrl || "/Proposal.pdf");
         setDocumentTitle(
           customEvent.detail.title || "Himalayan Green Energy Expo Proposal (PDF)"
         );
@@ -64,13 +62,18 @@ export default function PdfDownloadModal() {
 
     window.addEventListener("open-pdf-download-modal", handleOpenModal);
 
-    // Global interceptor for all .pdf links on the page
+    // Global interceptor for all .pdf links on the page (excluding links inside the modal or marked no-intercept)
     const handleDocumentClick = (e: MouseEvent) => {
       const target = (e.target as HTMLElement).closest("a");
-      if (target && target.getAttribute("href")?.endsWith(".pdf")) {
-        const href = target.getAttribute("href")!;
-        const linkText = target.innerText || "Official Event Document (PDF)";
+      if (!target) return;
+      if (target.closest("[data-pdf-modal]")) return;
+      if (target.getAttribute("data-no-intercept") === "true") return;
+
+      const href = target.getAttribute("href");
+      if (href && href.toLowerCase().endsWith(".pdf")) {
+        const linkText = target.innerText?.trim() || "Official Event Document (PDF)";
         e.preventDefault();
+        e.stopPropagation();
         triggerPdfDownloadModal(href, linkText);
       }
     };
@@ -82,6 +85,46 @@ export default function PdfDownloadModal() {
       document.removeEventListener("click", handleDocumentClick, true);
     };
   }, []);
+
+  const downloadPdfFile = (url: string) => {
+    const filename = url.split("/").pop() || "Himalayan-Green-Energy-Expo-Proposal.pdf";
+
+    // Try blob download first to force native save prompt
+    fetch(url)
+      .then((res) => {
+        if (!res.ok) throw new Error("Fetch failed");
+        return res.blob();
+      })
+      .then((blob) => {
+        const blobUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.style.display = "none";
+        a.href = blobUrl;
+        a.download = filename;
+        a.setAttribute("data-no-intercept", "true");
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(blobUrl);
+        }, 1000);
+      })
+      .catch(() => {
+        // Fallback: direct anchor download
+        const a = document.createElement("a");
+        a.style.display = "none";
+        a.href = url;
+        a.download = filename;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        a.setAttribute("data-no-intercept", "true");
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          document.body.removeChild(a);
+        }, 1000);
+      });
+  };
 
   const validate = () => {
     const newErrors: { [key: string]: string } = {};
@@ -121,22 +164,32 @@ export default function PdfDownloadModal() {
       setIsSubmitting(false);
       setIsSuccess(true);
 
-      // Trigger the PDF download / open in new window
-      const link = document.createElement("a");
-      link.href = pdfUrl;
-      link.target = "_blank";
-      link.rel = "noopener noreferrer";
-      link.download = pdfUrl.split("/").pop() || "event-document.pdf";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      // Automatically close modal after short delay
-      setTimeout(() => {
-        setIsOpen(false);
-      }, 2500);
-    }, 600);
+      // Trigger reliable PDF download
+      downloadPdfFile(pdfUrl);
+    }, 400);
   };
+
+  const handleClose = (e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+    setIsOpen(false);
+    setIsSuccess(false);
+    setIsSubmitting(false);
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isOpen) {
+        handleClose();
+      }
+    };
+    if (isOpen) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen]);
 
   return (
     <AnimatePresence>
@@ -147,8 +200,8 @@ export default function PdfDownloadModal() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setIsOpen(false)}
-            className="fixed inset-0 bg-black/80 backdrop-blur-md"
+            onClick={handleClose}
+            className="fixed inset-0 bg-black/80 backdrop-blur-md cursor-pointer"
           />
 
           {/* Modal Card */}
@@ -157,16 +210,14 @@ export default function PdfDownloadModal() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: "spring", duration: 0.4, bounce: 0.1 }}
+            data-pdf-modal="true"
             className="relative w-full max-w-lg bg-[#061A2A] border border-white/20 rounded-3xl p-6 sm:p-8 text-white shadow-2xl overflow-hidden font-sans z-10"
           >
-            {/* Ambient Lighting Orbs */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-[#10B981]/20 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#087EA4]/25 rounded-full blur-3xl pointer-events-none" />
-
-            {/* Close Button */}
+            {/* Close Button - elevated z-index (z-50) so it is always above all content */}
             <button
-              onClick={() => setIsOpen(false)}
-              className="absolute top-5 right-5 p-2 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition-colors cursor-pointer"
+              type="button"
+              onClick={handleClose}
+              className="absolute top-5 right-5 z-50 p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition-all cursor-pointer shadow-md active:scale-95"
               aria-label="Close Modal"
             >
               <X className="w-5 h-5" />
@@ -176,18 +227,13 @@ export default function PdfDownloadModal() {
             {!isSuccess ? (
               <div className="space-y-6 relative z-10">
                 {/* Header */}
-                <div className="space-y-2">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#10B981]/20 border border-[#10B981]/40 text-xs font-mono font-bold text-[#34D399] uppercase">
-                    <FileText className="w-3.5 h-3.5" />
-                    <span>OFFICIAL DOCUMENT ACCESS</span>
-                  </div>
-
-                  <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                    Download Event Document
+                <div className="space-y-1.5">
+                  <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+                    Download PDF
                   </h3>
 
                   <p className="text-xs sm:text-sm text-slate-300 font-normal leading-relaxed">
-                    Please provide your details below to receive instant access and download the document.
+                    Enter your details below to download the official expo document.
                   </p>
                 </div>
 
@@ -311,50 +357,63 @@ export default function PdfDownloadModal() {
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-full py-3.5 rounded-xl bg-[#10B981] hover:bg-[#059669] text-slate-950 font-mono text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-lg hover:scale-101 cursor-pointer disabled:opacity-50"
+                      className="w-full py-3.5 px-6 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-200 shadow-md hover:shadow-lg active:scale-98 cursor-pointer disabled:opacity-50"
                     >
                       {isSubmitting ? (
-                        <span>PROCESSING DOWNLOAD...</span>
+                        <span>Downloading...</span>
                       ) : (
                         <>
-                          <Download className="w-4 h-4" />
-                          <span>DOWNLOAD PDF DOCUMENT</span>
-                          <ArrowRight className="w-4 h-4" />
+                          <Download className="w-4 h-4 text-slate-900" />
+                          <span>Download PDF</span>
+                          <ArrowRight className="w-4 h-4 text-slate-900" />
                         </>
                       )}
                     </button>
-                  </div>
-
-                  <div className="flex items-center justify-center gap-2 pt-1 text-[11px] font-mono text-slate-400 text-center">
-                    <Lock className="w-3 h-3 text-[#10B981]" />
-                    <span>Your privacy is protected. Official IPPAN secretariat records.</span>
                   </div>
                 </form>
               </div>
             ) : (
               /* Success State */
-              <div className="py-8 text-center space-y-4 relative z-10">
+              <div className="py-6 text-center space-y-4 relative z-10" data-pdf-modal="true">
                 <div className="w-16 h-16 rounded-full bg-emerald-500/20 border-2 border-[#10B981] text-[#34D399] flex items-center justify-center mx-auto shadow-lg">
-                  <CheckCircle2 className="w-9 h-9 animate-bounce" />
+                  <CheckCircle2 className="w-9 h-9" />
                 </div>
 
                 <div className="space-y-1">
-                  <h3 className="text-2xl font-bold text-white">
-                    Thank You, {formData.name}!
+                  <h3 className="text-xl sm:text-2xl font-bold text-white">
+                    Thank you, {formData.name}!
                   </h3>
                   <p className="text-xs sm:text-sm text-slate-300 font-normal max-w-sm mx-auto">
-                    Your details have been verified. Your PDF document download is starting now.
+                    Your PDF is downloading. If it didn&apos;t start, click below.
                   </p>
                 </div>
 
-                <div className="pt-2">
+                <div className="pt-2 flex flex-col items-center gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => downloadPdfFile(pdfUrl)}
+                    className="w-full py-3 px-6 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md hover:shadow-lg active:scale-98 transition-all cursor-pointer"
+                  >
+                    <Download className="w-4 h-4 text-slate-900" />
+                    <span>Download Again</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleClose}
+                    className="w-full py-2.5 px-6 rounded-xl bg-white/10 hover:bg-white/20 text-slate-200 hover:text-white font-semibold text-xs uppercase tracking-wider transition-all cursor-pointer border border-white/10"
+                  >
+                    Close Window
+                  </button>
+
                   <a
                     href={pdfUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-xs font-mono font-bold text-[#38BDF8] hover:underline"
+                    data-no-intercept="true"
+                    className="inline-flex items-center gap-1.5 text-xs text-sky-400 hover:text-sky-300 font-mono underline cursor-pointer pt-1"
                   >
-                    <span>Click here if download doesn&apos;t start automatically ↗</span>
+                    <span>Open in new tab ↗</span>
                   </a>
                 </div>
               </div>

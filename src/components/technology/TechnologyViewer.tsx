@@ -98,11 +98,13 @@ export default function TechnologyViewer() {
         {/* Section Header */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end mb-16">
           <div className="lg:col-span-8">
-            <div className="inline-flex items-center gap-2 text-xs font-technical text-hydro-primary tracking-widest uppercase mb-4 font-bold">
-              <span className="w-1.5 h-1.5 rounded-full bg-hydro-primary" />
-              06 / ENGINEERING BENCHMARK
+            <div className="flex items-center gap-3 mb-4">
+              <span className="text-xs font-bold text-[#007A5E] uppercase tracking-wider font-mono">
+                06 / ENGINEERING BENCHMARK
+              </span>
+              <div className="w-12 h-0.5 bg-[#007A5E]/40 rounded-full" />
             </div>
-            <h2 className="font-display font-black text-4xl sm:text-6xl md:text-7xl lg:text-8xl text-slate-900 tracking-tight leading-[0.9]">
+            <h2 className="font-display font-bold text-4xl sm:text-6xl md:text-7xl lg:text-8xl text-slate-900 tracking-tight leading-[0.9]">
               TECHNOLOGY <br />
               <span className="text-hydro-primary">IN MOTION.</span>
             </h2>

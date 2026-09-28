@@ -45,7 +45,7 @@ export default async function SingleExhibitorPage({ params }: { params: Promise<
               </span>
             </div>
 
-            <h1 className="font-display font-black text-3xl sm:text-5xl text-slate-900 tracking-tight">
+            <h1 className="font-display font-bold text-3xl sm:text-5xl text-slate-900 tracking-tight">
               {exhibitor.name}
             </h1>
 
@@ -59,7 +59,7 @@ export default async function SingleExhibitorPage({ params }: { params: Promise<
             <span className="text-[10px] font-technical text-slate-500 uppercase tracking-widest block font-bold">
               OFFICIAL STALL
             </span>
-            <div className="font-display font-black text-4xl text-hydro-primary my-1">
+            <div className="font-display font-bold text-4xl text-hydro-primary my-1">
               {exhibitor.boothNumber}
             </div>
             <span className="text-xs text-slate-600 block">

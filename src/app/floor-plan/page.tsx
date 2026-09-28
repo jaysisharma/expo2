@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowRight, Layers, Building } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Interactive Floor Plan & Booth Map | Himalayan Hydro Expo 2026",
+  title: "Interactive Floor Plan & Booth Map | Himalayan Green Energy Expo 2027",
   description:
     "Explore real-time booth availability across the Bhrikutimandap Exhibition Halls. Select and reserve your exhibition space.",
 };
@@ -40,7 +40,7 @@ export default function FloorPlanPage() {
             <div className="flex items-center gap-3 shrink-0">
               <Link
                 href="/book-stall"
-                className="px-5 py-2.5 rounded-lg bg-[#10B981] hover:bg-[#059669] text-slate-950 text-xs font-black flex items-center gap-2 transition-colors shadow-md"
+                className="px-5 py-2.5 rounded-lg bg-[#007A5E] hover:bg-[#005C42] text-white text-xs font-bold flex items-center gap-2 transition-colors shadow-md"
               >
                 <span>Direct Stall Booking</span>
                 <ArrowRight className="w-3.5 h-3.5" />

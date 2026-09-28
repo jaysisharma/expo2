@@ -21,6 +21,7 @@ export function SmoothScrollProvider({ children }: { children: React.ReactNode }
     lenisRef.current = lenis;
     if (typeof window !== 'undefined') {
       (window as any).__lenis = lenis;
+      window.dispatchEvent(new CustomEvent('lenis:ready', { detail: lenis }));
     }
 
     lenis.on('scroll', ScrollTrigger.update);

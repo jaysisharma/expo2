@@ -63,7 +63,7 @@ export const editionsData: EditionItem[] = [
     description:
       "The landmark 5th edition uniting 10,000+ delegates, multi-billion dollar clean energy concessions, and cutting-edge regional grid technologies.",
     primaryImage: "/images/hero.png",
-    highlightStat: "Magh 2 - 4 · Kathmandu, Nepal",
+    highlightStat: "Magh 3 – 5 · 17–19 Jan 2027 · Kathmandu, Nepal",
     isUpcoming: true,
   },
 ];

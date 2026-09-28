@@ -135,9 +135,14 @@ export default function StallBookingWizard() {
         setFormError("Please fill in Company Name, Contact Person, Email, and Phone number.");
         return;
       }
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const emailRegex = /^[a-zA-Z0-9._%+-]{2,}@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
       if (!emailRegex.test(formData.email.trim())) {
-        setFormError("Please enter a valid email address.");
+        setFormError("Please enter a valid email address (e.g. name@company.com).");
+        return;
+      }
+      const phoneDigits = formData.phone.trim().replace(/\D/g, "");
+      if (phoneDigits.length < 8 || phoneDigits.length > 15) {
+        setFormError("Please enter a valid phone or mobile number (8–15 digits, e.g. +977 9851000000).");
         return;
       }
     }
@@ -319,7 +324,7 @@ export default function StallBookingWizard() {
                         }`}
                       >
                         <div className="flex items-center justify-between">
-                          <span className="font-sans font-black text-sm">Stall {s.number}</span>
+                          <span className="font-sans font-bold text-sm">Stall {s.number}</span>
                           <span className="text-[10px] text-emerald-700 font-bold">
                             NPR {s.priceNPR.toLocaleString()}
                           </span>
@@ -371,7 +376,7 @@ export default function StallBookingWizard() {
               </div>
               <div>
                 <span className="text-[10px] font-mono text-emerald-700 font-bold uppercase">TOTAL TARIFF</span>
-                <div className="font-sans font-black text-base text-[#15803D] mt-0.5">
+                <div className="font-sans font-bold text-base text-[#15803D] mt-0.5">
                   NPR {totalPriceNPR.toLocaleString()}
                 </div>
                 <span className="text-[10px] text-slate-500 font-mono">USD ${totalPriceUSD.toLocaleString()}</span>
@@ -603,7 +608,7 @@ export default function StallBookingWizard() {
               Step 4: Select Payment Method & Finalize Booking
             </h3>
             <p className="text-xs text-slate-600 font-normal mt-1">
-              Choose your preferred payment gateway from Nepal (Khalti, Fonepay) or request an official Secretariat Bank Wire Invoice.
+              Choose your preferred payment gateway from Nepal (Khalti, Fonepay) or request an official Bank Wire Invoice.
             </p>
           </div>
 
@@ -632,7 +637,7 @@ export default function StallBookingWizard() {
 
               <div>
                 <span className="text-[10px] font-mono text-slate-400 font-bold uppercase">TOTAL INVESTMENT</span>
-                <div className="font-sans font-black text-xl text-[#15803D]">
+                <div className="font-sans font-bold text-xl text-[#15803D]">
                   NPR {totalPriceNPR.toLocaleString()}
                 </div>
                 <span className="text-[11px] text-slate-600 font-mono">USD ${totalPriceUSD.toLocaleString()}</span>
@@ -736,7 +741,7 @@ export default function StallBookingWizard() {
                     Bank Remittance / Invoice
                   </h4>
                   <p className="text-xs text-slate-600 leading-relaxed font-normal">
-                    Lock stall provisionally and remit via SWIFT / RTGS directly to IPPAN Secretariat account.
+                    Lock stall provisionally and remit via SWIFT / RTGS directly to IPPAN account.
                   </p>
                 </div>
                 <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-1 text-[11px] font-mono text-[#218A59] font-bold">
@@ -757,7 +762,7 @@ export default function StallBookingWizard() {
               className="mt-1 w-4 h-4 text-[#218A59] rounded border-slate-300 focus:ring-[#218A59] cursor-pointer"
             />
             <label htmlFor="terms-check" className="text-xs text-slate-700 leading-relaxed cursor-pointer select-none">
-              I agree to the <strong>IPPAN Expo 2027 Exhibition Regulations</strong>, stall allocation rules, and acknowledge that stall confirmation is subject to secretariat receipt validation.
+              I agree to the <strong>IPPAN Expo 2027 Exhibition Regulations</strong>, stall allocation rules, and acknowledge that stall confirmation is subject to receipt validation.
             </label>
           </div>
         </div>
@@ -776,11 +781,11 @@ export default function StallBookingWizard() {
             <span className="font-mono text-xs text-[#059669] tracking-widest uppercase font-bold">
               STALL RESERVATION SUBMITTED
             </span>
-            <h3 className="font-sans font-black text-3xl text-slate-900 mt-1">
+            <h3 className="font-sans font-bold text-3xl text-slate-900 mt-1">
               Thank You, {formData.companyName || "Exhibitor"}!
             </h3>
             <p className="text-xs sm:text-sm text-slate-600 font-normal mt-2 max-w-md mx-auto leading-relaxed">
-              Your provisional booking for <strong>STALL {selectedBoothNumbers.join(", ")}</strong> has been received. Our exhibition secretariat will issue your formal pro-forma invoice and exhibitor kit within 24 hours.
+              Your provisional booking for <strong>STALL {selectedBoothNumbers.join(", ")}</strong> has been received. Our exhibition team will issue your formal pro-forma invoice and exhibitor kit within 24 hours.
             </p>
           </div>
 

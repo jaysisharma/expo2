@@ -14,7 +14,7 @@ export default function ExhibitorsPage() {
               <span className="w-1.5 h-1.5 rounded-full bg-hydro-primary" />
               GLOBAL DIRECTORY
             </div>
-            <h1 className="font-display font-black text-3xl sm:text-5xl lg:text-6xl text-slate-900 tracking-tight">
+            <h1 className="font-display font-bold text-3xl sm:text-5xl lg:text-6xl text-slate-900 tracking-tight">
               EXHIBITOR <span className="text-hydro-primary">DIRECTORY.</span>
             </h1>
             <p className="mt-2 text-xs sm:text-sm text-slate-600 font-normal max-w-xl">

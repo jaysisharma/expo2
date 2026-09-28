@@ -1,517 +1,176 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import { ArrowRight, Ticket, Volume2, VolumeX, Sparkles } from 'lucide-react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-interface MilestoneCard {
-  step: string;
-  badge: string;
-  capacity: string;
-  capacityUnit: string;
-  title: string;
-  tagline: string;
-  metricLabel: string;
-  accent: 'green' | 'blue';
-  image: string;
-}
-
-const MILESTONE_CARDS: MilestoneCard[] = [
-  {
-    step: '01',
-    badge: '1911 AD',
-    capacity: '0.5',
-    capacityUnit: 'MW',
-    title: 'Pharping Genesis',
-    tagline: "Asia's 2nd oldest hydropower plant, marking the historic dawn of clean energy in Nepal.",
-    metricLabel: 'First Hydro Plant',
-    accent: 'blue',
-    image: '/images/hydro_1911.jpg',
-  },
-  {
-    step: '02',
-    badge: 'Target 2035 AD',
-    capacity: '30,000',
-    capacityUnit: 'MW',
-    title: 'Total Clean Energy Vision',
-    tagline: "Nepal's sovereign masterplan to generate 30,000 MW of clean hydropower and solar by 2035.",
-    metricLabel: 'National Generation Target',
-    accent: 'green',
-    image: '/images/nepal_machhapuchhre.jpg',
-  },
-  {
-    step: '03',
-    badge: 'Supply to India',
-    capacity: '10,000',
-    capacityUnit: 'MW',
-    title: 'Supply to India Targeted',
-    tagline: 'Long-term bilateral power agreement exporting 10,000 MW of surplus clean energy to the Indian grid.',
-    metricLabel: 'Cross-Border Export',
-    accent: 'blue',
-    image: '/images/hydro_transmission.jpg',
-  },
-  {
-    step: '04',
-    badge: 'Supply to Bangladesh',
-    capacity: '5,000',
-    capacityUnit: 'MW',
-    title: 'Supply to Bangladesh Targeted',
-    tagline: 'Tripartite transmission corridor channeling 5,000 MW of clean hydro to Bangladesh.',
-    metricLabel: 'Regional Grid Corridor',
-    accent: 'blue',
-    image: '/images/nepal_sunrise_gorge.jpg',
-  },
-  {
-    step: '05',
-    badge: 'Domestic Usage',
-    capacity: '15,000',
-    capacityUnit: 'MW',
-    title: 'Dedicated to Domestic Usage',
-    tagline: '15,000 MW allocated for domestic industrial growth, EV transition, green hydrogen, and households.',
-    metricLabel: 'National Domestic Demand',
-    accent: 'green',
-    image: '/images/nepal_tamakoshi.jpg',
-  },
-];
-
-
+import {
+  Calendar,
+  MapPin,
+  ArrowRight,
+} from 'lucide-react';
+import { TopographicContours, MountainCrestSvg } from '@/components/ui';
 
 export function Hero() {
-  const heroTrackRef = useRef<HTMLDivElement>(null);
-  const stickyFrameRef = useRef<HTMLDivElement>(null);
-  const topContentRef = useRef<HTMLDivElement>(null);
-  const videoBoxRef = useRef<HTMLDivElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const rectangleContainerRef = useRef<HTMLDivElement>(null);
-  const leftColRef = useRef<HTMLDivElement>(null);
-  const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
-
-  const [isMuted, setIsMuted] = useState(true);
-
-  const toggleAudio = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (videoRef.current) {
-      videoRef.current.muted = !videoRef.current.muted;
-      setIsMuted(videoRef.current.muted);
-    }
-  };
-
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.play().catch(() => {
-        // Autoplay policy fallback
-      });
-    }
-  }, []);
-
-  useEffect(() => {
-    gsap.registerPlugin(ScrollTrigger);
-
-    const ctx = gsap.context(() => {
-      const isDesktop = window.innerWidth >= 1024;
-
-      // Card 0 starts visible in the center of the 100vh right column
-      if (cardsRef.current[0]) {
-        gsap.set(cardsRef.current[0], { y: '0vh', opacity: 1, scale: 1 });
-      }
-      // Cards 1..4 start at the BOTTOM of 100vh (completely below the screen)
-      cardsRef.current.slice(1).forEach((card) => {
-        if (card) {
-          gsap.set(card, { y: '105vh', opacity: 1, scale: 1 });
-        }
-      });
-
-      // Explicitly set initial states
-      if (topContentRef.current) {
-        gsap.set(topContentRef.current, { opacity: 1, y: 0, scale: 1, pointerEvents: 'auto' });
-      }
-      if (videoBoxRef.current) {
-        gsap.set(videoBoxRef.current, { opacity: 1, scale: 1, y: 0 });
-      }
-
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: heroTrackRef.current,
-          start: 'top top',
-          end: '+=380%',
-          pin: stickyFrameRef.current,
-          scrub: 1,
-          anticipatePin: 1,
-        },
-      });
-
-      // ── PHASE 1: Fade out headline and expand video to full screen ──
-      tl.fromTo(
-        topContentRef.current,
-        {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          pointerEvents: 'auto',
-        },
-        {
-          opacity: 0,
-          y: -40,
-          scale: 0.95,
-          pointerEvents: 'none',
-          ease: 'power2.inOut',
-          duration: 0.35,
-        },
-        0
-      );
-
-      tl.to(
-        videoBoxRef.current,
-        {
-          top: '0px',
-          bottom: '0px',
-          width: '100vw',
-          maxWidth: '100vw',
-          borderRadius: '0px',
-          borderWidth: '0px',
-          boxShadow: 'none',
-          ease: 'power2.inOut',
-          duration: 0.75,
-        },
-        0.05
-      );
-
-      // Brief hold on fully expanded video
-      tl.to({}, { duration: 0.15 });
-
-      // ── PHASE 2: Emerges from center (0 to 100vh and 100vw) ─────────
-      tl.fromTo(
-        rectangleContainerRef.current,
-        {
-          width: '0vw',
-          height: '0vh',
-          opacity: 0,
-          borderRadius: '32px',
-          borderWidth: '1px',
-          pointerEvents: 'none',
-        },
-        {
-          width: '100vw',
-          height: '100vh',
-          opacity: 1,
-          borderRadius: '0px',
-          borderWidth: '0px',
-          pointerEvents: 'auto',
-          ease: 'power2.inOut',
-          duration: 0.8,
-        }
-      );
-
-      // Hold briefly so user absorbs Card 1
-      tl.to({}, { duration: 0.2 });
-
-      // ── PHASE 3: CARDS TRAVEL FROM BOTTOM TO ABOVE 100VH ───────────
-      const storyStart = tl.duration();
-
-      // Card 0 moves ABOVE 100vh; Card 1 enters from BOTTOM of 100vh into center
-      tl.to(cardsRef.current[0], {
-        y: '-105vh',
-        ease: 'power2.inOut',
-        duration: 0.85,
-      });
-      tl.to(
-        cardsRef.current[1],
-        {
-          y: '0vh',
-          ease: 'power2.inOut',
-          duration: 0.85,
-        },
-        '<'
-      );
-      tl.to({}, { duration: 0.22 });
-
-      // Card 1 moves ABOVE 100vh; Card 2 enters from BOTTOM of 100vh into center
-      tl.to(cardsRef.current[1], {
-        y: '-105vh',
-        ease: 'power2.inOut',
-        duration: 0.85,
-      });
-      tl.to(
-        cardsRef.current[2],
-        {
-          y: '0vh',
-          ease: 'power2.inOut',
-          duration: 0.85,
-        },
-        '<'
-      );
-      tl.to({}, { duration: 0.22 });
-
-      // Card 2 moves ABOVE 100vh; Card 3 enters from BOTTOM of 100vh into center
-      tl.to(cardsRef.current[2], {
-        y: '-105vh',
-        ease: 'power2.inOut',
-        duration: 0.85,
-      });
-      tl.to(
-        cardsRef.current[3],
-        {
-          y: '0vh',
-          ease: 'power2.inOut',
-          duration: 0.85,
-        },
-        '<'
-      );
-      tl.to({}, { duration: 0.22 });
-
-      // Card 3 moves ABOVE 100vh; Card 4 enters from BOTTOM of 100vh into center
-      tl.to(cardsRef.current[3], {
-        y: '-105vh',
-        ease: 'power2.inOut',
-        duration: 0.85,
-      });
-      tl.to(
-        cardsRef.current[4],
-        {
-          y: '0vh',
-          ease: 'power2.inOut',
-          duration: 0.85,
-        },
-        '<'
-      );
-      tl.to({}, { duration: 0.25 });
-
-      // ── Concurrently: Left side moves gently down across the 100vh height
-      const storyEnd = tl.duration();
-      tl.to(
-        leftColRef.current,
-        {
-          y: isDesktop ? '16vh' : '5vh',
-          ease: 'none',
-          duration: storyEnd - storyStart,
-        },
-        storyStart
-      );
-
-      // Hold on the final milestone card (Dedicated to Domestic Usage)
-      tl.to({}, { duration: 0.5 });
-    }, heroTrackRef);
-
-    return () => ctx.revert();
-  }, []);
-
   return (
-    <section ref={heroTrackRef} className="relative w-full h-[460vh] bg-[var(--c-bg)]">
-      {/* ── Pinned Viewport Container (100vh with overflow-hidden) ─────── */}
-      <div
-        ref={stickyFrameRef}
-        className="relative h-[100dvh] w-full overflow-hidden bg-[var(--c-bg)] transition-colors duration-300"
+    <div className="relative w-full bg-[#071322]">
+      {/* ── 1. CINEMATIC FULL-WIDTH HERO SECTION ───────────────────────────── */}
+      <section
+        id="hero-section"
+        className="relative w-full min-h-[85vh] lg:min-h-[88vh] flex flex-col justify-end overflow-hidden"
       >
-        {/* Ambient Glow */}
-        <div
-          aria-hidden="true"
-          className="absolute -top-28 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-b from-[#218A59]/15 via-[#234679]/8 to-transparent blur-3xl pointer-events-none rounded-full"
-        />
-
-        {/* ── TOP ~30%: Centered Headline, Subheadline & CTA Buttons ──────── */}
-        <div
-          ref={topContentRef}
-          className="absolute top-0 left-0 right-0 z-20 h-[30vh] min-h-[170px] pt-4 pb-2 px-4 flex flex-col items-center justify-center text-center max-w-4xl mx-auto"
-        >
-          {/* Main Headline */}
-          <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold font-display tracking-tight leading-[1.1] text-slate-900 mb-2.5">
-            Himalayan <span className="text-[#218A59]">Green Energy</span> Expo
-          </h1>
-
-          {/* Sub-headline */}
-          <p className="text-xs sm:text-sm text-slate-700 font-body max-w-3xl mx-auto leading-relaxed line-clamp-2 mb-3 sm:mb-4">
-            South Asia&apos;s apex clean energy convergence uniting international developers, turbine OEMs, and sovereign finance around Nepal&apos;s 30,000 MW clean energy roadmap.
-          </p>
-
-          {/* CTA Buttons */}
-          <div className="flex items-center justify-center gap-3 sm:gap-4">
-            <Link
-              href="/book-stall"
-              className="group inline-flex items-center justify-center gap-2 h-9 sm:h-10 px-5 sm:px-6 rounded-full bg-gradient-to-r from-[#5B9F35] to-[#218A59] text-white font-body text-xs sm:text-sm font-bold uppercase tracking-wider shadow-md shadow-[#218A59]/25 hover:shadow-lg hover:shadow-[#218A59]/40 hover:brightness-105 active:scale-95 transition-all duration-200"
-            >
-              <span>Book Exhibition Stall</span>
-              <ArrowRight
-                size={14}
-                strokeWidth={2.5}
-                className="transition-transform duration-200 group-hover:translate-x-1"
-              />
-            </Link>
-
-            <Link
-              href="/register"
-              className="group inline-flex items-center justify-center gap-2 h-9 sm:h-10 px-5 sm:px-6 rounded-full border-[1.5px] border-[#234679] text-[#234679] font-body text-xs sm:text-sm font-bold uppercase tracking-wider bg-transparent hover:bg-[#234679] hover:text-white transition-all duration-200 active:scale-95 shadow-xs"
-            >
-              <Ticket
-                size={14}
-                strokeWidth={2.2}
-                className="shrink-0 stroke-[#234679] group-hover:!stroke-white"
-              />
-              <span className="group-hover:text-white">
-                Register Free Pass
-              </span>
-            </Link>
-          </div>
-        </div>
-
-        {/* ── BOTTOM ~70%: Video Container (Expands to full 100vw x 100vh on scroll) ── */}
-        <div
-          ref={videoBoxRef}
-          className="absolute top-[30vh] bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 z-10 w-[92vw] max-w-[1360px] rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl shadow-black/25 border border-black/10 bg-black"
-          style={{ willChange: 'top, bottom, width, border-radius' }}
-        >
+        {/* Full-bleed High-Definition Drone Hydro Background Video */}
+        <div className="absolute inset-0 w-full h-full pointer-events-none select-none z-0 overflow-hidden bg-slate-950">
           <video
-            ref={videoRef}
-            src="/videos/hero_showcase.mp4"
+            src="/videos/drone_hydroelectric.mp4"
             autoPlay
             loop
             muted
             playsInline
             preload="auto"
-            className="w-full h-full object-cover"
+            poster="/images/himalayan_dam_hero.jpg"
+            className="w-full h-full object-cover object-center scale-[1.01]"
           />
-
-          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/10 pointer-events-none" />
-
-          {/* Sound Toggle Button */}
-          <button
-            type="button"
-            onClick={toggleAudio}
-            aria-label={isMuted ? 'Unmute video audio' : 'Mute video audio'}
-            className="absolute bottom-4 right-4 z-20 p-3 rounded-full bg-black/60 hover:bg-black/90 text-white border border-white/20 backdrop-blur-md transition-all duration-200 hover:scale-110 active:scale-95 shadow-lg cursor-pointer"
-          >
-            {isMuted ? (
-              <VolumeX size={18} className="text-white/80" />
-            ) : (
-              <Volume2 size={18} className="text-[#34D399]" />
-            )}
-          </button>
         </div>
 
-        {/* ── RECTANGLE CONTAINER 1: Emerges from center to 100vw & 100vh ─── */}
+        {/* Himalayan Topographic Elevation Contours (Atmospheric SVG Overlay) */}
+        <TopographicContours
+          className="z-[1] text-[#00E599]"
+          opacity="opacity-[0.06]"
+        />
+
+        {/* Directional Vignette: Deep contrast at bottom-left, natural daylight across upper-center & right */}
         <div
-          ref={rectangleContainerRef}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 bg-[var(--c-bg)] flex items-center justify-center overflow-hidden border border-black/15 shadow-2xl"
-          style={{
-            width: '0vw',
-            height: '0vh',
-            opacity: 0,
-            willChange: 'width, height, opacity, border-radius',
-          }}
-        >
-          {/* Subtle clean ambient tint */}
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 bg-gradient-to-br from-[#218A59]/5 via-transparent to-[#234679]/5 pointer-events-none"
-          />
+          aria-hidden="true"
+          className="absolute inset-0 bg-gradient-to-t from-[#071322] via-[#071322]/65 to-transparent/10 z-[2] pointer-events-none"
+        />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-gradient-to-r from-[#071322]/95 via-[#071322]/50 to-transparent z-[2] pointer-events-none"
+        />
 
-          {/* ── FULL 100VH PINNED SPLIT: Left Pinned & Right 100vh Stage ────── */}
-          <div className="w-full h-[100dvh] max-w-7xl mx-auto px-6 sm:px-10 lg:px-12 flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-14 relative z-10">
-            {/* ── Left Pinned Column ────────────────────────────────────────── */}
-            <div className="w-full lg:w-5/12 flex flex-col justify-center select-none shrink-0 py-8 lg:py-0">
-              <div ref={leftColRef} style={{ willChange: 'transform' }}>
-                <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-widest bg-[#218A59]/10 text-[#218A59] border border-[#218A59]/25 mb-4 sm:mb-6 self-start">
-                  <Sparkles size={12} className="text-[#218A59]" />
-                  <span>National Clean Energy Roadmap</span>
-                </span>
+        {/* ── 2. HERO FOREGROUND CONTENT (Anchored to Bottom-Left) ─────────── */}
+        <div className="relative z-10 w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 mt-auto pt-24 sm:pt-32 pb-10 sm:pb-14 lg:pb-16 flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+          {/* Left Column: Anchored Bottom-Left */}
+          <div className="w-full max-w-2xl text-left space-y-4 sm:space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {/* Main Headline */}
+            <div className="space-y-2">
+              <h1 className="text-3xl sm:text-5xl lg:text-[54px] font-extrabold font-inter-tight text-white tracking-tight leading-[1.08] drop-shadow-[0_10px_25px_rgba(0,0,0,0.85)]">
+                HIMALAYAN <br />
+                <span className="text-[#00E599] drop-shadow-[0_0_35px_rgba(0,229,153,0.4)]">GREEN ENERGY EXPO</span> <br />
+                <span className="text-white/95">2027</span>
+              </h1>
 
-                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black font-display tracking-tight text-slate-900 uppercase leading-[1.12] mb-4 sm:mb-6">
-                  NEPAL&apos;S <span className="text-[#218A59]">CLEAN ENERGY</span> PROGRESS
-                </h2>
+              {/* Tagline */}
+              <p className="text-base sm:text-lg lg:text-xl font-serif italic text-emerald-300 tracking-wide font-medium drop-shadow-[0_2px_10px_rgba(0,229,153,0.3)]">
+                Resilient Energy, Prosperous Nepal
+              </p>
+            </div>
 
-                <p className="text-base sm:text-lg lg:text-xl font-medium font-body text-slate-700 leading-relaxed max-w-md">
-                  From <span className="font-bold text-[#234679]">0.5 MW in 1911</span> to{' '}
-                  <span className="font-bold text-[#218A59]">30,000 MW by 2035</span>.
-                </p>
+            {/* Description */}
+            <p className="text-xs sm:text-sm md:text-[15px] text-slate-200 font-inter-tight leading-relaxed max-w-xl font-normal drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
+              An international platform bringing together hydropower, renewable energy, green technologies, investment, innovation and sustainable infrastructure.
+            </p>
+
+            {/* Event Information: Clean Executive Docket with Glass & Elevation Shadows */}
+            <div className="pt-0.5 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 text-white font-inter-tight">
+              {/* Date */}
+              <div className="flex items-center gap-3 bg-slate-900/50 backdrop-blur-md px-3.5 py-2 rounded-2xl border border-white/10 shadow-[0_8px_20px_rgba(0,0,0,0.4)]">
+                <div className="w-9 h-9 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-[#00E599] shrink-0 shadow-inner">
+                  <Calendar className="w-4 h-4" strokeWidth={2} />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs sm:text-sm font-bold text-white tracking-wide leading-tight uppercase font-mono">
+                    17–19 JANUARY 2027
+                  </span>
+                  <span className="text-[11px] text-slate-300 font-medium">
+                    Sunday – Tuesday · Magh 3–5, 2083
+                  </span>
+                </div>
+              </div>
+
+              {/* Venue */}
+              <div className="flex items-center gap-3 bg-slate-900/50 backdrop-blur-md px-3.5 py-2 rounded-2xl border border-white/10 shadow-[0_8px_20px_rgba(0,0,0,0.4)]">
+                <div className="w-9 h-9 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-[#00E599] shrink-0 shadow-inner">
+                  <MapPin className="w-4 h-4" strokeWidth={2} />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs sm:text-sm font-bold text-white tracking-wide leading-tight uppercase">
+                    BHRIKUTIMANDAP · KATHMANDU, NEPAL
+                  </span>
+                  <span className="text-[11px] text-slate-300 font-medium">
+                    Exhibition Hall &amp; Grounds
+                  </span>
+                </div>
               </div>
             </div>
 
-            {/* ── Right Column: 100vh Open Stage for Traveling Cards ────────── */}
-            <div className="w-full lg:w-6/12 h-[100dvh] relative flex items-center justify-center lg:justify-end shrink-0 pointer-events-none">
-              {/* The 5 Milestone Cards */}
-              {MILESTONE_CARDS.map((card, index) => (
-                <div
-                  ref={(el) => {
-                    cardsRef.current[index] = el;
-                  }}
-                  key={card.step}
-                  className="absolute w-full max-w-[460px] h-[450px] sm:h-[480px] rounded-3xl border border-white/20 shadow-2xl flex flex-col justify-between p-6 sm:p-8 overflow-hidden select-none pointer-events-auto"
-                  style={{
-                    zIndex: index + 10,
-                    willChange: 'transform',
-                  }}
-                >
-                  {/* Full Card Background Image */}
-                  <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={card.image}
-                      alt={card.title}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#050C16] via-[#050C16]/80 to-[#050C16]/45" />
-                  </div>
+            {/* Call-to-Action Buttons with Mountain Elevation Glow & Shadows */}
+            <div className="pt-2 flex flex-wrap items-center gap-3 sm:gap-3.5">
+              {/* Primary CTA */}
+              <Link
+                href="/book-stall"
+                className="group inline-flex items-center gap-2.5 px-6 py-3 rounded-full bg-[#00B98B] hover:bg-[#00A37A] text-white text-xs font-bold tracking-wider uppercase font-inter-tight shadow-[0_12px_28px_-6px_rgba(0,185,139,0.5),0_4px_12px_rgba(0,0,0,0.3)] hover:shadow-[0_16px_36px_-6px_rgba(0,185,139,0.7)] active:scale-98 transition-all duration-200"
+              >
+                <span>BOOK A STALL</span>
+                <span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center group-hover:translate-x-0.5 transition-transform">
+                  <ArrowRight className="w-3 h-3" />
+                </span>
+              </Link>
 
-                  {/* Card Top Row: Floating Badges */}
-                  <div className="relative z-10 flex items-center justify-between gap-4">
-                    <span
-                      className={`text-xs sm:text-sm font-bold px-3.5 py-1.5 rounded-full border backdrop-blur-md shadow-sm ${card.accent === 'green'
-                        ? 'bg-[#218A59]/30 text-[#4ADE80] border-[#218A59]/60'
-                        : 'bg-[#234679]/40 text-[#93C5FD] border-[#4A7EC7]/60'
-                        }`}
-                    >
-                      {card.badge}
-                    </span>
+              {/* Secondary CTA */}
+              <Link
+                href="/register"
+                className="inline-flex items-center px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/40 hover:border-white text-xs font-bold tracking-wider uppercase font-inter-tight backdrop-blur-md transition-all duration-200 active:scale-98 shadow-[0_8px_20px_rgba(0,0,0,0.3)] hover:shadow-[0_12px_25px_rgba(255,255,255,0.15)]"
+              >
+                REGISTER FOR FREE PASS
+              </Link>
+            </div>
+          </div>
 
-                    <span className="px-3 py-1 rounded-lg text-xs font-mono font-bold bg-black/60 backdrop-blur-md text-white border border-white/20">
-                      {card.step} / 05
-                    </span>
-                  </div>
+          {/* Right Area: Fully open, letting the Himalayan mountains, dam, and water breathe */}
+          <div className="hidden lg:block w-1/3" aria-hidden="true" />
+        </div>
 
-                  {/* Card Content with High-Impact Typography */}
-                  <div className="relative z-10 my-auto py-2">
-                    <div className="flex items-baseline gap-2.5 mb-2">
-                      <span
-                        className={`text-5xl sm:text-6xl font-black font-display tracking-tight leading-none drop-shadow-md ${card.accent === 'green'
-                          ? 'text-[#4ADE80]'
-                          : 'text-[#93C5FD]'
-                          }`}
-                      >
-                        {card.capacity}
-                      </span>
-                      <span className="text-2xl sm:text-3xl font-bold font-display text-white/80">
-                        {card.capacityUnit}
-                      </span>
-                    </div>
+        {/* ── Awwwards-Style 5th Edition Circular Rotating Badge (Bottom Right) ── */}
+        <div className="absolute bottom-8 sm:bottom-12 right-6 sm:right-10 lg:right-16 z-20 group cursor-pointer select-none">
+          <div className="relative w-28 h-28 sm:w-32 sm:h-32 lg:w-36 lg:h-36 flex items-center justify-center transition-transform duration-500 group-hover:scale-105">
+            {/* Subtle Glowing Aura */}
+            <div className="absolute inset-0 rounded-full bg-[#00E599]/20 blur-xl group-hover:bg-[#00E599]/40 transition-all duration-500 pointer-events-none" />
 
-                    <h3 className="text-xl sm:text-2xl font-bold font-display text-white mb-2 leading-snug drop-shadow-sm">
-                      {card.title}
-                    </h3>
+            {/* Rotating SVG Circular Text */}
+            <svg
+              className="absolute inset-0 w-full h-full animate-[spin_18s_linear_infinite] group-hover:[animation-duration:8s] transition-all pointer-events-none"
+              viewBox="0 0 160 160"
+            >
+              <defs>
+                <path
+                  id="awwwards-circle-path"
+                  d="M 80, 80 m -58, 0 a 58,58 0 1,1 116,0 a 58,58 0 1,1 -116,0"
+                />
+              </defs>
+              <text
+                className="font-inter-tight uppercase font-bold fill-white/80 tracking-[0.24em] text-[9.8px] group-hover:fill-white transition-colors"
+              >
+                <textPath href="#awwwards-circle-path" startOffset="0%">
+                  ★ 5TH EDITION ★ HIMALAYAN GREEN ENERGY EXPO 2027 ★
+                </textPath>
+              </text>
+            </svg>
 
-                    <p className="text-xs sm:text-sm text-gray-200 font-body leading-relaxed line-clamp-3 drop-shadow-xs">
-                      {card.tagline}
-                    </p>
-                  </div>
-
-                  {/* Card Bottom Row */}
-                  <div className="relative z-10 pt-4 border-t border-white/15 flex items-center justify-between text-xs text-gray-300">
-                    <span className="font-mono text-[11px] uppercase tracking-wider text-gray-300">
-                      {card.metricLabel}
-                    </span>
-                    <span
-                      className={`font-mono text-xs font-bold ${card.accent === 'green' ? 'text-[#4ADE80]' : 'text-[#93C5FD]'
-                        }`}
-                    >
-                      {card.capacity} {card.capacityUnit}
-                    </span>
-                  </div>
-                </div>
-              ))}
+            {/* Frosted Glass Center Core with Mountain Crest SVG */}
+            <div className="relative w-16 h-16 sm:w-20 sm:h-20 lg:w-22 lg:h-22 rounded-full bg-slate-950/75 backdrop-blur-xl border border-white/25 flex flex-col items-center justify-center text-center shadow-[0_15px_35px_rgba(0,0,0,0.6)] group-hover:border-[#00E599]/60 group-hover:bg-slate-950/90 transition-all duration-300">
+              <MountainCrestSvg className="w-3.5 h-3.5 text-[#00E599] mb-0.5 opacity-90" />
+              <span className="text-xl sm:text-2xl lg:text-3xl font-bold text-white font-inter-tight leading-none tracking-tight">
+                5<span className="text-xs sm:text-sm text-[#00E599]">TH</span>
+              </span>
+              <span className="text-[8px] sm:text-[9px] font-semibold tracking-[0.2em] text-emerald-300 uppercase font-inter-tight mt-0.5">
+                EDITION
+              </span>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </div>
   );
 }
+
+export default Hero;

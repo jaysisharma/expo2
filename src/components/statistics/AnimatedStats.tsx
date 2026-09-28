@@ -50,7 +50,7 @@ export default function AnimatedStats() {
             <span className="text-xs text-[#8CA0A8] tracking-widest block font-bold">
               METRIC // 01
             </span>
-            <div className="font-sans font-black text-6xl sm:text-7xl lg:text-8xl text-[#061A2A] tracking-tight">
+            <div className="font-sans font-bold text-6xl sm:text-7xl lg:text-8xl text-[#061A2A] tracking-tight">
               100<span className="text-[#087EA4]">+</span>
             </div>
             <div className="text-xs font-bold text-[#061A2A] uppercase tracking-wider">
@@ -71,7 +71,7 @@ export default function AnimatedStats() {
             <span className="text-xs text-[#8CA0A8] tracking-widest block font-bold">
               METRIC // 02
             </span>
-            <div className="font-sans font-black text-6xl sm:text-7xl lg:text-8xl text-[#087EA4] tracking-tight">
+            <div className="font-sans font-bold text-6xl sm:text-7xl lg:text-8xl text-[#087EA4] tracking-tight">
               10K<span className="text-[#19BFE8]">+</span>
             </div>
             <div className="text-xs font-bold text-[#061A2A] uppercase tracking-wider">
@@ -92,7 +92,7 @@ export default function AnimatedStats() {
             <span className="text-xs text-[#8CA0A8] tracking-widest block font-bold">
               METRIC // 03
             </span>
-            <div className="font-sans font-black text-6xl sm:text-7xl lg:text-8xl text-[#061A2A] tracking-tight">
+            <div className="font-sans font-bold text-6xl sm:text-7xl lg:text-8xl text-[#061A2A] tracking-tight">
               20<span className="text-[#19A974]">+</span>
             </div>
             <div className="text-xs font-bold text-[#061A2A] uppercase tracking-wider">
@@ -113,7 +113,7 @@ export default function AnimatedStats() {
             <span className="text-xs text-[#8CA0A8] tracking-widest block font-bold">
               METRIC // 04
             </span>
-            <div className="font-sans font-black text-6xl sm:text-7xl lg:text-8xl text-[#19A974] tracking-tight">
+            <div className="font-sans font-bold text-6xl sm:text-7xl lg:text-8xl text-[#19A974] tracking-tight">
               50<span className="text-[#43D69A]">+</span>
             </div>
             <div className="text-xs font-bold text-[#061A2A] uppercase tracking-wider">
@@ -135,7 +135,7 @@ export default function AnimatedStats() {
               <span className="text-[10px] font-bold text-[#8CA0A8] uppercase tracking-widest block">
                 CAPITAL ALLOCATION
               </span>
-              <div className="font-sans font-black text-3xl sm:text-4xl text-[#061A2A]">
+              <div className="font-sans font-bold text-3xl sm:text-4xl text-[#061A2A]">
                 $15+ BILLION
               </div>
               <p className="text-xs text-slate-600 mt-1 font-normal">
@@ -152,7 +152,7 @@ export default function AnimatedStats() {
               <span className="text-[10px] font-bold text-[#8CA0A8] uppercase tracking-widest block">
                 SOVEREIGN ENERGY ROADMAP
               </span>
-              <div className="font-sans font-black text-3xl sm:text-4xl text-[#061A2A]">
+              <div className="font-sans font-bold text-3xl sm:text-4xl text-[#061A2A]">
                 28,000 MW BY 2035
               </div>
               <p className="text-xs text-slate-600 mt-1 font-normal">

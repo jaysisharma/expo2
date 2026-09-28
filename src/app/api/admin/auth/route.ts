@@ -10,19 +10,19 @@ const ADMIN_STORE_PATH = path.join(process.cwd(), "data", "adminUsers.json");
 // In-memory + persisted admin accounts store
 let memoryAdminUsers: Record<
   string,
-  { pass: string; name: string; role: "Super Admin" | "Event Organizer" | "Secretariat Officer"; org: string }
+  { pass: string; name: string; role: "Super Admin" | "Event Organizer" | "Operations Officer"; org: string }
 > = {
   "admin@hydroexpo.org.np": {
     pass: process.env.ADMIN_PASSWORD || "expo2027admin",
-    name: "IPPAN Secretariat Admin",
+    name: "HIGEX Admin",
     role: "Super Admin",
-    org: "Independent Power Producers' Association, Nepal (IPPAN)",
+    org: "Himalayan Green Energy Expo (HIGEX)",
   },
   "admin@ippan.org.np": {
     pass: process.env.ADMIN_PASSWORD || "expo2027admin",
     name: "IPPAN Executive Secretary",
     role: "Super Admin",
-    org: "IPPAN Clean Energy Secretariat",
+    org: "IPPAN Clean Energy Association",
   },
   "admin@eventsolution.com.np": {
     pass: process.env.ADMIN_PASSWORD || "expo2027admin",
@@ -34,7 +34,7 @@ let memoryAdminUsers: Record<
     pass: process.env.ADMIN_PASSWORD || "expo2027admin",
     name: "Super Administrator",
     role: "Super Admin",
-    org: "Himalayan Green Energy Expo Secretariat",
+    org: "Himalayan Green Energy Expo Team",
   },
 };
 
@@ -94,9 +94,9 @@ export async function GET() {
 
     const users = await loadAdminUsers();
     const account = users[verified.email.toLowerCase()] || {
-      name: "Secretariat Administrator",
+      name: "Expo Administrator",
       role: "Super Admin" as const,
-      org: "Himalayan Green Energy Expo Secretariat",
+      org: "Himalayan Green Energy Expo Team",
     };
 
     return NextResponse.json({
@@ -136,7 +136,7 @@ export async function POST(req: Request) {
       const cleanEmail = (email || "").toLowerCase().trim();
       const cleanPass = (password || "").trim();
       const cleanName = (name || "").trim();
-      const cleanOrg = (organization || "Himalayan Green Energy Expo Secretariat").trim();
+      const cleanOrg = (organization || "Himalayan Green Energy Expo Team").trim();
 
       if (!cleanEmail || !cleanPass || !cleanName) {
         return NextResponse.json(
@@ -170,7 +170,7 @@ export async function POST(req: Request) {
       const newUser = {
         pass: cleanPass,
         name: cleanName,
-        role: (role as any) || "Secretariat Officer",
+        role: (role as any) || "Operations Officer",
         org: cleanOrg,
       };
 
@@ -218,9 +218,9 @@ export async function POST(req: Request) {
       }
 
       const account = matchedAccount || {
-        name: "Secretariat Administrator",
+        name: "Expo Administrator",
         role: "Super Admin" as const,
-        org: "Himalayan Green Energy Expo Secretariat",
+        org: "Himalayan Green Energy Expo Team",
       };
 
       const user = {

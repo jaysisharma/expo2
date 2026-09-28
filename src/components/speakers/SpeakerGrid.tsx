@@ -12,7 +12,7 @@ export default function SpeakerGrid({ limit }: { limit?: number }) {
   const roleCategories = [
     { key: "ALL", label: "All Members" },
     { key: "PRESIDENCY", label: "President & Vice Presidents" },
-    { key: "SECRETARIAT", label: "Secretariat & Treasury" },
+    { key: "OFFICERS", label: "Executive Officers & Treasury" },
     { key: "MEMBERS", label: "Executive Members" },
   ];
 
@@ -25,7 +25,7 @@ export default function SpeakerGrid({ limit }: { limit?: number }) {
           member.title.includes("President") ||
           member.title.includes("Senior Vice President") ||
           member.title.includes("Vice President");
-      } else if (selectedRole === "SECRETARIAT") {
+      } else if (selectedRole === "OFFICERS") {
         matchesRole =
           member.title.includes("General Secretary") ||
           member.title.includes("Secretary") ||

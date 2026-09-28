@@ -177,22 +177,22 @@ export default function AdminInquiriesPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs">
           <span className="text-[11px] text-slate-500 block font-mono font-bold">TOTAL INQUIRIES</span>
-          <span className="text-2xl font-black text-slate-900">{inquiries.length}</span>
+          <span className="text-2xl font-bold text-slate-900">{inquiries.length}</span>
           <span className="text-[10px] text-slate-400 block mt-0.5">All received requests</span>
         </div>
         <div className="p-4 rounded-2xl bg-rose-50/70 border border-rose-200 shadow-xs">
           <span className="text-[11px] text-rose-800 block font-mono font-bold">NEW MESSAGES</span>
-          <span className="text-2xl font-black text-rose-900">{newCount}</span>
+          <span className="text-2xl font-bold text-rose-900">{newCount}</span>
           <span className="text-[10px] text-rose-600 block mt-0.5">Needs reply</span>
         </div>
         <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200 shadow-xs">
           <span className="text-[11px] text-amber-800 block font-mono font-bold">IN PROGRESS</span>
-          <span className="text-2xl font-black text-amber-900">{inProgressCount}</span>
+          <span className="text-2xl font-bold text-amber-900">{inProgressCount}</span>
           <span className="text-[10px] text-amber-600 block mt-0.5">Under review</span>
         </div>
         <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 shadow-xs">
           <span className="text-[11px] text-emerald-800 block font-mono font-bold">RESOLVED</span>
-          <span className="text-2xl font-black text-emerald-900">{resolvedCount}</span>
+          <span className="text-2xl font-bold text-emerald-900">{resolvedCount}</span>
           <span className="text-[10px] text-emerald-600 block mt-0.5">Answered & closed</span>
         </div>
       </div>
@@ -229,9 +229,20 @@ export default function AdminInquiriesPage() {
 
       {/* Inquiries Cards Grid */}
       <div className="space-y-4">
-        {filteredInquiries.length === 0 ? (
-          <div className="p-12 text-center text-slate-500 rounded-2xl bg-white border border-slate-200 text-xs shadow-xs">
-            No inquiries found matching the search criteria.
+        {isLoading ? (
+          <div className="p-12 text-center rounded-2xl bg-white border border-slate-200 shadow-xs">
+            <div className="flex flex-col items-center gap-2 text-slate-400">
+              <div className="w-5 h-5 rounded-full border-2 border-slate-300 border-t-[#218A59] animate-spin" />
+              <span className="text-xs">Loading inquiries...</span>
+            </div>
+          </div>
+        ) : filteredInquiries.length === 0 ? (
+          <div className="p-12 text-center rounded-2xl bg-white border border-slate-200 shadow-xs">
+            <div className="flex flex-col items-center gap-2">
+              <span className="text-2xl">📬</span>
+              <p className="text-sm font-medium text-slate-700">No inquiries found</p>
+              <p className="text-xs text-slate-400">Try changing your search or status filter.</p>
+            </div>
           </div>
         ) : (
           filteredInquiries.map((inq: any, idx: number) => (

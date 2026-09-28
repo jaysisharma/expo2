@@ -2,26 +2,62 @@ import React from "react";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import fs from "fs/promises";
+import path from "path";
 import { newsData } from "@/data/news";
 import {
   ArrowLeft,
   Calendar,
-  User,
   Clock,
   ExternalLink,
-  Newspaper,
-  ArrowRight,
 } from "lucide-react";
 
+async function getArticleBySlug(slug: string) {
+  // Check root data/adminData.json
+  try {
+    const rootPath = path.join(process.cwd(), "data", "adminData.json");
+    const raw = await fs.readFile(rootPath, "utf-8");
+    const adminData = JSON.parse(raw);
+    if (Array.isArray(adminData.news)) {
+      const found = adminData.news.find((n: any) => n.slug === slug);
+      if (found) return found;
+    }
+  } catch {}
+
+  // Check src/data/adminData.json
+  try {
+    const srcPath = path.join(process.cwd(), "src", "data", "adminData.json");
+    const raw = await fs.readFile(srcPath, "utf-8");
+    const adminData = JSON.parse(raw);
+    if (Array.isArray(adminData.news)) {
+      const found = adminData.news.find((n: any) => n.slug === slug);
+      if (found) return found;
+    }
+  } catch {}
+
+  // Fallback
+  return newsData.find((n) => n.slug === slug) || null;
+}
+
 export async function generateStaticParams() {
-  return newsData.map((item) => ({
-    slug: item.slug,
-  }));
+  const slugs: { slug: string }[] = [];
+  try {
+    const rootPath = path.join(process.cwd(), "data", "adminData.json");
+    const raw = await fs.readFile(rootPath, "utf-8");
+    const adminData = JSON.parse(raw);
+    if (Array.isArray(adminData.news)) {
+      adminData.news.forEach((n: any) => {
+        if (n.slug) slugs.push({ slug: n.slug });
+      });
+    }
+  } catch {}
+
+  return slugs;
 }
 
 export default async function SingleNewsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const article = newsData.find((n) => n.slug === slug);
+  const article = await getArticleBySlug(slug);
 
   if (!article) {
     notFound();
@@ -31,9 +67,7 @@ export default async function SingleNewsPage({ params }: { params: Promise<{ slu
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-900 flex flex-col">
-      {/* =========================================================================
-          01: SIMPLE HEADER WITH BACKGROUND COLOR (GREEN THEME)
-         ========================================================================= */}
+      {/* Header */}
       <div className="bg-[#04281E] text-white pt-32 sm:pt-36 pb-12 sm:pb-16 px-4 sm:px-6 lg:px-8 border-b border-emerald-500/20">
         <div className="max-w-4xl mx-auto">
           {/* Breadcrumb */}
@@ -60,7 +94,7 @@ export default async function SingleNewsPage({ params }: { params: Promise<{ slu
                 <Calendar className="w-3.5 h-3.5 text-[#34D399]" /> {article.date}
               </span>
               <span className="text-xs text-emerald-200/70 font-mono flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-[#34D399]" /> {article.readTime}
+                <Clock className="w-3.5 h-3.5 text-[#34D399]" /> {article.readTime || "3 min read"}
               </span>
             </div>
 
@@ -89,12 +123,9 @@ export default async function SingleNewsPage({ params }: { params: Promise<{ slu
         </div>
       </div>
 
-      {/* =========================================================================
-          02: ARTICLE BODY & CONTENT
-         ========================================================================= */}
+      {/* Article Body */}
       <div className="py-10 sm:py-14 px-4 sm:px-6 lg:px-8 flex-grow">
         <div className="max-w-4xl mx-auto space-y-8">
-          
           {/* Back Button */}
           <Link
             href="/news"
@@ -105,34 +136,34 @@ export default async function SingleNewsPage({ params }: { params: Promise<{ slu
           </Link>
 
           {/* Featured Image */}
-          <div className="relative h-72 sm:h-96 w-full rounded-2xl overflow-hidden shadow-xs border border-slate-200 bg-slate-100">
-            <Image
-              src={article.image}
-              alt={article.title}
-              fill
-              className="object-cover"
-              priority
-            />
-          </div>
+          {article.image && (
+            <div className="relative h-72 sm:h-96 w-full rounded-2xl overflow-hidden shadow-xs border border-slate-200 bg-slate-100">
+              <Image
+                src={article.image}
+                alt={article.title}
+                fill
+                className="object-cover"
+                priority
+              />
+            </div>
+          )}
 
           {/* Article Summary Box */}
-          <div className="p-6 rounded-2xl bg-sky-50/70 border border-sky-100 text-slate-800 text-sm leading-relaxed font-medium">
-            {article.summary}
-          </div>
+          {article.summary && (
+            <div className="p-6 rounded-2xl bg-sky-50/70 border border-sky-100 text-slate-800 text-sm leading-relaxed font-medium">
+              {article.summary}
+            </div>
+          )}
 
           {/* Article Paragraphs */}
           <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-10 shadow-xs space-y-5 text-sm sm:text-base text-slate-700 leading-relaxed font-normal">
             {Array.isArray(article.content) ? (
-              article.content.map((paragraph, pIdx) => (
+              article.content.map((paragraph: string, pIdx: number) => (
                 <p key={pIdx}>{paragraph}</p>
               ))
             ) : (
               <p>{article.content}</p>
             )}
-
-            <div className="my-6 p-6 rounded-xl bg-slate-50 border-l-4 border-[#087EA4] text-slate-900 font-medium italic text-sm sm:text-base">
-              &ldquo;Nepal&apos;s clean energy trajectory represents one of the most formidable multi-billion dollar investment and engineering opportunities in Asia over the next decade.&rdquo;
-            </div>
 
             {article.sourceUrl && (
               <div className="pt-6 border-t border-slate-100 flex items-center justify-between">
@@ -151,7 +182,6 @@ export default async function SingleNewsPage({ params }: { params: Promise<{ slu
               </div>
             )}
           </div>
-
         </div>
       </div>
     </div>

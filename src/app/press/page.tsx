@@ -91,7 +91,7 @@ export default function PressPage() {
 
           {/* Main Title Header */}
           <div className="max-w-4xl space-y-4">
-            <h1 className="font-display font-black text-3xl sm:text-5xl lg:text-6xl text-white tracking-tight leading-tight">
+            <h1 className="font-display font-bold text-3xl sm:text-5xl lg:text-6xl text-white tracking-tight leading-tight">
               Official Press Meet: <br />
               <span className="text-[#34D399]">Himalayan Green Energy Expo 2027</span>
             </h1>
@@ -131,7 +131,7 @@ export default function PressPage() {
                   </div>
                   <div className="flex items-center gap-2 text-xs text-slate-200">
                     <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                    <span>Bhrikutimandap Exhibition Complex, Kathmandu, Nepal</span>
+                    <span>Bhrikutimandap Exhibition Hall, Kathmandu, Nepal</span>
                   </div>
                 </div>
 
@@ -153,10 +153,10 @@ export default function PressPage() {
                     <span>Press Banner</span>
                   </a>
                   <a
-                    href="/files/hydroproposal-13-2-2024.pdf"
+                    href="/Proposal.pdf"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-3.5 py-2 rounded-full bg-[#10B981] hover:bg-[#059669] text-slate-950 font-mono text-xs font-black tracking-wider inline-flex items-center gap-1.5 transition-all shadow-md active:scale-95"
+                    className="px-3.5 py-2 rounded-full bg-[#007A5E] hover:bg-[#005C42] text-white font-mono text-xs font-bold tracking-wider inline-flex items-center gap-1.5 transition-all shadow-md active:scale-95"
                   >
                     <FileDown className="w-3.5 h-3.5" />
                     <span>Proposal PDF</span>
@@ -171,7 +171,7 @@ export default function PressPage() {
       {/* ── 02: THE 6 CONCURRENT SUB-SHOWS HIGHLIGHTED IN THE GRAPHIC ── */}
       <section className="py-16 sm:py-20 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto space-y-10">
         <div className="space-y-3">
-          <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+          <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
             Concurrent Sub-Shows at the Expo
           </h2>
           <p className="text-sm text-emerald-100/70 max-w-2xl leading-relaxed">
@@ -204,7 +204,7 @@ export default function PressPage() {
         </div>
       </section>
 
-      {/* ── 03: OFFICIAL SECRETARIAT CONTACTS & MEDIA ACCREDITATION ── */}
+      {/* ── 03: OFFICIAL MEDIA CONTACTS & ACCREDITATION ── */}
       <section className="py-16 sm:py-20 px-4 sm:px-6 lg:px-12 bg-gradient-to-b from-[#04281E] to-[#021810] border-t border-white/10">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
           {/* Left Column: Accreditation & Media Desk */}
@@ -213,7 +213,7 @@ export default function PressPage() {
               <span>MEDIA DESK & ACCREDITATION</span>
             </div>
 
-            <h3 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
+            <h3 className="text-2xl sm:text-4xl font-bold text-white tracking-tight">
               Journalist, Press & Media Support
             </h3>
 
@@ -224,7 +224,7 @@ export default function PressPage() {
             <div className="pt-2 flex flex-wrap gap-4">
               <Link
                 href="/register"
-                className="px-6 py-3 rounded-full bg-[#10B981] hover:bg-[#059669] text-slate-950 font-mono text-xs font-black tracking-wider transition-all shadow-lg hover:scale-105 inline-flex items-center gap-2 active:scale-95"
+                className="px-6 py-3 rounded-full bg-[#007A5E] hover:bg-[#005C42] text-white font-mono text-xs font-bold tracking-wider transition-all shadow-lg hover:scale-105 inline-flex items-center gap-2 active:scale-95"
               >
                 <span>REGISTER FOR MEDIA BADGE</span>
                 <ArrowUpRight className="w-4 h-4" />
@@ -233,7 +233,7 @@ export default function PressPage() {
                 href="/contact"
                 className="px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 text-white font-mono text-xs font-bold tracking-wider transition-all border border-white/20"
               >
-                <span>SECRETARIAT INQUIRY</span>
+                <span>CONTACT DESK</span>
               </Link>
             </div>
           </div>
@@ -241,7 +241,7 @@ export default function PressPage() {
           {/* Right Column: Direct Verified Contact Cards */}
           <div className="lg:col-span-5 rounded-3xl bg-black/50 border border-white/15 p-6 sm:p-8 space-y-5 backdrop-blur-md">
             <h4 className="text-xs font-mono font-bold text-[#34D399] uppercase tracking-wider">
-              Direct Press & Secretariat Lines
+              Direct Press &amp; Media Lines
             </h4>
 
             <div className="space-y-4 text-xs text-slate-300">
@@ -258,7 +258,7 @@ export default function PressPage() {
                 <Mail className="w-4 h-4 text-[#38BDF8] shrink-0 mt-0.5" />
                 <div className="space-y-0.5">
                   <div className="font-mono text-slate-400 text-[10px] uppercase">OFFICIAL EMAIL</div>
-                  <div className="text-white font-medium">himalayangreenenergyexpo@gmail.com</div>
+                  <div className="text-white font-medium">info@nepalenergyexpo.com</div>
                   <div className="text-slate-400 text-xs">info@ippan.org.np | ippan2001@gmail.com</div>
                 </div>
               </div>
@@ -266,8 +266,8 @@ export default function PressPage() {
               <div className="flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
                 <MapPin className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                 <div className="space-y-0.5">
-                  <div className="font-mono text-slate-400 text-[10px] uppercase">SECRETARIAT ADDRESS</div>
-                  <div className="text-white font-medium">IPPAN Secretariat, Jwagal, Lalitpur, Nepal</div>
+                  <div className="font-mono text-slate-400 text-[10px] uppercase">OFFICE ADDRESS</div>
+                  <div className="text-white font-medium">IPPAN Office, Jwagal, Lalitpur, Nepal</div>
                 </div>
               </div>
             </div>

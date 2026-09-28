@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 export interface AdminUser {
   name: string;
   email: string;
-  role: "Super Admin" | "Event Organizer" | "Secretariat Officer";
+  role: "Super Admin" | "Event Organizer" | "Operations Officer";
   avatar?: string;
   organization: string;
 }
@@ -34,11 +34,11 @@ const AdminAuthContext = createContext<AdminAuthContextType>({
 });
 
 export const DEFAULT_ADMIN: AdminUser = {
-  name: "IPPAN Secretariat Admin",
+  name: "HIGEX Admin",
   email: "admin@hydroexpo.org.np",
   role: "Super Admin",
   avatar: "/images/logo.png",
-  organization: "Independent Power Producers' Association, Nepal",
+  organization: "Himalayan Green Energy Expo",
 };
 
 export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
@@ -48,11 +48,34 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
 
   // Validate session with the backend API route & cookie
   const checkSession = useCallback(async () => {
+    // 1. Instant check from localStorage to prevent UI freeze
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("hhe_admin_session");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed && parsed.email) {
+            if (parsed.name === "IPPAN Expo Admin") {
+              parsed.name = "HIGEX Admin";
+              localStorage.setItem("hhe_admin_session", JSON.stringify(parsed));
+            }
+            setUser(parsed);
+          }
+        }
+      } catch {}
+    }
+
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3500);
+
       const res = await fetch("/api/admin/auth", {
         method: "GET",
         headers: { "Cache-Control": "no-cache" },
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
+
       const data = await res.json();
       if (data.authenticated && data.user) {
         setUser(data.user);

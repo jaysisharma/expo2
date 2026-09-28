@@ -43,7 +43,7 @@ export default function AdminBadgeDesignerPage() {
       <div className="w-full">
         <AdminBadgeDesigner
           onSaved={() => {
-            notify("Badge template layout successfully saved to server database");
+            notify("Badge design saved successfully");
           }}
         />
       </div>

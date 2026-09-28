@@ -44,11 +44,13 @@ export default function SectorsGrid() {
         {/* Section Header */}
         <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-16 gap-6">
           <div>
-            <div className="inline-flex items-center gap-2 text-xs font-technical text-hydro-primary tracking-widest uppercase mb-4 font-bold">
-              <span className="w-2 h-2 rounded-full bg-hydro-primary" />
-              05 / EXHIBITION PROFILE
+            <div className="flex items-center gap-3 mb-4">
+              <span className="text-xs font-bold text-[#007A5E] uppercase tracking-wider font-mono">
+                05 / EXHIBITION PROFILE
+              </span>
+              <div className="w-12 h-0.5 bg-[#007A5E]/40 rounded-full" />
             </div>
-            <h2 className="font-display font-black text-4xl sm:text-6xl lg:text-7xl text-slate-900 tracking-tight leading-[0.92]">
+            <h2 className="font-display font-bold text-4xl sm:text-6xl lg:text-7xl text-slate-900 tracking-tight leading-[0.92]">
               EVERYTHING <br />
               POWERING <br />
               <span className="text-hydro-primary">THE INDUSTRY.</span>

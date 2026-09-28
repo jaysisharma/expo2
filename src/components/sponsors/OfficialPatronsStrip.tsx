@@ -3,7 +3,7 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, ShieldCheck } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { ScrollReveal } from '@/components/ui';
 
 export function OfficialPatronsStrip() {
@@ -30,13 +30,13 @@ export function OfficialPatronsStrip() {
     },
     {
       name: 'IPPAN',
-      logo: '/ippan.png',
+      logo: '/images/ippan_vector.svg',
       url: 'https://ippan.org.np',
     },
     {
       name: 'Event Solution',
-      logo: '/event_solution.png',
-      url: 'https://eventsolutionnepal.com',
+      logo: '/images/event_solution_vector.svg',
+      url: 'https://eventsolutionnepal.com.np/',
     },
     {
       name: 'FNCCI',
@@ -64,21 +64,26 @@ export function OfficialPatronsStrip() {
     <div className="w-full bg-[var(--c-bg)] border-y border-black/[0.08] dark:border-white/[0.1] py-8 sm:py-10 font-sans select-none overflow-hidden relative transition-colors duration-300">
       <ScrollReveal direction="up" distance={25} duration={0.7}>
         {/* Top Header Row */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 mb-6">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-[#218A59] dark:text-[#25C176]" />
-              <span className="text-xs font-mono font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                OFFICIAL PATRONAGE, PARTNERS & ENDORSEMENTS
-              </span>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <span className="text-xs font-bold text-[#007A5E] uppercase tracking-wider font-mono">
+                  OUR PREVIOUS PARTNERS
+                </span>
+                <div className="w-12 h-0.5 bg-[#007A5E]/40 rounded-full" />
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                Supported by Leading Organizations in Previous Editions
+              </h2>
             </div>
 
             <Link
               href="/sponsors"
-              className="text-xs font-mono font-bold text-[#234679] dark:text-[#6FA0E8] hover:text-[#218A59] dark:hover:text-[#25C176] transition-colors inline-flex items-center gap-1.5"
+              className="group inline-flex items-center gap-2 text-xs font-bold text-[#007A5E] hover:text-[#005B46] dark:text-emerald-400 dark:hover:text-emerald-300 transition-colors"
             >
-              <span>VIEW ALL PARTNERS & SPONSORS</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <span>VIEW ALL PARTNERS &amp; SPONSORS</span>
+              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>
         </div>

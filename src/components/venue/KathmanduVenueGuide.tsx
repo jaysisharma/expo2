@@ -15,14 +15,14 @@ export default function KathmanduVenueGuide() {
         <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-10 gap-4">
           <div>
             <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
-              Bhrikutimandap Exhibition Complex
+              Bhrikutimandap Exhibition Hall
             </h2>
             <p className="text-sm text-slate-600 mt-1">
               Exhibition Road, Kathmandu — Nepal&apos;s premier convention hub.
             </p>
           </div>
           <a
-            href="https://maps.google.com/?q=Bhrikutimandap+Exhibition+Complex+Kathmandu"
+            href="https://maps.google.com/?q=Bhrikutimandap+Exhibition+Hall+Kathmandu"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition-colors self-start lg:self-auto"
@@ -47,7 +47,7 @@ export default function KathmanduVenueGuide() {
             <div className="absolute top-6 left-6 p-3 rounded-xl bg-white/95 backdrop-blur-md border border-slate-200 text-xs font-technical text-slate-800 shadow-sm font-semibold">
               <div className="flex items-center gap-2 text-hydro-primary font-bold">
                 <Compass className="w-4 h-4" />
-                <span>BHRIKUTIMANDAP COMPLEX</span>
+                <span>BHRIKUTIMANDAP EXHIBITION HALL</span>
               </div>
               <span className="text-[10px] text-slate-500 mt-0.5 block">
                 27°42&apos;09&quot;N · 85°19&apos;07&quot;E · 1,400M ASL

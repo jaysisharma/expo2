@@ -24,11 +24,13 @@ export default function HydropowerMap() {
         {/* Section Header */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end mb-16">
           <div className="lg:col-span-8">
-            <div className="inline-flex items-center gap-2 text-xs font-technical text-hydro-primary tracking-widest uppercase mb-4 font-bold">
-              <span className="w-1.5 h-1.5 rounded-full bg-hydro-primary" />
-              04 / NATIONAL STRATEGIC OPPORTUNITY
+            <div className="flex items-center gap-3 mb-4">
+              <span className="text-xs font-bold text-[#007A5E] uppercase tracking-wider font-mono">
+                04 / NATIONAL STRATEGIC OPPORTUNITY
+              </span>
+              <div className="w-12 h-0.5 bg-[#007A5E]/40 rounded-full" />
             </div>
-            <h2 className="font-display font-black text-4xl sm:text-6xl md:text-7xl lg:text-8xl text-slate-900 tracking-tight leading-[0.9]">
+            <h2 className="font-display font-bold text-4xl sm:text-6xl md:text-7xl lg:text-8xl text-slate-900 tracking-tight leading-[0.9]">
               WHY NEPAL? <br />
               <span className="text-hydro-primary">THE NEXT ENERGY FRONTIER.</span>
             </h2>
@@ -38,11 +40,11 @@ export default function HydropowerMap() {
             <div className="flex flex-wrap gap-4 text-xs font-technical">
               <div className="space-y-0.5">
                 <span className="text-slate-500 text-[10px] font-semibold">ECONOMIC POTENTIAL</span>
-                <div className="text-slate-900 font-black text-2xl font-display">42,000+ MW</div>
+                <div className="text-slate-900 font-bold text-2xl font-display">42,000+ MW</div>
               </div>
               <div className="space-y-0.5 pl-6 border-l border-slate-200">
                 <span className="text-slate-500 text-[10px] font-semibold">2035 EXPORT TARGET</span>
-                <div className="text-hydro-deep font-black text-2xl font-display">15,000 MW</div>
+                <div className="text-hydro-deep font-bold text-2xl font-display">15,000 MW</div>
               </div>
             </div>
           </div>
@@ -211,13 +213,13 @@ export default function HydropowerMap() {
                 <div className="my-6 p-5 rounded-md bg-white border border-slate-200 grid grid-cols-2 gap-4">
                   <div>
                     <span className="text-[10px] font-technical text-slate-500 font-semibold">INSTALLED CAPACITY</span>
-                    <div className="font-display font-black text-3xl text-[#3977A9]">
+                    <div className="font-display font-bold text-3xl text-[#3977A9]">
                       {selectedProject.capacityMW} <span className="text-sm font-normal">MW</span>
                     </div>
                   </div>
                   <div>
                     <span className="text-[10px] font-technical text-slate-500 font-semibold">HYDRAULIC HEAD</span>
-                    <div className="font-display font-black text-3xl text-slate-900">
+                    <div className="font-display font-bold text-3xl text-slate-900">
                       {selectedProject.headMeters} <span className="text-sm font-normal">M</span>
                     </div>
                   </div>

@@ -80,11 +80,11 @@ function AdminRegisterForm() {
         <div className="w-14 h-14 rounded-2xl bg-[#218A59]/10 border border-[#218A59]/20 flex items-center justify-center mb-3">
           <UserPlus className="w-7 h-7 text-[#218A59]" />
         </div>
-        <h1 className="text-xl font-extrabold font-display text-slate-900 tracking-tight">
-          Create Organizer Account
+        <h1 className="text-xl font-bold font-sans text-slate-900 tracking-tight">
+          Create Account
         </h1>
-        <p className="text-xs text-slate-500 font-body mt-1">
-          Secretariat Access & Management Console
+        <p className="text-xs text-slate-500 font-sans mt-1">
+          Create an account to manage the event
         </p>
       </div>
 
@@ -158,7 +158,7 @@ function AdminRegisterForm() {
               type="text"
               value={organization}
               onChange={(e) => setOrganization(e.target.value)}
-              placeholder="e.g. IPPAN / Event Solution / Secretariat"
+              placeholder="e.g. IPPAN / Event Solution / Organizing Team"
               className="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-slate-50/80 border border-slate-300 text-slate-900 text-xs font-medium placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-[#218A59] focus:ring-2 focus:ring-[#218A59]/20 transition-all shadow-xs"
             />
             <Building className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -280,7 +280,7 @@ export default function AdminRegisterPage() {
 
       {/* Footer */}
       <footer className="relative z-10 w-full max-w-5xl mx-auto px-6 py-5 text-center text-xs text-slate-500 font-body">
-        <p>© 2027 Himalayan Green Energy Expo · Secretariat Management System</p>
+        <p>© 2027 Himalayan Green Energy Expo · Admin Portal</p>
       </footer>
     </div>
   );

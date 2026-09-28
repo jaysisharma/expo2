@@ -128,7 +128,7 @@ export default function FAQAccordion({ limit }: { limit?: number }) {
               No questions found matching &ldquo;{searchQuery}&rdquo;
             </p>
             <p className="text-xs text-slate-500">
-              Try searching with different keywords or contact our support secretariat.
+              Try searching with different keywords or contact our support team.
             </p>
           </div>
         )}

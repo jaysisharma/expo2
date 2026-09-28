@@ -60,11 +60,13 @@ export default function ExperiencesScroll() {
         {/* Section Header */}
         <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-16 gap-6">
           <div>
-            <div className="inline-flex items-center gap-2 text-xs font-technical text-hydro-primary tracking-widest uppercase mb-3 font-bold">
-              <span className="w-1.5 h-1.5 rounded-full bg-hydro-primary" />
-              13 / IMMERSIVE EXPERIENCES
+            <div className="flex items-center gap-3 mb-3">
+              <span className="text-xs font-bold text-[#007A5E] uppercase tracking-wider font-mono">
+                13 / IMMERSIVE EXPERIENCES
+              </span>
+              <div className="w-12 h-0.5 bg-[#007A5E]/40 rounded-full" />
             </div>
-            <h2 className="font-display font-black text-3xl sm:text-5xl lg:text-6xl text-slate-900 tracking-tight">
+            <h2 className="font-display font-bold text-3xl sm:text-5xl lg:text-6xl text-slate-900 tracking-tight">
               BEYOND THE <br />
               <span className="text-hydro-primary">EXHIBITION FLOOR.</span>
             </h2>

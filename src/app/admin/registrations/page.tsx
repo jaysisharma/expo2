@@ -70,7 +70,32 @@ export default function AdminRegistrationsPage() {
   useEffect(() => {
     fetchData();
     fetchBadgeTemplates();
+
+    const handleTemplatesUpdated = (e: any) => {
+      if (e.detail) {
+        setBadgeTemplates(e.detail);
+      }
+    };
+
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "hhe_badge_templates" && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (parsed && (parsed.visitor || parsed.exhibitor)) {
+            setBadgeTemplates(parsed);
+          }
+        } catch (err) {}
+      }
+    };
+
+    window.addEventListener("hhe_badge_templates_updated", handleTemplatesUpdated);
+    window.addEventListener("storage", handleStorage);
+    return () => {
+      window.removeEventListener("hhe_badge_templates_updated", handleTemplatesUpdated);
+      window.removeEventListener("storage", handleStorage);
+    };
   }, []);
+
 
   const registrations = data?.registrations || [];
 
@@ -334,10 +359,23 @@ export default function AdminRegistrationsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredRegistrations.length === 0 ? (
+              {isLoading ? (
                 <tr>
-                  <td colSpan={7} className="p-8 text-center text-slate-400 text-xs">
-                    No attendees found matching criteria.
+                  <td colSpan={7} className="p-10 text-center">
+                    <div className="flex flex-col items-center gap-2 text-slate-400">
+                      <div className="w-5 h-5 rounded-full border-2 border-slate-300 border-t-[#218A59] animate-spin" />
+                      <span className="text-xs">Loading registrations...</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : filteredRegistrations.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="p-10 text-center">
+                    <div className="flex flex-col items-center gap-2">
+                      <span className="text-2xl">👤</span>
+                      <p className="text-sm font-medium text-slate-700">No attendees found</p>
+                      <p className="text-xs text-slate-400">Try adjusting your search or filters.</p>
+                    </div>
                   </td>
                 </tr>
               ) : (

@@ -29,7 +29,10 @@ export const EXPO_EVENT_META = {
   theme: "Resilient Energy, Prosperous Nepal",
   datesEnglish: "17th–19th Jan, 2027",
   datesNepali: "3rd–5th Magh, 2083",
-  venue: "Bhrikutimandap, Kathmandu, Nepal",
+  venue: "Bhrikuti Mandap (Bhrikutimandap Exhibition Hall), Kathmandu, Nepal",
+  galaDinnerVenue: "Royal Tulip, Kathmandu",
+  galaDinnerNationalPrice: "NPR 6,000",
+  galaDinnerInternationalPrice: "USD 50",
   notes: [
     "25% extra will be charged on prime stalls.",
     "Irregular size stall will be charged on the basis of size.",

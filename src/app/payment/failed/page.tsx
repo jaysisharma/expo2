@@ -87,23 +87,23 @@ function PaymentFailedContent() {
             </div>
           </div>
 
-          {/* Secretariat Hotline Card */}
+          {/* Organizer Hotline Card */}
           <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-3">
             <div className="flex items-center gap-2 text-xs font-mono font-bold text-slate-900 uppercase">
               <ShieldCheck className="w-4 h-4 text-[#10B981]" />
               <span>Need Immediate Assistance or Bank Invoice?</span>
             </div>
             <p className="text-xs text-slate-600 font-normal leading-relaxed">
-              If your bank account was debited or if you prefer an official pro-forma wire invoice, please contact the IPPAN Expo Secretariat immediately:
+              If your bank account was debited or if you prefer an official pro-forma wire invoice, please contact the IPPAN Expo team immediately:
             </p>
             <div className="flex flex-wrap items-center gap-4 text-xs font-mono text-slate-700 pt-1">
               <span className="flex items-center gap-1.5">
                 <Phone className="w-3.5 h-3.5 text-[#218A59]" />
-                <span>+977 1 4169175 / +977 9851458275</span>
+                <span>+977-9703606340 | 9703606355</span>
               </span>
               <span className="flex items-center gap-1.5">
                 <Mail className="w-3.5 h-3.5 text-[#10B981]" />
-                <span>expo@ippan.org.np</span>
+                <span>info@nepalenergyexpo.com</span>
               </span>
             </div>
           </div>

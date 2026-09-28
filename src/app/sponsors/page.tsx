@@ -106,17 +106,17 @@ export default function SponsorsPage() {
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
             <div>
               <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white">
-                Sponsors & Partners
+                Sponsors &amp; Partners
               </h1>
               <p className="mt-3 text-sm sm:text-base text-emerald-100/75 max-w-xl">
-                Backed by sovereign energy ministries, national utility operators, apex industry chambers, and global engineering pioneers.
+                Supported across previous editions by sovereign energy ministries, national utility operators, apex industry chambers, and global engineering pioneers.
               </p>
             </div>
 
             <div className="flex items-center gap-3 shrink-0">
               <Link
                 href="/contact?type=Sponsorship"
-                className="px-5 py-2.5 rounded-lg bg-[#10B981] hover:bg-[#059669] text-slate-950 text-xs font-black flex items-center gap-2 transition-colors shadow-md"
+                className="px-5 py-2.5 rounded-lg bg-[#007A5E] hover:bg-[#005C42] text-white text-xs font-bold flex items-center gap-2 transition-colors shadow-md"
               >
                 <span>Inquire for Sponsorship</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -127,7 +127,7 @@ export default function SponsorsPage() {
       </div>
 
       {/* =========================================================================
-          02: CURRENT OFFICIAL SPONSORS & PATRONS DIRECTORY
+          02: PREVIOUS OFFICIAL SPONSORS & PATRONS DIRECTORY
          ========================================================================= */}
       <div className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 flex-grow">
         <div className="max-w-5xl mx-auto space-y-16">
@@ -136,11 +136,14 @@ export default function SponsorsPage() {
           <div className="space-y-12">
             <div className="border-b border-slate-200 pb-4">
               <span className="text-xs font-bold text-[#087EA4] uppercase tracking-wider block mb-1 font-mono">
-                OFFICIAL PATRONS & PARTNERS MATRIX
+                PREVIOUS EDITIONS · PARTNERS &amp; PATRONS MATRIX
               </span>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                Our Institutional Partners & Sponsors
+                Our Previous Institutional Partners &amp; Sponsors
               </h2>
+              <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                Organizations, sovereign authorities, and industry leaders that supported previous editions of the Himalayan Green Energy Expo.
+              </p>
             </div>
 
             {sponsorsData.map((category, cIdx) => (
@@ -173,7 +176,7 @@ export default function SponsorsPage() {
                             className="object-contain"
                           />
                         ) : (
-                          <span className="font-mono font-black text-2xl text-[#087EA4]">
+                          <span className="font-mono font-bold text-2xl text-[#087EA4]">
                             {sponsor.name.charAt(0)}
                           </span>
                         )}
@@ -310,7 +313,7 @@ export default function SponsorsPage() {
                 Custom Sponsorship & Branding Packages
               </h3>
               <p className="text-xs text-slate-300 mt-1 max-w-xl">
-                Looking for tailored branding options such as badge sponsorship, VIP gala dinner hosting, or technical stage naming rights? Contact our partnership secretariat.
+                Looking for tailored branding options such as badge sponsorship, VIP gala dinner hosting, or technical stage naming rights? Contact our partnership team.
               </p>
             </div>
 
@@ -319,7 +322,7 @@ export default function SponsorsPage() {
                 href="/contact?type=Sponsorship"
                 className="px-6 py-3 rounded-lg bg-[#19A974] hover:bg-[#158f62] text-white text-xs font-semibold tracking-wide transition-colors flex items-center gap-2"
               >
-                <span>CONTACT SECRETARIAT</span>
+                <span>CONTACT PARTNERSHIPS</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import {
   Users,
@@ -14,6 +14,11 @@ import {
   X,
   LayoutGrid,
   List,
+  Building2,
+  Briefcase,
+  ShieldCheck,
+  AlertCircle,
+  Filter,
 } from "lucide-react";
 import { speakersData as initialIPPANMembers } from "@/data/speakers";
 import { eventSolutionTeam as initialEventSolutionTeam } from "@/data/eventSolutionTeam";
@@ -30,17 +35,19 @@ export interface UnifiedMember {
   featured?: boolean;
 }
 
-const initialUnifiedMembers: UnifiedMember[] = [
+const STORAGE_KEY = "expo_organization_members";
+
+const defaultMembers: UnifiedMember[] = [
   ...initialIPPANMembers.map((s) => ({
     id: s.id,
     name: s.name,
     title: s.title,
     organization: "Independent Power Producers' Association, Nepal (IPPAN)",
     orgType: "IPPAN" as const,
-    photo: s.photo,
+    photo: s.photo || "/images/committee/mohan-kumar-dangi.png",
     category: s.category || "IPPAN Leadership",
     bio: s.bio,
-    featured: s.featured,
+    featured: s.featured ?? false,
   })),
   ...initialEventSolutionTeam.map((e) => ({
     id: e.id,
@@ -48,7 +55,7 @@ const initialUnifiedMembers: UnifiedMember[] = [
     title: e.position,
     organization: "Event Solution Pvt. Ltd.",
     orgType: "Event Solution" as const,
-    photo: e.photo,
+    photo: e.photo || "/images/committee/mohan-kumar-dangi.png",
     category: e.category || "Executive",
     bio: `${e.position} at Event Solution Pvt. Ltd., organizing the Himalayan Green Energy Expo.`,
     featured: e.category === "Executive",
@@ -56,54 +63,141 @@ const initialUnifiedMembers: UnifiedMember[] = [
 ];
 
 export default function AdminMembersPage() {
-  const [members, setMembers] = useState<UnifiedMember[]>(initialUnifiedMembers);
+  const [members, setMembers] = useState<UnifiedMember[]>([]);
+  const [mounted, setMounted] = useState(false);
   const [selectedOrg, setSelectedOrg] = useState<"All" | "IPPAN" | "Event Solution">("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"table" | "grid">("table");
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [editingMember, setEditingMember] = useState<UnifiedMember | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
+
+  // Load from localStorage or defaults
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setMembers(parsed);
+          setMounted(true);
+          return;
+        }
+      }
+    } catch (e) {
+      console.error("Failed to load members from localStorage", e);
+    }
+    setMembers(defaultMembers);
+    setMounted(true);
+  }, []);
+
+  // Save to localStorage
+  const saveMembers = (updated: UnifiedMember[]) => {
+    setMembers(updated);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    } catch (e) {
+      console.error("Failed to save members to localStorage", e);
+    }
+  };
 
   const notify = (msg: string) => {
     setToastMsg(msg);
     setTimeout(() => setToastMsg(null), 3000);
   };
 
-  const filteredMembers = members.filter((m) => {
-    const matchesOrg = selectedOrg === "All" || m.orgType === selectedOrg;
-    const q = searchQuery.toLowerCase().trim();
-    const matchesSearch =
-      !q ||
-      m.name.toLowerCase().includes(q) ||
-      m.title.toLowerCase().includes(q) ||
-      m.organization.toLowerCase().includes(q) ||
-      m.category.toLowerCase().includes(q);
+  // Filtered members list
+  const filteredMembers = useMemo(() => {
+    return members.filter((m) => {
+      const matchesOrg = selectedOrg === "All" || m.orgType === selectedOrg;
+      const q = searchQuery.toLowerCase().trim();
+      const matchesSearch =
+        !q ||
+        m.name.toLowerCase().includes(q) ||
+        m.title.toLowerCase().includes(q) ||
+        m.organization.toLowerCase().includes(q) ||
+        m.category.toLowerCase().includes(q);
 
-    return matchesOrg && matchesSearch;
-  });
+      return matchesOrg && matchesSearch;
+    });
+  }, [members, selectedOrg, searchQuery]);
 
+  // Counts
   const ippanCount = members.filter((m) => m.orgType === "IPPAN").length;
   const eventSolutionCount = members.filter((m) => m.orgType === "Event Solution").length;
+  const featuredCount = members.filter((m) => m.featured).length;
 
-  const handleToggleFeatured = (id: string) => {
-    setMembers((prev) =>
-      prev.map((m) => (m.id === id ? { ...m, featured: !m.featured } : m))
+  // Selection handlers
+  const handleToggleSelectAll = () => {
+    const filteredIds = filteredMembers.map((m) => m.id);
+    const allSelected = filteredIds.every((id) => selectedIds.includes(id));
+    if (allSelected) {
+      setSelectedIds((prev) => prev.filter((id) => !filteredIds.includes(id)));
+    } else {
+      setSelectedIds((prev) => Array.from(new Set([...prev, ...filteredIds])));
+    }
+  };
+
+  const handleToggleSelect = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
     );
+  };
+
+  // Bulk actions
+  const handleBulkDelete = () => {
+    if (selectedIds.length === 0) return;
+    if (
+      !confirm(
+        `Are you sure you want to delete ${selectedIds.length} selected member${
+          selectedIds.length > 1 ? "s" : ""
+        }?`
+      )
+    ) {
+      return;
+    }
+    const updated = members.filter((m) => !selectedIds.includes(m.id));
+    saveMembers(updated);
+    notify(`Deleted ${selectedIds.length} member(s)`);
+    setSelectedIds([]);
+  };
+
+  const handleBulkToggleFeatured = (enable: boolean) => {
+    if (selectedIds.length === 0) return;
+    const updated = members.map((m) =>
+      selectedIds.includes(m.id) ? { ...m, featured: enable } : m
+    );
+    saveMembers(updated);
+    notify(
+      `${enable ? "Featured" : "Unfeatured"} ${selectedIds.length} member(s)`
+    );
+  };
+
+  // Single item actions
+  const handleToggleFeatured = (id: string) => {
+    const updated = members.map((m) =>
+      m.id === id ? { ...m, featured: !m.featured } : m
+    );
+    saveMembers(updated);
     notify("Featured status updated");
   };
 
   const handleDelete = (id: string, name: string) => {
     if (!confirm(`Are you sure you want to remove ${name}?`)) return;
-    setMembers((prev) => prev.filter((m) => m.id !== id));
+    const updated = members.filter((m) => m.id !== id);
+    saveMembers(updated);
+    setSelectedIds((prev) => prev.filter((item) => item !== id));
     notify(`Member ${name} removed`);
   };
 
   const handleSaveEdit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingMember) return;
-    setMembers((prev) =>
-      prev.map((m) => (m.id === editingMember.id ? editingMember : m))
+    const updated = members.map((m) =>
+      m.id === editingMember.id ? editingMember : m
     );
+    saveMembers(updated);
     notify(`Updated ${editingMember.name}`);
     setEditingMember(null);
   };
@@ -114,26 +208,31 @@ export default function AdminMembersPage() {
     const name = formData.get("name") as string;
     const title = formData.get("title") as string;
     const orgType = formData.get("orgType") as "IPPAN" | "Event Solution";
+    const customOrg = formData.get("organization") as string;
     const category = formData.get("category") as string;
     const bio = formData.get("bio") as string;
-    const photo = (formData.get("photo") as string) || "/images/committee/mohan-kumar-dangi.png";
+    const photo =
+      (formData.get("photo") as string) || "/images/committee/mohan-kumar-dangi.png";
+    const featured = formData.get("featured") === "on";
+
+    const defaultOrgName =
+      orgType === "IPPAN"
+        ? "Independent Power Producers' Association, Nepal (IPPAN)"
+        : "Event Solution Pvt. Ltd.";
 
     const newMember: UnifiedMember = {
-      id: name.toLowerCase().replace(/\s+/g, "-"),
+      id: `${name.toLowerCase().replace(/[^a-z0-9]/g, "-")}-${Date.now().toString(36)}`,
       name,
       title,
-      organization:
-        orgType === "IPPAN"
-          ? "Independent Power Producers' Association, Nepal (IPPAN)"
-          : "Event Solution Pvt. Ltd.",
+      organization: customOrg?.trim() || defaultOrgName,
       orgType,
-      category: category || (orgType === "IPPAN" ? "IPPAN Leadership" : "Executive"),
+      category: category?.trim() || (orgType === "IPPAN" ? "IPPAN Leadership" : "Executive"),
       photo,
-      bio: bio || `${title} at ${orgType}.`,
-      featured: false,
+      bio: bio?.trim() || `${title} at ${orgType}.`,
+      featured,
     };
 
-    setMembers([newMember, ...members]);
+    saveMembers([newMember, ...members]);
     notify(`Added ${name}`);
     setShowAddModal(false);
   };
@@ -155,18 +254,22 @@ export default function AdminMembersPage() {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `Members_IPPAN_EventSolution_${Date.now()}.csv`);
+    link.setAttribute("download", `Organization_Members_${Date.now()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
+  const isAllFilteredSelected =
+    filteredMembers.length > 0 &&
+    filteredMembers.every((m) => selectedIds.includes(m.id));
+
   return (
     <div className="space-y-6 font-sans">
       {/* Toast Notification */}
       {toastMsg && (
-        <div className="fixed top-4 right-4 z-50 px-4 py-2 rounded-xl bg-white border border-emerald-200 text-emerald-800 text-xs font-semibold shadow-lg flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+        <div className="fixed top-4 right-4 z-50 px-4 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-medium shadow-xl flex items-center gap-2 border border-slate-700 animate-in fade-in slide-in-from-top-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
           <span>{toastMsg}</span>
         </div>
       )}
@@ -174,30 +277,30 @@ export default function AdminMembersPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-[#218A59] border border-emerald-200 font-mono text-[10px] font-bold uppercase">
-              Leadership & Organizers
+          <div className="flex items-center gap-2 mb-1">
+            <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 font-mono text-[10px] font-semibold uppercase tracking-wider">
+              Directory & Administration
             </span>
           </div>
-          <h1 className="text-xl sm:text-2xl font-display font-bold text-slate-900 tracking-tight mt-1">
-            Members of IPPAN & Event Solution
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+            Organization Members
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Profiles for IPPAN Executive Committee and Event Solution organizing team.
+          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+            Profiles for IPPAN Executive Committee & Event Solution organizing management.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 self-start sm:self-auto">
           <button
             onClick={exportCSV}
-            className="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium border border-slate-200 shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
           >
             <Download className="w-3.5 h-3.5 text-slate-500" />
             <span>Export CSV</span>
           </button>
           <button
             onClick={() => setShowAddModal(true)}
-            className="px-4 py-2 rounded-xl bg-[#218A59] hover:bg-[#1b734a] text-white font-semibold text-xs flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+            className="px-3.5 py-1.5 rounded-xl bg-[#218A59] hover:bg-[#1b734a] text-white font-medium text-xs flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Add Member</span>
@@ -205,50 +308,171 @@ export default function AdminMembersPage() {
         </div>
       </div>
 
-      {/* Metric chips */}
-      <div className="flex flex-wrap gap-2.5 text-xs font-mono">
-        <span className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 shadow-xs">
-          Total Members: <strong className="text-slate-900">{members.length}</strong>
-        </span>
-        <span className="px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 font-semibold shadow-xs">
-          IPPAN Committee: <strong>{ippanCount}</strong>
-        </span>
-        <span className="px-3 py-1.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-800 font-semibold shadow-xs">
-          Event Solution Team: <strong>{eventSolutionCount}</strong>
-        </span>
-      </div>
-
-      {/* Filters & View Toggle */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-100 border border-slate-200 overflow-x-auto">
-          {(["All", "IPPAN", "Event Solution"] as const).map((org) => (
-            <button
-              key={org}
-              onClick={() => setSelectedOrg(org)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
-                selectedOrg === org
-                  ? "bg-white text-slate-900 font-bold shadow-xs border border-slate-200"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              {org === "All" ? "All Members" : org === "IPPAN" ? "IPPAN Committee" : "Event Solution"}
-            </button>
-          ))}
+      {/* KPI Summary Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-mono text-slate-400 uppercase tracking-wider block">
+              Total Members
+            </span>
+            <div className="text-xl sm:text-2xl font-bold text-slate-900 mt-1">
+              {mounted ? members.length : "—"}
+            </div>
+            <span className="text-[10px] text-slate-500">Across both organizations</span>
+          </div>
+          <div className="p-2.5 rounded-xl bg-slate-100 text-slate-600">
+            <Users className="w-5 h-5" />
+          </div>
         </div>
 
+        <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-mono text-emerald-600 uppercase tracking-wider block">
+              IPPAN Committee
+            </span>
+            <div className="text-xl sm:text-2xl font-bold text-slate-900 mt-1">
+              {mounted ? ippanCount : "—"}
+            </div>
+            <span className="text-[10px] text-slate-500">Leadership & Board</span>
+          </div>
+          <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-100">
+            <Building2 className="w-5 h-5" />
+          </div>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-mono text-blue-600 uppercase tracking-wider block">
+              Event Solution Team
+            </span>
+            <div className="text-xl sm:text-2xl font-bold text-slate-900 mt-1">
+              {mounted ? eventSolutionCount : "—"}
+            </div>
+            <span className="text-[10px] text-slate-500">Organizing & Management</span>
+          </div>
+          <div className="p-2.5 rounded-xl bg-blue-50 text-blue-700 border border-blue-100">
+            <Briefcase className="w-5 h-5" />
+          </div>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-mono text-amber-600 uppercase tracking-wider block">
+              Featured Profiles
+            </span>
+            <div className="text-xl sm:text-2xl font-bold text-slate-900 mt-1">
+              {mounted ? featuredCount : "—"}
+            </div>
+            <span className="text-[10px] text-slate-500">Key leadership highlights</span>
+          </div>
+          <div className="p-2.5 rounded-xl bg-amber-50 text-amber-600 border border-amber-100">
+            <Star className="w-5 h-5" />
+          </div>
+        </div>
+      </div>
+
+      {/* Floating Bulk Action Bar */}
+      {selectedIds.length > 0 && (
+        <div className="p-3 rounded-2xl bg-slate-900 text-white shadow-xl flex flex-wrap items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2 border border-slate-800">
+          <div className="flex items-center gap-2.5">
+            <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 font-mono text-xs font-semibold">
+              {selectedIds.length} selected
+            </span>
+            <span className="text-xs text-slate-300 hidden sm:inline">
+              Perform bulk operations on selected members
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handleBulkToggleFeatured(true)}
+              className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer border border-slate-700"
+            >
+              <Star className="w-3.5 h-3.5 fill-current" />
+              <span>Mark Featured</span>
+            </button>
+            <button
+              onClick={() => handleBulkToggleFeatured(false)}
+              className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer border border-slate-700"
+            >
+              <span>Unfeature</span>
+            </button>
+            <button
+              onClick={handleBulkDelete}
+              className="px-2.5 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer border border-rose-500/30"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Delete</span>
+            </button>
+            <button
+              onClick={() => setSelectedIds([])}
+              className="p-1 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer"
+              title="Clear Selection"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Filter and View Controls Bar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        {/* Organization Filter Pills */}
+        <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-100 border border-slate-200 overflow-x-auto text-xs">
+          <button
+            onClick={() => setSelectedOrg("All")}
+            className={`px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer whitespace-nowrap ${
+              selectedOrg === "All"
+                ? "bg-white text-slate-900 font-semibold shadow-xs"
+                : "text-slate-600 hover:text-slate-900"
+            }`}
+          >
+            All Members ({members.length})
+          </button>
+          <button
+            onClick={() => setSelectedOrg("IPPAN")}
+            className={`px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer whitespace-nowrap ${
+              selectedOrg === "IPPAN"
+                ? "bg-white text-slate-900 font-semibold shadow-xs"
+                : "text-slate-600 hover:text-slate-900"
+            }`}
+          >
+            IPPAN ({ippanCount})
+          </button>
+          <button
+            onClick={() => setSelectedOrg("Event Solution")}
+            className={`px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer whitespace-nowrap ${
+              selectedOrg === "Event Solution"
+                ? "bg-white text-slate-900 font-semibold shadow-xs"
+                : "text-slate-600 hover:text-slate-900"
+            }`}
+          >
+            Event Solution ({eventSolutionCount})
+          </button>
+        </div>
+
+        {/* Search & Layout Toggle */}
         <div className="flex items-center gap-2">
-          <div className="relative min-w-[220px]">
+          <div className="relative flex-1 sm:w-64">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search member, role, org..."
-              className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-white border border-slate-200 text-xs text-slate-900 placeholder-slate-400 shadow-xs focus:outline-none focus:border-[#218A59]"
+              className="w-full pl-9 pr-8 py-1.5 rounded-xl bg-white border border-slate-200 text-xs text-slate-900 placeholder-slate-400 shadow-xs focus:outline-none focus:border-[#218A59]"
             />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
 
-          <div className="flex items-center p-0.5 rounded-xl bg-slate-100 border border-slate-200">
+          <div className="flex items-center p-1 rounded-xl bg-slate-100 border border-slate-200">
             <button
               onClick={() => setViewMode("table")}
               title="Table View"
@@ -275,195 +499,279 @@ export default function AdminMembersPage() {
         </div>
       </div>
 
-      {/* Content: Table View */}
+      {/* Main Content Area */}
       {viewMode === "table" ? (
         <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs text-slate-700">
-              <thead className="bg-slate-50 text-slate-600 font-mono text-[10px] tracking-wider border-b border-slate-200 uppercase">
+              <thead className="bg-slate-50 text-slate-500 font-mono text-[10px] tracking-wider border-b border-slate-200 uppercase">
                 <tr>
-                  <th className="p-3.5 font-bold">Member</th>
-                  <th className="p-3.5 font-bold">Designation</th>
-                  <th className="p-3.5 font-bold">Organization</th>
-                  <th className="p-3.5 font-bold">Group</th>
-                  <th className="p-3.5 font-bold text-center">Featured</th>
-                  <th className="p-3.5 font-bold text-right">Action</th>
+                  <th className="p-3 w-10 text-center">
+                    <input
+                      type="checkbox"
+                      checked={isAllFilteredSelected}
+                      onChange={handleToggleSelectAll}
+                      className="rounded border-slate-300 text-[#218A59] focus:ring-[#218A59] cursor-pointer"
+                      title="Select All Filtered"
+                    />
+                  </th>
+                  <th className="p-3.5 font-semibold">Member</th>
+                  <th className="p-3.5 font-semibold">Designation / Role</th>
+                  <th className="p-3.5 font-semibold">Organization</th>
+                  <th className="p-3.5 font-semibold">Group</th>
+                  <th className="p-3.5 font-semibold text-center">Featured</th>
+                  <th className="p-3.5 font-semibold text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filteredMembers.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="p-8 text-center text-slate-400 text-xs">
-                      No members found matching criteria.
+                    <td colSpan={7} className="p-12 text-center text-slate-400">
+                      <div className="flex flex-col items-center justify-center space-y-2">
+                        <Users className="w-8 h-8 text-slate-300 stroke-1" />
+                        <span className="text-sm font-medium text-slate-600">No members found</span>
+                        <span className="text-xs text-slate-400">Try modifying search or filter criteria.</span>
+                      </div>
                     </td>
                   </tr>
                 ) : (
-                  filteredMembers.map((m) => (
-                    <tr key={m.id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="p-3.5">
-                        <div className="flex items-center gap-3">
-                          <div className="relative w-8 h-8 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
-                            <Image
-                              src={m.photo || "/images/committee/mohan-kumar-dangi.png"}
-                              alt={m.name}
-                              fill
-                              className="object-cover"
-                            />
-                          </div>
-                          <div>
-                            <div className="font-semibold text-slate-900">{m.name}</div>
-                            <div className="text-[10px] text-slate-400 font-mono">
-                              {m.category}
+                  filteredMembers.map((m) => {
+                    const isSelected = selectedIds.includes(m.id);
+                    return (
+                      <tr
+                        key={m.id}
+                        className={`transition-colors hover:bg-slate-50/80 ${
+                          isSelected ? "bg-emerald-50/40" : ""
+                        }`}
+                      >
+                        <td className="p-3 text-center">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => handleToggleSelect(m.id)}
+                            className="rounded border-slate-300 text-[#218A59] focus:ring-[#218A59] cursor-pointer"
+                          />
+                        </td>
+                        <td className="p-3.5">
+                          <div className="flex items-center gap-3">
+                            <div className="relative w-9 h-9 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
+                              <Image
+                                src={m.photo || "/images/committee/mohan-kumar-dangi.png"}
+                                alt={m.name}
+                                fill
+                                sizes="36px"
+                                className="object-cover"
+                                onError={(e) => {
+                                  // Fallback handled gracefully
+                                  const target = e.target as HTMLImageElement;
+                                  target.src = "/images/committee/mohan-kumar-dangi.png";
+                                }}
+                              />
+                            </div>
+                            <div>
+                              <div className="font-semibold text-slate-900 leading-tight">
+                                {m.name}
+                              </div>
+                              <div className="text-[10px] text-slate-400 font-mono mt-0.5">
+                                {m.category}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="p-3.5 font-medium text-slate-800">
-                        {m.title}
-                      </td>
-                      <td className="p-3.5 text-slate-600 truncate max-w-[220px]">
-                        {m.organization}
-                      </td>
-                      <td className="p-3.5">
-                        <span
-                          className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded border ${
-                            m.orgType === "IPPAN"
-                              ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                              : "bg-blue-50 text-blue-800 border-blue-200"
-                          }`}
-                        >
-                          {m.orgType}
-                        </span>
-                      </td>
-                      <td className="p-3.5 text-center">
-                        <button
-                          onClick={() => handleToggleFeatured(m.id)}
-                          className={`p-1 rounded transition-colors cursor-pointer ${
-                            m.featured
-                              ? "text-amber-500"
-                              : "text-slate-300 hover:text-slate-500"
-                          }`}
-                        >
-                          <Star className="w-4 h-4 fill-current" />
-                        </button>
-                      </td>
-                      <td className="p-3.5 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <button
-                            onClick={() => setEditingMember(m)}
-                            className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
+                        </td>
+                        <td className="p-3.5 font-medium text-slate-800">
+                          {m.title}
+                        </td>
+                        <td className="p-3.5 text-slate-600 max-w-[220px] truncate" title={m.organization}>
+                          {m.organization}
+                        </td>
+                        <td className="p-3.5">
+                          <span
+                            className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-mono font-medium border ${
+                              m.orgType === "IPPAN"
+                                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                : "bg-blue-50 text-blue-700 border-blue-200"
+                            }`}
                           >
-                            <Edit className="w-3.5 h-3.5" />
-                          </button>
+                            {m.orgType}
+                          </span>
+                        </td>
+                        <td className="p-3.5 text-center">
                           <button
-                            onClick={() => handleDelete(m.id, m.name)}
-                            className="p-1.5 rounded-lg bg-slate-100 hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
+                            onClick={() => handleToggleFeatured(m.id)}
+                            className={`p-1 rounded-md transition-colors cursor-pointer ${
+                              m.featured
+                                ? "text-amber-500 hover:text-amber-600"
+                                : "text-slate-300 hover:text-slate-500"
+                            }`}
+                            title={m.featured ? "Featured member" : "Click to feature"}
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Star
+                              className={`w-4 h-4 ${
+                                m.featured ? "fill-current" : ""
+                              }`}
+                            />
                           </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                        </td>
+                        <td className="p-3.5 text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <button
+                              onClick={() => setEditingMember(m)}
+                              className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
+                              title="Edit member"
+                            >
+                              <Edit className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(m.id, m.name)}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                              title="Remove member"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
           </div>
+          <div className="px-4 py-3 bg-slate-50/50 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
+            <span>
+              Showing {filteredMembers.length} of {members.length} members
+            </span>
+            {selectedIds.length > 0 && (
+              <span className="font-mono text-emerald-700 font-medium">
+                {selectedIds.length} row(s) selected
+              </span>
+            )}
+          </div>
         </div>
       ) : (
-        /* Content: Grid View */
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredMembers.map((m) => (
-            <div
-              key={m.id}
-              className="p-4 rounded-2xl bg-white border border-slate-200 hover:border-slate-300 shadow-xs transition-all flex flex-col justify-between space-y-3"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-3">
+        /* Grid View */
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+          {filteredMembers.map((m) => {
+            const isSelected = selectedIds.includes(m.id);
+            return (
+              <div
+                key={m.id}
+                className={`p-4 rounded-2xl bg-white border transition-all flex flex-col justify-between space-y-3 relative ${
+                  isSelected
+                    ? "border-emerald-500 ring-1 ring-emerald-500/20 shadow-xs bg-emerald-50/10"
+                    : "border-slate-200 hover:border-slate-300 shadow-xs"
+                }`}
+              >
+                {/* Card Top Row: Checkbox, Badge, Star */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => handleToggleSelect(m.id)}
+                      className="rounded border-slate-300 text-[#218A59] focus:ring-[#218A59] cursor-pointer"
+                    />
+                    <span
+                      className={`text-[10px] font-mono font-medium px-2 py-0.5 rounded-md border ${
+                        m.orgType === "IPPAN"
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                          : "bg-blue-50 text-blue-700 border-blue-200"
+                      }`}
+                    >
+                      {m.orgType}
+                    </span>
+                  </div>
+
+                  <button
+                    onClick={() => handleToggleFeatured(m.id)}
+                    className={`p-1 rounded cursor-pointer ${
+                      m.featured
+                        ? "text-amber-500"
+                        : "text-slate-300 hover:text-slate-500"
+                    }`}
+                    title={m.featured ? "Featured" : "Click to feature"}
+                  >
+                    <Star
+                      className={`w-4 h-4 ${m.featured ? "fill-current" : ""}`}
+                    />
+                  </button>
+                </div>
+
+                {/* Card Main: Avatar + Details */}
+                <div className="flex items-start gap-3">
                   <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
                     <Image
                       src={m.photo || "/images/committee/mohan-kumar-dangi.png"}
                       alt={m.name}
                       fill
+                      sizes="48px"
                       className="object-cover"
                     />
                   </div>
-                  <div>
-                    <h3 className="font-bold text-sm text-slate-900 line-clamp-1">{m.name}</h3>
-                    <span className="text-xs text-[#218A59] font-semibold block line-clamp-1">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-semibold text-sm text-slate-900 truncate">
+                      {m.name}
+                    </h3>
+                    <div className="text-xs text-[#218A59] font-medium truncate mt-0.5">
                       {m.title}
-                    </span>
-                    <span className="text-[10px] text-slate-500 line-clamp-1">
+                    </div>
+                    <div className="text-[11px] text-slate-500 truncate mt-0.5">
                       {m.organization}
-                    </span>
+                    </div>
                   </div>
                 </div>
 
-                <button
-                  onClick={() => handleToggleFeatured(m.id)}
-                  className={`p-1.5 rounded-lg shrink-0 cursor-pointer ${
-                    m.featured
-                      ? "text-amber-500"
-                      : "text-slate-300 hover:text-slate-500"
-                  }`}
-                  title={m.featured ? "Featured" : "Click to feature"}
-                >
-                  <Star className="w-4 h-4 fill-current" />
-                </button>
-              </div>
+                {m.bio && (
+                  <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                    {m.bio}
+                  </p>
+                )}
 
-              {m.bio && (
-                <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
-                  {m.bio}
-                </p>
-              )}
+                {/* Card Footer: Category + Actions */}
+                <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
+                  <span className="text-[10px] font-mono text-slate-400 bg-slate-50 px-2 py-0.5 rounded border border-slate-200">
+                    {m.category}
+                  </span>
 
-              <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
-                <span
-                  className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded border ${
-                    m.orgType === "IPPAN"
-                      ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                      : "bg-blue-50 text-blue-800 border-blue-200"
-                  }`}
-                >
-                  {m.orgType}
-                </span>
-
-                <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={() => setEditingMember(m)}
-                    className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
-                  >
-                    <Edit className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(m.id, m.name)}
-                    className="p-1.5 rounded-lg bg-slate-100 hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setEditingMember(m)}
+                      className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
+                    >
+                      <Edit className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(m.id, m.name)}
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
       {/* Edit Modal */}
       {editingMember && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl p-5 shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-lg bg-white border border-slate-200 rounded-2xl p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="font-semibold text-sm text-slate-900">Edit Member</h3>
+              <div>
+                <h3 className="font-bold text-sm text-slate-900">Edit Member Profile</h3>
+                <p className="text-xs text-slate-500 mt-0.5">Update details for {editingMember.name}</p>
+              </div>
               <button
                 onClick={() => setEditingMember(null)}
-                className="p-1 rounded text-slate-400 hover:text-slate-600 cursor-pointer transition-colors"
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 cursor-pointer transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleSaveEdit} className="space-y-3 text-xs">
+            <form onSubmit={handleSaveEdit} className="space-y-3.5 text-xs">
               <div>
                 <label className="block text-[11px] font-mono text-slate-600 mb-1">
                   FULL NAME
@@ -479,7 +787,7 @@ export default function AdminMembersPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[11px] font-mono text-slate-600 mb-1">
                     DESIGNATION / TITLE
@@ -500,16 +808,17 @@ export default function AdminMembersPage() {
                   </label>
                   <select
                     value={editingMember.orgType}
-                    onChange={(e) =>
+                    onChange={(e) => {
+                      const newOrgType = e.target.value as "IPPAN" | "Event Solution";
                       setEditingMember({
                         ...editingMember,
-                        orgType: e.target.value as "IPPAN" | "Event Solution",
+                        orgType: newOrgType,
                         organization:
-                          e.target.value === "IPPAN"
+                          newOrgType === "IPPAN"
                             ? "Independent Power Producers' Association, Nepal (IPPAN)"
                             : "Event Solution Pvt. Ltd.",
-                      })
-                    }
+                      });
+                    }}
                     className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59] cursor-pointer"
                   >
                     <option value="IPPAN">IPPAN Committee</option>
@@ -520,24 +829,53 @@ export default function AdminMembersPage() {
 
               <div>
                 <label className="block text-[11px] font-mono text-slate-600 mb-1">
-                  CATEGORY / ROLE
+                  ORGANIZATION FULL NAME
                 </label>
                 <input
                   type="text"
-                  value={editingMember.category}
+                  value={editingMember.organization}
                   onChange={(e) =>
-                    setEditingMember({ ...editingMember, category: e.target.value })
+                    setEditingMember({ ...editingMember, organization: e.target.value })
                   }
                   className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59]"
                 />
               </div>
 
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-mono text-slate-600 mb-1">
+                    CATEGORY / COMMITTEE
+                  </label>
+                  <input
+                    type="text"
+                    value={editingMember.category}
+                    onChange={(e) =>
+                      setEditingMember({ ...editingMember, category: e.target.value })
+                    }
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-mono text-slate-600 mb-1">
+                    PHOTO PATH / URL
+                  </label>
+                  <input
+                    type="text"
+                    value={editingMember.photo}
+                    onChange={(e) =>
+                      setEditingMember({ ...editingMember, photo: e.target.value })
+                    }
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59]"
+                  />
+                </div>
+              </div>
+
               <div>
                 <label className="block text-[11px] font-mono text-slate-600 mb-1">
-                  BIOGRAPHY / PROFILE NOTE
+                  BIOGRAPHY / RESPONSIBILITY
                 </label>
                 <textarea
-                  rows={3}
+                  rows={2}
                   value={editingMember.bio || ""}
                   onChange={(e) =>
                     setEditingMember({ ...editingMember, bio: e.target.value })
@@ -546,7 +884,22 @@ export default function AdminMembersPage() {
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 text-xs">
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="checkbox"
+                  id="editFeatured"
+                  checked={editingMember.featured ?? false}
+                  onChange={(e) =>
+                    setEditingMember({ ...editingMember, featured: e.target.checked })
+                  }
+                  className="rounded border-slate-300 text-[#218A59] focus:ring-[#218A59] cursor-pointer"
+                />
+                <label htmlFor="editFeatured" className="text-xs text-slate-700 font-medium cursor-pointer">
+                  Feature this member on leadership highlights
+                </label>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setEditingMember(null)}
@@ -556,7 +909,7 @@ export default function AdminMembersPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-[#218A59] hover:bg-[#1b734a] text-white font-semibold cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-[#218A59] hover:bg-[#1b734a] text-white font-medium cursor-pointer shadow-xs"
                 >
                   Save Changes
                 </button>
@@ -568,22 +921,25 @@ export default function AdminMembersPage() {
 
       {/* Add Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl p-5 shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-lg bg-white border border-slate-200 rounded-2xl p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="font-semibold text-sm text-slate-900">Add Member</h3>
+              <div>
+                <h3 className="font-bold text-sm text-slate-900">Add Organization Member</h3>
+                <p className="text-xs text-slate-500 mt-0.5">Add an IPPAN or Event Solution team member</p>
+              </div>
               <button
                 onClick={() => setShowAddModal(false)}
-                className="p-1 rounded text-slate-400 hover:text-slate-600 cursor-pointer transition-colors"
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 cursor-pointer transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleAddSubmit} className="space-y-3 text-xs">
+            <form onSubmit={handleAddSubmit} className="space-y-3.5 text-xs">
               <div>
                 <label className="block text-[11px] font-mono text-slate-600 mb-1">
-                  FULL NAME
+                  FULL NAME *
                 </label>
                 <input
                   type="text"
@@ -594,22 +950,22 @@ export default function AdminMembersPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[11px] font-mono text-slate-600 mb-1">
-                    DESIGNATION / TITLE
+                    DESIGNATION / TITLE *
                   </label>
                   <input
                     type="text"
                     name="title"
                     required
-                    placeholder="e.g. Chairman / VP"
+                    placeholder="e.g. Vice President, Event Lead"
                     className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#218A59]"
                   />
                 </div>
                 <div>
                   <label className="block text-[11px] font-mono text-slate-600 mb-1">
-                    ORGANIZATION GROUP
+                    ORGANIZATION GROUP *
                   </label>
                   <select
                     name="orgType"
@@ -623,29 +979,66 @@ export default function AdminMembersPage() {
 
               <div>
                 <label className="block text-[11px] font-mono text-slate-600 mb-1">
-                  CATEGORY / ROLE
+                  ORGANIZATION FULL NAME (OPTIONAL)
                 </label>
                 <input
                   type="text"
-                  name="category"
-                  placeholder="e.g. Executive, Operations, Leadership"
+                  name="organization"
+                  placeholder="Leave empty to use default organization name"
                   className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#218A59]"
                 />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-mono text-slate-600 mb-1">
+                    CATEGORY / ROLE
+                  </label>
+                  <input
+                    type="text"
+                    name="category"
+                    placeholder="e.g. Leadership, Operations"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#218A59]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-mono text-slate-600 mb-1">
+                    PHOTO PATH / URL
+                  </label>
+                  <input
+                    type="text"
+                    name="photo"
+                    placeholder="/images/committee/... or https://..."
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#218A59]"
+                  />
+                </div>
               </div>
 
               <div>
                 <label className="block text-[11px] font-mono text-slate-600 mb-1">
-                  BIOGRAPHY / NOTE
+                  BIOGRAPHY / RESPONSIBILITY
                 </label>
                 <textarea
                   name="bio"
-                  rows={3}
-                  placeholder="Responsibilities and brief background..."
+                  rows={2}
+                  placeholder="Brief responsibilities or profile summary..."
                   className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#218A59]"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 text-xs">
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="checkbox"
+                  name="featured"
+                  id="addFeatured"
+                  className="rounded border-slate-300 text-[#218A59] focus:ring-[#218A59] cursor-pointer"
+                />
+                <label htmlFor="addFeatured" className="text-xs text-slate-700 font-medium cursor-pointer">
+                  Feature this member on leadership highlights
+                </label>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
@@ -655,9 +1048,9 @@ export default function AdminMembersPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-[#218A59] hover:bg-[#1b734a] text-white font-semibold cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-[#218A59] hover:bg-[#1b734a] text-white font-medium cursor-pointer shadow-xs"
                 >
-                  Save Member
+                  Add Member
                 </button>
               </div>
             </form>

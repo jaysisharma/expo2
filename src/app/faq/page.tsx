@@ -40,9 +40,9 @@ export default function FAQPage() {
             <div className="flex items-center gap-3 shrink-0">
               <Link
                 href="/contact"
-                className="px-5 py-2.5 rounded-lg bg-[#10B981] hover:bg-[#059669] text-slate-950 text-xs font-black flex items-center gap-2 transition-colors shadow-md"
+                className="px-5 py-2.5 rounded-lg bg-[#007A5E] hover:bg-[#005C42] text-white text-xs font-bold flex items-center gap-2 transition-colors shadow-md"
               >
-                <span>Ask Secretariat</span>
+                <span>Ask Our Team</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
@@ -58,12 +58,12 @@ export default function FAQPage() {
           
           <FAQAccordion />
 
-          {/* Secretariat Support Card */}
+          {/* Direct Support Card */}
           <div className="bg-[#061A2A] text-white p-8 rounded-2xl border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-6">
             <div>
               <div className="flex items-center gap-2 text-xs font-mono text-[#19BFE8] font-bold mb-1">
                 <MessageSquare className="w-4 h-4" />
-                <span>DIRECT SECRETARIAT ASSISTANCE</span>
+                <span>DIRECT ASSISTANCE &amp; SUPPORT</span>
               </div>
               <h3 className="text-xl font-bold text-white">
                 Have a Specific or Technical Question?

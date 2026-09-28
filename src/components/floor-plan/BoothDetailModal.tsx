@@ -87,7 +87,7 @@ export default function BoothDetailModal({ booth, onClose }: BoothDetailModalPro
 
         {/* Booth Title & Orientation */}
         <div>
-          <h3 className="font-sans font-black text-2xl sm:text-3xl text-[#061A2A] tracking-tight flex items-center gap-2">
+          <h3 className="font-sans font-bold text-2xl sm:text-3xl text-[#061A2A] tracking-tight flex items-center gap-2">
             <span>STALL {booth.number}</span>
             {booth.orientation && (
               <span className="text-xs font-semibold px-2.5 py-0.5 rounded-md bg-sky-50 text-sky-700 border border-sky-200">
@@ -139,7 +139,7 @@ export default function BoothDetailModal({ booth, onClose }: BoothDetailModalPro
             <span className="text-[10px] text-slate-500 flex items-center gap-1 font-semibold">
               <Maximize className="w-3 h-3 text-[#087EA4]" /> AREA & DIMENSIONS
             </span>
-            <div className="font-black text-lg text-[#061A2A] mt-0.5">
+            <div className="font-bold text-lg text-[#061A2A] mt-0.5">
               {booth.sizeSqM} m²
             </div>
             <span className="text-[11px] text-slate-600 font-mono">{booth.dimensions}</span>
@@ -171,7 +171,7 @@ export default function BoothDetailModal({ booth, onClose }: BoothDetailModalPro
             <span className="text-[10px] text-slate-500 font-semibold">
               INDICATIVE INVESTMENT
             </span>
-            <div className="font-black text-lg text-emerald-600 mt-0.5">
+            <div className="font-bold text-lg text-emerald-600 mt-0.5">
               {formatCurrencyUSD(booth.priceUSD)}
             </div>
             <span className="text-[10px] text-slate-600 font-bold">
@@ -222,7 +222,7 @@ export default function BoothDetailModal({ booth, onClose }: BoothDetailModalPro
             </Link>
           ) : isReserved ? (
             <div className="w-full py-3.5 rounded-xl bg-amber-50 border border-amber-300 text-amber-800 text-xs text-center font-bold">
-              THIS STALL IS PROVISIONALLY RESERVED. CONTACT SECRETARIAT FOR WAITLIST.
+              THIS STALL IS PROVISIONALLY RESERVED. CONTACT ORGANIZERS FOR WAITLIST.
             </div>
           ) : (
             <div className="w-full py-3.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-600 text-xs text-center font-bold">

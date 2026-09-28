@@ -36,11 +36,13 @@ export default function SponsorsShowcaseSection() {
         {/* Section Header */}
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-10 border-b border-slate-100 mb-12">
           <div className="space-y-3 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F4F8F7] border border-slate-200 text-xs font-mono font-semibold text-[#087EA4] uppercase tracking-wider">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#19A974] animate-pulse" />
-              <span>INDUSTRY SHOWCASE</span>
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-bold text-[#007A5E] uppercase tracking-wider font-mono">
+                INDUSTRY SHOWCASE
+              </span>
+              <div className="w-12 h-0.5 bg-[#007A5E]/40 rounded-full" />
             </div>
-            <h2 className="font-sans font-black text-3xl sm:text-4xl lg:text-5xl text-[#061A2A] tracking-tight leading-tight">
+            <h2 className="font-sans font-bold text-3xl sm:text-4xl lg:text-5xl text-[#061A2A] tracking-tight leading-tight">
               GLOBAL OEMs, UTILITIES & <br />
               <span className="text-[#087EA4]">FINANCIAL</span>{" "}
               <span className="text-[#19A974]">SYNDICATES.</span>

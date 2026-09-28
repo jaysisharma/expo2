@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 const pavilions = [
   {
     title: "Himalayan Hydro Machinery Pavilion",
-    code: "HALL A · MAIN COMPLEX",
+    code: "HALL A · MAIN EXHIBITION HALL",
     description: "Massive turbine runner displays, hydro-mechanical gates, penstock pipes, digital governors, and heavy engineering systems.",
     image: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80",
     tags: ["Pelton & Francis Runners", "Inlet Valves", "SCADA Systems"],
@@ -73,7 +73,7 @@ const dailySchedule = [
       { time: "09:30 AM", title: "Exhibition Hall Open to All Registered Visitors" },
       { time: "11:00 AM", title: "High-Head Turbine & Silt Erosion Technical Workshop" },
       { time: "02:30 PM", title: "Global OEM Live Product Demos & Technical Showcase" },
-      { time: "04:30 PM", title: "Clean Energy Innovation & Safety Awards Ceremony" },
+      { time: "04:30 PM", title: "Clean Energy Innovation Showcase & Technical Case Studies" },
       { time: "06:00 PM", title: "Exhibition Hall Closes for Day 2" },
     ],
   },
@@ -113,7 +113,7 @@ export default function ExpoPage() {
                 Expo Highlights & Experience
               </h1>
               <p className="mt-3 text-sm sm:text-base text-emerald-100/75 max-w-xl">
-                Bhrikutimandap Exhibition Complex, Kathmandu · 16–18 January 2027
+                Bhrikutimandap Exhibition Hall, Kathmandu · 17–19 January 2027
               </p>
 
               {/* Quick Metrics */}
@@ -136,7 +136,7 @@ export default function ExpoPage() {
             <div className="flex items-center gap-3 shrink-0">
               <Link
                 href="/register"
-                className="px-5 py-2.5 rounded-lg bg-[#10B981] hover:bg-[#059669] text-slate-950 hover:text-white text-xs font-black flex items-center gap-2 transition-colors shadow-md"
+                className="px-5 py-2.5 rounded-lg bg-[#007A5E] hover:bg-[#005C42] text-white text-xs font-bold flex items-center gap-2 transition-colors shadow-md"
               >
                 <span>Register Free Pass</span>
                 <ArrowRight className="w-3.5 h-3.5" />

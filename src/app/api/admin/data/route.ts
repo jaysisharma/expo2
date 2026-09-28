@@ -47,8 +47,8 @@ async function getAdminData() {
     if (hasFirebaseData) {
       const defaultSettings = {
         eventName: "Himalayan Green Energy Expo Nepal 2027",
-        eventDates: "Magh 2 - 4 · 16–18 Jan 2027",
-        venue: "Bhrikutimandap Exhibition Complex, Kathmandu",
+        eventDates: "Magh 3 – 5 · 17–19 Jan 2027",
+        venue: "Bhrikutimandap Exhibition Hall, Kathmandu",
         registrationsOpen: true,
         stallBookingsOpen: true,
       };
@@ -58,6 +58,7 @@ async function getAdminData() {
         inquiries: fbInqs || [],
         boothOverrides: fbBooths || {},
         settings: fbSettings || defaultSettings,
+        news: [],
       };
       return memoryAdminData;
     }
@@ -69,6 +70,7 @@ async function getAdminData() {
   try {
     const raw = await fs.readFile(ROOT_ADMIN_DATA_PATH, "utf-8");
     memoryAdminData = JSON.parse(raw);
+    if (!memoryAdminData.news) memoryAdminData.news = [];
     return memoryAdminData;
   } catch (err) {}
 
@@ -76,6 +78,7 @@ async function getAdminData() {
   try {
     const raw = await fs.readFile(SRC_ADMIN_DATA_PATH, "utf-8");
     memoryAdminData = JSON.parse(raw);
+    if (!memoryAdminData.news) memoryAdminData.news = [];
     return memoryAdminData;
   } catch (err) {}
 
@@ -85,11 +88,12 @@ async function getAdminData() {
     boothOverrides: {},
     settings: {
       eventName: "Himalayan Green Energy Expo Nepal 2027",
-      eventDates: "Magh 2 - 4 · 16–18 Jan 2027",
-      venue: "Bhrikutimandap Exhibition Complex, Kathmandu",
+      eventDates: "Magh 3 – 5 · 17–19 Jan 2027",
+      venue: "Bhrikutimandap Exhibition Hall, Kathmandu",
       registrationsOpen: true,
       stallBookingsOpen: true,
     },
+    news: [],
   };
   return memoryAdminData;
 }
@@ -201,7 +205,7 @@ export async function GET(req: Request) {
         passTypeCounts,
         totalExhibitors: exhibitorsData.length,
         totalSpeakers: speakersData.length,
-        totalNews: newsArticles.length,
+        totalNews: data.news?.length ?? 0,
         totalInquiries: data.inquiries?.length || 0,
         newInquiriesCount: data.inquiries?.filter((i: any) => i.status === "New").length || 0,
         inProgressInquiriesCount: data.inquiries?.filter((i: any) => i.status === "In Progress").length || 0,
@@ -275,7 +279,7 @@ export async function GET(req: Request) {
           },
           exhibitorsCount: exhibitorsData.length,
           speakersCount: speakersData.length,
-          newsCount: newsArticles.length,
+          newsCount: data.news?.length ?? 0,
           boothsCount: boothsData.length,
         },
       },
@@ -364,6 +368,24 @@ export async function POST(req: Request) {
         return NextResponse.json({ success: true, message: "All stalls reset to Available" });
       }
 
+      case "batch_update_booths": {
+        const { boothNumbers, status, exhibitorName } = payload;
+        for (const num of (boothNumbers || [])) {
+          data.boothOverrides[num] = {
+            ...(data.boothOverrides[num] || {}),
+            status: status !== undefined ? status : data.boothOverrides[num]?.status,
+            exhibitorName: exhibitorName !== undefined ? exhibitorName : data.boothOverrides[num]?.exhibitorName,
+            updatedAt: new Date().toISOString(),
+          };
+          setFirebaseBoothOverride(num, {
+            status: data.boothOverrides[num].status,
+            exhibitorName: data.boothOverrides[num].exhibitorName,
+          }).catch(() => {});
+        }
+        await saveAdminData(data);
+        return NextResponse.json({ success: true, message: `${boothNumbers?.length || 0} stalls updated` });
+      }
+
       case "update_inquiry_status": {
         const { inquiryId, status } = payload;
         const inq = data.inquiries.find((i: any) => i.id === inquiryId);
@@ -430,6 +452,56 @@ export async function POST(req: Request) {
           updateFirebaseSettings(data.settings).catch(() => {}),
         ]);
         return NextResponse.json({ success: true, message: "Settings saved", data: data.settings });
+      }
+
+      case "add_news": {
+        const article = payload.article || payload;
+        data.news = data.news || [];
+        data.news.unshift(article);
+        await saveAdminData(data);
+        return NextResponse.json({ success: true, message: "Article created", data: article });
+      }
+
+      case "update_news": {
+        const article = payload.article || payload;
+        data.news = (data.news || []).map((a: any) => (a.id === article.id ? article : a));
+        await saveAdminData(data);
+        return NextResponse.json({ success: true, message: "Article updated", data: article });
+      }
+
+      case "delete_news": {
+        const { id } = payload;
+        data.news = (data.news || []).filter((a: any) => a.id !== id);
+        await saveAdminData(data);
+        return NextResponse.json({ success: true, message: "Article deleted" });
+      }
+
+      case "delete_multiple_news": {
+        const ids = new Set(payload.ids || []);
+        data.news = (data.news || []).filter((a: any) => !ids.has(a.id));
+        await saveAdminData(data);
+        return NextResponse.json({ success: true, message: `${ids.size} articles deleted`, count: ids.size });
+      }
+
+      case "toggle_news_featured": {
+        const { id } = payload;
+        data.news = (data.news || []).map((a: any) =>
+          a.id === id ? { ...a, featured: !a.featured } : a
+        );
+        await saveAdminData(data);
+        return NextResponse.json({ success: true, message: "Featured status updated" });
+      }
+
+      case "save_all_news": {
+        data.news = payload.news || [];
+        await saveAdminData(data);
+        return NextResponse.json({ success: true, message: "News saved", count: data.news.length });
+      }
+
+      case "save_sponsors": {
+        data.sponsors = payload.categories || payload.sponsors || [];
+        await saveAdminData(data);
+        return NextResponse.json({ success: true, message: "Sponsors saved" });
       }
 
       default:

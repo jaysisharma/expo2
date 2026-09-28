@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   Check,
 } from "lucide-react";
+import { EventAttractionsSection } from "@/components/home";
 
 export const metadata: Metadata = {
   title: "Expo Highlights & Experience | Himalayan Green Energy Expo 2027",
@@ -26,7 +27,7 @@ export const metadata: Metadata = {
 const pavilions = [
   {
     title: "Himalayan Hydro Machinery Pavilion",
-    code: "HALL A · MAIN COMPLEX",
+    code: "HALL A · MAIN EXHIBITION HALL",
     description: "Massive turbine runner displays, hydro-mechanical gates, penstock pipes, digital governors, and heavy engineering systems.",
     image: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80",
     tags: ["Pelton & Francis Runners", "Inlet Valves", "SCADA Systems"],
@@ -73,7 +74,7 @@ const dailySchedule = [
       { time: "09:30 AM", title: "Exhibition Hall Open to All Registered Visitors" },
       { time: "11:00 AM", title: "High-Head Turbine & Silt Erosion Technical Workshop" },
       { time: "02:30 PM", title: "Global OEM Live Product Demos & Technical Showcase" },
-      { time: "04:30 PM", title: "Clean Energy Innovation & Safety Awards Ceremony" },
+      { time: "04:30 PM", title: "Clean Energy Innovation Showcase & Technical Case Studies" },
       { time: "06:00 PM", title: "Exhibition Hall Closes for Day 2" },
     ],
   },
@@ -113,7 +114,7 @@ export default function EventsPage() {
                 Expo Highlights & Experience
               </h1>
               <p className="mt-3 text-sm sm:text-base text-emerald-100/75 max-w-xl">
-                Bhrikutimandap Exhibition Complex, Kathmandu · 16–18 January 2027
+                Bhrikutimandap Exhibition Hall, Kathmandu · 17–19 January 2027
               </p>
 
               {/* Quick Metrics */}
@@ -136,7 +137,7 @@ export default function EventsPage() {
             <div className="flex items-center gap-3 shrink-0">
               <Link
                 href="/register"
-                className="px-5 py-2.5 rounded-lg bg-[#10B981] hover:bg-[#059669] text-slate-950 hover:text-white text-xs font-black flex items-center gap-2 transition-colors shadow-md"
+                className="px-5 py-2.5 rounded-lg bg-[#007A5E] hover:bg-[#005C42] text-white text-xs font-bold flex items-center gap-2 transition-colors shadow-md"
               >
                 <span>Register Free Pass</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -151,6 +152,9 @@ export default function EventsPage() {
           </div>
         </div>
       </div>
+
+      {/* ── 11 Official Event Attractions Grouped into 4 Pillars ── */}
+      <EventAttractionsSection />
 
       {/* =========================================================================
           02: MAIN EXPO EXPERIENCE CONTENT
@@ -266,7 +270,7 @@ export default function EventsPage() {
                 <span className="text-xs font-bold text-[#087EA4] uppercase tracking-wider block mb-1 font-mono">
                   YOUTH & ACADEMIC INNOVATION
                 </span>
-                <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                <h3 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
                   CleanTech Student Competition & Innovation Challenge
                 </h3>
                 <p className="text-xs text-slate-600 mt-1 max-w-2xl">
@@ -293,7 +297,7 @@ export default function EventsPage() {
                     Clean Energy Competition Brochure
                   </h4>
                   <p className="text-xs text-slate-500 font-normal line-clamp-2">
-                    Eligibility, evaluation rubrics, prize awards, and prototype exhibition spaces for engineering students.
+                    Eligibility, evaluation rubrics, innovation prizes, and prototype exhibition spaces for engineering students.
                   </p>
                 </div>
                 <div className="pt-3 text-[11px] font-mono font-bold text-[#087EA4] flex items-center gap-1">

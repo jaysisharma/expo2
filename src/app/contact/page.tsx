@@ -30,7 +30,7 @@ export default function ContactPage() {
             email: formData.email,
             phone: formData.phone,
             company: "",
-            subject: formData.subject || "Secretariat General Inquiry",
+            subject: formData.subject || "General Inquiry",
             message: formData.message,
             stallInterest: "",
           },
@@ -80,60 +80,92 @@ export default function ContactPage() {
             <div className="lg:col-span-5 space-y-6">
               <div>
                 <h2 className="text-xl font-bold text-slate-900">
-                  Secretariat Contact
+                  Official Contacts
                 </h2>
                 <p className="mt-1 text-sm text-slate-600">
-                  Reach out directly to the Himalayan Green Energy Expo coordination committee.
+                  Reach out directly to the Himalayan Green Energy Expo organizing team.
                 </p>
               </div>
 
               <div className="space-y-3.5">
-                {/* Email */}
+                {/* Official Expo Email */}
                 <div className="flex items-start gap-4 p-4 rounded-xl bg-white border border-slate-200 shadow-xs">
-                  <div className="w-10 h-10 rounded-lg bg-sky-50 text-[#087EA4] flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
                     <Mail className="w-5 h-5" />
                   </div>
                   <div>
                     <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">
-                      Email
+                      Expo Inquiries &amp; Stalls
                     </span>
                     <a
-                      href="mailto:expo@ippan.org.np"
-                      className="text-sm font-medium text-slate-900 hover:text-[#087EA4] transition-colors block mt-0.5"
+                      href="mailto:info@nepalenergyexpo.com"
+                      className="text-sm font-bold text-slate-900 hover:text-emerald-600 transition-colors block mt-0.5"
                     >
-                      expo@ippan.org.np
+                      info@nepalenergyexpo.com
                     </a>
-                    <a
-                      href="mailto:info@eventsolution.com.np"
-                      className="text-sm text-slate-600 hover:text-[#087EA4] transition-colors block"
-                    >
-                      info@eventsolution.com.np
-                    </a>
+                    <div className="text-xs text-slate-500 mt-1">
+                      <span className="font-medium text-slate-700">Event Solution:</span>{" "}
+                      <a href="mailto:info@eventsolutionnepal.com.np" className="hover:text-emerald-600 underline font-mono">
+                        info@eventsolutionnepal.com.np
+                      </a>
+                    </div>
+                    <div className="text-xs text-slate-500 mt-1">
+                      <span className="font-medium text-slate-700">IPPAN Official:</span>{" "}
+                      <a href="mailto:info@ippan.org.np" className="hover:text-emerald-600 underline">info@ippan.org.np</a>
+                      {" | "}
+                      <a href="mailto:ippan2001@gmail.com" className="hover:text-emerald-600 underline">ippan2001@gmail.com</a>
+                    </div>
                   </div>
                 </div>
 
-                {/* Phone */}
+                {/* Direct Mobile Hotlines & Landlines */}
                 <div className="flex items-start gap-4 p-4 rounded-xl bg-white border border-slate-200 shadow-xs">
-                  <div className="w-10 h-10 rounded-lg bg-emerald-50 text-[#19A974] flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
                     <Phone className="w-5 h-5" />
                   </div>
                   <div>
                     <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">
-                      Phone
+                      Direct Hotlines &amp; Phones
                     </span>
-                    <a
-                      href="tel:+97714412345"
-                      className="text-sm font-medium text-slate-900 hover:text-[#087EA4] transition-colors block mt-0.5"
-                    >
-                      +977-1-4412345, +977-1-4435678
-                    </a>
-                    <p className="text-xs text-slate-500 mt-0.5">
+                    <div className="flex flex-wrap items-center gap-x-2 text-sm font-bold text-slate-900 mt-0.5 font-mono">
+                      <a href="tel:+9779703606340" className="hover:text-emerald-600 transition-colors">
+                        +977-9703606340
+                      </a>
+                      <span className="text-slate-400">|</span>
+                      <a href="tel:+9779703606355" className="hover:text-emerald-600 transition-colors">
+                        9703606355
+                      </a>
+                    </div>
+                    <div className="text-xs text-slate-600 font-mono mt-1">
+                      <span className="font-semibold text-slate-700">Landline:</span>{" "}
+                      <a href="tel:+97715268535" className="hover:text-emerald-600">01-5268535</a>,{" "}
+                      <a href="tel:+97714169175" className="hover:text-emerald-600">4169175</a>
+                    </div>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
                       Sunday – Friday, 9:00 AM – 6:00 PM NPT
                     </p>
                   </div>
                 </div>
 
-                {/* Venue Location */}
+                {/* Headquarters Office */}
+                <div className="flex items-start gap-4 p-4 rounded-xl bg-white border border-slate-200 shadow-xs">
+                  <div className="w-10 h-10 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center shrink-0 mt-0.5">
+                    <Building className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">
+                      Headquarters Office
+                    </span>
+                    <p className="text-sm font-bold text-slate-900 mt-0.5">
+                      Jwagal, Lalitpur, Nepal
+                    </p>
+                    <p className="text-xs text-slate-600 mt-0.5">
+                      IPPAN Headquarters, Jwagal, Lalitpur
+                    </p>
+                  </div>
+                </div>
+
+                {/* Exhibition Venue */}
                 <div className="flex items-start gap-4 p-4 rounded-xl bg-white border border-slate-200 shadow-xs">
                   <div className="w-10 h-10 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center shrink-0 mt-0.5">
                     <MapPin className="w-5 h-5" />
@@ -142,29 +174,11 @@ export default function ContactPage() {
                     <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">
                       Exhibition Venue
                     </span>
-                    <p className="text-sm font-medium text-slate-900 mt-0.5">
-                      Bhrikutimandap Exhibition Complex
+                    <p className="text-sm font-bold text-slate-900 mt-0.5">
+                      Bhrikutimandap Exhibition Hall
                     </p>
                     <p className="text-xs text-slate-600 mt-0.5">
-                      Exhibition Road, Kathmandu, Nepal
-                    </p>
-                  </div>
-                </div>
-
-                {/* Organizers */}
-                <div className="flex items-start gap-4 p-4 rounded-xl bg-white border border-slate-200 shadow-xs">
-                  <div className="w-10 h-10 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center shrink-0 mt-0.5">
-                    <Building className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">
-                      Organized By
-                    </span>
-                    <p className="text-sm font-medium text-slate-900 mt-0.5">
-                      IPPAN × Event Solution Pvt. Ltd.
-                    </p>
-                    <p className="text-xs text-slate-600 mt-0.5">
-                      Heritage Plaza, Kamaladi, Kathmandu
+                      Exhibition Road, Kathmandu, Nepal • 17–19 January 2027
                     </p>
                   </div>
                 </div>

@@ -61,7 +61,7 @@ export default async function SingleSpeakerPage({ params }: { params: Promise<{ 
               )}
             </div>
 
-            <h1 className="font-display font-black text-3xl sm:text-4xl text-slate-900 tracking-tight">
+            <h1 className="font-display font-bold text-3xl sm:text-4xl text-slate-900 tracking-tight">
               {speaker.name}
             </h1>
 

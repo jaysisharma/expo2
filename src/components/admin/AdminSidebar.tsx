@@ -21,6 +21,7 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
+  ClipboardList,
 } from "lucide-react";
 import { useAdminAuth } from "./AdminAuthContext";
 
@@ -61,16 +62,15 @@ export default function AdminSidebar({
       group: "Exhibition",
       items: [
         { label: "Stalls & Booths", href: "/admin/stalls", icon: Store },
-        { label: "Floor Plan Map", href: "/admin/floor-plan", icon: Compass },
-        { label: "Badge Designer", href: "/admin/badge-designer", icon: Sliders },
+        { label: "Floor Plan", href: "/admin/floor-plan", icon: Compass },
       ],
     },
     {
       group: "Participants",
       items: [
-        { label: "Registrations", href: "/admin/registrations", icon: Users },
+        { label: "Registrations", href: "/admin/registrations", icon: ClipboardList },
         { label: "Exhibitors", href: "/admin/exhibitors", icon: Building2 },
-        { label: "Committee & Team", href: "/admin/speakers", icon: Users },
+        { label: "Organization Members", href: "/admin/speakers", icon: Users },
         { label: "Conference Schedule", href: "/admin/conference", icon: CalendarDays },
         { label: "Sponsors & Partners", href: "/admin/sponsors", icon: Award },
       ],
@@ -81,6 +81,7 @@ export default function AdminSidebar({
         { label: "News & Articles", href: "/admin/news", icon: Newspaper },
         { label: "Photo Gallery", href: "/admin/gallery", icon: ImageIcon },
         { label: "Inquiries", href: "/admin/inquiries", icon: MessageSquareQuote },
+        { label: "Badge Designer", href: "/admin/badge-designer", icon: Sliders },
       ],
     },
     {
@@ -136,7 +137,7 @@ export default function AdminSidebar({
             </div>
             {!isCollapsed && (
               <div className="flex flex-col">
-                <span className="font-display font-black text-xs text-slate-900 tracking-tight uppercase">
+                <span className="font-display font-bold text-xs text-slate-900 tracking-tight uppercase">
                   Expo Admin
                 </span>
                 <span className="inline-flex items-center gap-1 text-[9px] font-mono font-bold text-[#218A59] tracking-wider uppercase">
@@ -232,21 +233,27 @@ export default function AdminSidebar({
               isCollapsed ? "justify-center" : "justify-between"
             }`}
           >
-            <div className="flex items-center gap-2.5 truncate">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#5B9F35] to-[#218A59] text-white text-xs font-bold font-display flex items-center justify-center shrink-0 shadow-xs">
-                {user?.name ? user.name.charAt(0).toUpperCase() : "A"}
-              </div>
-              {!isCollapsed && (
-                <div className="flex flex-col truncate">
-                  <span className="text-xs text-slate-900 font-bold truncate font-sans">
-                    {user?.name || "Admin"}
-                  </span>
-                  <span className="text-[10px] font-mono text-slate-500 truncate">
-                    Expo Team
-                  </span>
+            {(() => {
+              const rawName = user?.name || "HIGEX Admin";
+              const displayName = rawName === "IPPAN Expo Admin" ? "HIGEX Admin" : rawName;
+              return (
+                <div className="flex items-center gap-2.5 truncate">
+                  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#5B9F35] to-[#218A59] text-white text-xs font-bold font-display flex items-center justify-center shrink-0 shadow-xs">
+                    {displayName.charAt(0).toUpperCase()}
+                  </div>
+                  {!isCollapsed && (
+                    <div className="flex flex-col truncate">
+                      <span className="text-xs text-slate-900 font-bold truncate font-sans">
+                        {displayName}
+                      </span>
+                      <span className="text-[10px] font-mono text-slate-500 truncate">
+                        {user?.role || "Administrator"}
+                      </span>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              );
+            })()}
 
             {!isCollapsed && (
               <button

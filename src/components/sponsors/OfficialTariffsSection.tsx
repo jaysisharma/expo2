@@ -25,9 +25,11 @@ export default function OfficialTariffsSection() {
       {/* ── Section Header ── */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 pb-6">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-xs font-mono font-bold text-[#15803D] uppercase mb-2">
-            <Sparkles className="w-3.5 h-3.5 text-[#15803D]" />
-            <span>OFFICIAL 2027 PACKAGES & COMMERCIAL TARIFFS</span>
+          <div className="flex items-center gap-3 mb-2">
+            <span className="text-xs font-bold text-[#007A5E] uppercase tracking-wider font-mono">
+              OFFICIAL 2027 PACKAGES &amp; COMMERCIAL TARIFFS
+            </span>
+            <div className="w-12 h-0.5 bg-[#007A5E]/40 rounded-full" />
           </div>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight">
             Sponsorship & Space Details
@@ -201,14 +203,14 @@ export default function OfficialTariffsSection() {
                   </span>
                 </div>
 
-                <h4 className="text-xl font-black text-slate-900 font-display">
+                <h4 className="text-xl font-bold text-slate-900 font-display">
                   {space.size}
                 </h4>
 
                 <div className="mt-4 pt-4 border-t border-slate-100 space-y-2">
                   <div className="flex items-baseline justify-between">
                     <span className="text-xs text-slate-500 font-mono">Official Rate:</span>
-                    <span className="text-lg font-mono font-black text-[#15803D]">
+                    <span className="text-lg font-mono font-bold text-[#15803D]">
                       {currency === "NPR" ? `NRs ${space.rateNPR}` : `US $${space.rateUSD}`}
                     </span>
                   </div>

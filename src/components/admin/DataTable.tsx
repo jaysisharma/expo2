@@ -98,7 +98,7 @@ export default function DataTable<T extends Record<string, any>>({
       {/* Table Header Controls */}
       <div className="p-5 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          {title && <h3 className="font-display font-black text-lg text-slate-900 tracking-tight">{title}</h3>}
+          {title && <h3 className="font-display font-bold text-lg text-slate-900 tracking-tight">{title}</h3>}
           {subtitle && <p className="text-xs text-slate-500 mt-0.5 font-sans">{subtitle}</p>}
         </div>
 
@@ -122,10 +122,10 @@ export default function DataTable<T extends Record<string, any>>({
           {onExport && (
             <button
               onClick={onExport}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-900 text-xs font-mono font-bold border border-slate-200 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-mono font-semibold border border-slate-200 shadow-xs transition-colors cursor-pointer"
             >
-              <Download className="w-3.5 h-3.5 text-[#218A59]" />
-              <span>EXPORT</span>
+              <Download className="w-3.5 h-3.5 text-slate-500" />
+              <span>Export</span>
             </button>
           )}
 
@@ -193,9 +193,9 @@ export default function DataTable<T extends Record<string, any>>({
           <button
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={currentPage === 1}
-            className="p-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#218A59] hover:text-white transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-100 transition-colors cursor-pointer shadow-xs"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className="w-4 h-4 text-slate-700" />
           </button>
           <span>
             Page <strong className="text-slate-900">{currentPage}</strong> of{" "}
@@ -204,9 +204,9 @@ export default function DataTable<T extends Record<string, any>>({
           <button
             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
-            className="p-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#218A59] hover:text-white transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-100 transition-colors cursor-pointer shadow-xs"
           >
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="w-4 h-4 text-slate-700" />
           </button>
         </div>
       </div>

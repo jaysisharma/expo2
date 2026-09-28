@@ -10,16 +10,18 @@ export default function ExpoIntro() {
     <section id="intro" className="relative py-28 sm:py-36 bg-hydro-wash text-slate-900 px-4 sm:px-6 lg:px-12 border-b border-slate-200 overflow-hidden">
       <div className="max-w-7xl mx-auto">
         {/* Section Label */}
-        <div className="flex items-center gap-2 text-xs font-technical text-hydro-primary tracking-widest uppercase mb-6 font-bold">
-          <span className="w-2 h-2 rounded-full bg-hydro-primary" />
-          03 / THE EXPOSITION
+        <div className="flex items-center gap-3 mb-6">
+          <span className="text-xs font-bold text-[#007A5E] uppercase tracking-wider font-mono">
+            03 / THE EXPOSITION
+          </span>
+          <div className="w-12 h-0.5 bg-[#007A5E]/40 rounded-full" />
         </div>
 
         {/* 60% Image / 40% Editorial Magazine Spread */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
           {/* Left Editorial Copy Column (40%) */}
           <div className="lg:col-span-5 space-y-8">
-            <h2 className="font-display font-black text-4xl sm:text-6xl lg:text-7xl tracking-tight text-slate-900 leading-[0.92]">
+            <h2 className="font-display font-bold text-4xl sm:text-6xl lg:text-7xl tracking-tight text-slate-900 leading-[0.92]">
               GREEN ENERGY <br />
               FOR <br />
               <span className="text-[#19A974]">PROSPERITY.</span>
@@ -36,7 +38,7 @@ export default function ExpoIntro() {
 
             <div className="pt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
               <a
-                href="/files/hydroproposal-13-2-2024.pdf"
+                href="/Proposal.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-6 py-3.5 rounded-md bg-[#087EA4] text-white font-mono text-xs font-bold tracking-wider hover:bg-[#061A2A] transition-colors inline-flex items-center justify-center gap-2 shadow-sm"

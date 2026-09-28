@@ -5,9 +5,9 @@ import Link from "next/link";
 import { Sparkles, Camera, Film, ArrowDownRight } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Archival Exhibition Gallery | Himalayan Hydro & Green Energy Expo",
+  title: "Archival Exhibition Gallery | Himalayan Green Energy Expo 2027",
   description:
-    "Explore authentic high-resolution photographs and official video archives from the Himalayan Hydro Expo.",
+    "Explore authentic high-resolution photographs and official video archives from the Himalayan Green Energy Expo.",
 };
 
 export default function GalleryPage() {
@@ -37,7 +37,7 @@ export default function GalleryPage() {
                 <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
                 <span>OFFICIAL VISUAL ARCHIVE · 2018–2026</span>
               </div>
-              <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-white leading-[1.08]">
+              <h1 className="text-4xl sm:text-6xl font-bold tracking-tight text-white leading-[1.08]">
                 Exhibition Gallery
               </h1>
             </div>

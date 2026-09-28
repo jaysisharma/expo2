@@ -90,7 +90,7 @@ export default function VideoModal({ video, onClose }: VideoModalProps) {
                 href={video.videoUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#10B981] hover:bg-[#059669] text-slate-950 font-mono text-xs font-bold transition-all"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#007A5E] hover:bg-[#005C42] text-white font-mono text-xs font-bold transition-all"
               >
                 <Play className="w-4 h-4 fill-current" />
                 <span>OPEN EXTERNAL VIDEO</span>

@@ -11,7 +11,7 @@ export default function VenueMapAnd360() {
   const mapEmbedUrl =
     "https://maps.google.com/maps?q=Bhrikutimandap+Exhibition+Hall,+Pradarshani+Marg,+Kathmandu,+Nepal&t=&z=16&ie=UTF8&iwloc=&output=embed";
 
-  // Google Street View / 360 Photosphere embeds for Bhrikutimandap Exhibition Complex
+  // Google Street View / 360 Photosphere embeds for Bhrikutimandap Exhibition Hall
   const streetViewFrontUrl =
     "https://www.google.com/maps/embed?pb=!4v1708940000000!6m8!1m7!1sCAoSLEFGMVFpcE5uOG1nSWlKcmh2M1l5aDJscjBhX1hJbV9tWVpCSG5jT0V6Vl82!2m2!1d27.701988!2d85.318035!3f240!4f5!5f0.7820865974627469";
 
@@ -33,7 +33,7 @@ export default function VenueMapAnd360() {
             </span>
           </h3>
           <p className="text-xs text-slate-500 mt-0.5">
-            Explore Bhrikutimandap Exhibition Complex in interactive 360° view or pinned 2D map.
+            Explore Bhrikutimandap Exhibition Hall in interactive 360° view or pinned 2D map.
           </p>
         </div>
 
@@ -103,7 +103,7 @@ export default function VenueMapAnd360() {
         {viewMode === "360" ? (
           <>
             <iframe
-              title="Bhrikutimandap Exhibition Complex 360 View"
+              title="Bhrikutimandap Exhibition Hall 360 View"
               src={active360Url}
               width="100%"
               height="100%"
@@ -121,7 +121,7 @@ export default function VenueMapAnd360() {
           </>
         ) : (
           <iframe
-            title="Bhrikutimandap Exhibition Complex Pinned Location Map"
+            title="Bhrikutimandap Exhibition Hall Pinned Location Map"
             src={mapEmbedUrl}
             width="100%"
             height="100%"

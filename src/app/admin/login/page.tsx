@@ -59,11 +59,11 @@ function AdminLoginForm() {
         <div className="w-14 h-14 rounded-2xl bg-[#218A59]/10 border border-[#218A59]/20 flex items-center justify-center mb-3">
           <Shield className="w-7 h-7 text-[#218A59]" />
         </div>
-        <h1 className="text-xl font-extrabold font-display text-slate-900 tracking-tight">
-          Secretariat Sign In
+        <h1 className="text-xl font-bold font-sans text-slate-900 tracking-tight">
+          Sign In
         </h1>
-        <p className="text-xs text-slate-500 font-body mt-1">
-          Himalayan Green Energy Expo 2027 Organizer Portal
+        <p className="text-xs text-slate-500 font-sans mt-1">
+          Himalayan Green Energy Expo 2027 · Admin Portal
         </p>
       </div>
 
@@ -141,21 +141,10 @@ function AdminLoginForm() {
           {isSubmitting ? (
             <div className="w-4 h-4 rounded-full border-2 border-white/60 border-t-white animate-spin" />
           ) : (
-            <span>Sign In to Dashboard</span>
+            <span className="text-white font-bold">Sign In to Dashboard</span>
           )}
         </button>
       </form>
-
-      {/* Link to Register page */}
-      <div className="mt-5 pt-4 border-t border-slate-100 text-center text-xs text-slate-600">
-        Need an organizer account?{" "}
-        <Link
-          href="/admin/register"
-          className="font-bold text-[#218A59] hover:text-[#1B7249] hover:underline"
-        >
-          Register here
-        </Link>
-      </div>
     </div>
   );
 }
@@ -195,7 +184,7 @@ export default function AdminLoginPage() {
 
       {/* Footer */}
       <footer className="relative z-10 w-full max-w-5xl mx-auto px-6 py-5 text-center text-xs text-slate-500 font-body">
-        <p>© 2027 Himalayan Green Energy Expo · Secretariat Management System</p>
+        <p>© 2027 Himalayan Green Energy Expo · Admin Portal</p>
       </footer>
     </div>
   );

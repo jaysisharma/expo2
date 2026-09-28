@@ -103,9 +103,7 @@ export default function MasonryGallery({ limit }: { limit?: number }) {
                 }}
                 className={`relative px-4 sm:px-5 py-2.5 rounded-2xl text-xs font-mono font-bold transition-colors whitespace-nowrap cursor-pointer z-10 flex items-center gap-2 ${
                   isActive
-                    ? tab.id === "VIDEOS"
-                      ? "text-slate-950"
-                      : "text-white"
+                    ? "text-white"
                     : "text-neutral-600 hover:text-neutral-950"
                 }`}
               >
@@ -114,7 +112,7 @@ export default function MasonryGallery({ limit }: { limit?: number }) {
                   <motion.div
                     layoutId="activePill"
                     className={`absolute inset-0 rounded-2xl -z-10 shadow-md ${
-                      tab.id === "VIDEOS" ? "bg-[#10B981]" : "bg-[#04281E]"
+                      tab.id === "VIDEOS" ? "bg-[#007A5E]" : "bg-[#04281E]"
                     }`}
                     transition={{ type: "spring", stiffness: 350, damping: 30 }}
                   />
@@ -123,9 +121,7 @@ export default function MasonryGallery({ limit }: { limit?: number }) {
                 <span
                   className={`text-[10px] px-1.5 py-0.2 rounded-md ${
                     isActive
-                      ? tab.id === "VIDEOS"
-                        ? "bg-black/20 text-slate-950 font-black"
-                        : "bg-white/20 text-white font-bold"
+                      ? "bg-white/20 text-white font-bold"
                       : "bg-neutral-100 text-neutral-500"
                   }`}
                 >
@@ -386,7 +382,7 @@ export default function MasonryGallery({ limit }: { limit?: number }) {
 
               {/* Glowing Awwwards Play Button */}
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-16 h-16 rounded-full bg-[#10B981] text-slate-950 flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.4)] group-hover:scale-110 group-hover:bg-[#34D399] transition-all duration-300">
+                <div className="w-16 h-16 rounded-full bg-[#007A5E] text-white flex items-center justify-center shadow-[0_0_30px_rgba(0,122,94,0.4)] group-hover:scale-110 group-hover:bg-[#009E7A] transition-all duration-300">
                   <Play className="w-6 h-6 fill-current ml-0.5" />
                 </div>
               </div>

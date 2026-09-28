@@ -1,11 +1,9 @@
-'use client';
-
-import React from 'react';
 import { Hero } from '@/components/hero';
+import { MountainRidgeDivider } from '@/components/ui';
+import { AboutExpoPlatform, WhyParticipateSection, WhoWillYouMeetSection, EventAttractionsSection, GalaDinnerSection, LatestNewsSection } from '@/components/home';
 import { ExpoJourney, OrganizersSection, InaugurationMomentsSection } from '@/components/story';
 import { ConferenceThemesSection } from '@/components/conference';
 import { SpeakersSection } from '@/components/speakers';
-import { GalaDinnerSection } from '@/components/home';
 import { OfficialPatronsStrip } from '@/components/sponsors';
 import { ConversionCTASection } from '@/components/booking';
 
@@ -14,31 +12,51 @@ export default function Home() {
     <div className="min-h-screen bg-[var(--c-bg)] text-[var(--c-text-primary)] transition-colors duration-300">
       {/* ── Main Landing Page Content Flow ── */}
       <main className="relative flex flex-col w-full">
-        {/* 01: Hero (Header, Expanding Video, Nepal Clean Energy Milestones 1911 -> 2035) */}
+        {/* 01: Hero (Header, Cinematic Video, Awwwards 5th Edition Badge) */}
         <Hero />
 
-        {/* 02: The Expo Journey (2018, 2019, 2022, 2024 & 5th Milestone Preview) */}
+        {/* ── Seamless Himalayan Mountain Ridge Skyline Divider ── */}
+        <div className="relative w-full bg-[#071322] -mt-1 z-10">
+          <MountainRidgeDivider fillColor="#ffffff" accentColor="#00E599" />
+        </div>
+
+        {/* 02: About The Expo / Regional Platform */}
+        <AboutExpoPlatform />
+
+        {/* 03: Why Participate? — Reasons to attend HIGEX 2027 */}
+        <WhyParticipateSection />
+
+        {/* 04: Who Will You Meet? — The People Behind Nepal's Energy Future */}
+        <WhoWillYouMeetSection />
+
+        {/* 05: The Expo Journey (2018–2024 Track Record + 5th Edition Announcement) */}
         <ExpoJourney />
 
-        {/* 03: Behind The Expo (IPPAN × Event Solution Joint Organizers) */}
-        <OrganizersSection />
-
-        {/* 04: Inaugural Moments, Chief Guests & Dignitaries */}
-        <InaugurationMomentsSection />
-
-        {/* 05: Major Exhibition Sectors & Focus Pillars */}
+        {/* 06: Exhibition Sectors & Dedicated Pavilions */}
         <ConferenceThemesSection />
 
-        {/* 06: Distinguished Leaders & Event Management Team */}
+        {/* 07: Key Event Attractions (11 Official Highlights across 4 Pillars) */}
+        <EventAttractionsSection />
+
+        {/* 08: Distinguished Keynote Speakers & Organising Leadership */}
         <SpeakersSection />
 
-        {/* 07: VIP Gala Dinner & Awards (Executive Networking Night) */}
+        {/* 09: Gala Dinner */}
         <GalaDinnerSection />
 
-        {/* 08: Official Patronage, Partners & Endorsing Bodies */}
+        {/* 10: State Inaugural Moments & Chief Guests */}
+        <InaugurationMomentsSection />
+
+        {/* 11: Behind The Expo (IPPAN × Event Solution Joint Summit Leadership) */}
+        <OrganizersSection />
+
+        {/* 12: Official Patronage, Government Endorsements & Partners */}
         <OfficialPatronsStrip />
 
-        {/* 09: Participate / Exhibition Stall Booking & Free Visitor Registration */}
+        {/* 13: Latest News & Events Section */}
+        <LatestNewsSection />
+
+        {/* 14: High-Conversion Closing CTA */}
         <ConversionCTASection />
       </main>
     </div>

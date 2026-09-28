@@ -146,7 +146,20 @@ export default function IDCardBadgePreview({
         ctx.font = `bold ${config.stallPlacement.fontSize * scale}px sans-serif`;
         const stallX = (config.stallPlacement.x / 100) * width;
         const stallY = (config.stallPlacement.y / 100) * height;
-        ctx.fillText(stallNumber ? `STALL: ${stallNumber}` : "MAIN EXHIBITION HALL", stallX, stallY);
+        const upper = (stallNumber || "").toUpperCase();
+        const stallText = !stallNumber
+          ? "MAIN EXHIBITION HALL"
+          : upper.includes("SPONSOR") ||
+            upper.includes("PARTNER") ||
+            upper.includes("SUPPORTER") ||
+            upper.includes("ASSOCIATION") ||
+            upper.includes("POWERED") ||
+            upper.includes("EXHIBITOR")
+            ? upper
+            : upper.startsWith("STALL") || upper.startsWith("BOOTH")
+              ? upper
+              : `STALL: ${stallNumber}`;
+        ctx.fillText(stallText, stallX, stallY);
       }
 
       // 4. Draw QR Code Container & Matrix
@@ -176,12 +189,7 @@ export default function IDCardBadgePreview({
         }
       }
 
-      // 5. Draw Registration ID
-      ctx.fillStyle = config.idPlacement.color || "#061A2A";
-      ctx.font = `bold ${config.idPlacement.fontSize * scale}px monospace`;
-      const idX = (config.idPlacement.x / 100) * width;
-      const idY = (config.idPlacement.y / 100) * height;
-      ctx.fillText(delegateId, idX, idY);
+      // 5. Registration ID omitted for security (anti-counterfeiting)
 
       // 6. Draw Role / Badge Banner with Background Rectangle
       if (config.roleBannerPlacement?.show !== false) {
@@ -265,7 +273,7 @@ export default function IDCardBadgePreview({
       const dataUrl = canvas.toDataURL("image/png");
       const a = document.createElement("a");
       a.href = dataUrl;
-      a.download = `HimalayanGreenEnergyExpo_Badge_${delegateId}.png`;
+      a.download = "HimalayanGreenEnergyExpo_Official_Badge.png";
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -388,7 +396,22 @@ export default function IDCardBadgePreview({
             }}
             className="absolute w-full px-4 text-center font-bold text-emerald-800 font-sans truncate"
           >
-            {stallNumber ? `STALL: ${stallNumber}` : "MAIN EXHIBITION HALL"}
+            {(() => {
+              if (!stallNumber) return "MAIN EXHIBITION HALL";
+              const upper = stallNumber.toUpperCase();
+              if (
+                upper.includes("SPONSOR") ||
+                upper.includes("PARTNER") ||
+                upper.includes("SUPPORTER") ||
+                upper.includes("ASSOCIATION") ||
+                upper.includes("POWERED") ||
+                upper.includes("EXHIBITOR")
+              ) {
+                return upper;
+              }
+              if (upper.startsWith("STALL") || upper.startsWith("BOOTH")) return upper;
+              return `STALL: ${stallNumber}`;
+            })()}
           </div>
         )}
 
@@ -409,20 +432,6 @@ export default function IDCardBadgePreview({
               row.map((val, c) => (val ? <rect key={`${r}-${c}`} x={c} y={r} width={1} height={1} fill="#061A2A" /> : null))
             )}
           </svg>
-        </div>
-
-        {/* Delegate ID */}
-        <div
-          style={{
-            top: `${config.idPlacement.y}%`,
-            left: `${config.idPlacement.x}%`,
-            transform: "translate(-50%, -50%)",
-            fontSize: `${config.idPlacement.fontSize}px`,
-            color: config.idPlacement.color,
-          }}
-          className="absolute w-full text-center font-mono font-semibold"
-        >
-          {delegateId}
         </div>
 
         {/* 7. Role / Badge Banner Rectangle with BG & Custom Width */}
@@ -457,7 +466,7 @@ export default function IDCardBadgePreview({
                     ? "0px"
                     : `${config.roleBannerPlacement?.borderRadius ?? 6}px`,
               }}
-              className={`font-black uppercase tracking-widest px-4 shadow-md flex items-center justify-center w-full ${
+              className={`font-bold uppercase tracking-widest px-4 shadow-md flex items-center justify-center w-full ${
                 config.roleBannerPlacement?.styleMode === "full-width" ? "rounded-none" : ""
               }`}
             >

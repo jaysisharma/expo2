@@ -1,266 +1,333 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
 import {
   ChevronLeft,
   ChevronRight,
   Maximize2,
   X,
-  ArrowRight,
 } from 'lucide-react';
 import { ScrollReveal } from '@/components/ui';
 
-interface MomentSlide {
+export interface InauguralMoment {
   id: string;
   image: string;
   title: string;
-  badge: string;
+  subtitle: string;
 }
 
-const slides: MomentSlide[] = [
+export const INAUGURAL_MOMENTS: InauguralMoment[] = [
+  {
+    id: 'm1',
+    image: '/images/WhatsApp Image 2026-08-27 at 06.52.05.jpeg',
+    title: 'Official Chief Guest Inaugural Address & Keynote',
+    subtitle: 'Rt. Hon. Prime Minister addressing the assembly on national energy sovereignty',
+  },
+  {
+    id: 'm2',
+    image: '/images/WhatsApp Image 2026-08-27 at 06.52.05 (1).jpeg',
+    title: 'Auspicious Lamp Lighting Ceremony',
+    subtitle: 'Traditional ceremonial Panas lighting marking the formal commencement',
+  },
   {
     id: 'm3',
     image: '/images/WhatsApp Image 2026-08-27 at 06.52.06.jpeg',
-    title: 'Sovereign Energy Leaders & Ministers on Stage',
-    badge: 'Dignitaries',
+    title: 'Sovereign Energy Leaders & Ministers on Dais',
+    subtitle: 'Cabinet Ministers and diplomatic mission heads convened at the leadership summit',
   },
   {
     id: 'm4',
-    image: '/images/WhatsApp Image 2026-08-27 at 06.52.06 (1).jpeg',
-    title: 'High-Level Policy Address & Vision',
-    badge: 'Plenary Speech',
+    image: '/images/WhatsApp Image 2026-08-27 at 06.52.06 (2).jpeg',
+    title: 'Unveiling the Official Himalayan Expo Directory',
+    subtitle: 'Official release of the comprehensive national clean energy industry registry',
   },
   {
     id: 'm5',
-    image: '/images/WhatsApp Image 2026-08-27 at 06.52.06 (2).jpeg',
-    title: 'Unveiling the Official Expo Directory',
-    badge: 'Launch Ceremony',
+    image: '/images/WhatsApp Image 2026-08-27 at 06.52.07.jpeg',
+    title: 'VIP Ministerial Exhibition Hall Walkthrough',
+    subtitle: 'Dignitaries touring high-technology pavilions and turbine manufacturing displays',
   },
   {
     id: 'm6',
-    image: '/images/WhatsApp Image 2026-08-27 at 06.52.07.jpeg',
-    title: 'VIP Exhibition Hall & Technology Tour',
-    badge: 'VIP Floor Tour',
+    image: '/images/WhatsApp Image 2026-08-27 at 06.52.07 (1).jpeg',
+    title: 'Honoring Apex Patrons & Foundational Sponsors',
+    subtitle: 'State recognition presented to foundational developers and power utilities',
   },
   {
     id: 'm7',
-    image: '/images/WhatsApp Image 2026-08-27 at 06.52.07 (1).jpeg',
-    title: 'Honoring Foundational Sponsors & Patrons',
-    badge: 'Awards & Honors',
+    image: '/images/WhatsApp Image 2026-08-27 at 06.52.06 (1).jpeg',
+    title: 'High-Level Policy Address & Clean Energy Vision',
+    subtitle: 'Ministerial roadmap toward regional power trade and cross-border transmission',
   },
   {
     id: 'm8',
     image: '/images/WhatsApp Image 2026-08-27 at 06.52.07 (2).jpeg',
-    title: 'National & International Press Briefing',
-    badge: 'Press Conference',
+    title: 'National & Regional Press Briefing',
+    subtitle: 'Joint address announcing milestone bilateral energy partnerships',
   },
   {
     id: 'm9',
     image: '/images/WhatsApp Image 2026-08-27 at 06.52.08.jpeg',
-    title: '10,000+ Energy Delegates & Leaders Gathering',
-    badge: 'Convention Hall',
+    title: '10,000+ Energy Delegates Plenary Assembly',
+    subtitle: 'Convention floor gathering of international investors, developers, and engineers',
   },
   {
     id: 'm10',
     image: '/images/WhatsApp Image 2026-08-27 at 06.52.08 (1).jpeg',
     title: 'National Clean Energy Milestone Celebration',
-    badge: 'Expo Highlights',
-  },
-  {
-    id: 'm1',
-    image: '/images/WhatsApp Image 2026-08-27 at 06.52.05.jpeg',
-    title: 'Official Chief Guest Inaugural Address',
-    badge: 'Keynote Speech',
-  },
-  {
-    id: 'm2',
-    image: '/images/WhatsApp Image 2026-08-27 at 06.52.05 (1).jpeg',
-    title: 'Auspicious Inauguration Ceremony & Lamp Lighting',
-    badge: 'Inauguration',
+    subtitle: 'Commemorating landmark achievements in sustainable Himalayan energy',
   },
 ];
 
 export function InaugurationMomentsSection() {
-  const [selectedSlide, setSelectedSlide] = useState<MomentSlide | null>(null);
-  const [isPaused, setIsPaused] = useState(false);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [selectedModalIndex, setSelectedModalIndex] = useState<number | null>(null);
 
-  // Smooth scroll helper
-  const handleScroll = (direction: 'left' | 'right') => {
-    if (scrollContainerRef.current) {
-      const scrollAmount = 600;
-      scrollContainerRef.current.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth',
-      });
-    }
-  };
-
-  // Continuous auto-scroll ticker effect
+  // Modal keyboard shortcuts
   useEffect(() => {
-    if (isPaused) return;
-
-    const interval = setInterval(() => {
-      if (scrollContainerRef.current) {
-        const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
-        if (scrollLeft + clientWidth >= scrollWidth - 20) {
-          scrollContainerRef.current.scrollTo({ left: 0, behavior: 'smooth' });
-        } else {
-          scrollContainerRef.current.scrollBy({ left: 520, behavior: 'smooth' });
-        }
+    if (selectedModalIndex === null) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSelectedModalIndex(null);
+      if (e.key === 'ArrowRight') {
+        setSelectedModalIndex((prev) => (prev !== null ? (prev + 1) % INAUGURAL_MOMENTS.length : null));
       }
-    }, 4000);
+      if (e.key === 'ArrowLeft') {
+        setSelectedModalIndex((prev) => (prev !== null ? (prev - 1 + INAUGURAL_MOMENTS.length) % INAUGURAL_MOMENTS.length : null));
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedModalIndex]);
 
-    return () => clearInterval(interval);
-  }, [isPaused]);
+  const modalMoment = selectedModalIndex !== null ? INAUGURAL_MOMENTS[selectedModalIndex] : null;
 
   return (
-    <section className="relative w-full py-16 sm:py-24 bg-[var(--c-bg)] text-[var(--c-text-primary)] font-sans border-b border-black/[0.08] dark:border-white/[0.1] overflow-hidden transition-colors duration-300">
-      <div className="w-full px-4 sm:px-8 lg:px-12">
-        {/* Header */}
-        <ScrollReveal direction="up" distance={25}>
-          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#218A59]/10 text-[#218A59] dark:bg-[#25C176]/15 dark:text-[#25C176] border border-[#218A59]/25 dark:border-[#25C176]/30 text-xs font-mono font-bold uppercase tracking-wider mb-2 rounded-full">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#218A59] dark:bg-[#25C176] animate-ping" />
-                <span>INAUGURAL MOMENTS & SPEECHES</span>
-              </div>
-              <h2 className="font-display font-black text-2xl sm:text-4xl text-gray-900 dark:text-white tracking-tight">
-                Chief Guests, Dignitaries & Keynotes
-              </h2>
+    <section
+      id="inauguration-moments"
+      className="relative w-full py-16 sm:py-24 bg-[#F8FAFC] text-slate-900 font-inter-tight border-b border-slate-200/80 transition-colors duration-300 overflow-hidden"
+    >
+      <div className="relative z-10 max-w-7xl lg:max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8">
+        {/* ── Section Header ────────────────────────────────────────── */}
+        <ScrollReveal direction="up" distance={20}>
+          <div className="space-y-2 max-w-2xl mb-10 sm:mb-14">
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-bold text-[#007A5E] uppercase tracking-wider font-mono">
+                STATE PATRONAGE &bull; HISTORICAL RECORD
+              </span>
+              <div className="w-12 h-0.5 bg-[#007A5E]/40 rounded-full" />
             </div>
 
-            {/* Controls & Gallery Link */}
-            <div className="flex items-center gap-3 self-end sm:self-auto">
-              <div className="flex items-center gap-1 bg-black/5 dark:bg-white/5 p-1 rounded-xl border border-black/10 dark:border-white/10">
-                <button
-                  onClick={() => handleScroll('left')}
-                  aria-label="Scroll left"
-                  className="w-9 h-9 bg-white dark:bg-white/10 rounded-lg hover:bg-[#218A59] hover:text-white dark:hover:bg-[#25C176] dark:hover:text-black flex items-center justify-center text-gray-700 dark:text-gray-200 transition-colors cursor-pointer border border-black/10 dark:border-white/10"
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                </button>
-                <button
-                  onClick={() => handleScroll('right')}
-                  aria-label="Scroll right"
-                  className="w-9 h-9 bg-white dark:bg-white/10 rounded-lg hover:bg-[#218A59] hover:text-white dark:hover:bg-[#25C176] dark:hover:text-black flex items-center justify-center text-gray-700 dark:text-gray-200 transition-colors cursor-pointer border border-black/10 dark:border-white/10"
-                >
-                  <ChevronRight className="w-5 h-5" />
-                </button>
-              </div>
+            <h2 className="text-3xl sm:text-4xl lg:text-[40px] font-extrabold text-slate-900 tracking-tight leading-tight">
+              Inaugural Moments &amp;{' '}
+              <span className="text-[#007A5E]">Sovereign Dignitaries</span>
+            </h2>
 
-              <Link
-                href="/gallery"
-                className="px-5 py-2.5 bg-[#234679] hover:bg-[#218A59] text-white rounded-xl text-xs font-mono font-bold flex items-center gap-2 transition-colors shadow-sm"
-              >
-                <span>View Gallery</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
+            <p className="text-sm sm:text-base text-slate-600 font-normal leading-relaxed">
+              Presided over by the Rt. Hon. Prime Minister of Nepal, Cabinet Ministers, and international mission heads across historic editions.
+            </p>
           </div>
         </ScrollReveal>
 
-        {/* Large Cinematic Carousel Row */}
-        <ScrollReveal direction="up" distance={35} duration={0.8}>
-          <div
-            ref={scrollContainerRef}
-          onMouseEnter={() => setIsPaused(true)}
-          onMouseLeave={() => setIsPaused(false)}
-          onTouchStart={() => setIsPaused(true)}
-          onTouchEnd={() => setIsPaused(false)}
-          className="flex gap-6 sm:gap-8 overflow-x-auto no-scrollbar scroll-smooth py-2 cursor-grab active:cursor-grabbing"
-          style={{ scrollSnapType: 'x mandatory' }}
-        >
-          {slides.map((slide) => (
-            <div
-              key={slide.id}
-              onClick={() => setSelectedSlide(slide)}
-              style={{ scrollSnapAlign: 'start' }}
-              className="group relative flex-shrink-0 w-[320px] sm:w-[460px] md:w-[540px] lg:w-[620px] flex flex-col bg-white dark:bg-white/[0.04] border border-black/10 dark:border-white/10 rounded-2xl overflow-hidden hover:border-[#218A59] dark:hover:border-[#25C176] hover:shadow-xl transition-all duration-300 cursor-pointer"
-            >
-              {/* Image Frame */}
-              <div className="relative w-full h-[240px] sm:h-[320px] md:h-[380px] lg:h-[420px] bg-black/5 dark:bg-black/40 overflow-hidden">
+        {/* ── Clean Editorial Photo Mosaic ────────────────────────────── */}
+        <ScrollReveal direction="up" distance={25} duration={0.6}>
+            <div className="space-y-6">
+              {/* Grand Panoramic Centerpiece */}
+              <div
+                onClick={() => setSelectedModalIndex(0)}
+                className="group relative h-[380px] sm:h-[460px] lg:h-[500px] w-full rounded-3xl overflow-hidden border border-slate-200/90 hover:border-emerald-400 shadow-sm hover:shadow-2xl transition-all duration-500 cursor-pointer bg-slate-950 flex flex-col justify-end p-5 sm:p-7 pb-4 sm:pb-5"
+              >
                 <Image
-                  src={slide.image}
-                  alt={slide.title}
+                  src={INAUGURAL_MOMENTS[0].image}
+                  alt={INAUGURAL_MOMENTS[0].title}
                   fill
-                  sizes="(max-width: 768px) 360px, (max-width: 1200px) 580px, 660px"
-                  className="object-cover group-hover:scale-102 transition-transform duration-500"
+                  priority
+                  sizes="(max-width: 1360px) 100vw, 1360px"
+                  className="object-cover group-hover:scale-104 transition-transform duration-700 ease-out"
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/40 to-transparent group-hover:opacity-95 transition-opacity" />
 
-                {/* Top Right Fullscreen Trigger */}
-                <div className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/70 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                {/* Bottom Typography: Pinned to bottom edge */}
+                <div className="relative z-10 space-y-1 max-w-3xl mt-auto">
+                  <h3 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-white tracking-tight leading-tight group-hover:text-emerald-300 transition-colors">
+                    {INAUGURAL_MOMENTS[0].title}
+                  </h3>
+
+                  {/* Description hidden by default, expands on hover */}
+                  <div className="grid grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-all duration-300 ease-out overflow-hidden">
+                    <div className="min-h-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <p className="text-xs sm:text-sm text-slate-300 font-normal leading-relaxed pt-1">
+                        {INAUGURAL_MOMENTS[0].subtitle}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="absolute top-5 right-5 w-9 h-9 rounded-full bg-black/50 text-white/80 backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                   <Maximize2 className="w-4 h-4" />
                 </div>
               </div>
 
-              {/* Clean Caption Below Image */}
-              <div className="p-4 bg-white dark:bg-[#071322] border-t border-black/10 dark:border-white/10 flex items-center justify-between gap-4">
-                <div className="space-y-0.5">
-                  <span className="text-[10px] font-mono font-bold text-[#234679] dark:text-[#6FA0E8] uppercase tracking-wider block">
-                    {slide.badge}
-                  </span>
-                  <h3 className="font-display font-bold text-sm sm:text-base text-gray-900 dark:text-white leading-snug">
-                    {slide.title}
-                  </h3>
-                </div>
-                <div className="shrink-0 text-gray-400 group-hover:text-[#218A59] dark:group-hover:text-[#25C176] transition-colors">
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </div>
+              {/* 4 Companion Moments Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {INAUGURAL_MOMENTS.slice(1, 5).map((moment, idx) => (
+                  <div
+                    key={moment.id}
+                    onClick={() => setSelectedModalIndex(idx + 1)}
+                    className="group relative h-[300px] sm:h-[340px] rounded-3xl overflow-hidden border border-slate-200/90 hover:border-emerald-400 shadow-xs hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 cursor-pointer bg-slate-950 flex flex-col justify-end p-4 sm:p-5 pb-3.5 sm:pb-4"
+                  >
+                    <Image
+                      src={moment.image}
+                      alt={moment.title}
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                      className="object-cover group-hover:scale-108 transition-transform duration-700 ease-out"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/40 to-transparent group-hover:opacity-95 transition-opacity" />
+
+                    {/* Bottom Typography: Pinned to bottom edge */}
+                    <div className="relative z-10 space-y-1 mt-auto">
+                      <h4 className="text-sm sm:text-base font-bold text-white group-hover:text-emerald-300 transition-colors tracking-tight leading-snug">
+                        {moment.title}
+                      </h4>
+
+                      {/* Description hidden by default, expands on hover */}
+                      <div className="grid grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-all duration-300 ease-out overflow-hidden">
+                        <div className="min-h-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <p className="text-xs text-slate-300 font-normal leading-relaxed pt-1">
+                            {moment.subtitle}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/50 text-white/80 backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Maximize2 className="w-3.5 h-3.5" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Secondary Row of 4 Additional Archival Moments */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {INAUGURAL_MOMENTS.slice(5, 9).map((moment, idx) => (
+                  <div
+                    key={moment.id}
+                    onClick={() => setSelectedModalIndex(idx + 5)}
+                    className="group relative h-[250px] sm:h-[270px] rounded-3xl overflow-hidden border border-slate-200/90 hover:border-emerald-400 shadow-xs hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 cursor-pointer bg-slate-950 flex flex-col justify-end p-4 pb-3"
+                  >
+                    <Image
+                      src={moment.image}
+                      alt={moment.title}
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                      className="object-cover group-hover:scale-108 transition-transform duration-700 ease-out"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/40 to-transparent group-hover:opacity-95 transition-opacity" />
+
+                    <div className="relative z-10 space-y-1 mt-auto">
+                      <h4 className="text-xs sm:text-sm font-bold text-white group-hover:text-emerald-300 transition-colors tracking-tight leading-snug">
+                        {moment.title}
+                      </h4>
+
+                      {/* Description hidden by default, expands on hover */}
+                      <div className="grid grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-all duration-300 ease-out overflow-hidden">
+                        <div className="min-h-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <p className="text-[11px] text-slate-300 font-normal leading-relaxed pt-1">
+                            {moment.subtitle}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="absolute top-4 right-4 w-7 h-7 rounded-full bg-black/50 text-white/80 backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Maximize2 className="w-3 h-3" />
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-          ))}
-        </div>
-        </ScrollReveal>
-
-        {/* Subtle scroll status helper */}
-        <div className="mt-4 max-w-7xl mx-auto flex items-center justify-between text-[11px] font-mono text-gray-500 dark:text-gray-400">
-          <span>Auto-scrolling · Hover to pause</span>
-          <span className="hidden sm:inline">Click any image to enlarge</span>
-        </div>
+          </ScrollReveal>
       </div>
 
-      {/* Fullscreen Lightbox Modal */}
-      {selectedSlide && (
+      {/* ── High-Resolution Lightbox Modal ──────────────────────────── */}
+      {modalMoment && selectedModalIndex !== null && (
         <div
-          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm flex items-center justify-center p-2 sm:p-6"
-          onClick={() => setSelectedSlide(null)}
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-4 sm:p-6"
+          onClick={() => setSelectedModalIndex(null)}
         >
           <div
+            className="relative max-w-5xl w-full bg-slate-950 rounded-3xl overflow-hidden border border-white/10 shadow-2xl animate-in zoom-in-95 duration-200"
             onClick={(e) => e.stopPropagation()}
-            className="relative max-w-6xl w-full bg-[#061A2A] border border-white/20 rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[95vh]"
           >
             {/* Modal Top Bar */}
-            <div className="p-3 px-5 border-b border-white/10 flex items-center justify-between text-white">
-              <span className="px-2.5 py-0.5 bg-[#25C176] text-black font-mono text-[10px] font-bold uppercase rounded-md">
-                {selectedSlide.badge}
+            <div className="absolute top-4 left-4 right-4 z-20 flex items-center justify-between pointer-events-none">
+              <span className="pointer-events-auto px-3.5 py-1.5 rounded-full bg-black/70 backdrop-blur-md text-emerald-400 font-mono text-xs border border-white/15">
+                Archival Record &bull; {String(selectedModalIndex + 1).padStart(2, '0')} /{' '}
+                {String(INAUGURAL_MOMENTS.length).padStart(2, '0')}
               </span>
+
               <button
-                onClick={() => setSelectedSlide(null)}
-                className="p-1 hover:bg-white/10 text-white rounded-md transition-colors cursor-pointer"
+                onClick={() => setSelectedModalIndex(null)}
+                aria-label="Close photo modal"
+                className="pointer-events-auto w-10 h-10 rounded-full bg-white/20 text-white hover:bg-white/40 flex items-center justify-center transition-colors shadow-md"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Crisp Image Display */}
-            <div className="relative w-full h-[65vh] sm:h-[75vh] bg-black">
+            {/* Modal Image Frame with Prev/Next Overlays */}
+            <div className="relative h-[60vh] sm:h-[72vh] w-full bg-black flex items-center justify-center">
               <Image
-                src={selectedSlide.image}
-                alt={selectedSlide.title}
+                src={modalMoment.image}
+                alt={modalMoment.title}
                 fill
-                unoptimized
                 className="object-contain"
+                priority
               />
+
+              {/* Prev Button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedModalIndex(
+                    (selectedModalIndex - 1 + INAUGURAL_MOMENTS.length) % INAUGURAL_MOMENTS.length
+                  );
+                }}
+                className="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/70 hover:bg-black/95 text-white border border-white/20 flex items-center justify-center transition-colors backdrop-blur-sm"
+                aria-label="Previous image"
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+
+              {/* Next Button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedModalIndex((selectedModalIndex + 1) % INAUGURAL_MOMENTS.length);
+                }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/70 hover:bg-black/95 text-white border border-white/20 flex items-center justify-center transition-colors backdrop-blur-sm"
+                aria-label="Next image"
+              >
+                <ChevronRight className="w-6 h-6" />
+              </button>
             </div>
 
-            {/* Bottom Caption */}
-            <div className="p-4 px-6 bg-[#061A2A] border-t border-white/10 text-white">
-              <h4 className="text-sm sm:text-base font-bold font-display">
-                {selectedSlide.title}
-              </h4>
+            {/* Modal Footer Caption */}
+            <div className="p-5 sm:p-6 bg-slate-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-white/10">
+              <div className="space-y-1 max-w-2xl">
+                <h4 className="text-base sm:text-lg font-bold text-white">
+                  {modalMoment.title}
+                </h4>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
+                  {modalMoment.subtitle}
+                </p>
+              </div>
+
+              <span className="text-[11px] text-slate-400 font-mono hidden sm:inline shrink-0">
+                Use &larr; &rarr; keys or Esc to close
+              </span>
             </div>
           </div>
         </div>
@@ -268,3 +335,5 @@ export function InaugurationMomentsSection() {
     </section>
   );
 }
+
+export default InaugurationMomentsSection;

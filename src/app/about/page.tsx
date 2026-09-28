@@ -96,7 +96,7 @@ export default function AboutPage() {
                 About The Expo
               </h1>
               <p className="mt-3 text-sm sm:text-base text-emerald-100/75 max-w-xl">
-                Bhrikutimandap Exhibition Complex, Kathmandu · 16–18 January 2027
+                Bhrikutimandap Exhibition Hall, Kathmandu · 17–19 January 2027
               </p>
 
               {/* Quick Metrics */}
@@ -119,7 +119,7 @@ export default function AboutPage() {
             <div className="flex items-center gap-3 shrink-0">
               <Link
                 href="/register"
-                className="px-5 py-2.5 rounded-lg bg-[#10B981] hover:bg-[#059669] text-slate-950 text-xs font-black flex items-center gap-2 transition-colors shadow-md"
+                className="px-5 py-2.5 rounded-lg bg-[#007A5E] hover:bg-[#005C42] text-white text-xs font-bold flex items-center gap-2 transition-colors shadow-md"
               >
                 <span>Register Badge</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -143,7 +143,7 @@ export default function AboutPage() {
           {/* Left: Large statement */}
           <div className="space-y-6">
             <p className="text-[11px] font-mono font-bold text-[#10B981] uppercase tracking-[0.2em]">02 / WHY HIMALAYAN GREEN ENERGY EXPO</p>
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-[#061A2A] leading-tight tracking-tight">
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[#061A2A] leading-tight tracking-tight">
               RESILIENT ENERGY,<br />
               <span className="text-[#10B981]">PROSPEROUS NEPAL.</span>
             </h2>
@@ -198,7 +198,7 @@ export default function AboutPage() {
           {/* Header */}
           <div className="space-y-4 max-w-3xl">
             <p className="text-[11px] font-mono font-bold text-[#34D399] uppercase tracking-[0.2em]">03 / NEPAL&apos;S ENERGY JOURNEY</p>
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-tight tracking-tight">
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight tracking-tight">
               A COUNTRY<br />
               <span className="text-[#34D399]">POWERING</span> FORWARD.
             </h2>
@@ -220,7 +220,7 @@ export default function AboutPage() {
               <div className="absolute inset-0 bg-gradient-to-t from-[#03160F] via-[#03160F]/70 to-transparent" />
 
               <div className="relative z-10 flex items-center justify-between">
-                <span className="px-3 py-1 rounded-xl bg-[#087EA4] text-white font-mono text-xs font-black shadow-md border border-[#38BDF8]">
+                <span className="px-3 py-1 rounded-xl bg-[#087EA4] text-white font-mono text-xs font-bold shadow-md border border-[#38BDF8]">
                   1911 AD
                 </span>
                 <span className="px-2 py-0.5 rounded-md bg-black/40 text-slate-300 font-mono text-[10px] font-bold uppercase tracking-wider border border-white/10">
@@ -230,7 +230,7 @@ export default function AboutPage() {
 
               <div className="relative z-10 space-y-2 text-white">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl sm:text-5xl font-black font-sans text-[#38BDF8]">0.5</span>
+                  <span className="text-4xl sm:text-5xl font-bold font-sans text-[#38BDF8]">0.5</span>
                   <span className="text-xs font-mono font-bold text-slate-300 px-2 py-0.5 rounded bg-white/10 border border-white/15">MW</span>
                 </div>
                 <h3 className="font-bold text-lg text-white">Pharping Powerhouse</h3>
@@ -251,7 +251,7 @@ export default function AboutPage() {
               <div className="absolute inset-0 bg-gradient-to-t from-[#03160F] via-[#03160F]/70 to-transparent" />
 
               <div className="relative z-10 flex items-center justify-between">
-                <span className="px-3 py-1 rounded-xl bg-[#059669] text-white font-mono text-xs font-black shadow-md border border-[#34D399]">
+                <span className="px-3 py-1 rounded-xl bg-[#059669] text-white font-mono text-xs font-bold shadow-md border border-[#34D399]">
                   2035 AD
                 </span>
                 <span className="px-2 py-0.5 rounded-md bg-emerald-950/80 text-[#34D399] font-mono text-[10px] font-bold uppercase tracking-wider border border-emerald-500/30">
@@ -261,7 +261,7 @@ export default function AboutPage() {
 
               <div className="relative z-10 space-y-2 text-white">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl sm:text-5xl font-black font-sans text-[#34D399]">30,000</span>
+                  <span className="text-4xl sm:text-5xl font-bold font-sans text-[#34D399]">30,000</span>
                   <span className="text-xs font-mono font-bold text-slate-300 px-2 py-0.5 rounded bg-white/10 border border-white/15">MW</span>
                 </div>
 
@@ -288,7 +288,7 @@ export default function AboutPage() {
               <div className="absolute inset-0 bg-gradient-to-t from-[#03160F] via-[#03160F]/70 to-transparent" />
 
               <div className="relative z-10 flex items-center justify-between">
-                <span className="px-3 py-1 rounded-xl bg-[#04281E] text-[#34D399] font-mono text-xs font-black shadow-md border border-[#34D399]/40">
+                <span className="px-3 py-1 rounded-xl bg-[#04281E] text-[#34D399] font-mono text-xs font-bold shadow-md border border-[#34D399]/40">
                   2035 AD
                 </span>
                 <span className="px-2 py-0.5 rounded-md bg-black/40 text-emerald-300 font-mono text-[10px] font-bold uppercase tracking-wider border border-emerald-500/20">
@@ -304,7 +304,7 @@ export default function AboutPage() {
                       <span className="w-2 h-2 rounded-full bg-[#38BDF8]" />
                       India Export
                     </span>
-                    <span className="font-mono font-black text-[#38BDF8]">10,000 MW</span>
+                    <span className="font-mono font-bold text-[#38BDF8]">10,000 MW</span>
                   </div>
 
                   <div className="flex items-center justify-between p-2 rounded-xl bg-white/10 border border-white/15 backdrop-blur-md text-xs">
@@ -312,7 +312,7 @@ export default function AboutPage() {
                       <span className="w-2 h-2 rounded-full bg-[#34D399]" />
                       Bangladesh Export
                     </span>
-                    <span className="font-mono font-black text-[#34D399]">5,000 MW</span>
+                    <span className="font-mono font-bold text-[#34D399]">5,000 MW</span>
                   </div>
 
                   <div className="flex items-center justify-between p-2 rounded-xl bg-white/10 border border-white/15 backdrop-blur-md text-xs">
@@ -320,7 +320,7 @@ export default function AboutPage() {
                       <span className="w-2 h-2 rounded-full bg-amber-400" />
                       Domestic Demand
                     </span>
-                    <span className="font-mono font-black text-amber-300">15,000 MW</span>
+                    <span className="font-mono font-bold text-amber-300">15,000 MW</span>
                   </div>
                 </div>
               </div>
@@ -338,7 +338,7 @@ export default function AboutPage() {
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-slate-200 pb-8">
             <div className="space-y-3">
               <p className="text-[11px] font-mono font-bold text-[#087EA4] uppercase tracking-[0.2em]">04 / THE JOURNEY OF THE EXPO</p>
-              <h2 className="text-4xl sm:text-5xl font-black text-[#061A2A] leading-tight tracking-tight">
+              <h2 className="text-4xl sm:text-5xl font-bold text-[#061A2A] leading-tight tracking-tight">
                 FOUR EDITIONS.<br />ONE JOURNEY.
               </h2>
             </div>
@@ -388,17 +388,17 @@ export default function AboutPage() {
                   <span className="w-2 h-2 rounded-full bg-[#34D399] animate-pulse" />
                   <span>2027 · THE 5TH MILESTONE</span>
                 </div>
-                <h3 className="text-3xl sm:text-5xl font-black text-white leading-tight">
+                <h3 className="text-3xl sm:text-5xl font-bold text-white leading-tight">
                   RESILIENT ENERGY, <br />
                   <span className="text-[#34D399]">PROSPEROUS NEPAL.</span>
                 </h3>
                 <p className="text-sm text-emerald-100/80 leading-relaxed max-w-lg">
-                  17th–19th January 2027 (Magh 3–5, 2083) at Bhrikutimandap Exhibition Complex, Kathmandu. Jointly organized by IPPAN and Event Solution, spotlighting Green Hydrogen, Solar, Wind, EV, and Alternative Clean Energy.
+                  17th–19th January 2027 (Magh 3–5, 2083) at Bhrikutimandap Exhibition Hall, Kathmandu. Jointly organized by IPPAN and Event Solution, spotlighting Green Hydrogen, Solar, Wind, EV, and Alternative Clean Energy.
                 </p>
                 <div className="pt-2 flex flex-wrap gap-3">
                   <Link
                     href="/register"
-                    className="px-5 py-2.5 rounded-full bg-[#10B981] hover:bg-[#059669] text-slate-950 font-mono text-xs font-black tracking-wider transition-all shadow-md inline-flex items-center gap-2"
+                    className="px-5 py-2.5 rounded-full bg-[#007A5E] hover:bg-[#005C42] text-white font-mono text-xs font-bold tracking-wider transition-all shadow-md inline-flex items-center gap-2"
                   >
                     <span>REGISTER AS VISITOR</span>
                     <ArrowUpRight className="w-4 h-4" />
@@ -444,7 +444,7 @@ export default function AboutPage() {
         <div className="relative z-10 max-w-5xl mx-auto text-center space-y-12">
           <div className="space-y-4">
             <p className="text-[11px] font-mono font-bold text-[#34D399] uppercase tracking-[0.2em]">05 / WHAT THE EXPO CONNECTS</p>
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-tight tracking-tight">
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight tracking-tight">
               ONE PLATFORM.<br />
               <span className="text-[#34D399]">AN ENTIRE INDUSTRY.</span>
             </h2>
@@ -502,7 +502,7 @@ export default function AboutPage() {
         <div className="max-w-6xl mx-auto space-y-12">
           <div className="space-y-3">
             <p className="text-[11px] font-mono font-bold text-[#087EA4] uppercase tracking-[0.2em]">06 / THE EXPERIENCE</p>
-            <h2 className="text-4xl sm:text-5xl font-black text-[#061A2A] leading-tight tracking-tight">
+            <h2 className="text-4xl sm:text-5xl font-bold text-[#061A2A] leading-tight tracking-tight">
               MORE THAN<br />AN EXHIBITION.
             </h2>
           </div>
@@ -559,7 +559,7 @@ export default function AboutPage() {
         <div className="max-w-5xl mx-auto space-y-14">
           <div className="text-center space-y-3">
             <p className="text-[11px] font-mono font-bold text-[#34D399] uppercase tracking-[0.2em]">07 / THE ORGANIZERS</p>
-            <h2 className="text-4xl sm:text-5xl font-black text-white leading-tight tracking-tight">
+            <h2 className="text-4xl sm:text-5xl font-bold text-white leading-tight tracking-tight">
               POWERED BY INDUSTRY.<br />
               <span className="text-[#34D399]">DELIVERED WITH EXPERIENCE.</span>
             </h2>
@@ -569,7 +569,7 @@ export default function AboutPage() {
             {/* IPPAN */}
             <div className="lg:col-span-5 p-8 rounded-3xl bg-emerald-900/30 border border-emerald-500/20 space-y-5">
               <div className="relative h-12 w-32">
-                <Image src="/ippan.png" alt="IPPAN" fill className="object-contain object-left" />
+                <Image src="/images/ippan_vector.svg" alt="IPPAN" fill className="object-contain object-left" />
               </div>
               <div>
                 <p className="text-[10px] font-mono font-bold text-[#34D399] uppercase tracking-widest mb-2">INDUSTRY KNOWLEDGE</p>
@@ -577,34 +577,34 @@ export default function AboutPage() {
                   Independent Power Producers&apos; Association, Nepal
                 </h3>
                 <p className="text-sm text-emerald-100/70 leading-relaxed">
-                  IPPAN represents Nepal&apos;s private clean energy developers — the companies building the projects that are transforming the country&apos;s energy future. The association brings sectoral authority, government relationships and industry credibility to Himalayan Hydro Expo.
+                  Established in 2001, IPPAN is a non-profit, non-government autonomous organization established to encourage private-sector participation in Nepal&apos;s hydropower sector. It serves as a link between private power developers and government organizations, while supporting the exchange of technology, expertise, knowledge, financial and management information among independent power producers.
                 </p>
               </div>
-              <a href="https://ippan.org.np" target="_blank" rel="noopener noreferrer" className="text-xs font-mono font-bold text-[#34D399] hover:underline inline-flex items-center gap-1">
+              <a href="https://www.ippan.org.np/" target="_blank" rel="noopener noreferrer" className="text-xs font-mono font-bold text-[#34D399] hover:underline inline-flex items-center gap-1">
                 ippan.org.np <ArrowUpRight className="w-3 h-3" />
               </a>
             </div>
 
             {/* Divider × */}
             <div className="lg:col-span-1 flex items-center justify-center">
-              <span className="text-4xl font-black text-emerald-500/40">×</span>
+              <span className="text-4xl font-bold text-emerald-500/40">×</span>
             </div>
 
             {/* Event Solution */}
             <div className="lg:col-span-5 p-8 rounded-3xl bg-emerald-900/30 border border-emerald-500/20 space-y-5">
               <div className="relative h-12 w-40">
-                <Image src="/event_solution.png" alt="Event Solution" fill className="object-contain object-left" />
+                <Image src="/images/event_solution_vector.svg" alt="Event Solution" fill className="object-contain object-left" />
               </div>
               <div>
                 <p className="text-[10px] font-mono font-bold text-[#34D399] uppercase tracking-widest mb-2">EVENT EXECUTION</p>
                 <h3 className="text-lg font-bold text-white mb-3">
-                  Event Solution Pvt. Ltd.
+                  Event Solution Nepal Pvt. Ltd.
                 </h3>
                 <p className="text-sm text-emerald-100/70 leading-relaxed">
-                  Event Solution is Nepal&apos;s leading professional exhibition management company — handling international pavilions, stall fabrication, audiovisual systems, logistics and complete on-ground operations across four editions of the expo.
+                  Founded in 2014, Event Solution Nepal is an event management company focused on creating and delivering events from planning through execution. Its services include event planning and consulting, event management and coordination, event production and setup, event rentals, logistics and event operations, and sound, lighting and LED solutions.
                 </p>
               </div>
-              <a href="https://eventsolutionnepal.com.np" target="_blank" rel="noopener noreferrer" className="text-xs font-mono font-bold text-[#34D399] hover:underline inline-flex items-center gap-1">
+              <a href="https://eventsolutionnepal.com.np/" target="_blank" rel="noopener noreferrer" className="text-xs font-mono font-bold text-[#34D399] hover:underline inline-flex items-center gap-1">
                 eventsolutionnepal.com.np <ArrowUpRight className="w-3 h-3" />
               </a>
             </div>
@@ -620,7 +620,7 @@ export default function AboutPage() {
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-slate-100 pb-8">
             <div className="space-y-3">
               <p className="text-[11px] font-mono font-bold text-[#087EA4] uppercase tracking-[0.2em]">08 / THE PEOPLE</p>
-              <h2 className="text-4xl sm:text-5xl font-black text-[#061A2A] leading-tight tracking-tight">
+              <h2 className="text-4xl sm:text-5xl font-bold text-[#061A2A] leading-tight tracking-tight">
                 THE PEOPLE<br />BEHIND THE PLATFORM.
               </h2>
             </div>
@@ -693,7 +693,7 @@ export default function AboutPage() {
             2027 / 5TH EDITION
           </p>
 
-          <h2 className="text-5xl sm:text-7xl font-black text-white leading-[1.0] tracking-tight">
+          <h2 className="text-5xl sm:text-7xl font-bold text-white leading-[1.0] tracking-tight">
             THE NEXT<br />
             <span className="text-[#34D399]">CHAPTER</span><br />
             STARTS HERE.
@@ -718,7 +718,7 @@ export default function AboutPage() {
             </Link>
             <Link
               href="/register"
-              className="px-8 py-3.5 rounded-xl bg-[#10B981] hover:bg-[#059669] text-slate-950 font-mono text-xs font-black transition-all shadow-[0_0_30px_rgba(16,185,129,0.4)]"
+              className="px-8 py-3.5 rounded-xl bg-[#007A5E] hover:bg-[#005C42] text-white font-mono text-xs font-bold transition-all shadow-[0_0_30px_rgba(0,122,94,0.4)]"
             >
               REGISTER NOW
             </Link>

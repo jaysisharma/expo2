@@ -2,119 +2,222 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
-  ArrowUpRight,
+  ArrowRight,
   Download,
   Users,
   Building2,
+  CheckCircle2,
+  Phone,
+  Mail,
 } from 'lucide-react';
-import { ScrollReveal } from '@/components/ui';
+import { ScrollReveal, TopographicContours, MountainCrestSvg } from '@/components/ui';
+import { CONTACT_DETAILS } from '@/data/contactInfo';
 
 export function ConversionCTASection() {
   return (
     <section
-      id="register-cta"
-      className="relative w-full py-16 sm:py-20 bg-[#040E1B] text-white font-sans overflow-hidden border-t border-white/10"
+      id="closing-call-to-partnership"
+      className="relative w-full py-16 sm:py-24 bg-[#FAFAFA] font-inter-tight border-t border-slate-200/80 overflow-hidden"
     >
-      {/* Ambient Glows */}
-      <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[450px] h-[450px] bg-[#218A59]/15 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-10 right-10 w-[400px] h-[400px] bg-[#234679]/25 rounded-full blur-3xl pointer-events-none" />
+      {/* Topographic Elevation Contours */}
+      <TopographicContours opacity="opacity-[0.03] text-slate-800" />
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Section Header */}
-        <ScrollReveal direction="up" distance={20}>
-          <div className="text-center max-w-2xl mx-auto space-y-2.5 mb-10 sm:mb-12">
-            <h2 className="font-display font-black text-2xl sm:text-4xl lg:text-5xl text-white tracking-tight leading-tight">
-              Be Part of South Asia&apos;s <br className="hidden sm:inline" />
-              <span className="text-[#6FA0E8]">Flagship Clean &</span>{' '}
-              <span className="text-[#25C176]">Green Summit</span>
-            </h2>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        {/* Main Executive Bottom Card */}
+        <div className="rounded-3xl bg-[#051D2C] text-white p-8 sm:p-12 lg:p-14 shadow-[0_30px_70px_-15px_rgba(2,18,29,0.7),0_12px_24px_rgba(0,0,0,0.3)] relative overflow-hidden border border-[#0C3952]">
+          
+          {/* Subtle Ambient Radial Lighting */}
+          <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-96 h-96 bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
 
-            <p className="text-xs sm:text-sm text-slate-300 max-w-xl mx-auto leading-relaxed">
-              16–18 January 2027 · Bhrikutimandap Exhibition Complex, Kathmandu
+          {/* ── 01: SECTION HEADER & SUBTITLE ──────────────────────── */}
+          <ScrollReveal direction="up" distance={20}>
+            <div className="relative z-10 text-center max-w-3xl mx-auto space-y-4 mb-10 sm:mb-12">
+
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight leading-[1.1]">
+                Join the <span className="text-[#12B981]">Energy Future</span>
+              </h2>
+
+              <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-normal max-w-2xl mx-auto">
+                Be part of a platform connecting Nepal&apos;s energy potential with the technologies, investments and partnerships of tomorrow.
+              </p>
+
+              {/* Tagline pills */}
+              <div className="flex flex-wrap justify-center gap-2 pt-1">
+                {['CONNECT', 'INVEST', 'INNOVATE', 'GROW'].map((word, i) => (
+                  <span
+                    key={word}
+                    className="px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase border border-white/15 text-white/70"
+                  >
+                    {word}{i < 3 ? ' ·' : ''}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </ScrollReveal>
+
+          {/* ── 02: TWO DISTINCT CONVERSION PATHS (EXHIBIT VS ATTEND) ─ */}
+          <ScrollReveal direction="up" distance={25} delay={0.1} duration={0.65}>
+            <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-10">
+              
+              {/* Card 1: For Exhibitors & Sponsors */}
+              <div className="p-7 sm:p-8 rounded-2xl bg-[#0D2839]/90 border border-sky-400/20 backdrop-blur-xl flex flex-col justify-between space-y-6 hover:border-[#12B981]/50 transition-all duration-300 group shadow-lg">
+                <div className="space-y-4">
+                  <div className="w-12 h-12 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-[#12B981] flex items-center justify-center shadow-inner">
+                    <Building2 className="w-6 h-6" />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <div className="text-[10px] font-mono text-[#12B981] font-bold uppercase tracking-wider">
+                      FOR EXHIBITORS
+                    </div>
+                    <h3 className="text-2xl font-bold text-white tracking-tight">
+                      Showcase. Connect. Grow.
+                    </h3>
+                    <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                      Present your products, projects, technologies and solutions while connecting with potential clients, investors, partners and industry stakeholders.
+                    </p>
+                  </div>
+
+                  {/* Bullet Benefits */}
+                  <ul className="space-y-2 pt-2 text-xs text-slate-300">
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-[#12B981] shrink-0" />
+                      <span>Prime exhibition pavilions &amp; dedicated stalls</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-[#12B981] shrink-0" />
+                      <span>VIP B2B matchmaking &amp; deal suites</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-[#12B981] shrink-0" />
+                      <span>Regional brand exposure across South Asia</span>
+                    </li>
+                  </ul>
+
+                  {/* Stat badge */}
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/25">
+                    <span className="text-lg font-black text-[#12B981] leading-none">100+</span>
+                    <span className="text-[11px] text-slate-300 font-semibold uppercase tracking-wide">Expected Exhibitors</span>
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <Link
+                    href="/book-stall"
+                    className="w-full py-3.5 px-6 rounded-full bg-[#12B981] hover:bg-[#0ea372] text-[#051D2C] text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-md active:scale-98"
+                  >
+                    <span>BOOK EXHIBITION STALL</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                </div>
+              </div>
+
+              {/* Card 2: For Trade Delegates & Visitors */}
+              <div className="p-7 sm:p-8 rounded-2xl bg-[#0D2839]/90 border border-sky-400/20 backdrop-blur-xl flex flex-col justify-between space-y-6 hover:border-sky-400/50 transition-all duration-300 group shadow-lg">
+                <div className="space-y-4">
+                  <div className="w-12 h-12 rounded-xl bg-sky-500/15 border border-sky-500/30 text-[#38BDF8] flex items-center justify-center shadow-inner">
+                    <Users className="w-6 h-6" />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <div className="text-[10px] font-mono text-[#38BDF8] font-bold uppercase tracking-wider">
+                      FOR VISITORS
+                    </div>
+                    <h3 className="text-2xl font-bold text-white tracking-tight">
+                      Discover Nepal&apos;s Energy Future
+                    </h3>
+                    <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                      Meet industry leaders, investors, policymakers, technology providers and energy professionals, while exploring emerging technologies and engaging in industry dialogue.
+                    </p>
+                  </div>
+
+                  {/* Bullet Benefits */}
+                  <ul className="space-y-2 pt-2 text-xs text-slate-300">
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-[#38BDF8] shrink-0" />
+                      <span>Instant digital QR pass via email</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-[#38BDF8] shrink-0" />
+                      <span>Access to all exhibition pavilions &amp; demos</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-[#38BDF8] shrink-0" />
+                      <span>Complimentary for verified trade visitors</span>
+                    </li>
+                  </ul>
+
+                  {/* Stat badge */}
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-sky-500/10 border border-sky-500/25">
+                    <span className="text-lg font-black text-[#38BDF8] leading-none">50,000+</span>
+                    <span className="text-[11px] text-slate-300 font-semibold uppercase tracking-wide">Expected Visitors</span>
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <Link
+                    href="/register"
+                    className="w-full py-3.5 px-6 rounded-full bg-white hover:bg-slate-100 text-slate-900 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-md active:scale-98"
+                  >
+                    <span>REGISTER FOR FREE PASS</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                </div>
+              </div>
+
+            </div>
+          </ScrollReveal>
+
+          {/* ── 03: CLOSING STATEMENT ────────────────────────────── */}
+          <div className="relative z-10 text-center mb-8">
+            <p className="text-xl sm:text-2xl lg:text-3xl font-black text-white tracking-tight uppercase">
+              Let&apos;s Power Nepal&apos;s{' '}
+              <span className="text-[#12B981]">Green Future</span>{' '}Together.
             </p>
           </div>
-        </ScrollReveal>
 
-        {/* 2 Focused Action Cards */}
-        <ScrollReveal direction="up" distance={25} stagger={0.1} duration={0.6}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-4xl mx-auto mb-10">
-            {/* Card 1: Exhibitors */}
-            <div className="p-6 sm:p-7 rounded-2xl bg-white/[0.04] border border-white/15 backdrop-blur-md flex flex-col justify-between space-y-6 hover:border-[#25C176]/50 hover:bg-white/[0.07] transition-all duration-300 group shadow-lg">
-              <div className="space-y-3">
-                <div className="w-11 h-11 rounded-xl bg-[#218A59]/20 border border-[#218A59]/30 text-[#25C176] flex items-center justify-center">
-                  <Building2 className="w-5 h-5" />
-                </div>
-
-                <div className="space-y-1">
-                  <h3 className="font-display font-bold text-xl text-white">
-                    Exhibit & Book Stall
-                  </h3>
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    Showcase turbines, grid systems, solar & green energy solutions to 10,000+ buyers and developers.
-                  </p>
-                </div>
-              </div>
-
-              <Link
-                href="/book-stall"
-                className="w-full py-3 rounded-full bg-gradient-to-r from-[#5B9F35] to-[#218A59] hover:brightness-110 text-white font-mono text-xs font-bold text-center flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-98"
-              >
-                <span>BOOK EXHIBITION STALL</span>
-                <ArrowUpRight className="w-4 h-4" />
-              </Link>
+          {/* ── 04: CLEAN BOTTOM ORGANIZER BAR ────────────────────── */}
+          <div className="relative z-10 max-w-4xl mx-auto pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
+            <div className="flex items-center gap-2 text-slate-300 font-medium">
+              <MountainCrestSvg className="w-3.5 h-3.5 text-[#12B981]" />
+              <span>Jointly Organized by IPPAN &amp; Event Solution Nepal</span>
             </div>
 
-            {/* Card 2: Trade Visitors */}
-            <div className="p-6 sm:p-7 rounded-2xl bg-white/[0.04] border border-white/15 backdrop-blur-md flex flex-col justify-between space-y-6 hover:border-[#6FA0E8]/50 hover:bg-white/[0.07] transition-all duration-300 group shadow-lg">
-              <div className="space-y-3">
-                <div className="w-11 h-11 rounded-xl bg-[#234679]/30 border border-[#234679]/50 text-[#6FA0E8] flex items-center justify-center">
-                  <Users className="w-5 h-5" />
-                </div>
-
-                <div className="space-y-1">
-                  <h3 className="font-display font-bold text-xl text-white">
-                    Register as Visitor
-                  </h3>
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    Access technical plenaries, explore 150+ pavilions, and receive instant digital QR entry passes.
-                  </p>
-                </div>
-              </div>
-
-              <Link
-                href="/register"
-                className="w-full py-3 rounded-full bg-gradient-to-r from-[#234679] via-[#087EA4] to-[#0284C7] hover:brightness-110 !text-white font-mono text-xs font-bold text-center flex items-center justify-center gap-1.5 transition-all shadow-md shadow-cyan-900/40 border border-cyan-400/40 active:scale-98"
-              >
-                <span className="!text-white">GET FREE VISITOR PASS</span>
-                <ArrowUpRight className="w-4 h-4 !text-white" />
-              </Link>
-            </div>
-          </div>
-        </ScrollReveal>
-
-        {/* Bottom Document Download Link */}
-        <ScrollReveal direction="up" distance={15} delay={0.15}>
-          <div className="max-w-4xl mx-auto pt-5 border-t border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs font-mono text-slate-400">
-            <span>IPPAN × Event Solution</span>
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center gap-5">
               <a
-                href="/files/hydroproposal-13-2-2024.pdf"
+                href="/Proposal.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-slate-300 hover:text-[#25C176] transition-colors"
+                className="hover:text-white inline-flex items-center gap-1.5 transition-colors font-medium text-slate-300"
               >
-                <Download className="w-3.5 h-3.5" />
-                <span>Event Proposal (PDF)</span>
+                <Download className="w-3.5 h-3.5 text-[#12B981]" />
+                <span>Proposal (PDF)</span>
               </a>
-              <span className="text-white/20">·</span>
-              <Link href="/contact" className="hover:text-white transition-colors">
-                Contact Secretariat
+
+              <a
+                href={`tel:${CONTACT_DETAILS.mobiles[0].raw}`}
+                className="hover:text-white inline-flex items-center gap-1.5 transition-colors font-medium text-slate-300"
+              >
+                <Phone className="w-3.5 h-3.5 text-[#12B981]" />
+                <span>{CONTACT_DETAILS.mobiles[0].display}</span>
+              </a>
+
+              <Link
+                href="/contact"
+                className="hover:text-[#12B981] inline-flex items-center gap-1 transition-colors font-semibold text-white"
+              >
+                <span>Contact Desk ↗</span>
               </Link>
             </div>
           </div>
-        </ScrollReveal>
+
+        </div>
       </div>
     </section>
   );
 }
+
+export default ConversionCTASection;

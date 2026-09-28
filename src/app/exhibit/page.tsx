@@ -14,9 +14,10 @@ import {
   Calendar,
   Sparkles,
 } from "lucide-react";
+import { WhyParticipateSection } from "@/components/home";
 
 export const metadata: Metadata = {
-  title: "Exhibit & Stall Booking | Himalayan Hydro Expo Nepal 2026",
+  title: "Exhibit & Stall Booking | Himalayan Green Energy Expo 2027",
   description:
     "Showcase your hydropower machinery, electro-mechanical turbines, 400kV grid equipment, and engineering services to 10,000+ buyers and developers at Bhrikutimandap, Kathmandu.",
 };
@@ -122,7 +123,7 @@ export default function ExhibitPage() {
             <div className="flex items-center gap-3 shrink-0">
               <Link
                 href="/book-stall"
-                className="px-5 py-2.5 rounded-lg bg-[#10B981] hover:bg-[#059669] text-slate-950 text-xs font-black flex items-center gap-2 transition-colors shadow-md"
+                className="px-5 py-2.5 rounded-lg bg-[#007A5E] hover:bg-[#005C42] text-white text-xs font-bold flex items-center gap-2 transition-colors shadow-md"
               >
                 <span>Book a Stall</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -245,6 +246,11 @@ export default function ExhibitPage() {
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* Section: Why Participate? (8 Strategic Pillars) */}
+          <div className="-mx-4 sm:-mx-6 lg:-mx-8">
+            <WhyParticipateSection />
           </div>
 
           {/* Section 3: Live Interactive Floor Plan Callout */}

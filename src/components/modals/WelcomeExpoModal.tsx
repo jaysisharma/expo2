@@ -9,48 +9,34 @@ export default function WelcomeExpoModal() {
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   useEffect(() => {
+    // Show modal once loader finishes or after short fallback delay
     const handleLoaderComplete = () => {
-      try {
-        const dismissed = sessionStorage.getItem("expo_welcome_modal_dismissed");
-        if (!dismissed) {
-          setTimeout(() => {
-            setIsOpen(true);
-          }, 350);
-        }
-      } catch {
-        setTimeout(() => {
-          setIsOpen(true);
-        }, 350);
-      }
+      setTimeout(() => {
+        setIsOpen(true);
+      }, 350);
+    };
+
+    const handleOpenModal = () => {
+      setIsOpen(true);
     };
 
     window.addEventListener("hydro-loader-complete", handleLoaderComplete);
+    window.addEventListener("open-welcome-modal", handleOpenModal);
 
-    // Fallback timer if event is already done
+    // Fallback timer in case hydro-loader-complete already fired or was skipped
     const fallbackTimer = setTimeout(() => {
-      try {
-        const dismissed = sessionStorage.getItem("expo_welcome_modal_dismissed");
-        if (!dismissed) {
-          setIsOpen(true);
-        }
-      } catch {
-        setIsOpen(true);
-      }
-    }, 2200);
+      setIsOpen(true);
+    }, 900);
 
     return () => {
       window.removeEventListener("hydro-loader-complete", handleLoaderComplete);
+      window.removeEventListener("open-welcome-modal", handleOpenModal);
       clearTimeout(fallbackTimer);
     };
   }, []);
 
   const handleClose = () => {
     setIsOpen(false);
-    try {
-      sessionStorage.setItem("expo_welcome_modal_dismissed", "true");
-    } catch {
-      // ignore
-    }
   };
 
   useEffect(() => {
@@ -99,15 +85,15 @@ export default function WelcomeExpoModal() {
                 <span>5TH EDITION</span>
               </div>
 
-              <h2 className="font-sans font-black text-2xl sm:text-3xl text-white tracking-tight leading-tight drop-shadow-sm">
-                Himalayan Hydro &amp; Green Energy Expo
+              <h2 className="font-sans font-bold text-2xl sm:text-3xl text-white tracking-tight leading-tight drop-shadow-sm">
+                Himalayan Green Energy Expo 2027
               </h2>
 
               {/* Location well just below the title with location icon (no bg pill) */}
               <div className="pt-1 flex items-center justify-center gap-1.5 text-xs font-mono text-emerald-100">
                 <MapPin className="w-4 h-4 text-[#34D399] shrink-0" />
                 <span className="font-medium text-white">
-                  Bhrikutimandap Exhibition Complex, Kathmandu, Nepal
+                  Bhrikutimandap Exhibition Hall, Kathmandu, Nepal
                 </span>
               </div>
 
@@ -127,15 +113,15 @@ export default function WelcomeExpoModal() {
               <Link
                 href="/register"
                 onClick={handleClose}
-                className="flex-1 flex items-center justify-center py-3 px-6 rounded-full bg-white hover:bg-emerald-50 text-black font-extrabold text-xs tracking-wider uppercase text-center transition-all shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+                className="flex-1 flex items-center justify-center py-3 px-6 rounded-full bg-white hover:bg-emerald-50 text-slate-900 font-bold text-xs tracking-wider uppercase text-center transition-all shadow-lg hover:scale-[1.02] active:scale-[0.98]"
               >
-                <span className="text-black">Register as Visitor</span>
+                <span className="text-slate-900 font-bold">Register as Visitor</span>
               </Link>
 
               <Link
                 href="/book-stall"
                 onClick={handleClose}
-                className="flex-1 py-3 px-6 rounded-full bg-[#10B981] hover:bg-[#059669] text-slate-950 font-bold text-xs tracking-wider uppercase text-center transition-all shadow-lg border border-white/20 hover:scale-102 active:scale-98"
+                className="flex-1 py-3 px-6 rounded-full bg-[#007A5E] hover:bg-[#005C42] text-white font-bold text-xs tracking-wider uppercase text-center transition-all shadow-lg border border-white/20 hover:scale-102 active:scale-98"
               >
                 Register as Exhibitor
               </Link>

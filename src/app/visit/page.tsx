@@ -18,7 +18,7 @@ export default function VisitPage() {
             <span className="w-1.5 h-1.5 rounded-full bg-hydro-primary" />
             DELEGATE & VISITOR PORTAL
           </div>
-          <h1 className="font-display font-black text-4xl sm:text-6xl lg:text-7xl text-slate-900 tracking-tight">
+          <h1 className="font-display font-bold text-4xl sm:text-6xl lg:text-7xl text-slate-900 tracking-tight">
             YOUR VISIT. <br />
             <span className="text-hydro-primary">SIMPLIFIED.</span>
           </h1>
@@ -72,7 +72,7 @@ export default function VisitPage() {
               className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between"
             >
               <div>
-                <span className="font-display font-black text-3xl text-hydro-primary block mb-3">
+                <span className="font-display font-bold text-3xl text-hydro-primary block mb-3">
                   {step.num}
                 </span>
                 <h3 className="font-display font-bold text-sm text-slate-900">
@@ -92,7 +92,7 @@ export default function VisitPage() {
             <UserPlus className="w-6 h-6" />
           </div>
 
-          <h3 className="font-display font-black text-3xl sm:text-4xl text-slate-900">
+          <h3 className="font-display font-bold text-3xl sm:text-4xl text-slate-900">
             Register for Free Trade Pass Now
           </h3>
 

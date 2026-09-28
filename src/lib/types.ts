@@ -126,7 +126,7 @@ export interface NewsArticle {
   slug: string;
   title: string;
   date: string;
-  category: "Expo Update" | "Policy & Market" | "Technology" | "Press Release";
+  category: "Expo Update" | "Policy & Market" | "Technology" | "Press Release" | "News Coverage" | string;
   author: string;
   readTime: string;
   summary: string;

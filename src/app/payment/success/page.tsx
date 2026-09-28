@@ -23,11 +23,15 @@ import {
 
 function PaymentSuccessContent() {
   const searchParams = useSearchParams();
-  const id = searchParams.get("id") || `HHE26-STALL-${Math.floor(100000 + Math.random() * 900000)}`;
+  const id = searchParams.get("id") || "HHE26-STALL-CONFIRMED";
   const gateway = searchParams.get("gateway") || "khalti";
   const stalls = searchParams.get("stalls") || "Confirmed Allocation";
   const amount = searchParams.get("amount");
   const txn = searchParams.get("txn") || searchParams.get("pidx");
+
+  const isGala = searchParams.get("type") === "gala" || id.startsWith("GALA-");
+  const passTier = searchParams.get("pass") || "national";
+  const qty = searchParams.get("qty") || "1";
 
   useEffect(() => {
     confetti({
@@ -49,15 +53,27 @@ function PaymentSuccessContent() {
         <div className="max-w-4xl mx-auto text-center space-y-3">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/30 text-xs font-mono font-bold text-[#34D399] uppercase shadow-xs">
             <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
-            <span>OFFICIAL STALL ALLOCATION CONFIRMATION</span>
+            <span>
+              {isGala ? "OFFICIAL GALA DINNER VIP PASS CONFIRMATION" : "OFFICIAL STALL ALLOCATION CONFIRMATION"}
+            </span>
           </div>
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white">
-            {isBank ? "Stall Reservation Received!" : "Payment & Stall Booking Confirmed!"}
+            {isGala
+              ? isBank
+                ? "Gala VIP Pass Reservation Received!"
+                : "Payment & Gala VIP Pass Confirmed!"
+              : isBank
+                ? "Stall Reservation Received!"
+                : "Payment & Stall Booking Confirmed!"}
           </h1>
           <p className="text-sm sm:text-base text-emerald-100/80 max-w-xl mx-auto leading-relaxed">
-            {isBank
-              ? "Your booth allocation has been provisionally reserved. Please complete the bank wire remittance within 48 hours to finalize badge and pro-forma issuance."
-              : "Your payment has been successfully verified. Your exhibition booth is now officially locked in for the 2027 Himalayan Hydro & Green Energy Expo."}
+            {isGala
+              ? isBank
+                ? "Your Gala Dinner seats at Royal Tulip have been provisionally held. Please complete the bank wire remittance within 48 hours to finalize guest seating."
+                : "Your Khalti payment has been successfully verified. Your VIP delegate credential for the Royal Tulip Gala Dinner is officially locked in."
+              : isBank
+                ? "Your booth allocation has been provisionally reserved. Please complete the bank wire remittance within 48 hours to finalize badge and pro-forma issuance."
+                : "Your payment has been successfully verified. Your exhibition booth is now officially locked in for the Himalayan Green Energy Expo 2027."}
           </p>
         </div>
       </div>
@@ -76,7 +92,7 @@ function PaymentSuccessContent() {
                   <span className="text-[11px] font-mono text-slate-500 font-bold uppercase tracking-wider">
                     BOOKING REFERENCE NUMBER
                   </span>
-                  <div className="font-mono font-black text-xl text-slate-900 mt-0.5">
+                  <div className="font-mono font-bold text-xl text-slate-900 mt-0.5">
                     {id}
                   </div>
                 </div>
@@ -108,30 +124,42 @@ function PaymentSuccessContent() {
             {/* Receipt Summary Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-5 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-mono">
               <div>
-                <span className="text-slate-500 text-[10px] uppercase font-bold">ALLOCATED STALL(S)</span>
-                <div className="font-sans font-black text-lg text-[#218A59] mt-0.5">
-                  STALL {stalls}
+                <span className="text-slate-500 text-[10px] uppercase font-bold">
+                  {isGala ? "PASS CATEGORY & QUANTITY" : "ALLOCATED STALL(S)"}
+                </span>
+                <div className="font-sans font-bold text-lg text-[#218A59] mt-0.5">
+                  {isGala
+                    ? `${qty}x Gala VIP Pass (${passTier === "international" ? "International" : "National"})`
+                    : `STALL ${stalls}`}
                 </div>
               </div>
 
               <div>
                 <span className="text-slate-500 text-[10px] uppercase font-bold">TOTAL AMOUNT</span>
-                <div className="font-sans font-black text-lg text-slate-900 mt-0.5">
-                  {amount ? `NPR ${Number(amount).toLocaleString()}` : "NPR 875,000"}
+                <div className="font-sans font-bold text-lg text-slate-900 mt-0.5">
+                  {amount
+                    ? `NPR ${Number(amount).toLocaleString()}`
+                    : isGala
+                      ? passTier === "international"
+                        ? `NPR ${(6750 * Number(qty)).toLocaleString()} (USD ${50 * Number(qty)})`
+                        : `NPR ${(6000 * Number(qty)).toLocaleString()}`
+                      : "NPR 875,000"}
                 </div>
               </div>
 
               <div>
                 <span className="text-slate-500 text-[10px] uppercase font-bold">VENUE & LOCATION</span>
                 <div className="font-sans font-bold text-slate-800 mt-0.5">
-                  Bhrikutimandap Exhibition Complex, Kathmandu
+                  {isGala ? "Royal Tulip Luxury Hotel, Kathmandu" : "Bhrikutimandap Exhibition Hall, Kathmandu"}
                 </div>
               </div>
 
               <div>
-                <span className="text-slate-500 text-[10px] uppercase font-bold">EXPO DATES</span>
+                <span className="text-slate-500 text-[10px] uppercase font-bold">
+                  {isGala ? "GALA DINNER DATE & TIME" : "EXPO DATES"}
+                </span>
                 <div className="font-sans font-bold text-slate-800 mt-0.5">
-                  Magh 2–4, 2083 · Jan 16–18, 2027
+                  {isGala ? "Saturday, 17 Jan 2027 · 6:00 PM NPT" : "Magh 3–5, 2083 · Jan 17–19, 2027"}
                 </div>
               </div>
 
@@ -151,7 +179,7 @@ function PaymentSuccessContent() {
                   <span>IPPAN OFFICIAL BANK ACCOUNT DETAILS FOR REMITTANCE</span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-slate-800 pt-1">
-                  <div><strong>Account Name:</strong> IPPAN - EXPO SECRETARIAT</div>
+                  <div><strong>Account Name:</strong> IPPAN - GREEN ENERGY EXPO</div>
                   <div><strong>Bank Name:</strong> Nepal Investment Mega Bank (NIMB)</div>
                   <div><strong>Account No:</strong> 001001201928471</div>
                   <div><strong>Branch / SWIFT:</strong> Durbarmarg, Kathmandu / NIMBNPKA</div>
@@ -162,10 +190,10 @@ function PaymentSuccessContent() {
               </div>
             )}
 
-            {/* Exhibitor Next Steps */}
+            {/* Next Steps */}
             <div className="space-y-3 pt-2">
               <h3 className="font-sans font-bold text-sm text-slate-900 uppercase tracking-wide">
-                Exhibitor Onboarding & Next Steps
+                {isGala ? "Gala Dinner Delegate Entry Protocol" : "Exhibitor Onboarding & Next Steps"}
               </h3>
               <ul className="text-xs text-slate-600 space-y-2 pl-1 font-normal">
                 <li className="flex items-start gap-2.5">
@@ -173,7 +201,9 @@ function PaymentSuccessContent() {
                     1
                   </span>
                   <span>
-                    Our secretariat will issue your formal tax receipt and exhibitor manual via email within 24 hours.
+                    {isGala
+                      ? "Your digital VIP Gala e-ticket with registered QR code is issued under your reference ID."
+                      : "Our organizing team will issue your formal tax receipt and exhibitor manual via email within 24 hours."}
                   </span>
                 </li>
                 <li className="flex items-start gap-2.5">
@@ -181,7 +211,9 @@ function PaymentSuccessContent() {
                     2
                   </span>
                   <span>
-                    Submit fascia branding typography, exhibitor badges, and electrical load requirements by <strong>Poush 15, 2083</strong>.
+                    {isGala
+                      ? "Dress code: Formal Evening / Business Suit / Traditional National Attire. Arrival and welcome cocktail starts at 6:00 PM."
+                      : "Submit fascia branding typography, exhibitor badges, and electrical load requirements by Poush 15, 2083."}
                   </span>
                 </li>
                 <li className="flex items-start gap-2.5">
@@ -189,7 +221,9 @@ function PaymentSuccessContent() {
                     3
                   </span>
                   <span>
-                    Stall setup and shell-scheme decoration begins on <strong>Magh 1, 2083 (Jan 15, 2027)</strong> at Bhrikutimandap.
+                    {isGala
+                      ? "Your Gala Pass includes complimentary 3-day full access badge to the main exhibition at Bhrikutimandap."
+                      : "Stall setup and shell-scheme decoration begins on Magh 1, 2083 (Jan 15, 2027) at Bhrikutimandap."}
                   </span>
                 </li>
               </ul>
@@ -224,12 +258,12 @@ function PaymentSuccessContent() {
             </div>
           </div>
 
-          {/* Secretariat Contact Card */}
+          {/* Organizer Contact Card */}
           <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-slate-700">
             <div className="flex items-center gap-3">
               <ShieldCheck className="w-6 h-6 text-[#10B981] shrink-0" />
               <div>
-                <div className="font-bold text-slate-900">Expo Secretariat Assistance</div>
+                <div className="font-bold text-slate-900">Expo Support &amp; Assistance</div>
                 <div className="text-slate-500 text-[11px] font-normal">
                   Questions regarding stall setup, electricity or invoices?
                 </div>

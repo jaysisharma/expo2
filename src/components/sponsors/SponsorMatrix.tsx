@@ -13,21 +13,23 @@ export default function SponsorMatrix() {
         {/* Section Header */}
         <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-12 gap-6">
           <div>
-            <div className="inline-flex items-center gap-2 text-xs font-mono text-[#087EA4] tracking-widest uppercase mb-3 font-bold px-3 py-1 rounded-full bg-white border border-slate-200 shadow-xs">
-              <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
-              OFFICIAL PATRONS, SPONSORS & PARTNERS
+            <div className="flex items-center gap-3 mb-3">
+              <span className="text-xs font-bold text-[#007A5E] uppercase tracking-wider font-mono">
+                PREVIOUS EDITIONS &bull; PATRONS, SPONSORS &amp; PARTNERS
+              </span>
+              <div className="w-12 h-0.5 bg-[#007A5E]/40 rounded-full" />
             </div>
-            <h2 className="font-sans font-black text-3xl sm:text-5xl lg:text-6xl text-[#061A2A] tracking-tight leading-[1.05]">
-              BACKED BY <br />
-              <span className="text-[#087EA4]">GOVERNMENT &</span>{" "}
-              <span className="text-[#059669]">INDUSTRY LEADERS.</span>
+            <h2 className="font-sans font-bold text-3xl sm:text-5xl lg:text-6xl text-[#061A2A] tracking-tight leading-[1.05]">
+              SUPPORTED ACROSS <br />
+              <span className="text-[#087EA4]">PREVIOUS EDITIONS BY</span>{" "}
+              <span className="text-[#059669]">GOVERNMENT &amp; INDUSTRY.</span>
             </h2>
           </div>
 
           <div className="flex flex-wrap gap-4">
             <Link
               href="/contact?type=Sponsorship"
-              className="px-6 py-3.5 rounded-full bg-[#10B981] hover:bg-[#059669] text-slate-950 hover:text-white font-mono text-xs font-black tracking-wider transition-all flex items-center gap-2 shadow-lg hover:scale-105"
+              className="px-6 py-3.5 rounded-full bg-[#007A5E] hover:bg-[#005C42] text-white font-mono text-xs font-bold tracking-wider transition-all flex items-center gap-2 shadow-lg hover:scale-105"
             >
               <span>BECOME A 2027 SPONSOR</span>
               <ArrowRight className="w-4 h-4" />
@@ -76,7 +78,7 @@ export default function SponsorMatrix() {
                           className="object-contain p-1.5"
                         />
                       ) : (
-                        <span className="font-sans font-black text-xl text-[#087EA4]">
+                        <span className="font-sans font-bold text-xl text-[#087EA4]">
                           {sponsor.name.charAt(0)}
                         </span>
                       )}

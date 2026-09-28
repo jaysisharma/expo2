@@ -26,7 +26,7 @@ export default function StatCard({
           <span className="text-[11px] font-mono font-bold text-[#234679] tracking-wider uppercase block">
             {title}
           </span>
-          <div className="text-2xl sm:text-3xl font-display font-black text-slate-900 tracking-tight group-hover:text-[#218A59] transition-colors">
+          <div className="text-2xl sm:text-3xl font-display font-bold text-slate-900 tracking-tight group-hover:text-[#218A59] transition-colors">
             {value}
           </div>
         </div>

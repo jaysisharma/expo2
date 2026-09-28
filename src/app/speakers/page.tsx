@@ -53,7 +53,7 @@ export default function SpeakersPage() {
                 href="https://eventsolutionnepal.com.np"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-4 py-2.5 rounded-lg bg-[#10B981] hover:bg-[#059669] text-slate-950 text-xs font-black flex items-center gap-2 transition-colors shadow-md"
+                className="px-4 py-2.5 rounded-lg bg-[#007A5E] hover:bg-[#005C42] text-white text-xs font-bold flex items-center gap-2 transition-colors shadow-md"
               >
                 <ExternalLink className="w-3.5 h-3.5" />
                 <span>Event Solution Portal ↗</span>
@@ -75,7 +75,7 @@ export default function SpeakersPage() {
               <span className="text-xs font-mono font-bold text-[#087EA4] uppercase tracking-wider block mb-1">
                 CO-ORGANIZER LEADERSHIP
               </span>
-              <h2 className="text-2xl sm:text-3xl font-black text-[#061A2A]">
+              <h2 className="text-2xl sm:text-3xl font-bold text-[#061A2A]">
                 IPPAN Executive Committee Members
               </h2>
             </div>
@@ -89,7 +89,7 @@ export default function SpeakersPage() {
                 <span className="text-xs font-mono font-bold text-[#19A974] uppercase tracking-wider block mb-1">
                   EXHIBITION MANAGEMENT & OPERATIONS
                 </span>
-                <h2 className="text-2xl sm:text-3xl font-black text-[#061A2A]">
+                <h2 className="text-2xl sm:text-3xl font-bold text-[#061A2A]">
                   Event Solution Team
                 </h2>
               </div>
@@ -117,7 +117,11 @@ export default function SpeakersPage() {
                       fill
                       unoptimized
                       className={`object-cover object-top ${
-                        member.id === "vinesh-chordia" ? "translate-y-[10px]" : "translate-y-[60px]"
+                        ["sunil-bhandari", "bijay-sagar-pradhan", "nabin-bhatta", "vinesh-chordia", "bishal-prajapati", "mohan-shrestha"].includes(member.id)
+                          ? "translate-y-0"
+                          : member.id === "vinesh-chordia"
+                          ? "translate-y-[10px]"
+                          : "translate-y-[60px]"
                       } scale-105 group-hover:scale-110 transition-transform duration-300 ease-out`}
                     />
                   </div>
