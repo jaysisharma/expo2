@@ -27,7 +27,176 @@ import {
   Phone,
   Mail,
   MapPin,
+  Award,
+  Check,
+  RotateCcw,
+  Layers,
 } from "lucide-react";
+
+export interface StallPackage {
+  id: string;
+  name: string;
+  type: "sponsor" | "stall" | "custom";
+  badge?: string;
+  priceNPR: number;
+  priceUSD: number;
+  priceDisplayNPR: string;
+  priceDisplayUSD: string;
+  spaceDescription: string;
+  spaceCount: number;
+  spaceType: "bare" | "standard" | "any";
+  preferredStalls: string[];
+  perks: string[];
+}
+
+export const PARTICIPATION_PACKAGES: StallPackage[] = [
+  {
+    id: "title-sponsor",
+    name: "Title Sponsor",
+    type: "sponsor",
+    badge: "Flagship",
+    priceNPR: 5000000,
+    priceUSD: 35000,
+    priceDisplayNPR: "NPR 50,00,000",
+    priceDisplayUSD: "USD $35,000",
+    spaceDescription: "6M × 6M × 2 (2 Bare Space Stalls · 72m²)",
+    spaceCount: 2,
+    spaceType: "bare",
+    preferredStalls: ["A1", "A2"],
+    perks: ["2 Bare Space Stalls (72m²)", "25 Gala Dinner Passes", "50 Inauguration Passes", "500 Entry Passes", "5 Promotional Displays"],
+  },
+  {
+    id: "in-association-with",
+    name: "In Association With",
+    type: "sponsor",
+    badge: "Principal",
+    priceNPR: 4000000,
+    priceUSD: 25000,
+    priceDisplayNPR: "NPR 40,00,000",
+    priceDisplayUSD: "USD $25,000",
+    spaceDescription: "6M × 6M × 1 (1 Bare Space Stall · 36m²)",
+    spaceCount: 1,
+    spaceType: "bare",
+    preferredStalls: ["A1"],
+    perks: ["1 Bare Space Stall (36m²)", "20 Gala Dinner Passes", "50 Inauguration Passes", "300 Entry Passes"],
+  },
+  {
+    id: "powered-by",
+    name: "Powered By",
+    type: "sponsor",
+    badge: "Major",
+    priceNPR: 3000000,
+    priceUSD: 20000,
+    priceDisplayNPR: "NPR 30,00,000",
+    priceDisplayUSD: "USD $20,000",
+    spaceDescription: "6M × 6M × 1 (1 Bare Space Stall · 36m²)",
+    spaceCount: 1,
+    spaceType: "bare",
+    preferredStalls: ["A2"],
+    perks: ["1 Bare Space Stall (36m²)", "15 Gala Dinner Passes", "40 Inauguration Passes", "200 Entry Passes"],
+  },
+  {
+    id: "sponsor",
+    name: "Sponsor",
+    type: "sponsor",
+    priceNPR: 1500000,
+    priceUSD: 10000,
+    priceDisplayNPR: "NPR 15,00,000",
+    priceDisplayUSD: "USD $10,000",
+    spaceDescription: "6M × 6M × 1 (1 Bare Space Stall · 36m²)",
+    spaceCount: 1,
+    spaceType: "bare",
+    preferredStalls: ["A3"],
+    perks: ["1 Bare Space Stall (36m²)", "8 Gala Dinner Passes", "20 Inauguration Passes", "150 Entry Passes"],
+  },
+  {
+    id: "official-partner",
+    name: "Official Partner",
+    type: "sponsor",
+    priceNPR: 1300000,
+    priceUSD: 9000,
+    priceDisplayNPR: "NPR 13,00,000",
+    priceDisplayUSD: "USD $9,000",
+    spaceDescription: "6M × 6M × 1 (1 Bare Space Stall · 36m²)",
+    spaceCount: 1,
+    spaceType: "bare",
+    preferredStalls: ["A4"],
+    perks: ["1 Bare Space Stall (36m²)", "5 Gala Dinner Passes", "20 Inauguration Passes", "120 Entry Passes"],
+  },
+  {
+    id: "co-sponsor",
+    name: "Co-Sponsor",
+    type: "sponsor",
+    priceNPR: 1000000,
+    priceUSD: 7000,
+    priceDisplayNPR: "NPR 10,00,000",
+    priceDisplayUSD: "USD $7,000",
+    spaceDescription: "6M × 6M × 1 (1 Bare Space Stall · 36m²)",
+    spaceCount: 1,
+    spaceType: "bare",
+    preferredStalls: ["A26"],
+    perks: ["1 Bare Space Stall (36m²)", "5 Gala Dinner Passes", "20 Inauguration Passes", "100 Entry Passes"],
+  },
+  {
+    id: "supporter",
+    name: "Supporter",
+    type: "sponsor",
+    priceNPR: 500000,
+    priceUSD: 5000,
+    priceDisplayNPR: "NPR 5,00,000",
+    priceDisplayUSD: "USD $5,000",
+    spaceDescription: "6M × 6M × 1 (1 Bare Space Stall · 36m²)",
+    spaceCount: 1,
+    spaceType: "bare",
+    preferredStalls: ["A27"],
+    perks: ["1 Bare Space Stall (36m²)", "3 Gala Dinner Passes", "20 Inauguration Passes", "50 Entry Passes"],
+  },
+  {
+    id: "standard-stall",
+    name: "Standard Stall (3m × 3m)",
+    type: "stall",
+    badge: "Built Stall",
+    priceNPR: 180000,
+    priceUSD: 1350,
+    priceDisplayNPR: "NPR 85,000 – 1,80,000",
+    priceDisplayUSD: "USD $700 – $1,350",
+    spaceDescription: "3M × 3M Built Stall (B1–B22, H1–H8)",
+    spaceCount: 1,
+    spaceType: "standard",
+    preferredStalls: ["B1"],
+    perks: ["Pre-built partition walls", "1 Table, 2 Chairs", "15A Power socket", "Spotlights"],
+  },
+  {
+    id: "bare-space-stall",
+    name: "Bare Space Stall (Custom)",
+    type: "stall",
+    badge: "Raw Space",
+    priceNPR: 450000,
+    priceUSD: 3500,
+    priceDisplayNPR: "From NPR 3,78,000",
+    priceDisplayUSD: "From USD $3,000",
+    spaceDescription: "6M × 6M or 10M × 7M Raw Space (Block A / Block C)",
+    spaceCount: 1,
+    spaceType: "bare",
+    preferredStalls: ["A1"],
+    perks: ["Marked floor space for custom fabrication", "Direct 3-Phase power available", "Ideal for machinery & heavy demos"],
+  },
+  {
+    id: "custom-selection",
+    name: "Custom Map Selection",
+    type: "custom",
+    badge: "Flexible",
+    priceNPR: 0,
+    priceUSD: 0,
+    priceDisplayNPR: "Per Selected Stall(s)",
+    priceDisplayUSD: "Per Selected Stall(s)",
+    spaceDescription: "Select any stalls directly on the interactive floor plan",
+    spaceCount: 0,
+    spaceType: "any",
+    preferredStalls: [],
+    perks: ["Complete flexibility", "Multi-stall combinations", "Direct real-time floor plan picking"],
+  },
+];
 
 export default function StallBookingWizard() {
   const router = useRouter();
@@ -36,9 +205,16 @@ export default function StallBookingWizard() {
     searchParams.get("stalls") ||
     searchParams.get("booth") ||
     searchParams.get("stall");
+  const queryTier =
+    searchParams.get("tier") ||
+    searchParams.get("package") ||
+    searchParams.get("type");
 
   const [step, setStep] = useState(1);
   const [selectedBoothNumbers, setSelectedBoothNumbers] = useState<string[]>([]);
+  const [selectedPackageId, setSelectedPackageId] = useState<string>("custom-selection");
+  const [packageFilter, setPackageFilter] = useState<"all" | "sponsor" | "stall" | "custom">("all");
+  const [isCustomizedOnMap, setIsCustomizedOnMap] = useState<boolean>(false);
   const [viewMode, setViewMode] = useState<"map" | "list">("map");
   const [boothType, setBoothType] = useState<"Shell Scheme" | "Bare Space">("Shell Scheme");
   const [powerOption, setPowerOption] = useState<string>("Standard 15A Included");
@@ -61,19 +237,6 @@ export default function StallBookingWizard() {
   const [customIndustry, setCustomIndustry] = useState<string>("");
 
   const [bookingRef, setBookingRef] = useState<string>("");
-
-  // Initialize selected stalls from query params
-  useEffect(() => {
-    if (queryStall) {
-      const parsed = queryStall
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean);
-      if (parsed.length > 0) {
-        setSelectedBoothNumbers(parsed);
-      }
-    }
-  }, [queryStall]);
 
   // Load custom elements configured from Admin Floor Plan Studio
   const [elements, setElements] = useState<any[]>(
@@ -188,9 +351,102 @@ export default function StallBookingWizard() {
     }
   }, [selectedBoothNumbers]);
 
+  const selectedPackage = PARTICIPATION_PACKAGES.find((p) => p.id === selectedPackageId);
+  const isSponsorPackage = Boolean(selectedPackage && selectedPackage.type === "sponsor");
+
   const totalAreaSqM = selectedStallObjects.reduce((acc, curr) => acc + (curr.sizeSqM || 0), 0);
-  const totalPriceNPR = selectedStallObjects.reduce((acc, curr) => acc + (curr.priceNPR || 0), 0);
-  const totalPriceUSD = selectedStallObjects.reduce((acc, curr) => acc + (curr.priceUSD || 0), 0);
+  const rawTotalPriceNPR = selectedStallObjects.reduce((acc, curr) => acc + (curr.priceNPR || 0), 0);
+  const rawTotalPriceUSD = selectedStallObjects.reduce((acc, curr) => acc + (curr.priceUSD || 0), 0);
+
+  const finalPriceNPR = isSponsorPackage && selectedPackage
+    ? selectedPackage.priceNPR
+    : rawTotalPriceNPR;
+
+  const finalPriceUSD = isSponsorPackage && selectedPackage
+    ? selectedPackage.priceUSD
+    : rawTotalPriceUSD;
+
+  // Function to handle package selection and auto-allocation
+  const selectPackage = (pkgId: string) => {
+    setSelectedPackageId(pkgId);
+    setIsCustomizedOnMap(false);
+
+    const pkg = PARTICIPATION_PACKAGES.find((p) => p.id === pkgId);
+    if (!pkg || pkg.id === "custom-selection") {
+      return;
+    }
+
+    const available = elements
+      .filter(isActualStall)
+      .filter((el: any) => el.status !== "Booked");
+
+    const allocated: string[] = [];
+
+    // 1. Try preferred stalls first
+    for (const pref of pkg.preferredStalls) {
+      const isAvail = available.some(
+        (el: any) =>
+          (el.number && el.number.toLowerCase() === pref.toLowerCase()) ||
+          (el.id && el.id.toLowerCase() === pref.toLowerCase())
+      );
+      if (isAvail && !allocated.includes(pref)) {
+        allocated.push(pref);
+      }
+    }
+
+    // 2. If needed, select remaining stalls matching space requirements
+    if (allocated.length < pkg.spaceCount) {
+      for (const el of available) {
+        const sNum = el.number || el.id;
+        if (allocated.includes(sNum)) continue;
+        const cleanNum = sNum.toLowerCase();
+        const isB = /^b\d+$/i.test(cleanNum) || /^b\s*\d+$/i.test(cleanNum);
+        const isH = /^h\d+$/i.test(cleanNum) || /^h\s*\d+$/i.test(cleanNum);
+        const isBare = !isB && !isH;
+
+        if (pkg.spaceType === "bare" && isBare) {
+          allocated.push(sNum);
+        } else if (pkg.spaceType === "standard" && (isB || isH)) {
+          allocated.push(sNum);
+        } else if (pkg.spaceType === "any") {
+          allocated.push(sNum);
+        }
+
+        if (allocated.length >= pkg.spaceCount) break;
+      }
+    }
+
+    if (allocated.length > 0) {
+      setSelectedBoothNumbers(allocated);
+    }
+  };
+
+  // Initialize selected package or stalls from query params
+  useEffect(() => {
+    if (queryTier) {
+      const clean = queryTier.trim().toLowerCase();
+      const match = PARTICIPATION_PACKAGES.find(
+        (p) =>
+          p.id.toLowerCase() === clean ||
+          p.name.toLowerCase() === clean ||
+          p.name.toLowerCase().includes(clean)
+      );
+      if (match) {
+        selectPackage(match.id);
+        return;
+      }
+    }
+
+    if (queryStall) {
+      const parsed = queryStall
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+      if (parsed.length > 0) {
+        setSelectedBoothNumbers(parsed);
+      }
+    }
+  }, [queryStall, queryTier]);
 
   // Available stalls list for List View (derived from Admin elements)
   const availableStallsList = React.useMemo(() => {
@@ -214,6 +470,7 @@ export default function StallBookingWizard() {
   }, [elements]);
 
   const toggleStallSelection = (stallNum: string) => {
+    setIsCustomizedOnMap(true);
     setSelectedBoothNumbers((prev) => {
       if (prev.includes(stallNum)) {
         return prev.filter((id) => id !== stallNum);
@@ -285,8 +542,8 @@ export default function StallBookingWizard() {
           body: JSON.stringify({
             bookingId: ref,
             stallNumbers: selectedBoothNumbers,
-            amountNPR: totalPriceNPR,
-            amountUSD: totalPriceUSD,
+            amountNPR: finalPriceNPR,
+            amountUSD: finalPriceUSD,
             customerName: formData.contactPerson || formData.companyName,
             contactPerson: formData.contactPerson,
             email: formData.email,
@@ -297,7 +554,10 @@ export default function StallBookingWizard() {
             boothType: resolvedBoothType,
             powerOption: "Standard 15A Included",
             industryCategory: resolvedIndustry,
-            specialRequirements: "",
+            specialRequirements:
+              selectedPackage && selectedPackage.id !== "custom-selection"
+                ? `Package: ${selectedPackage.name} | Stalls: ${selectedBoothNumbers.join(", ")}`
+                : "",
             paymentMethod,
           }),
         });
@@ -370,43 +630,200 @@ export default function StallBookingWizard() {
          ========================================================================= */}
       {step === 1 && (
         <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h3 className="font-sans font-bold text-2xl text-slate-900">
-                Step 1: Choose Your Exhibition Stall(s)
-              </h3>
-              <p className="text-xs text-slate-600 font-normal mt-1">
-                Click any stall on the interactive floor plan to select or multi-select your preferred locations.
-              </p>
+          {/* =========================================================================
+              PARTICIPATION PACKAGE & STALL SELECTOR (EDITORIAL DESIGN)
+             ========================================================================= */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-slate-50/80 border border-slate-200/90 shadow-2xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <span className="text-[11px] font-mono font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">
+                  Step 1 · Stall Allocation & Sponsorship Tier
+                </span>
+                <h3 className="font-sans font-bold text-lg sm:text-xl text-slate-900 tracking-tight">
+                  Choose a Package or Stall Type
+                </h3>
+                <p className="text-xs text-slate-600 mt-0.5 max-w-xl leading-relaxed">
+                  Select an option below to assign your space automatically. Stalls can be reviewed or changed directly on the interactive floor plan anytime.
+                </p>
+              </div>
+
+              {/* View Mode Toggle */}
+              <div className="flex items-center gap-1 p-1 rounded-xl bg-white border border-slate-200 shadow-2xs text-xs shrink-0 self-start sm:self-auto">
+                <button
+                  type="button"
+                  onClick={() => setViewMode("map")}
+                  className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-medium transition-colors cursor-pointer ${
+                    viewMode === "map"
+                      ? "bg-slate-900 text-white shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  <Map className="w-3.5 h-3.5" />
+                  <span>Floor Plan</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode("list")}
+                  className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-medium transition-colors cursor-pointer ${
+                    viewMode === "list"
+                      ? "bg-slate-900 text-white shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  <ListFilter className="w-3.5 h-3.5" />
+                  <span>List View</span>
+                </button>
+              </div>
             </div>
 
-            {/* View Mode Toggle */}
-            <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-100 border border-slate-200 text-xs font-mono shrink-0">
-              <button
-                type="button"
-                onClick={() => setViewMode("map")}
-                className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-bold transition-all cursor-pointer ${
-                  viewMode === "map"
-                    ? "bg-white text-[#218A59] shadow-xs"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                <Map className="w-3.5 h-3.5" />
-                <span>Interactive Map</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode("list")}
-                className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-bold transition-all cursor-pointer ${
-                  viewMode === "list"
-                    ? "bg-white text-[#218A59] shadow-xs"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                <ListFilter className="w-3.5 h-3.5" />
-                <span>List View</span>
-              </button>
+            {/* Category Segmented Tabs */}
+            <div className="flex items-center gap-1.5 border-b border-slate-200/80 pb-2.5 overflow-x-auto scrollbar-none">
+              {[
+                { key: "all", label: "All Packages", count: 10 },
+                { key: "sponsor", label: "Sponsorship Tiers", count: 7 },
+                { key: "stall", label: "Exhibition Stalls", count: 2 },
+                { key: "custom", label: "Custom Selection", count: 1 },
+              ].map((tab) => {
+                const isActive = packageFilter === tab.key;
+                return (
+                  <button
+                    key={tab.key}
+                    type="button"
+                    onClick={() => setPackageFilter(tab.key as any)}
+                    className={`px-3 py-1.5 rounded-lg text-xs transition-colors shrink-0 cursor-pointer flex items-center gap-1.5 ${
+                      isActive
+                        ? "bg-white text-slate-900 border border-slate-300 shadow-2xs font-semibold"
+                        : "text-slate-500 hover:text-slate-800 hover:bg-slate-100/70 font-medium"
+                    }`}
+                  >
+                    <span>{tab.label}</span>
+                    <span
+                      className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                        isActive
+                          ? "bg-slate-100 text-slate-700 font-mono font-bold"
+                          : "bg-slate-200/60 text-slate-500"
+                      }`}
+                    >
+                      {tab.count}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
+
+            {/* Compact, Clean Package Cards Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+              {PARTICIPATION_PACKAGES.filter((pkg) => {
+                if (packageFilter === "sponsor") return pkg.type === "sponsor";
+                if (packageFilter === "stall") return pkg.type === "stall";
+                if (packageFilter === "custom") return pkg.type === "custom";
+                return true;
+              }).map((pkg) => {
+                const isSelected = selectedPackageId === pkg.id;
+                return (
+                  <button
+                    key={pkg.id}
+                    type="button"
+                    onClick={() => selectPackage(pkg.id)}
+                    className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-2.5 relative group ${
+                      isSelected
+                        ? "bg-white border-[#218A59] ring-2 ring-[#218A59]/20 shadow-xs"
+                        : "bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/70"
+                    }`}
+                  >
+                    {/* Top Row: Radio circle, Title, Badge */}
+                    <div className="flex items-start justify-between gap-2 w-full">
+                      <div className="flex items-start gap-2.5 min-w-0">
+                        <div
+                          className={`w-4 h-4 rounded-full border mt-0.5 flex items-center justify-center shrink-0 transition-colors ${
+                            isSelected
+                              ? "border-[#218A59] bg-[#218A59]"
+                              : "border-slate-300 bg-white group-hover:border-slate-400"
+                          }`}
+                        >
+                          {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="font-semibold text-slate-900 text-sm leading-snug">
+                              {pkg.name}
+                            </span>
+                            {pkg.badge && (
+                              <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">
+                                {pkg.badge}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">
+                            {pkg.spaceDescription}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Bottom Row: Tier Type & Pricing */}
+                    <div className="flex items-baseline justify-between pt-2 border-t border-slate-100 w-full text-xs pl-6.5">
+                      <span className="text-slate-400 text-[11px]">
+                        {pkg.type === "sponsor"
+                          ? "Sponsorship"
+                          : pkg.type === "custom"
+                          ? "Map Pick"
+                          : "Booth Allocation"}
+                      </span>
+                      <div className="text-right">
+                        <span className="font-semibold text-slate-900">
+                          {pkg.priceDisplayNPR}
+                        </span>
+                        {pkg.priceDisplayUSD && pkg.priceNPR > 0 && (
+                          <span className="text-slate-400 text-[11px] ml-1.5">
+                            · {pkg.priceDisplayUSD}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Clear Status & Modification Reassurance */}
+            {selectedPackage && (
+              <div className="pt-2 border-t border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-[#218A59] shrink-0" />
+                  <span className="text-slate-700">
+                    <strong className="text-slate-900 font-semibold">{selectedPackage.name}</strong> active.{" "}
+                    {selectedPackage.id === "custom-selection" ? (
+                      <span>Click any stall on the interactive floor plan below to select or deselect.</span>
+                    ) : (
+                      <span>
+                        Assigned:{" "}
+                        <strong className="font-mono text-slate-900">
+                          STALL {selectedBoothNumbers.length > 0 ? selectedBoothNumbers.join(", ") : "None"}
+                        </strong>{" "}
+                        <span className="text-slate-500">({selectedPackage.spaceDescription})</span>.
+                        {isCustomizedOnMap ? (
+                          <span className="text-emerald-700 font-medium ml-1">· Modified on map</span>
+                        ) : (
+                          <span className="text-slate-500 ml-1">· Click any stall on the floor plan below to modify.</span>
+                        )}
+                      </span>
+                    )}
+                  </span>
+                </div>
+
+                {isCustomizedOnMap && selectedPackage.preferredStalls.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => selectPackage(selectedPackage.id)}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium text-[11px] transition-colors cursor-pointer shrink-0 shadow-2xs"
+                  >
+                    <RotateCcw className="w-3 h-3 text-slate-500" />
+                    <span>Reset to recommended stalls</span>
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           {/* 2-Column Grid: Big Floor Plan (Left) & Sleek Compact Sidebar (Right) */}
@@ -579,19 +996,21 @@ export default function StallBookingWizard() {
                 {/* Total Tariff Box */}
                 <div className="p-3.5 rounded-xl bg-white border-2 border-emerald-400 shadow-xs space-y-1">
                   <div className="text-[10px] font-mono text-emerald-800 uppercase font-bold tracking-wider">
-                    TOTAL INVESTMENT TARIFF
+                    {isSponsorPackage ? "TOTAL SPONSORSHIP INVESTMENT" : "TOTAL INVESTMENT TARIFF"}
                   </div>
                   <div className="flex items-baseline justify-between flex-wrap gap-1">
                     <div className="text-xl font-bold font-mono text-[#15803D]">
-                      NPR {totalPriceNPR.toLocaleString()}
+                      NPR {finalPriceNPR.toLocaleString()}
                     </div>
                     <div className="text-xs font-mono font-bold text-slate-600">
-                      USD ${totalPriceUSD.toLocaleString()}
+                      USD ${finalPriceUSD.toLocaleString()}
                     </div>
                   </div>
-                  <p className="text-[9px] text-slate-500 pt-0.5 leading-tight">
-                    Official IPPAN 5th Edition tariff.
-                  </p>
+                  {isSponsorPackage && (
+                    <p className="text-[10px] text-emerald-800 font-medium pt-0.5 leading-tight">
+                      Includes {selectedPackage?.spaceDescription}
+                    </p>
+                  )}
                 </div>
 
                 {/* Primary Action Button */}
@@ -790,13 +1209,18 @@ export default function StallBookingWizard() {
               <div>
                 <span className="text-[10px] font-mono text-slate-400 font-bold uppercase">TOTAL INVESTMENT</span>
                 <div className="font-sans font-bold text-xl text-[#15803D]">
-                  NPR {totalPriceNPR.toLocaleString()}
+                  NPR {finalPriceNPR.toLocaleString()}
                 </div>
-                <span className="text-[11px] text-slate-600 font-mono">USD ${totalPriceUSD.toLocaleString()}</span>
+                <span className="text-[11px] text-slate-600 font-mono">USD ${finalPriceUSD.toLocaleString()}</span>
               </div>
             </div>
 
             <div className="pt-3 border-t border-slate-200 text-xs text-slate-700 flex flex-wrap items-center justify-between gap-2">
+              {selectedPackage && selectedPackage.id !== "custom-selection" && (
+                <div>
+                  <strong>Package Tier:</strong> {selectedPackage.name} ({selectedPackage.spaceDescription})
+                </div>
+              )}
               <div>
                 <strong>Industry Sector:</strong>{" "}
                 {formData.industryCategory === "Other"
@@ -1020,7 +1444,7 @@ export default function StallBookingWizard() {
                       : step === 3
                       ? paymentMethod === "bank"
                         ? "CONFIRM RESERVATION"
-                        : `PAY WITH ${paymentMethod.toUpperCase()} (NPR ${totalPriceNPR.toLocaleString()})`
+                        : `PAY WITH ${paymentMethod.toUpperCase()} (NPR ${finalPriceNPR.toLocaleString()})`
                       : "CONTINUE NEXT"}
                   </span>
                   <ArrowRight className="w-4 h-4" />

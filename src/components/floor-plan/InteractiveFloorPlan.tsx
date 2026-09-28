@@ -34,6 +34,7 @@ export interface InteractiveFloorPlanProps {
   onProceedToBooking?: (selectedStallIds: string[]) => void;
   showSearch?: boolean;
   showBuilderLink?: boolean;
+  initialZoom?: number;
 }
 
 export default function InteractiveFloorPlan({
@@ -44,6 +45,7 @@ export default function InteractiveFloorPlan({
   onProceedToBooking,
   showSearch = true,
   showBuilderLink = false,
+  initialZoom = 0.85,
 }: InteractiveFloorPlanProps) {
   const [elements, setElements] = useState<any[]>(savedFloorPlanFallback.elements || []);
   const [bgImageSrc, setBgImageSrc] = useState<string>(
@@ -73,7 +75,7 @@ export default function InteractiveFloorPlan({
   const selectedStalls = isControlled ? controlledSelectedStalls : internalSelectedStalls;
 
   const [hoveredStall, setHoveredStall] = useState<any | null>(null);
-  const [zoomLevel, setZoomLevel] = useState<number>(1);
+  const [zoomLevel, setZoomLevel] = useState<number>(initialZoom);
   const [searchQuery, setSearchQuery] = useState<string>("");
 
   // Fetch latest saved custom floor plan from API
@@ -239,7 +241,7 @@ export default function InteractiveFloorPlan({
               <ZoomOut className="w-3.5 h-3.5" />
             </button>
             <button
-              onClick={() => setZoomLevel(1)}
+              onClick={() => setZoomLevel(initialZoom)}
               className="p-1.5 rounded hover:bg-white text-slate-700 font-bold cursor-pointer"
               title="Reset Zoom"
             >
