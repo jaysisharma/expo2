@@ -17,8 +17,6 @@ import {
   Award,
   LayoutGrid,
   Building2,
-  Newspaper,
-  Camera,
   MapPin,
   Ticket,
   HelpCircle,
@@ -154,34 +152,8 @@ const NAV_STRUCTURE: NavItem[] = [
       ],
     },
   },
-  {
-    type: 'dropdown',
-    data: {
-      id: 'news-media',
-      label: 'News & Media',
-      highlightNote: 'Official Media Inquiries: info@nepalenergyexpo.com',
-      actionCta: {
-        label: 'View All News',
-        href: '/news',
-      },
-      items: [
-        {
-          title: 'News',
-          badge: 'Latest',
-          description: 'Latest announcements, press releases & energy updates',
-          href: '/news',
-          icon: Newspaper,
-        },
-        {
-          title: 'Photo Gallery',
-          badge: 'Highlights',
-          description: 'Moments & showcases from 2018, 2019, 2022 & 2024',
-          href: '/gallery',
-          icon: Camera,
-        },
-      ],
-    },
-  },
+  { type: 'link', label: 'News', href: '/news' },
+  { type: 'link', label: 'Gallery', href: '/gallery' },
   {
     type: 'dropdown',
     data: {
