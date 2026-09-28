@@ -6,7 +6,6 @@ import { sponsorsData } from "@/data/sponsors";
 import OfficialTariffsSection from "@/components/sponsors/OfficialTariffsSection";
 import {
   ArrowRight,
-  ExternalLink,
   Award,
   Check,
   Building,
@@ -15,6 +14,7 @@ import {
   Sparkles,
   Zap,
   Globe2,
+  ExternalLink,
 } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -157,45 +157,29 @@ export default function SponsorsPage() {
                   </p>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
                   {category.sponsors.map((sponsor, sIdx) => (
-                    <a
+                    <div
                       key={sIdx}
-                      href={sponsor.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="group bg-white p-5 rounded-2xl border border-slate-200 shadow-xs hover:border-[#087EA4] hover:shadow-md transition-all flex flex-col items-center justify-between text-center min-h-[160px]"
+                      className="group bg-white p-6 sm:p-8 rounded-2xl border border-slate-200/90 shadow-xs hover:border-[#087EA4]/40 hover:shadow-md transition-all duration-300 flex items-center justify-center min-h-[160px] sm:min-h-[180px]"
                     >
-                      {/* Logo container */}
-                      <div className="relative w-full h-14 rounded-xl flex items-center justify-center p-2 mb-2 group-hover:scale-105 transition-transform overflow-hidden">
+                      {/* Large prominent logo container */}
+                      <div className="relative w-full h-24 sm:h-28 flex items-center justify-center p-2 group-hover:scale-105 transition-transform duration-300">
                         {sponsor.logo.startsWith("http") || sponsor.logo.startsWith("/") ? (
                           <Image
                             src={sponsor.logo}
                             alt={sponsor.name}
                             fill
+                            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                             className="object-contain"
                           />
                         ) : (
-                          <span className="font-mono font-bold text-2xl text-[#087EA4]">
+                          <span className="font-mono font-bold text-3xl text-[#087EA4]">
                             {sponsor.name.charAt(0)}
                           </span>
                         )}
                       </div>
-
-                      <div className="space-y-1 w-full">
-                        <span className="font-bold text-xs text-slate-900 group-hover:text-[#087EA4] transition-colors line-clamp-2 leading-tight block">
-                          {sponsor.name}
-                        </span>
-                        <span className="inline-block font-mono text-[10px] text-slate-500 line-clamp-1">
-                          {sponsor.type}
-                        </span>
-                      </div>
-
-                      <div className="pt-2 text-[10px] font-mono text-slate-400 group-hover:text-[#087EA4] flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <span>Visit Site</span>
-                        <ExternalLink className="w-2.5 h-2.5" />
-                      </div>
-                    </a>
+                    </div>
                   ))}
                 </div>
               </div>
