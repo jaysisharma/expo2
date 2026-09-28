@@ -242,6 +242,6 @@ export const officialStalls: OfficialStall[] = [
   // =========================================================================
   // 20 FT X 60 FT BARE SPACE (Olive Gold)
   // =========================================================================
-  { id: "BS1", number: "20 FT X 60 FT", block: "Outdoor", category: "20 FT X 60 FT BARE SPACE", dimensions: "20ft x 60ft", sizeSqM: 111, sizeSqFt: 1200, priceNPR: 1450000, priceUSD: 11000, status: "Available", powerIncluded: "3-Phase 63A Heavy Machinery", colorCode: "#854D0E", x: 260, y: 550, width: 95, height: 42, rotation: -30 },
-  { id: "BS2", number: "20 FT X 60 FT", block: "Outdoor", category: "20 FT X 60 FT BARE SPACE", dimensions: "20ft x 60ft", sizeSqM: 111, sizeSqFt: 1200, priceNPR: 1450000, priceUSD: 11000, status: "Available", powerIncluded: "3-Phase 63A Heavy Machinery", colorCode: "#854D0E", x: 215, y: 670, width: 42, height: 110, rotation: 0 },
+  { id: "BS1", number: "20 FT X 60 FT - 1", block: "Outdoor", category: "20 FT X 60 FT BARE SPACE", dimensions: "20ft x 60ft", sizeSqM: 111, sizeSqFt: 1200, priceNPR: 875000, priceUSD: 6500, status: "Available", powerIncluded: "3-Phase 63A Heavy Machinery", colorCode: "#854D0E", x: 260, y: 550, width: 95, height: 42, rotation: -30 },
+  { id: "BS2", number: "20 FT X 60 FT - 2", block: "Outdoor", category: "20 FT X 60 FT BARE SPACE", dimensions: "20ft x 60ft", sizeSqM: 111, sizeSqFt: 1200, priceNPR: 875000, priceUSD: 6500, status: "Available", powerIncluded: "3-Phase 63A Heavy Machinery", colorCode: "#854D0E", x: 215, y: 670, width: 42, height: 110, rotation: 0 },
 ];

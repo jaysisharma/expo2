@@ -1,21 +1,8 @@
 import React, { Suspense } from "react";
 import type { Metadata } from "next";
 import StallBookingWizard from "@/components/booking/StallBookingWizard";
-import OfficialTariffsSection from "@/components/sponsors/OfficialTariffsSection";
 import Link from "next/link";
-import {
-  Calendar,
-  MapPin,
-  Phone,
-  Mail,
-  FileText,
-  Map,
-  ShieldCheck,
-  CheckCircle2,
-  Sparkles,
-  Layers,
-  Zap,
-} from "lucide-react";
+import { Calendar, MapPin } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Exhibitor Stall Booking & Reservation | Himalayan Green Energy Expo 2027",
@@ -30,7 +17,7 @@ export default function BookStallPage() {
           01: HERO HEADER (UNIFIED DEEP GREEN THEME MATCHING OTHER PAGES)
          ========================================================================= */}
       <div className="bg-[#04281E] text-white pt-32 sm:pt-36 pb-12 sm:pb-16 px-4 sm:px-6 lg:px-8 border-b border-emerald-500/20">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-[1600px] mx-auto">
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-xs text-emerald-300/70 font-mono mb-3">
             <Link href="/" className="hover:text-white transition-colors">
@@ -50,7 +37,7 @@ export default function BookStallPage() {
                 Exhibitor Stall Booking & Reservation
               </h1>
               <p className="mt-3 text-sm sm:text-base text-emerald-100/75 max-w-2xl leading-relaxed">
-                Reserve your high-visibility exhibition space at Bhrikutimandap, Kathmandu. Select standard shell scheme or bare space booths with direct power, lighting, and fascia branding.
+                Reserve your high-visibility exhibition space at Bhrikutimandap, Kathmandu. Select standard stalls or bare space booths with direct power, lighting, and fascia branding.
               </p>
             </div>
 
@@ -69,10 +56,10 @@ export default function BookStallPage() {
       </div>
 
       {/* =========================================================================
-          02: MAIN CONTENT (INTERACTIVE FLOOR PLAN WIZARD + INCLUSIONS)
+          02: MAIN CONTENT (INTERACTIVE FLOOR PLAN WIZARD)
          ========================================================================= */}
       <div className="py-10 sm:py-14 px-4 sm:px-6 lg:px-8 flex-grow">
-        <div className="max-w-7xl mx-auto space-y-10">
+        <div className="max-w-[1600px] mx-auto">
           {/* Stall Booking Wizard with Interactive Floor Plan embedded */}
           <div>
             <Suspense
@@ -84,97 +71,6 @@ export default function BookStallPage() {
             >
               <StallBookingWizard />
             </Suspense>
-          </div>
-
-          {/* Official Sponsorship & Space Tariff Tables */}
-          <div className="p-8 sm:p-10 rounded-3xl bg-white border border-slate-200 shadow-xs">
-            <OfficialTariffsSection />
-          </div>
-
-          {/* Informational Cards & Organizer Inclusions Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Card 1: Stall Packages & Official Standards */}
-            <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-4">
-              <div className="flex items-center gap-2.5 pb-3 border-b border-slate-100">
-                <div className="p-2 rounded-xl bg-emerald-50 text-[#218A59]">
-                  <Layers className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="font-sans font-bold text-base text-slate-900">
-                    Stall Packages & Specs
-                  </h3>
-                  <span className="text-[11px] font-mono text-slate-500">Official Standards</span>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs font-mono font-bold text-slate-900">
-                  <span className="text-[#218A59]">● Shell Scheme (Built)</span>
-                  <span className="text-slate-500">9m²–36m²</span>
-                </div>
-                <ul className="text-xs text-slate-600 space-y-1.5 pl-1 font-normal">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#10B981] shrink-0" />
-                    <span>Octanorm partition walls & carpet</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#10B981] shrink-0" />
-                    <span>Fascia board name & spotlights</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#10B981] shrink-0" />
-                    <span>1 Table, 2 Chairs & 15A Power</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            {/* Card 2: Download Official Prospectus */}
-            <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between space-y-4">
-              <div className="space-y-2">
-                <div className="inline-flex items-center gap-1.5 text-[10px] font-mono font-bold text-[#218A59] bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full uppercase">
-                  <FileText className="w-3 h-3" />
-                  <span>OFFICIAL PROPOSAL</span>
-                </div>
-                <h3 className="font-sans font-bold text-base text-slate-900">
-                  Event Tariff & Prospectus PDF
-                </h3>
-                <p className="text-xs text-slate-600 leading-relaxed font-normal">
-                  Download the complete official exhibition prospectus with technical electrical guidelines, stall dimensions, and sponsorship tiers.
-                </p>
-              </div>
-
-              <a
-                href="/Proposal.pdf"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full py-3 rounded-full bg-[#218A59] hover:bg-[#186a43] text-white font-mono text-xs font-bold text-center flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
-              >
-                <FileText className="w-3.5 h-3.5" />
-                <span>DOWNLOAD PROPOSAL PDF</span>
-              </a>
-            </div>
-
-            {/* Card 3: Organizer Support & Assistance */}
-            <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-3">
-              <div className="flex items-center gap-2 text-xs font-mono font-bold text-slate-900 uppercase">
-                <ShieldCheck className="w-4 h-4 text-[#10B981]" />
-                <span>Organizer Help Desk</span>
-              </div>
-              <p className="text-xs text-slate-600 font-normal leading-relaxed">
-                For custom pavilions, bank wire transfers, or immediate assistance:
-              </p>
-              <div className="space-y-2 pt-1 text-xs font-mono text-slate-700">
-                <div className="flex items-center gap-2">
-                  <Phone className="w-3.5 h-3.5 text-[#218A59]" />
-                  <span>+977-9703606340 | 9703606355</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Mail className="w-3.5 h-3.5 text-[#10B981]" />
-                  <span>info@nepalenergyexpo.com</span>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>

@@ -32,6 +32,8 @@ export interface InteractiveFloorPlanProps {
   onSelectStall?: (stall: any) => void;
   showCheckoutBar?: boolean;
   onProceedToBooking?: (selectedStallIds: string[]) => void;
+  showSearch?: boolean;
+  showBuilderLink?: boolean;
 }
 
 export default function InteractiveFloorPlan({
@@ -40,6 +42,8 @@ export default function InteractiveFloorPlan({
   onSelectStall,
   showCheckoutBar = true,
   onProceedToBooking,
+  showSearch = true,
+  showBuilderLink = false,
 }: InteractiveFloorPlanProps) {
   const [elements, setElements] = useState<any[]>(savedFloorPlanFallback.elements || []);
   const [bgImageSrc, setBgImageSrc] = useState<string>(
@@ -150,9 +154,18 @@ export default function InteractiveFloorPlan({
     }
   };
 
-  const selectedStallObjects = stallElements.filter((s) => {
+  const isActualStall = (el: any) => {
+    if (el.category === "Hollow Wall / Boundary" || el.category === "Zone / Functional Area" || el.type === "zone") return false;
+    if (el.color === "transparent" || el.color === "none" || el.fillOpacity === 0) return false;
+    if (el.type === "line" || el.type === "pencil" || el.type === "arc" || el.type === "text") return false;
+    if (el.number === "WALL" || el.number === "CURVE" || el.number === "OUTLINE") return false;
+    return Boolean(el.number || el.priceNPR || el.priceUSD);
+  };
+
+  const selectedStallObjects = elements.filter((s) => {
+    if (!isActualStall(s)) return false;
     const sId = s.number || s.id;
-    return selectedStalls.includes(sId);
+    return selectedStalls.includes(sId) || (s.number && selectedStalls.includes(s.number)) || (s.id && selectedStalls.includes(s.id));
   });
 
   const totalAreaSqM = selectedStallObjects.reduce(
@@ -187,24 +200,28 @@ export default function InteractiveFloorPlan({
 
         {/* Zoom & Search Controls */}
         <div className="flex flex-wrap items-center gap-3">
-          <Link
-            href="/floor-plan/builder"
-            className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-[#218A59] text-emerald-400 hover:text-white font-bold flex items-center gap-1.5 transition-all shadow-sm"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-            <span>EDIT STALLS STUDIO ↗</span>
-          </Link>
+          {showBuilderLink && (
+            <Link
+              href="/floor-plan/builder"
+              className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-[#218A59] text-emerald-400 hover:text-white font-bold flex items-center gap-1.5 transition-all shadow-sm"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+              <span>EDIT STALLS STUDIO ↗</span>
+            </Link>
+          )}
 
-          <div className="relative flex-1 sm:w-56">
-            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Search Stall (e.g. C1, A12, B5)..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs font-mono text-slate-900 focus:outline-none focus:border-[#218A59]"
-            />
-          </div>
+          {showSearch && (
+            <div className="relative flex-1 sm:w-56">
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Search Stall (e.g. C1, A12, B5)..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs font-mono text-slate-900 focus:outline-none focus:border-[#218A59]"
+              />
+            </div>
+          )}
 
           <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200">
             <button
@@ -393,7 +410,7 @@ export default function InteractiveFloorPlan({
                       (el.number && !el.number.startsWith("WALL") && !el.number.startsWith("OUTLINE")));
 
                   const stallNumber = el.number || el.id;
-                  const isSelected = isBookable && selectedStalls.includes(stallNumber);
+                  const isSelected = isBookable && selectedStalls.some((s) => s.toLowerCase() === stallNumber.toLowerCase() || (el.id && s.toLowerCase() === el.id.toLowerCase()));
                   const isHovered = isBookable && hoveredStall?.id === el.id;
 
                   return (
@@ -531,7 +548,7 @@ export default function InteractiveFloorPlan({
             {/* Render All Custom Drawn Stalls */}
             {stallElements.map((el) => {
               const stallNumber = el.number || el.id;
-              const isSelected = selectedStalls.includes(stallNumber);
+              const isSelected = selectedStalls.some((s) => s.toLowerCase() === stallNumber.toLowerCase() || (el.id && s.toLowerCase() === el.id.toLowerCase()));
               const isHovered = hoveredStall?.id === el.id;
               const isBooked = el.status === "Booked";
               const isReserved = el.status === "Reserved";
@@ -620,35 +637,45 @@ export default function InteractiveFloorPlan({
         </div>
 
         {/* Live Hover Tooltip Floating Card */}
-        {hoveredStall && (
-          <div className="absolute top-4 left-4 z-40 pointer-events-none p-4 rounded-xl bg-slate-900/95 text-white backdrop-blur-md border border-white/20 shadow-2xl font-mono text-xs space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="font-sans font-bold text-base text-white">
-                STALL {hoveredStall.number || hoveredStall.id}
-              </span>
-              <span
-                className={`text-[9px] px-2 py-0.5 rounded font-bold uppercase ${
-                  hoveredStall.status === "Available" || !hoveredStall.status
-                    ? "bg-[#10B981] text-white"
-                    : hoveredStall.status === "Reserved"
-                    ? "bg-[#F59E0B] text-white"
-                    : "bg-slate-600 text-white"
-                }`}
-              >
-                {hoveredStall.status || "Available"}
-              </span>
+        {hoveredStall && (() => {
+          const stallNum = hoveredStall.number || hoveredStall.id;
+          const upper = (stallNum || "").trim().toUpperCase();
+          const bMatch = upper.match(/^B(\d+)$/);
+          const isB = bMatch && parseInt(bMatch[1], 10) >= 1 && parseInt(bMatch[1], 10) <= 22;
+          const hMatch = upper.match(/^H(\d+)$/);
+          const isH = hMatch && parseInt(hMatch[1], 10) >= 1 && parseInt(hMatch[1], 10) <= 8;
+          const isBareSpace = !isB && !isH;
+
+          return (
+            <div className="absolute top-4 left-4 z-40 pointer-events-none p-4 rounded-xl bg-slate-900/95 text-white backdrop-blur-md border border-white/20 shadow-2xl font-mono text-xs space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="font-sans font-bold text-base text-white">
+                  STALL {stallNum} {isBareSpace ? "(Bare Space)" : ""}
+                </span>
+                <span
+                  className={`text-[9px] px-2 py-0.5 rounded font-bold uppercase ${
+                    hoveredStall.status === "Available" || !hoveredStall.status
+                      ? "bg-[#10B981] text-white"
+                      : hoveredStall.status === "Reserved"
+                      ? "bg-[#F59E0B] text-white"
+                      : "bg-slate-600 text-white"
+                  }`}
+                >
+                  {hoveredStall.status || "Available"}
+                </span>
+              </div>
+              <div className="text-emerald-400 font-bold text-[11px]">
+                {hoveredStall.dimensions || (hoveredStall.sizeSqM ? `${Math.round(Math.sqrt(hoveredStall.sizeSqM))}m × ${Math.round(Math.sqrt(hoveredStall.sizeSqM))}m` : "3m × 3m")} {isBareSpace ? "· Bare Space" : ""}
+              </div>
+              <div className="text-slate-300 text-[10px]">
+                Area: {hoveredStall.sizeSqM ?? 9} m² ({hoveredStall.sizeSqFt ?? Math.round((hoveredStall.sizeSqM ?? 9) * 10.76)} sq.ft)
+              </div>
+              <div className="text-[#34D399] font-bold text-xs pt-0.5">
+                NPR {(hoveredStall.priceNPR !== undefined && hoveredStall.priceNPR !== null ? Number(hoveredStall.priceNPR) : 180000).toLocaleString()} / USD ${(hoveredStall.priceUSD !== undefined && hoveredStall.priceUSD !== null ? Number(hoveredStall.priceUSD) : 1350).toLocaleString()}
+              </div>
             </div>
-            <div className="text-emerald-400 font-bold text-[11px]">
-              {hoveredStall.category || "Exhibition Booth"} · {hoveredStall.dimensions || (hoveredStall.sizeSqM ? `${Math.round(Math.sqrt(hoveredStall.sizeSqM))}m × ${Math.round(Math.sqrt(hoveredStall.sizeSqM))}m` : "3m × 3m")}
-            </div>
-            <div className="text-slate-300 text-[10px]">
-              Area: {hoveredStall.sizeSqM ?? 9} m² ({hoveredStall.sizeSqFt ?? Math.round((hoveredStall.sizeSqM ?? 9) * 10.76)} sq.ft)
-            </div>
-            <div className="text-[#34D399] font-bold text-xs pt-0.5">
-              NPR {(hoveredStall.priceNPR !== undefined && hoveredStall.priceNPR !== null ? Number(hoveredStall.priceNPR) : 180000).toLocaleString()} / USD ${(hoveredStall.priceUSD !== undefined && hoveredStall.priceUSD !== null ? Number(hoveredStall.priceUSD) : 1350).toLocaleString()}
-            </div>
-          </div>
-        )}
+          );
+        })()}
       </div>
 
       {/* =========================================================================

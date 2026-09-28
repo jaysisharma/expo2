@@ -24,6 +24,9 @@ import {
   Loader2,
   X,
   Lock,
+  Phone,
+  Mail,
+  MapPin,
 } from "lucide-react";
 
 export default function StallBookingWizard() {
@@ -55,6 +58,7 @@ export default function StallBookingWizard() {
     fasciaName: "",
     specialRequirements: "",
   });
+  const [customIndustry, setCustomIndustry] = useState<string>("");
 
   const [bookingRef, setBookingRef] = useState<string>("");
 
@@ -145,23 +149,44 @@ export default function StallBookingWizard() {
     const block = custom?.block || official?.block || fallback?.hall || (number ? `Block ${number.charAt(0).toUpperCase()}` : "Main Pavilion");
     const status = custom?.status || official?.status || fallback?.status || "Available";
 
+    // Rule: B1–B22 and H1–H8 are standard stalls (do not write Shell Scheme). All other stalls are Bare Space!
+    const upper = (number || "").trim().toUpperCase();
+    const bMatch = upper.match(/^B(\d+)$/);
+    const isB = Boolean(bMatch && parseInt(bMatch[1], 10) >= 1 && parseInt(bMatch[1], 10) <= 22);
+    const hMatch = upper.match(/^H(\d+)$/);
+    const isH = Boolean(hMatch && parseInt(hMatch[1], 10) >= 1 && parseInt(hMatch[1], 10) <= 8);
+    const isBareSpace = !isB && !isH;
+    const displayName = isBareSpace ? `STALL ${number} (Bare Space)` : `STALL ${number}`;
+
     return {
       number,
-      displayName: `STALL ${number}`,
+      displayName,
+      spaceType: isBareSpace ? "Bare Space" : "",
+      isBareSpace,
       block,
       dimensions,
       sizeSqM,
       sizeSqFt,
       priceNPR,
       priceUSD,
-      category,
+      category: isBareSpace ? `${dimensions} Bare Space` : category,
       status,
-      powerIncluded: custom?.powerIncluded || official?.powerIncluded || "Standard 15A Included",
+      powerIncluded: custom?.powerIncluded || official?.powerIncluded || (isBareSpace ? "Direct Power Provision" : "Standard 15A Included"),
     };
   };
 
   // Aggregate selected stalls metadata using Admin-configured details
   const selectedStallObjects = selectedBoothNumbers.map(findStall);
+
+  // Automatically sync boothType (Bare Space vs Shell Scheme) based on selected stalls
+  useEffect(() => {
+    if (selectedStallObjects.length > 0) {
+      const allBare = selectedStallObjects.every((s) => s.isBareSpace);
+      const allShell = selectedStallObjects.every((s) => !s.isBareSpace);
+      if (allBare) setBoothType("Bare Space");
+      else if (allShell) setBoothType("Shell Scheme");
+    }
+  }, [selectedBoothNumbers]);
 
   const totalAreaSqM = selectedStallObjects.reduce((acc, curr) => acc + (curr.sizeSqM || 0), 0);
   const totalPriceNPR = selectedStallObjects.reduce((acc, curr) => acc + (curr.priceNPR || 0), 0);
@@ -169,12 +194,7 @@ export default function StallBookingWizard() {
 
   // Available stalls list for List View (derived from Admin elements)
   const availableStallsList = React.useMemo(() => {
-    const customStalls = elements.filter((el: any) => {
-      if (el.type === "text" || el.type === "line" || el.type === "arc" || el.type === "pencil") return false;
-      if (el.category === "Hollow Wall / Boundary" || el.category === "Zone / Functional Area" || el.type === "zone") return false;
-      if (el.type === "polygon" || (el.points && el.points.length >= 3)) return false;
-      return Boolean(el.number);
-    });
+    const customStalls = elements.filter(isActualStall);
 
     if (customStalls.length > 0) {
       const seen = new Set<string>();
@@ -233,9 +253,13 @@ export default function StallBookingWizard() {
         setFormError("Please enter a valid phone or mobile number (8–15 digits, e.g. +977 9851000000).");
         return;
       }
+      if (formData.industryCategory === "Other" && !customIndustry.trim()) {
+        setFormError("Please specify your Industry Sector.");
+        return;
+      }
     }
 
-    if (step === 4) {
+    if (step === 3) {
       if (!agreedTerms) {
         setFormError("Please agree to the Expo Exhibitor Terms & Stall Allocation Conditions.");
         return;
@@ -244,6 +268,15 @@ export default function StallBookingWizard() {
       setIsSubmitting(true);
       const ref = `HHE26-STALL-${Math.floor(100000 + Math.random() * 900000)}`;
       setBookingRef(ref);
+
+      const resolvedIndustry =
+        formData.industryCategory === "Other"
+          ? customIndustry.trim()
+          : formData.industryCategory;
+
+      const resolvedBoothType = selectedStallObjects.every((s) => s.isBareSpace)
+        ? "Bare Space"
+        : "Standard";
 
       try {
         const response = await fetch("/api/payment/initiate", {
@@ -261,10 +294,10 @@ export default function StallBookingWizard() {
             company: formData.companyName,
             country: formData.country,
             fasciaName: formData.fasciaName || formData.companyName,
-            boothType,
-            powerOption,
-            industryCategory: formData.industryCategory,
-            specialRequirements: formData.specialRequirements,
+            boothType: resolvedBoothType,
+            powerOption: "Standard 15A Included",
+            industryCategory: resolvedIndustry,
+            specialRequirements: "",
             paymentMethod,
           }),
         });
@@ -287,9 +320,9 @@ export default function StallBookingWizard() {
           return;
         }
 
-        // Fallback to step 5 confirmation
+        // Fallback to step 4 confirmation
         confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-        setStep(5);
+        setStep(4);
       } catch (err: any) {
         console.error("Booking error:", err);
         setFormError(err.message || "An error occurred while initiating payment. Please try again.");
@@ -299,7 +332,7 @@ export default function StallBookingWizard() {
       return;
     }
 
-    setStep((prev) => Math.min(prev + 1, 5));
+    setStep((prev) => Math.min(prev + 1, 4));
   };
 
   const handlePrev = () => {
@@ -313,22 +346,20 @@ export default function StallBookingWizard() {
       <div className="mb-8">
         <div className="flex items-center justify-between mb-3 text-xs font-mono text-slate-500 font-semibold">
           <span className="text-[#218A59] font-bold">
-            STEP 0{step} OF 05:{" "}
+            STEP 0{step} OF 04:{" "}
             {step === 1
               ? "SELECT STALL(S)"
               : step === 2
-              ? "COMPANY METADATA"
+              ? "ORGANIZATION DETAILS"
               : step === 3
-              ? "SPECS & POWER"
-              : step === 4
               ? "PAYMENT & REVIEW"
               : "CONFIRMED"}
           </span>
-          <span>{Math.round((step / 5) * 100)}% COMPLETED</span>
+          <span>{Math.round((step / 4) * 100)}% COMPLETED</span>
         </div>
         <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
           <div
-            style={{ width: `${(step / 5) * 100}%` }}
+            style={{ width: `${(step / 4) * 100}%` }}
             className="h-full bg-gradient-to-r from-[#218A59] to-[#10B981] transition-all duration-300"
           />
         </div>
@@ -378,116 +409,221 @@ export default function StallBookingWizard() {
             </div>
           </div>
 
-          {/* Interactive Map View */}
-          {viewMode === "map" ? (
-            <div className="rounded-2xl border border-slate-200 overflow-hidden bg-slate-50 p-2 sm:p-4">
-              <InteractiveFloorPlan
-                selectedStalls={selectedBoothNumbers}
-                onSelectStall={(stall) => {
-                  const sNum = stall.number || stall.id;
-                  if (stall) {
-                    setElements((prev) => {
-                      const idx = prev.findIndex(
-                        (e) =>
-                          (e.number && e.number.toLowerCase() === sNum.toLowerCase()) ||
-                          e.id === stall.id
-                      );
-                      if (idx >= 0) {
-                        const next = [...prev];
-                        next[idx] = { ...next[idx], ...stall };
-                        return next;
+          {/* 2-Column Grid: Big Floor Plan (Left) & Sleek Compact Sidebar (Right) */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+            {/* Left: Floor Plan or List View (Big side: 9 cols on xl, 8 on lg) */}
+            <div className="lg:col-span-8 xl:col-span-9">
+              {viewMode === "map" ? (
+                <div className="rounded-2xl border border-slate-200 overflow-hidden bg-slate-50 p-2 sm:p-4">
+                  <InteractiveFloorPlan
+                    selectedStalls={selectedBoothNumbers}
+                    showSearch={false}
+                    showBuilderLink={false}
+                    onSelectStall={(stall) => {
+                      const sNum = stall.number || stall.id;
+                      if (stall) {
+                        setElements((prev) => {
+                          const idx = prev.findIndex(
+                            (e) =>
+                              (e.number && e.number.toLowerCase() === sNum.toLowerCase()) ||
+                              e.id === stall.id
+                          );
+                          if (idx >= 0) {
+                            const next = [...prev];
+                            next[idx] = { ...next[idx], ...stall };
+                            return next;
+                          }
+                          return [...prev, stall];
+                        });
                       }
-                      return [...prev, stall];
-                    });
-                  }
-                  toggleStallSelection(sNum);
-                }}
-                showCheckoutBar={false}
-              />
+                      toggleStallSelection(sNum);
+                    }}
+                    showCheckoutBar={false}
+                  />
+                </div>
+              ) : (
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+                  <label className="block text-xs font-mono text-slate-700 font-bold uppercase">
+                    AVAILABLE EXHIBITION STALLS ({availableStallsList.length})
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 max-h-[600px] overflow-y-auto pr-1">
+                    {availableStallsList.map((s) => {
+                      const isSelected = selectedBoothNumbers.some(
+                        (num) => num.toLowerCase() === s.number.toLowerCase()
+                      );
+                      return (
+                        <button
+                          key={s.number}
+                          type="button"
+                          onClick={() => toggleStallSelection(s.number)}
+                          className={`p-3 rounded-xl border text-left text-xs font-mono transition-all cursor-pointer ${
+                            isSelected
+                              ? "bg-[#F0FDF4] border-[#10B981] text-[#044E3B] font-bold shadow-xs"
+                              : "bg-white border-slate-200 text-slate-700 hover:border-slate-300"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-sans font-bold text-sm">Stall {s.number}</span>
+                            <span className="text-[10px] text-emerald-700 font-bold">
+                              NPR {s.priceNPR.toLocaleString()}
+                            </span>
+                          </div>
+                          <div className="text-[11px] text-slate-500 mt-1">
+                            {s.sizeSqM}m² ({s.dimensions}){s.isBareSpace ? " · Bare Space" : ""} · {s.block}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
-          ) : (
-            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
-              <label className="block text-xs font-mono text-slate-700 font-bold uppercase">
-                AVAILABLE EXHIBITION STALLS ({availableStallsList.length})
-              </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 max-h-80 overflow-y-auto pr-1">
-                {availableStallsList.map((s) => {
-                  const isSelected = selectedBoothNumbers.some(
-                    (num) => num.toLowerCase() === s.number.toLowerCase()
-                  );
-                  return (
-                    <button
-                      key={s.number}
-                      type="button"
-                      onClick={() => toggleStallSelection(s.number)}
-                      className={`p-3 rounded-xl border text-left text-xs font-mono transition-all cursor-pointer ${
-                        isSelected
-                          ? "bg-[#F0FDF4] border-[#10B981] text-[#044E3B] font-bold shadow-xs"
-                          : "bg-white border-slate-200 text-slate-700 hover:border-slate-300"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-sans font-bold text-sm">Stall {s.number}</span>
-                        <span className="text-[10px] text-emerald-700 font-bold">
-                          NPR {s.priceNPR.toLocaleString()}
+
+            {/* Right: Sleek Compact Stall Summary & Price Sidebar (Small side: 3 cols on xl, 4 on lg) */}
+            <div className="lg:col-span-4 xl:col-span-3 lg:sticky lg:top-24 space-y-4">
+              <div className="p-4 sm:p-5 rounded-2xl bg-[#F0FDF4] border border-emerald-300 shadow-sm space-y-4">
+                {/* Header */}
+                <div className="flex items-center justify-between pb-3 border-b border-emerald-200">
+                  <div>
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-800 block">
+                      STALL ALLOCATION
+                    </span>
+                    <h4 className="font-sans font-bold text-sm text-slate-900 mt-0.5">
+                      Price &amp; Summary
+                    </h4>
+                  </div>
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 font-mono text-[11px] font-bold shrink-0">
+                    {selectedBoothNumbers.length} {selectedBoothNumbers.length === 1 ? "Stall" : "Stalls"}
+                  </span>
+                </div>
+
+                {/* Stalls List */}
+                <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                  {selectedStallObjects.length > 0 ? (
+                    selectedStallObjects.map((s) => (
+                      <div
+                        key={s.number}
+                        className="p-2.5 rounded-xl bg-white border border-emerald-200 shadow-xs flex items-center justify-between gap-2 text-xs"
+                      >
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="font-mono font-bold text-slate-900 text-xs">
+                              {s.displayName}
+                            </span>
+                          </div>
+                          <div className="text-[11px] font-semibold text-emerald-800 mt-0.5">
+                            {s.isBareSpace ? `(${s.dimensions}) · Bare Space` : `(${s.dimensions})`}
+                          </div>
+                          <div className="text-[10px] text-slate-500">
+                            {s.sizeSqM} m² · {s.block}
+                          </div>
+                          <div className="text-xs font-mono font-bold text-[#15803D] mt-1">
+                            NPR {s.priceNPR.toLocaleString()}
+                            <span className="text-[10px] font-normal text-slate-500 ml-1">
+                              (${s.priceUSD.toLocaleString()})
+                            </span>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => toggleStallSelection(s.number)}
+                          className="w-6 h-6 rounded-lg bg-slate-100 hover:bg-red-50 text-slate-400 hover:text-red-500 flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                          title="Remove stall"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-4 rounded-xl bg-white/80 border border-dashed border-emerald-300 text-center space-y-1.5">
+                      <div className="w-7 h-7 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto">
+                        <MapPin className="w-3.5 h-3.5" />
+                      </div>
+                      <p className="text-xs font-semibold text-slate-700">No Stall Selected</p>
+                      <p className="text-[10px] text-slate-500 leading-relaxed">
+                        Click on any stall on the map to view its price &amp; select it.
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Subtotal & Area Metrics */}
+                {selectedStallObjects.length > 0 && (
+                  <div className="pt-2.5 border-t border-emerald-200 space-y-1.5 text-[11px]">
+                    <div className="flex items-center justify-between text-slate-600">
+                      <span>Total Area:</span>
+                      <span className="font-mono font-bold text-slate-900">
+                        {totalAreaSqM} m² ({(totalAreaSqM * 10.76).toFixed(0)} sq.ft)
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-slate-600">
+                      <span>Power:</span>
+                      <span className="font-mono font-medium text-slate-900">
+                        {selectedStallObjects.some((s) => s.isBareSpace) ? "Direct Power Provision" : "15A Included"}
+                      </span>
+                    </div>
+                    {selectedStallObjects.some((s) => s.isBareSpace) && (
+                      <div className="flex items-center justify-between text-slate-600">
+                        <span>Space Type:</span>
+                        <span className="font-semibold text-slate-900">
+                          {selectedStallObjects.every((s) => s.isBareSpace)
+                            ? "Bare Space (Raw Area)"
+                            : "Includes Bare Space"}
                         </span>
                       </div>
-                      <div className="text-[11px] text-slate-500 mt-1">
-                        {s.sizeSqM}m² ({s.dimensions}) · {s.block}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Selected Stalls Overview Box */}
-          <div className="p-5 rounded-2xl bg-[#F0FDF4] border border-emerald-200 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <span className="text-[10px] font-mono text-emerald-700 font-bold uppercase tracking-wider">
-                SELECTED STALL ALLOCATION ({selectedBoothNumbers.length})
-              </span>
-              <div className="flex flex-wrap items-center gap-2 pt-1">
-                {selectedStallObjects.length > 0 ? (
-                  selectedStallObjects.map((s) => (
-                    <span
-                      key={s.number}
-                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white border border-emerald-300 font-mono text-xs font-bold text-[#15803D] shadow-xs"
-                    >
-                      <span>{s.displayName}</span>
-                      <span className="text-[10px] text-slate-500">({s.dimensions})</span>
-                      <button
-                        type="button"
-                        onClick={() => toggleStallSelection(s.number)}
-                        className="text-slate-400 hover:text-red-500 cursor-pointer"
-                        title="Deselect stall"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    </span>
-                  ))
-                ) : (
-                  <span className="text-xs text-slate-500 font-sans italic">
-                    No stall selected yet. Click any stall on the floor plan above or list to select.
-                  </span>
+                    )}
+                  </div>
                 )}
-              </div>
-            </div>
 
-            <div className="flex flex-wrap items-center gap-6 border-t lg:border-t-0 lg:border-l border-emerald-200 pt-3 lg:pt-0 lg:pl-6">
-              <div>
-                <span className="text-[10px] font-mono text-emerald-700 font-bold uppercase">TOTAL AREA</span>
-                <div className="font-sans font-bold text-sm text-slate-900 mt-0.5">
-                  {totalAreaSqM > 0 ? `${totalAreaSqM} m² (${(totalAreaSqM * 10.76).toFixed(0)} sq.ft)` : "0 m²"}
+                {/* Total Tariff Box */}
+                <div className="p-3.5 rounded-xl bg-white border-2 border-emerald-400 shadow-xs space-y-1">
+                  <div className="text-[10px] font-mono text-emerald-800 uppercase font-bold tracking-wider">
+                    TOTAL INVESTMENT TARIFF
+                  </div>
+                  <div className="flex items-baseline justify-between flex-wrap gap-1">
+                    <div className="text-xl font-bold font-mono text-[#15803D]">
+                      NPR {totalPriceNPR.toLocaleString()}
+                    </div>
+                    <div className="text-xs font-mono font-bold text-slate-600">
+                      USD ${totalPriceUSD.toLocaleString()}
+                    </div>
+                  </div>
+                  <p className="text-[9px] text-slate-500 pt-0.5 leading-tight">
+                    Official IPPAN 5th Edition tariff.
+                  </p>
                 </div>
-              </div>
-              <div>
-                <span className="text-[10px] font-mono text-emerald-700 font-bold uppercase">TOTAL TARIFF</span>
-                <div className="font-sans font-bold text-base text-[#15803D] mt-0.5">
-                  NPR {totalPriceNPR.toLocaleString()}
+
+                {/* Primary Action Button */}
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  disabled={selectedBoothNumbers.length === 0}
+                  className={`w-full py-3 px-4 rounded-xl font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-md ${
+                    selectedBoothNumbers.length === 0
+                      ? "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none"
+                      : "bg-[#218A59] hover:bg-[#186a43] text-white hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+                  }`}
+                >
+                  <span>
+                    {selectedBoothNumbers.length === 0
+                      ? "SELECT STALL TO CONTINUE"
+                      : `CONTINUE (${selectedBoothNumbers.length} STALL${selectedBoothNumbers.length > 1 ? "S" : ""}) →`}
+                  </span>
+                </button>
+
+                {/* Assistance Note */}
+                <div className="pt-2 border-t border-emerald-200 text-[10px] text-slate-600 space-y-1">
+                  <div className="font-bold text-slate-800">Need Assistance?</div>
+                  <div className="flex items-center gap-1 text-emerald-800 font-mono">
+                    <Phone className="w-3 h-3 text-emerald-600 shrink-0" />
+                    <span>+977-9703606340 | 9703606355</span>
+                  </div>
+                  <div className="flex items-center gap-1 text-emerald-800 font-mono">
+                    <Mail className="w-3 h-3 text-emerald-600 shrink-0" />
+                    <span>info@nepalenergyexpo.com</span>
+                  </div>
                 </div>
-                <span className="text-[10px] text-slate-500 font-mono">USD ${totalPriceUSD.toLocaleString()}</span>
               </div>
             </div>
           </div>
@@ -595,125 +731,33 @@ export default function StallBookingWizard() {
                 <option>Solar & Pumped Storage</option>
                 <option>Finance & Investment</option>
                 <option>Engineering & Consulting</option>
+                <option value="Other">Other</option>
               </select>
+              {formData.industryCategory === "Other" && (
+                <div className="mt-2">
+                  <input
+                    type="text"
+                    placeholder="Specify your industry sector..."
+                    value={customIndustry}
+                    onChange={(e) => setCustomIndustry(e.target.value)}
+                    className="w-full p-3 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-[#10B981] shadow-xs"
+                    required
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>
       )}
 
       {/* =========================================================================
-          STEP 3: SPECS & POWER
+          STEP 3: PAYMENT GATEWAY SELECTION & REVIEW
          ========================================================================= */}
       {step === 3 && (
         <div className="space-y-6">
           <div>
             <h3 className="font-sans font-bold text-2xl text-slate-900">
-              Step 3: Fascia Board & Technical Specs
-            </h3>
-            <p className="text-xs text-slate-600 font-normal mt-1">
-              Configure your stall lettering, build type, and electrical power load.
-            </p>
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <label className="block text-xs font-mono text-slate-700 mb-1 font-bold uppercase">
-                BOOTH BUILD TYPE
-              </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setBoothType("Shell Scheme")}
-                  className={`p-4 rounded-xl text-left border transition-all cursor-pointer ${
-                    boothType === "Shell Scheme"
-                      ? "bg-emerald-50 border-[#10B981] text-[#044E3B] font-bold shadow-xs"
-                      : "bg-white border-slate-200 text-slate-700 hover:border-slate-300"
-                  }`}
-                >
-                  <div className="font-sans font-bold text-sm">Shell Scheme (Fully Built)</div>
-                  <div className="text-[11px] text-slate-500 font-normal mt-1">
-                    Octanorm partition walls, carpet, fascia name board, spotlights, 1 table, 2 chairs, 15A power.
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setBoothType("Bare Space")}
-                  className={`p-4 rounded-xl text-left border transition-all cursor-pointer ${
-                    boothType === "Bare Space"
-                      ? "bg-emerald-50 border-[#10B981] text-[#044E3B] font-bold shadow-xs"
-                      : "bg-white border-slate-200 text-slate-700 hover:border-slate-300"
-                  }`}
-                >
-                  <div className="font-sans font-bold text-sm">Bare Space (Custom Fabrication)</div>
-                  <div className="text-[11px] text-slate-500 font-normal mt-1">
-                    Marked floor space for custom double-deck / bespoke wooden pavilion fabrication.
-                  </div>
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-mono text-slate-700 mb-1 font-bold uppercase">
-                FASCIA BOARD NAME (EXACT DISPLAY NAME ON BOOTH) *
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. VOITH HYDRO GERMANY"
-                value={formData.fasciaName || formData.companyName}
-                onChange={(e) => setFormData({ ...formData, fasciaName: e.target.value })}
-                className="w-full p-3.5 rounded-xl bg-white border border-slate-300 text-slate-900 font-mono text-sm uppercase focus:outline-none focus:border-[#10B981] shadow-xs"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-mono text-slate-700 mb-1 font-bold uppercase">
-                ADDITIONAL POWER LOAD REQUIREMENT
-              </label>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {["Standard 15A Included", "3-Phase 32A Industrial", "3-Phase 63A Heavy Demo"].map(
-                  (opt) => (
-                    <button
-                      key={opt}
-                      type="button"
-                      onClick={() => setPowerOption(opt)}
-                      className={`p-3 rounded-xl text-xs font-mono border transition-all text-left cursor-pointer ${
-                        powerOption === opt
-                          ? "bg-emerald-50 border-[#10B981] text-[#044E3B] font-bold shadow-xs"
-                          : "bg-white border-slate-200 text-slate-700 hover:border-slate-300"
-                      }`}
-                    >
-                      {opt}
-                    </button>
-                  )
-                )}
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-mono text-slate-700 mb-1 font-bold uppercase">
-                SPECIAL HANDLING / CRANE REQUIREMENTS
-              </label>
-              <textarea
-                rows={2}
-                placeholder="e.g. Bringing physical runner models; forklift required prior to expo."
-                value={formData.specialRequirements}
-                onChange={(e) => setFormData({ ...formData, specialRequirements: e.target.value })}
-                className="w-full p-3 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-[#10B981] shadow-xs"
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* =========================================================================
-          STEP 4: PAYMENT GATEWAY SELECTION & REVIEW
-         ========================================================================= */}
-      {step === 4 && (
-        <div className="space-y-6">
-          <div>
-            <h3 className="font-sans font-bold text-2xl text-slate-900">
-              Step 4: Select Payment Method & Finalize Booking
+              Step 3: Select Payment Method & Finalize Booking
             </h3>
             <p className="text-xs text-slate-600 font-normal mt-1">
               Choose your preferred payment gateway from Nepal (Khalti, Fonepay) or request an official Bank Wire Invoice.
@@ -729,7 +773,7 @@ export default function StallBookingWizard() {
                   STALL {selectedBoothNumbers.join(", ")}
                 </div>
                 <span className="text-[11px] text-slate-600">
-                  {totalAreaSqM}m² ({boothType})
+                  {totalAreaSqM}m² {selectedStallObjects.some((s) => s.isBareSpace) ? "(Bare Space)" : ""}
                 </span>
               </div>
 
@@ -753,9 +797,18 @@ export default function StallBookingWizard() {
             </div>
 
             <div className="pt-3 border-t border-slate-200 text-xs text-slate-700 flex flex-wrap items-center justify-between gap-2">
-              <div><strong>Fascia Board Name:</strong> {formData.fasciaName || formData.companyName}</div>
-              <div><strong>Power Spec:</strong> {powerOption}</div>
-              <div><strong>Official Email:</strong> {formData.email}</div>
+              <div>
+                <strong>Industry Sector:</strong>{" "}
+                {formData.industryCategory === "Other"
+                  ? customIndustry || "Other"
+                  : formData.industryCategory}
+              </div>
+              <div>
+                <strong>Official Email:</strong> {formData.email}
+              </div>
+              <div>
+                <strong>Contact:</strong> {formData.phone}
+              </div>
             </div>
           </div>
 
@@ -870,16 +923,16 @@ export default function StallBookingWizard() {
               className="mt-1 w-4 h-4 text-[#218A59] rounded border-slate-300 focus:ring-[#218A59] cursor-pointer"
             />
             <label htmlFor="terms-check" className="text-xs text-slate-700 leading-relaxed cursor-pointer select-none">
-              I agree to the <strong>IPPAN Expo 2027 Exhibition Regulations</strong>, stall allocation rules, and acknowledge that stall confirmation is subject to receipt validation.
+              I agree to the <strong>HIGEX 2027 Exhibition Regulations and stall allocation terms</strong>, and acknowledge that stall confirmation is subject to successful payment receipt verification.
             </label>
           </div>
         </div>
       )}
 
       {/* =========================================================================
-          STEP 5: SUCCESS CONFIRMATION
+          STEP 4: SUCCESS CONFIRMATION
          ========================================================================= */}
-      {step === 5 && (
+      {step === 4 && (
         <div className="text-center py-8 space-y-6">
           <div className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-300 text-[#059669] flex items-center justify-center mx-auto shadow-xs">
             <CheckCircle2 className="w-10 h-10" />
@@ -916,7 +969,7 @@ export default function StallBookingWizard() {
       {/* =========================================================================
           WIZARD FOOTER NAVIGATION
          ========================================================================= */}
-      {step < 5 && (
+      {step < 4 && (
         <div className="mt-8 pt-6 border-t border-slate-200">
           {formError && (
             <div className="mb-4 p-3.5 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs font-semibold flex items-center gap-2">
@@ -947,9 +1000,9 @@ export default function StallBookingWizard() {
               className={`px-8 py-3.5 rounded-full font-mono text-xs font-bold tracking-wider shadow-md transition-all flex items-center gap-2 text-white ${
                 isSubmitting || (step === 1 && selectedBoothNumbers.length === 0)
                   ? "bg-slate-300 text-slate-500 cursor-not-allowed shadow-none"
-                  : paymentMethod === "khalti" && step === 4
+                  : paymentMethod === "khalti" && step === 3
                   ? "bg-[#5D2E8E] hover:bg-[#482370] cursor-pointer"
-                  : paymentMethod === "fonepay" && step === 4
+                  : paymentMethod === "fonepay" && step === 3
                   ? "bg-[#D92525] hover:bg-[#b01c1c] cursor-pointer"
                   : "bg-[#218A59] hover:bg-[#186a43] cursor-pointer"
               }`}
@@ -964,7 +1017,7 @@ export default function StallBookingWizard() {
                   <span>
                     {step === 1 && selectedBoothNumbers.length === 0
                       ? "SELECT A STALL TO CONTINUE"
-                      : step === 4
+                      : step === 3
                       ? paymentMethod === "bank"
                         ? "CONFIRM RESERVATION"
                         : `PAY WITH ${paymentMethod.toUpperCase()} (NPR ${totalPriceNPR.toLocaleString()})`

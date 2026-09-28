@@ -20,6 +20,7 @@ export default function ContactPage() {
   const [selectedLocation, setSelectedLocation] = useState<"venue" | "office">("venue");
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -31,29 +32,26 @@ export default function ContactPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setErrorMessage("");
 
     try {
-      await fetch("/api/admin/data", {
+      const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "add_inquiry",
-          payload: {
-            name: formData.name,
-            email: formData.email,
-            phone: formData.phone,
-            company: "",
-            subject: formData.subject || "General Inquiry",
-            message: formData.message,
-            stallInterest: "",
-          },
-        }),
+        body: JSON.stringify(formData),
       });
-    } catch (err) {
-      console.warn("Could not sync inquiry to server", err);
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || "Failed to send message. Please try again.");
+      }
+
+      setSubmitted(true);
+    } catch (err: any) {
+      console.warn("Could not submit contact inquiry", err);
+      setErrorMessage(err.message || "Something went wrong while sending your inquiry. Please try again.");
     } finally {
       setIsSubmitting(false);
-      setSubmitted(true);
     }
   };
 
@@ -242,12 +240,13 @@ export default function ContactPage() {
                       Message Sent!
                     </h3>
                     <p className="text-sm text-slate-600 max-w-md mx-auto">
-                      Thank you for contacting us. We have received your message and will respond to your email shortly.
+                      Thank you for contacting us. Your inquiry has been sent to <strong className="text-emerald-700">info@nepalenergyexpo.com</strong> and our team will respond to your email shortly.
                     </p>
                     <div className="pt-2">
                       <button
                         onClick={() => {
                           setSubmitted(false);
+                          setErrorMessage("");
                           setFormData({
                             name: "",
                             email: "",
@@ -355,20 +354,34 @@ export default function ContactPage() {
                       />
                     </div>
 
-                    <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="w-full py-3 rounded-lg bg-[#087EA4] hover:bg-[#061A2A] text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70"
-                    >
-                      {isSubmitting ? (
-                        <span>Sending...</span>
-                      ) : (
-                        <>
-                          <Send className="w-4 h-4" />
-                          <span>Send Message</span>
-                        </>
-                      )}
-                    </button>
+                    {errorMessage && (
+                      <div className="p-3.5 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs leading-relaxed">
+                        {errorMessage}
+                      </div>
+                    )}
+
+                    <div>
+                      <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="w-full py-3.5 rounded-xl bg-[#10B981] hover:bg-[#059669] text-white text-sm font-bold tracking-wide transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+                      >
+                        {isSubmitting ? (
+                          <div className="flex items-center gap-2">
+                            <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            <span>Sending to info@nepalenergyexpo.com...</span>
+                          </div>
+                        ) : (
+                          <>
+                            <Send className="w-4 h-4" />
+                            <span>Send Message</span>
+                          </>
+                        )}
+                      </button>
+                      <p className="text-[11px] text-slate-500 text-center mt-2 font-mono">
+                        Direct delivery to <span className="font-semibold text-slate-700">info@nepalenergyexpo.com</span>
+                      </p>
+                    </div>
                   </form>
                 )}
               </div>
