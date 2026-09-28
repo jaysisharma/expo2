@@ -304,7 +304,7 @@ export function Navbar() {
       className="sticky top-0 z-50 w-full bg-white border-b border-slate-200/90 shadow-xs"
       onMouseLeave={handleMouseLeave}
     >
-      <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 h-20 flex items-center justify-between gap-4">
+      <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 h-20 sm:h-[88px] lg:h-[96px] flex items-center justify-between gap-4">
         {/* ── Left: Official Expo Logo ───────────────────────────────── */}
         <Link
           href="/"
@@ -314,10 +314,10 @@ export function Navbar() {
           <Image
             src="/images/logo.png"
             alt="Himalayan Green Energy Expo"
-            width={240}
-            height={70}
+            width={280}
+            height={90}
             priority
-            className="h-11 sm:h-13 lg:h-15 w-auto object-contain transition-transform duration-200 group-hover:scale-[1.02]"
+            className="h-13 sm:h-16 lg:h-[76px] w-auto object-contain transition-transform duration-200 group-hover:scale-[1.02]"
           />
         </Link>
 

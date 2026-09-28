@@ -4,10 +4,14 @@ import React, { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { NewsArticle } from "@/lib/types";
+import { newsData } from "@/data/news";
 import {
   ArrowRight,
+  ArrowUpRight,
   Calendar,
+  Clock,
   ExternalLink,
+  Globe,
   Newspaper,
   Sparkles,
   Search,
@@ -16,8 +20,24 @@ import {
   CheckCircle2,
   X,
   Link as LinkIcon,
-  RefreshCw,
 } from "lucide-react";
+
+function getCategoryBadge(category: string) {
+  switch (category) {
+    case "Policy & Market":
+      return "bg-amber-50 text-amber-900 border-amber-200/80";
+    case "Technology":
+      return "bg-sky-50 text-sky-900 border-sky-200/80";
+    case "Press Release":
+      return "bg-emerald-50 text-[#005C42] border-emerald-200/80";
+    case "Expo Update":
+      return "bg-teal-50 text-teal-900 border-teal-200/80";
+    case "News Coverage":
+      return "bg-slate-100 text-slate-800 border-slate-200/80";
+    default:
+      return "bg-emerald-50 text-[#005C42] border-emerald-200/80";
+  }
+}
 
 export default function NewsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
@@ -32,40 +52,36 @@ export default function NewsPage() {
   const [scrapeError, setScrapeError] = useState<string | null>(null);
   const [previewArticle, setPreviewArticle] = useState<Partial<NewsArticle> | null>(null);
 
-  // Load dynamic news from API & localStorage (no static mock news)
+  // Load dynamic news from API & localStorage merged with curated defaults
   const fetchNews = async () => {
     setIsLoading(true);
     try {
       const res = await fetch("/api/admin/data?t=" + Date.now(), { cache: "no-store" });
       const json = await res.json();
-      if (json.success && Array.isArray(json.data?.news) && json.data.news.length > 0) {
-        setArticles(json.data.news);
-      } else {
-        // Fallback to local storage if custom items were saved
-        try {
-          const stored = localStorage.getItem("expo_custom_news");
-          if (stored) {
-            const customItems: NewsArticle[] = JSON.parse(stored);
-            setArticles(Array.isArray(customItems) ? customItems : []);
-          } else {
-            setArticles([]);
-          }
-        } catch {
-          setArticles([]);
-        }
-      }
-    } catch {
+      const adminNews: NewsArticle[] =
+        json.success && Array.isArray(json.data?.news) ? json.data.news : [];
+
+      let localNews: NewsArticle[] = [];
       try {
         const stored = localStorage.getItem("expo_custom_news");
-        if (stored) {
-          const customItems: NewsArticle[] = JSON.parse(stored);
-          setArticles(Array.isArray(customItems) ? customItems : []);
-        } else {
-          setArticles([]);
+        if (stored) localNews = JSON.parse(stored);
+      } catch {}
+
+      // Combine admin news + local news + official newsData avoiding duplicates
+      const seen = new Set<string>();
+      const combined: NewsArticle[] = [];
+
+      for (const item of [...adminNews, ...localNews, ...newsData]) {
+        const key = item.id || item.slug || item.title;
+        if (!seen.has(key)) {
+          seen.add(key);
+          combined.push(item);
         }
-      } catch {
-        setArticles([]);
       }
+
+      setArticles(combined);
+    } catch {
+      setArticles(newsData);
     } finally {
       setIsLoading(false);
     }
@@ -77,11 +93,11 @@ export default function NewsPage() {
 
   const categories = [
     "ALL",
+    "News Coverage",
     "Policy & Market",
     "Technology",
     "Expo Update",
     "Press Release",
-    "News Coverage",
   ];
 
   // Fetch OpenGraph metadata from entered URL
@@ -116,7 +132,9 @@ export default function NewsPage() {
         image: data.image,
         sourceName: data.sourceName,
         sourceUrl: data.sourceUrl || inputUrl.trim(),
-        date: data.date || new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+        date:
+          data.date ||
+          new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
         category: data.category || "News Coverage",
         author: data.sourceName || "Publisher Desk",
         readTime: "3 min read",
@@ -196,27 +214,42 @@ export default function NewsPage() {
     });
   }, [selectedCategory, searchQuery, articles]);
 
+  const showHeroCard =
+    selectedCategory === "ALL" && searchQuery.trim() === "" && filteredNews.length > 0;
+  const leadArticle = showHeroCard ? filteredNews[0] : null;
+  const gridArticles = showHeroCard ? filteredNews.slice(1) : filteredNews;
+
   return (
     <div className="min-h-screen bg-[#F8FAFB] font-sans text-slate-900 flex flex-col">
-      {/* Header */}
-      <div className="bg-[#04281E] text-white pt-32 sm:pt-36 pb-12 sm:pb-16 px-4 sm:px-6 lg:px-8 border-b border-emerald-500/20">
-        <div className="max-w-6xl mx-auto">
+      {/* Page Header */}
+      <div className="bg-[#04281E] text-white pt-28 sm:pt-32 pb-14 sm:pb-16 px-4 sm:px-6 lg:px-8 border-b border-emerald-500/20 relative overflow-hidden">
+        {/* Subtle Ambient Light Glow */}
+        <div
+          aria-hidden="true"
+          className="absolute -top-24 right-1/4 w-[500px] h-[300px] bg-gradient-to-b from-[#12B981]/15 to-transparent blur-3xl pointer-events-none rounded-full"
+        />
+
+        <div className="max-w-6xl mx-auto relative z-10">
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-xs text-emerald-300/70 font-mono mb-3">
             <Link href="/" className="hover:text-white transition-colors">
               Home
             </Link>
             <span>/</span>
-            <span className="text-[#34D399]">News & Media</span>
+            <span className="text-[#34D399]">News &amp; Media</span>
           </div>
 
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
             <div>
-              <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-white">
-                News & Press Coverage
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-900/60 border border-emerald-500/30 text-emerald-300 text-[11px] font-mono uppercase tracking-wider mb-3">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                Live Media Hub &amp; Press Dispatches
+              </div>
+              <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-white font-inter-tight">
+                News &amp; Press Coverage
               </h1>
-              <p className="mt-3 text-sm sm:text-base text-emerald-100/75 max-w-xl font-normal">
-                National and international media dispatches, ministerial press releases, and editorial coverage of the Himalayan Green Energy Expo.
+              <p className="mt-3 text-sm sm:text-base text-emerald-100/75 max-w-xl font-normal leading-relaxed">
+                National and international media dispatches, ministerial announcements, and editorial coverage of the Himalayan Green Energy Expo 2027.
               </p>
             </div>
 
@@ -224,7 +257,7 @@ export default function NewsPage() {
             <div className="flex items-center gap-3 shrink-0">
               <button
                 onClick={() => setShowAddModal(true)}
-                className="px-5 py-2.5 rounded-full bg-[#007A5E] hover:bg-[#005C42] text-white font-mono text-xs font-bold flex items-center gap-2 transition-all shadow-md hover:scale-105 cursor-pointer"
+                className="px-5 py-2.5 rounded-full bg-[#007A5E] hover:bg-[#005C42] text-white font-mono text-xs font-bold flex items-center gap-2 transition-all shadow-md hover:scale-102 active:scale-98 cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>ADD NEWS BY LINK</span>
@@ -235,20 +268,20 @@ export default function NewsPage() {
       </div>
 
       {/* Main News Content */}
-      <div className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 flex-grow">
-        <div className="max-w-6xl mx-auto space-y-10">
+      <div className="py-10 sm:py-14 px-4 sm:px-6 lg:px-8 flex-grow">
+        <div className="max-w-6xl mx-auto space-y-8">
           {/* Search & Filter Bar */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
             {/* Category Pills */}
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+            <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar pb-1">
               {categories.map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-mono font-bold whitespace-nowrap transition-all cursor-pointer ${
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                     selectedCategory === cat
-                      ? "bg-[#087EA4] text-white shadow-xs"
-                      : "bg-white text-slate-600 hover:text-slate-900 border border-slate-200 hover:bg-slate-50"
+                      ? "bg-[#005C42] text-white shadow-xs"
+                      : "bg-white text-slate-700 hover:text-slate-950 border border-slate-200/80 hover:bg-slate-50"
                   }`}
                 >
                   {cat}
@@ -258,18 +291,19 @@ export default function NewsPage() {
 
             {/* Search Input */}
             <div className="relative w-full sm:w-72">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
               <input
                 type="text"
                 placeholder="Search coverage or outlet..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 rounded-full bg-white border border-slate-200 text-xs font-normal placeholder:text-slate-400 focus:outline-none focus:border-[#087EA4] shadow-xs"
+                className="w-full pl-10 pr-8 py-2 rounded-full bg-white border border-slate-200 text-xs font-medium placeholder:text-slate-400 focus:outline-none focus:border-[#005C42] focus:ring-2 focus:ring-[#005C42]/15 shadow-xs transition-all"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                  aria-label="Clear search"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -279,8 +313,8 @@ export default function NewsPage() {
 
           {/* Quick Notice */}
           <div className="flex items-center justify-between text-xs font-mono text-slate-500">
-            <span>SHOWING {filteredNews.length} ARTICLES & REPORTS</span>
-            <span className="hidden sm:inline">CLICK ANY CARD TO OPEN ORIGINAL ARTICLE ↗</span>
+            <span>SHOWING {filteredNews.length} ARTICLES &amp; REPORTS</span>
+            <span className="hidden sm:inline">CLICK ANY CARD TO READ FULL COVERAGE ↗</span>
           </div>
 
           {/* Loading State */}
@@ -291,7 +325,7 @@ export default function NewsPage() {
             </div>
           ) : filteredNews.length === 0 ? (
             /* Empty State */
-            <div className="py-20 text-center space-y-4 bg-white rounded-2xl border border-slate-200 p-8 shadow-xs">
+            <div className="py-20 text-center space-y-4 bg-white rounded-3xl border border-slate-200 p-8 shadow-xs">
               <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-[#007A5E] flex items-center justify-center mx-auto">
                 <Newspaper className="w-7 h-7" />
               </div>
@@ -326,81 +360,208 @@ export default function NewsPage() {
               </div>
             </div>
           ) : (
-            /* News Card Grid */
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-              {filteredNews.map((article) => {
-                const targetUrl = article.sourceUrl || (article.slug ? `/news/${article.slug}` : "/news");
-                const isExternal = Boolean(article.sourceUrl);
+            <div className="space-y-8">
+              {/* ── Featured Lead Story Hero Card (When on All & Unfiltered) ── */}
+              {leadArticle && (
+                <a
+                  href={leadArticle.sourceUrl || (leadArticle.slug ? `/news/${leadArticle.slug}` : "/news")}
+                  target={leadArticle.sourceUrl ? "_blank" : undefined}
+                  rel={leadArticle.sourceUrl ? "noopener noreferrer" : undefined}
+                  className="group relative rounded-3xl bg-white border border-slate-200/90 shadow-[0_4px_20px_-6px_rgba(0,0,0,0.06)] hover:shadow-[0_24px_48px_-12px_rgba(0,92,66,0.16)] hover:border-emerald-300 transition-all duration-300 overflow-hidden grid grid-cols-1 lg:grid-cols-12 cursor-pointer"
+                >
+                  {/* Top Ambient Highlight */}
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#005C42] via-[#12B981] to-[#5B9F35] z-20" />
 
-                return (
-                  <a
-                    key={article.id}
-                    href={targetUrl}
-                    target={isExternal ? "_blank" : undefined}
-                    rel={isExternal ? "noopener noreferrer" : undefined}
-                    className="group rounded-2xl bg-white border border-slate-200 shadow-xs hover:border-[#087EA4]/50 hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col justify-between cursor-pointer"
-                  >
-                    <div>
-                      {/* Thumbnail Image Container */}
-                      <div className="relative h-48 w-full overflow-hidden bg-slate-900">
-                        {article.image ? (
-                          <Image
-                            src={article.image}
-                            alt={article.title}
-                            fill
-                            unoptimized
-                            className="object-cover group-hover:scale-105 transition-transform duration-500"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-slate-600 bg-slate-800">
-                            <Newspaper className="w-8 h-8" />
+                  {/* Image Column */}
+                  <div className="lg:col-span-7 relative min-h-[260px] sm:min-h-[340px] lg:h-full w-full overflow-hidden bg-slate-900">
+                    {leadArticle.image ? (
+                      <Image
+                        src={leadArticle.image}
+                        alt={leadArticle.title}
+                        fill
+                        unoptimized
+                        className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-slate-500 bg-slate-800">
+                        <Newspaper className="w-12 h-12 opacity-40" />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
+
+                    {/* Top Floating Badge */}
+                    <div className="absolute top-4 left-4 flex items-center gap-2">
+                      <span className="px-3 py-1 rounded-full bg-white/95 backdrop-blur-md text-[11px] font-bold text-slate-900 shadow-xs border border-white/60 flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        <span className="truncate max-w-[160px]">{leadArticle.sourceName || "Media Coverage"}</span>
+                      </span>
+                      <span className="px-3 py-1 rounded-full bg-[#005C42] text-white text-[10.5px] font-mono font-bold tracking-wider uppercase shadow-xs">
+                        FEATURED DISPATCH
+                      </span>
+                    </div>
+
+                    {/* Bottom Image Date Overlay */}
+                    <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between text-xs text-white/90">
+                      <span className="flex items-center gap-1.5">
+                        <Calendar className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>{leadArticle.date}</span>
+                      </span>
+                      {leadArticle.readTime && (
+                        <span className="flex items-center gap-1 text-slate-200">
+                          <Clock className="w-3 h-3 text-slate-300" />
+                          <span>{leadArticle.readTime}</span>
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Editorial Narrative Column */}
+                  <div className="lg:col-span-5 p-6 sm:p-8 lg:p-9 flex flex-col justify-between space-y-5 bg-gradient-to-b from-white to-slate-50/50">
+                    <div className="space-y-3.5">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`text-[10.5px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-md border ${getCategoryBadge(
+                            leadArticle.category
+                          )}`}
+                        >
+                          {leadArticle.category}
+                        </span>
+                      </div>
+
+                      <h2 className="text-xl sm:text-2xl font-bold font-inter-tight text-slate-900 group-hover:text-[#005C42] leading-snug transition-colors duration-200">
+                        {leadArticle.title}
+                      </h2>
+
+                      <p className="text-xs sm:text-sm text-slate-600 font-normal leading-relaxed line-clamp-3 lg:line-clamp-4">
+                        {leadArticle.summary}
+                      </p>
+                    </div>
+
+                    <div className="pt-4 border-t border-slate-200/80 flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                        <Globe className="w-3.5 h-3.5 text-emerald-600" />
+                        <span className="truncate max-w-[140px] sm:max-w-[170px]">
+                          {leadArticle.sourceName || "Official Publication"}
+                        </span>
+                      </div>
+
+                      <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#005C42] group-hover:bg-[#004833] text-white text-xs font-bold uppercase tracking-wider transition-all shadow-xs group-hover:shadow-md">
+                        <span>Read Full Story</span>
+                        <ArrowUpRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                      </span>
+                    </div>
+                  </div>
+                </a>
+              )}
+
+              {/* ── Redesigned News Cards Grid ─────────────────────────────── */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
+                {gridArticles.map((article) => {
+                  const targetUrl =
+                    article.sourceUrl || (article.slug ? `/news/${article.slug}` : "/news");
+                  const isExternal = Boolean(article.sourceUrl);
+
+                  return (
+                    <a
+                      key={article.id}
+                      href={targetUrl}
+                      target={isExternal ? "_blank" : undefined}
+                      rel={isExternal ? "noopener noreferrer" : undefined}
+                      className="group relative rounded-2xl sm:rounded-3xl bg-white border border-slate-200/90 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] hover:shadow-[0_20px_35px_-8px_rgba(0,92,66,0.12)] hover:border-emerald-300/80 hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between overflow-hidden cursor-pointer"
+                    >
+                      {/* Top Animated Accent Border on Hover */}
+                      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#005C42] via-[#12B981] to-[#5B9F35] opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20" />
+
+                      <div>
+                        {/* Thumbnail Image Container */}
+                        <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-900">
+                          {article.image ? (
+                            <Image
+                              src={article.image}
+                              alt={article.title}
+                              fill
+                              unoptimized
+                              className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-slate-500 bg-slate-800">
+                              <Newspaper className="w-10 h-10 opacity-40" />
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-slate-950/20 to-transparent" />
+
+                          {/* Top Floating Source Badge */}
+                          <div className="absolute top-3.5 left-3.5 flex items-center gap-1.5">
+                            <span className="px-3 py-1 rounded-full bg-white/95 backdrop-blur-md text-[11px] font-bold text-slate-800 tracking-tight shadow-xs border border-white/60 flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                              <span className="truncate max-w-[150px]">
+                                {article.sourceName || "Media Coverage"}
+                              </span>
+                            </span>
                           </div>
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
-                        {/* Top Source Badge */}
-                        <div className="absolute top-3 left-3 flex items-center gap-1.5">
-                          <span className="px-2.5 py-1 rounded-md bg-white/95 backdrop-blur-md text-[10px] font-mono font-bold text-[#061A2A] uppercase tracking-wider shadow-sm">
-                            {article.sourceName || "Media Coverage"}
-                          </span>
+                          {/* Top Right External Arrow Indicator */}
+                          <div className="absolute top-3.5 right-3.5 w-8 h-8 rounded-full bg-black/40 backdrop-blur-md text-white flex items-center justify-center border border-white/20 group-hover:bg-[#005C42] group-hover:border-[#005C42] group-hover:scale-110 transition-all duration-300">
+                            <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                          </div>
+
+                          {/* Bottom Image Date & Read Time Overlay */}
+                          <div className="absolute bottom-3 left-3.5 right-3.5 flex items-center justify-between text-[11px] font-medium text-white/90">
+                            <span className="flex items-center gap-1.5">
+                              <Calendar className="w-3.5 h-3.5 text-emerald-400" />
+                              <span>{article.date}</span>
+                            </span>
+                            {article.readTime && (
+                              <span className="flex items-center gap-1 text-slate-200 text-[10.5px]">
+                                <Clock className="w-3 h-3 text-slate-300" />
+                                <span>{article.readTime}</span>
+                              </span>
+                            )}
+                          </div>
                         </div>
 
-                        {/* Top Right External Link Icon */}
-                        <div className="absolute top-3 right-3 w-7 h-7 rounded-full bg-black/60 backdrop-blur-md text-white flex items-center justify-center border border-white/20 opacity-80 group-hover:opacity-100 group-hover:bg-[#087EA4] transition-all">
-                          <ExternalLink className="w-3.5 h-3.5" />
-                        </div>
+                        {/* Card Content */}
+                        <div className="p-5 sm:p-6 space-y-3">
+                          {/* Category Badge */}
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-md border ${getCategoryBadge(
+                                article.category
+                              )}`}
+                            >
+                              {article.category}
+                            </span>
+                          </div>
 
-                        {/* Bottom Date inside Image */}
-                        <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-[11px] font-mono text-white/90">
-                          <span className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3 text-[#38BDF8]" />
-                            {article.date}
-                          </span>
-                          <span className="text-[#34D399] font-bold uppercase text-[10px]">
-                            {article.category}
-                          </span>
+                          {/* Title */}
+                          <h3 className="font-bold text-[17px] sm:text-[18px] text-slate-900 font-inter-tight group-hover:text-[#005C42] transition-colors duration-200 leading-[1.35] line-clamp-2">
+                            {article.title}
+                          </h3>
+
+                          {/* Excerpt */}
+                          <p className="text-[13px] text-slate-500 font-normal leading-relaxed line-clamp-2 sm:line-clamp-3">
+                            {article.summary}
+                          </p>
                         </div>
                       </div>
 
-                      {/* Article Content */}
-                      <div className="p-5 space-y-2">
-                        <h3 className="font-bold text-base text-slate-900 group-hover:text-[#087EA4] transition-colors leading-snug line-clamp-2">
-                          {article.title}
-                        </h3>
-                        <p className="text-xs text-slate-600 font-normal leading-relaxed line-clamp-3">
-                          {article.summary}
-                        </p>
+                      {/* Card Footer Bar */}
+                      <div className="px-5 sm:px-6 py-4 border-t border-slate-100 bg-slate-50/60 flex items-center justify-between text-xs mt-auto">
+                        <div className="flex items-center gap-1.5 text-slate-500 font-medium">
+                          <Globe className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                          <span className="truncate max-w-[130px] sm:max-w-[150px]">
+                            {article.sourceName || "Official Release"}
+                          </span>
+                        </div>
+                        <span className="inline-flex items-center gap-1 font-bold text-xs uppercase tracking-wider text-[#005C42] group-hover:text-emerald-700 transition-colors">
+                          <span>Read Story</span>
+                          <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform duration-200" />
+                        </span>
                       </div>
-                    </div>
-
-                    {/* Card Footer Bar */}
-                    <div className="px-5 py-3.5 border-t border-slate-100 bg-[#F8FAFB] flex items-center justify-between text-xs font-mono font-bold text-[#087EA4] group-hover:text-[#059669] transition-colors">
-                      <span>READ FULL ARTICLE</span>
-                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  </a>
-                );
-              })}
+                    </a>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
@@ -411,9 +572,9 @@ export default function NewsPage() {
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
             {/* Modal Header */}
-            <div className="px-6 py-4 bg-[#061A2A] text-white flex items-center justify-between">
+            <div className="px-6 py-4 bg-[#04281E] text-white flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <LinkIcon className="w-4 h-4 text-[#38BDF8]" />
+                <LinkIcon className="w-4 h-4 text-emerald-400" />
                 <span className="font-bold text-sm">Add News Card by URL</span>
               </div>
               <button
@@ -423,7 +584,8 @@ export default function NewsPage() {
                   setInputUrl("");
                   setScrapeError(null);
                 }}
-                className="p-1 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white cursor-pointer"
+                className="p-1 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white cursor-pointer transition-colors"
+                aria-label="Close modal"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -442,12 +604,12 @@ export default function NewsPage() {
                     placeholder="https://thehimalayantimes.com/nepal/..."
                     value={inputUrl}
                     onChange={(e) => setInputUrl(e.target.value)}
-                    className="flex-1 px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono focus:outline-none focus:border-[#087EA4]"
+                    className="flex-1 px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono focus:outline-none focus:border-[#005C42] focus:ring-2 focus:ring-[#005C42]/20"
                   />
                   <button
                     onClick={handleFetchPreview}
                     disabled={isScraping || !inputUrl.trim()}
-                    className="px-5 py-2.5 rounded-xl bg-[#087EA4] hover:bg-[#061A2A] disabled:bg-slate-300 text-white font-mono text-xs font-bold flex items-center gap-2 transition-all cursor-pointer"
+                    className="px-5 py-2.5 rounded-xl bg-[#005C42] hover:bg-[#004833] disabled:bg-slate-300 text-white font-mono text-xs font-bold flex items-center gap-2 transition-all cursor-pointer"
                   >
                     {isScraping ? (
                       <>
@@ -478,8 +640,8 @@ export default function NewsPage() {
               {previewArticle && (
                 <div className="space-y-4 pt-4 border-t border-slate-200">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-mono font-bold text-[#059669] flex items-center gap-1.5">
-                      <CheckCircle2 className="w-4 h-4" />
+                    <span className="text-xs font-mono font-bold text-[#005C42] flex items-center gap-1.5">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                       Metadata Extracted Successfully
                     </span>
                   </div>
@@ -513,13 +675,13 @@ export default function NewsPage() {
                               title: e.target.value,
                             })
                           }
-                          className="w-full px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-bold text-slate-900"
+                          className="w-full px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-bold text-slate-900 focus:outline-none focus:border-[#005C42]"
                         />
                       </div>
 
                       <div>
                         <label className="text-[10px] font-mono font-bold text-slate-500 uppercase">
-                          Description / Summary
+                          Summary Excerpt
                         </label>
                         <textarea
                           rows={2}
@@ -530,14 +692,14 @@ export default function NewsPage() {
                               summary: e.target.value,
                             })
                           }
-                          className="w-full px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs text-slate-700"
+                          className="w-full px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs text-slate-700 focus:outline-none focus:border-[#005C42]"
                         />
                       </div>
 
                       <div className="grid grid-cols-2 gap-3">
                         <div>
                           <label className="text-[10px] font-mono font-bold text-slate-500 uppercase">
-                            Publisher / Source
+                            Source Outlet
                           </label>
                           <input
                             type="text"
@@ -548,10 +710,9 @@ export default function NewsPage() {
                                 sourceName: e.target.value,
                               })
                             }
-                            className="w-full px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs text-slate-800"
+                            className="w-full px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-[#005C42]"
                           />
                         </div>
-
                         <div>
                           <label className="text-[10px] font-mono font-bold text-slate-500 uppercase">
                             Category
@@ -564,44 +725,28 @@ export default function NewsPage() {
                                 category: e.target.value as any,
                               })
                             }
-                            className="w-full px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs text-slate-800"
+                            className="w-full px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-[#005C42]"
                           >
-                            {categories
-                              .filter((c) => c !== "ALL")
-                              .map((c) => (
-                                <option key={c} value={c}>
-                                  {c}
-                                </option>
-                              ))}
+                            <option value="News Coverage">News Coverage</option>
+                            <option value="Policy & Market">Policy &amp; Market</option>
+                            <option value="Technology">Technology</option>
+                            <option value="Expo Update">Expo Update</option>
+                            <option value="Press Release">Press Release</option>
                           </select>
                         </div>
                       </div>
                     </div>
                   </div>
+
+                  <button
+                    onClick={handleAddNews}
+                    className="w-full py-3 rounded-xl bg-gradient-to-r from-[#005C42] to-[#12B981] hover:brightness-105 text-white font-mono text-xs font-bold tracking-wider uppercase flex items-center justify-center gap-2 shadow-md cursor-pointer transition-all active:scale-99"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>Publish News Card</span>
+                  </button>
                 </div>
               )}
-            </div>
-
-            {/* Modal Footer */}
-            <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-3">
-              <button
-                onClick={() => {
-                  setShowAddModal(false);
-                  setPreviewArticle(null);
-                  setInputUrl("");
-                }}
-                className="px-4 py-2 rounded-xl text-xs font-mono font-bold text-slate-600 hover:bg-slate-200 transition-colors cursor-pointer"
-              >
-                Cancel
-              </button>
-
-              <button
-                onClick={handleAddNews}
-                disabled={!previewArticle || !previewArticle.title}
-                className="px-6 py-2 rounded-xl bg-[#007A5E] hover:bg-[#005C42] disabled:bg-slate-300 text-white font-mono text-xs font-bold shadow-md transition-all cursor-pointer"
-              >
-                Publish to News Feed
-              </button>
             </div>
           </div>
         </div>
