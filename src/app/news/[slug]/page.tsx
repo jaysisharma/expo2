@@ -4,13 +4,14 @@ import Image from "next/image";
 import Link from "next/link";
 import fs from "fs/promises";
 import path from "path";
-import { newsData } from "@/data/news";
 import {
   ArrowLeft,
   Calendar,
   Clock,
   ExternalLink,
 } from "lucide-react";
+
+export const dynamic = "force-dynamic";
 
 async function getArticleBySlug(slug: string) {
   // Check root data/adminData.json
@@ -35,8 +36,7 @@ async function getArticleBySlug(slug: string) {
     }
   } catch {}
 
-  // Fallback
-  return newsData.find((n) => n.slug === slug) || null;
+  return null;
 }
 
 export async function generateStaticParams() {
@@ -88,7 +88,7 @@ export default async function SingleNewsPage({ params }: { params: Promise<{ slu
           <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-3">
               <span className="px-2.5 py-0.5 rounded bg-[#10B981]/25 text-[#34D399] border border-[#10B981]/50 text-[11px] font-mono font-bold">
-                {article.category}
+                {sourceLabel}
               </span>
               <span className="text-xs text-emerald-200/70 font-mono flex items-center gap-1.5">
                 <Calendar className="w-3.5 h-3.5 text-[#34D399]" /> {article.date}

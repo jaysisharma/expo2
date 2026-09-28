@@ -4,7 +4,6 @@ import path from "path";
 import { boothsData } from "@/data/booths";
 import { exhibitorsData } from "@/data/exhibitors";
 import { speakersData } from "@/data/speakers";
-import { newsArticles } from "@/data/news";
 
 export const dynamic = "force-dynamic";
 

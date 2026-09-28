@@ -67,9 +67,18 @@ const editions = [
 
 
 const ecosystem = [
-  "IPP / DEVELOPERS", "EQUIPMENT OEMs", "EPC CONTRACTORS", "PROJECT FINANCE",
-  "GOVERNMENT", "UTILITIES / NEA", "TECHNOLOGY", "INVESTORS",
-  "CONSULTANTS", "INTERNATIONAL PARTNERS", "CONSTRUCTION", "ENGINEERING",
+  "PROJECT DEVELOPERS / IPPs",
+  "EQUIPMENT & TECHNOLOGY PROVIDERS",
+  "EPC CONTRACTORS",
+  "INVESTORS & FINANCIAL INSTITUTIONS",
+  "GOVERNMENT & REGULATORS",
+  "ELECTRIC UTILITIES",
+  "ENGINEERS & CONSULTANTS",
+  "CONSTRUCTION COMPANIES",
+  "INTERNATIONAL DELEGATIONS",
+  "RESEARCHERS & UNIVERSITIES",
+  "INDUSTRY ASSOCIATIONS",
+  "STARTUPS & INNOVATION HUBS",
 ];
 
 export default function AboutPage() {
@@ -441,38 +450,45 @@ export default function AboutPage() {
           <div className="absolute inset-0 bg-[#061A2A]/80" />
         </div>
 
-        <div className="relative z-10 max-w-5xl mx-auto text-center space-y-12">
+        <div className="relative z-10 max-w-5xl mx-auto text-center space-y-10 sm:space-y-12">
           <div className="space-y-4">
             <p className="text-[11px] font-mono font-bold text-[#34D399] uppercase tracking-[0.2em]">05 / WHAT THE EXPO CONNECTS</p>
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight tracking-tight">
               ONE PLATFORM.<br />
-              <span className="text-[#34D399]">AN ENTIRE INDUSTRY.</span>
+              <span className="text-[#34D399]">AN ENTIRE ENERGY ECOSYSTEM.</span>
             </h2>
           </div>
 
-          {/* Centre hub + surrounding tags */}
-          <div className="relative flex items-center justify-center py-4">
+          {/* Centre hub + surrounding orbital tags */}
+          <div className="relative flex items-center justify-center py-8 min-h-[420px] sm:min-h-[480px]">
+            {/* Orbital Rings */}
+            <div className="absolute w-[300px] h-[300px] sm:w-[380px] sm:h-[380px] rounded-full border border-emerald-500/20 border-dashed pointer-events-none" />
+            <div className="absolute w-[180px] h-[180px] sm:w-[220px] sm:h-[220px] rounded-full border border-emerald-500/10 pointer-events-none" />
+
             {/* Hub */}
-            <div className="relative z-10 flex flex-col items-center justify-center w-36 h-36 sm:w-44 sm:h-44 rounded-full border-2 border-[#10B981] bg-[#04281E] shadow-2xl shadow-emerald-900/50 p-3">
-              <p className="text-[10px] font-mono font-bold text-[#34D399] uppercase tracking-widest text-center leading-tight">
-                HIMALAYAN<br />GREEN ENERGY<br />EXPO
+            <div className="relative z-10 flex flex-col items-center justify-center w-36 h-36 sm:w-44 sm:h-44 rounded-full border-2 border-[#10B981] bg-[#04281E] shadow-2xl shadow-emerald-900/60 p-4">
+              <p className="text-[11px] sm:text-xs font-mono font-bold text-[#34D399] uppercase tracking-widest text-center leading-snug">
+                HIMALAYAN<br />
+                GREEN ENERGY<br />
+                EXPO
               </p>
             </div>
 
-            {/* Radial ring of tags — hidden on mobile, visible on md+ */}
-            <div className="absolute inset-0 hidden md:block">
+            {/* Radial ring of tags — visible on md+ */}
+            <div className="absolute inset-0 hidden md:block pointer-events-none">
               {ecosystem.map((item, idx) => {
                 const angle = (idx / ecosystem.length) * 2 * Math.PI - Math.PI / 2;
-                const radius = 210;
-                const x = 50 + (radius / 5) * Math.cos(angle);
-                const y = 50 + (radius / 5) * Math.sin(angle);
+                const radiusX = 42; // percentage
+                const radiusY = 38; // percentage
+                const x = 50 + radiusX * Math.cos(angle);
+                const y = 50 + radiusY * Math.sin(angle);
                 return (
                   <div
                     key={item}
-                    className="absolute transform -translate-x-1/2 -translate-y-1/2"
+                    className="absolute transform -translate-x-1/2 -translate-y-1/2 pointer-events-auto"
                     style={{ left: `${x}%`, top: `${y}%` }}
                   >
-                    <span className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono font-bold text-emerald-200/80 uppercase tracking-wider whitespace-nowrap hover:bg-emerald-500/10 hover:border-emerald-500/40 transition-all cursor-default">
+                    <span className="px-3.5 py-1.5 rounded-full bg-[#04281E]/90 border border-emerald-500/30 text-[10px] font-mono font-bold text-emerald-200/90 uppercase tracking-wider whitespace-nowrap shadow-md hover:bg-emerald-500/20 hover:border-emerald-400 hover:text-white transition-all cursor-default backdrop-blur-sm">
                       {item}
                     </span>
                   </div>
@@ -481,15 +497,18 @@ export default function AboutPage() {
             </div>
           </div>
 
-          {/* Mobile: simple tag cloud */}
-          <div className="md:hidden flex flex-wrap justify-center gap-2 pt-4">
+          {/* Ecosystem stakeholders grid for mobile & structured browsing */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 pt-4 max-w-4xl mx-auto text-left">
             {ecosystem.map((item) => (
-              <span
+              <div
                 key={item}
-                className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono font-bold text-emerald-200/80 uppercase tracking-wider"
+                className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/10 hover:border-emerald-500/40 hover:bg-emerald-500/[0.08] transition-all group"
               >
-                {item}
-              </span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0 group-hover:scale-125 transition-transform" />
+                <span className="text-[11px] font-mono font-bold text-emerald-100/90 uppercase tracking-wide leading-tight">
+                  {item}
+                </span>
+              </div>
             ))}
           </div>
         </div>

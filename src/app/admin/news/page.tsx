@@ -27,7 +27,6 @@ export default function AdminNewsPage() {
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
   const [viewMode, setViewMode] = useState<"table" | "grid">("table");
 
   // Selection & Bulk Actions
@@ -94,30 +93,19 @@ export default function AdminNewsPage() {
     fetchArticles();
   }, []);
 
-  const categories = [
-    "All",
-    "Expo Update",
-    "Policy & Market",
-    "Technology",
-    "Press Release",
-    "News Coverage",
-  ];
-
   // Filtered Articles
   const filteredArticles = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return articles;
     return articles.filter((a) => {
-      const matchesCat = selectedCategory === "All" || a.category === selectedCategory;
-      const q = searchQuery.toLowerCase().trim();
-      const matchesSearch =
-        !q ||
+      return (
         a.title.toLowerCase().includes(q) ||
         (a.summary && a.summary.toLowerCase().includes(q)) ||
         (a.author && a.author.toLowerCase().includes(q)) ||
-        (a.sourceName && a.sourceName.toLowerCase().includes(q));
-
-      return matchesCat && matchesSearch;
+        (a.sourceName && a.sourceName.toLowerCase().includes(q))
+      );
     });
-  }, [articles, selectedCategory, searchQuery]);
+  }, [articles, searchQuery]);
 
   // Master Checkbox State
   const filteredIds = useMemo(() => filteredArticles.map((a) => a.id), [filteredArticles]);
@@ -412,36 +400,12 @@ export default function AdminNewsPage() {
 
       {/* Control Bar: Search, Category Tabs, View Switcher */}
       <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200 shadow-xs">
-        {/* Category Pills */}
-        <div className="flex items-center gap-1 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
-          {categories.map((cat) => {
-            const isActive = selectedCategory === cat;
-            const count =
-              cat === "All"
-                ? articles.length
-                : articles.filter((a) => a.category === cat).length;
-
-            return (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer flex items-center gap-1.5 ${
-                  isActive
-                    ? "bg-slate-900 text-white font-semibold"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-                }`}
-              >
-                <span>{cat}</span>
-                <span
-                  className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                    isActive ? "bg-slate-800 text-slate-200" : "bg-slate-100 text-slate-500"
-                  }`}
-                >
-                  {count}
-                </span>
-              </button>
-            );
-          })}
+        {/* Published Articles Counter */}
+        <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 px-1 py-1">
+          <span className="w-2 h-2 rounded-full bg-[#218A59]" />
+          <span>
+            {filteredArticles.length} {filteredArticles.length === 1 ? "Article" : "Articles"} Published
+          </span>
         </div>
 
         {/* Right side: Search & View Mode Switcher */}
@@ -534,13 +498,13 @@ export default function AdminNewsPage() {
             <Newspaper className="w-6 h-6" />
           </div>
           <h3 className="text-sm font-semibold text-slate-800">
-            {searchQuery || selectedCategory !== "All"
-              ? "No matching articles found"
+            {searchQuery
+              ? `No articles matching "${searchQuery}"`
               : "No articles published yet"}
           </h3>
           <p className="text-xs text-slate-500 max-w-sm mt-1 mb-5">
-            {searchQuery || selectedCategory !== "All"
-              ? "Try changing your search keywords or switching category filters."
+            {searchQuery
+              ? "Try searching with different headline keywords or author names."
               : "Get started by publishing your first announcement or article."}
           </p>
           <div className="flex items-center gap-2">
@@ -574,8 +538,8 @@ export default function AdminNewsPage() {
                     />
                   </th>
                   <th className="py-3 px-3 min-w-[280px]">Article & Details</th>
-                  <th className="py-3 px-3">Category</th>
-                  <th className="py-3 px-3">Author / Source</th>
+                  <th className="py-3 px-3">Source / Outlet</th>
+                  <th className="py-3 px-3">Author</th>
                   <th className="py-3 px-3">Date</th>
                   <th className="py-3 px-3 text-center w-16">Featured</th>
                   <th className="py-3 pr-4 pl-3 text-right w-24">Actions</th>
@@ -648,10 +612,10 @@ export default function AdminNewsPage() {
                         </div>
                       </td>
 
-                      {/* Category */}
+                      {/* Source Outlet */}
                       <td className="py-3 px-3 whitespace-nowrap">
-                        <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-medium text-[11px]">
-                          {article.category}
+                        <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200/60 font-medium text-[11px]">
+                          {article.sourceName || "Official Dispatch"}
                         </span>
                       </td>
 
@@ -750,8 +714,8 @@ export default function AdminNewsPage() {
                     />
 
                     <div className="flex items-center gap-1.5">
-                      <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[10px] font-medium">
-                        {article.category}
+                      <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200/60 text-[10px] font-medium">
+                        {article.sourceName || "Official Dispatch"}
                       </span>
                       <button
                         onClick={() => handleToggleFeatured(article.id)}
@@ -908,21 +872,17 @@ export default function AdminNewsPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[11px] font-mono font-medium text-slate-700 mb-1">
-                    CATEGORY
+                    SOURCE / OUTLET
                   </label>
-                  <select
-                    value={editingArticle.category}
+                  <input
+                    type="text"
+                    value={editingArticle.sourceName || ""}
                     onChange={(e) =>
-                      setEditingArticle({ ...editingArticle, category: e.target.value as any })
+                      setEditingArticle({ ...editingArticle, sourceName: e.target.value })
                     }
-                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59] focus:bg-white cursor-pointer"
-                  >
-                    <option value="Expo Update">Expo Update</option>
-                    <option value="Policy & Market">Policy & Market</option>
-                    <option value="Technology">Technology</option>
-                    <option value="Press Release">Press Release</option>
-                    <option value="News Coverage">News Coverage</option>
-                  </select>
+                    placeholder="e.g. Kathmandu Post, IPPAN"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59] focus:bg-white"
+                  />
                 </div>
                 <div>
                   <label className="block text-[11px] font-mono font-medium text-slate-700 mb-1">
@@ -1102,18 +1062,14 @@ export default function AdminNewsPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[11px] font-mono font-medium text-slate-700 mb-1">
-                      CATEGORY
+                      SOURCE / OUTLET
                     </label>
-                    <select
-                      name="category"
-                      className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59] focus:bg-white cursor-pointer"
-                    >
-                      <option value="Expo Update">Expo Update</option>
-                      <option value="Policy & Market">Policy & Market</option>
-                      <option value="Technology">Technology</option>
-                      <option value="Press Release">Press Release</option>
-                      <option value="News Coverage">News Coverage</option>
-                    </select>
+                    <input
+                      type="text"
+                      name="sourceName"
+                      placeholder="e.g. Kathmandu Post, IPPAN"
+                      className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59] focus:bg-white"
+                    />
                   </div>
                   <div>
                     <label className="block text-[11px] font-mono font-medium text-slate-700 mb-1">

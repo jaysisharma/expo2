@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight, Newspaper, ArrowUpRight } from 'lucide-react';
 import { ScrollReveal } from '@/components/ui';
 
 interface NewsCardItem {
@@ -14,83 +14,92 @@ interface NewsCardItem {
   description: string;
   image: string;
   href: string;
+  isExternal?: boolean;
 }
 
-const newsItems: NewsCardItem[] = [
-  {
-    id: 'announces-partners',
-    tag: 'ANNOUNCEMENT',
-    date: '16 DEC 2026',
-    title: 'Himalayan Green Energy Expo 2027 Announces Key Partners',
-    description:
-      'The organizing committee of HIGEX 2027 unveiled its key partners, marking a significant milestone towards the expo.',
-    image: '/images/press_meet.jpeg',
-    href: '/news/official-press-meet-announcement-himalayan-green-energy-expo-2027',
-  },
-  {
-    id: 'new-innovations',
-    tag: 'EXPO UPDATE',
-    date: '08 DEC 2026',
-    title: 'New Innovations to be Showcased at the 2027 Expo',
-    description:
-      'HIGEX 2027 will feature the latest technologies and solutions in hydropower, solar, wind, energy storage and more.',
-    image: '/images/dam_reservoir_himalaya.jpg',
-    href: '/news/nepal-crosses-3200mw-installed-capacity-record',
-  },
-  {
-    id: 'registration-open',
-    tag: 'REGISTRATION',
-    date: '01 DEC 2026',
-    title: 'Registration Now Open for Himalayan Green Energy Expo 2027',
-    description:
-      'Secure your participation at HIGEX 2027 and be part of Nepal\'s largest clean-energy exhibition, conference and networking platform.',
-    image: '/images/why-participate/delegates-networking.jpg',
-    href: '/register',
-  },
-  {
-    id: 'trilateral-power-trade',
-    tag: 'POLICY & MARKET',
-    date: '18 NOV 2026',
-    title: 'Historic Trilateral Power Agreement Signed for Regional Export',
-    description:
-      'Marking a transformative era in South Asian regional integration, Nepal officially commences commercial transmission to regional neighbors.',
-    image: '/images/hydro_transmission.jpg',
-    href: '/news/trilateral-power-trade-nepal-india-bangladesh',
-  },
-  {
-    id: 'green-hydrogen-framework',
-    tag: 'TECHNOLOGY',
-    date: '04 NOV 2026',
-    title: 'National Green Hydrogen & Pumped Storage Policy Approved',
-    description:
-      'Nepal introduces pioneering concessions for green hydrogen electrolyzers and pumped storage facilities to accelerate clean energy.',
-    image: '/images/why-participate/machinery-pavilion.jpg',
-    href: '/news/nepal-green-hydrogen-storage-policy-framework',
-  },
-  {
-    id: 'international-delegations',
-    tag: 'GLOBAL REACH',
-    date: '20 OCT 2026',
-    title: 'Trade Delegations from 15+ Nations Confirm Expo Participation',
-    description:
-      'High-level governmental, technical and financial delegations from India, China, Europe and South Asia finalize participation in HIGEX 2027.',
-    image: '/images/why-participate/b2b-contracts.jpg',
-    href: '/news/ippan-expo-announcement',
-  },
-];
-
 export function LatestNewsSection() {
+  const [news, setNews] = useState<NewsCardItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const totalSlides = 4; // 4 pagination dots as shown in design
-  const maxIndex = newsItems.length - 3;
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadNews() {
+      try {
+        const res = await fetch('/api/admin/data?t=' + Date.now(), { cache: 'no-store' });
+        const json = await res.json();
+        const rawArticles =
+          json.success && Array.isArray(json.data?.news) ? json.data.news : [];
+
+        let localArticles: any[] = [];
+        try {
+          const stored = localStorage.getItem('expo_custom_news');
+          if (stored) localArticles = JSON.parse(stored);
+        } catch {}
+
+        const seen = new Set<string>();
+        const combinedRaw = [...rawArticles, ...localArticles];
+        const formatted: NewsCardItem[] = [];
+
+        for (const item of combinedRaw) {
+          const key = item.id || item.slug || item.title;
+          if (!key || seen.has(key)) continue;
+          seen.add(key);
+
+          const href =
+            item.sourceUrl || (item.slug ? `/news/${item.slug}` : '/news');
+          const isExternal = Boolean(item.sourceUrl);
+
+          formatted.push({
+            id: item.id || item.slug || String(Math.random()),
+            tag: item.category || item.sourceName || 'PRESS DISPATCH',
+            date: item.date || 'RECENT',
+            title: item.title,
+            description:
+              item.summary ||
+              (Array.isArray(item.content) ? item.content[0] : '') ||
+              '',
+            image: item.image || '/images/press_meet.jpeg',
+            href,
+            isExternal,
+          });
+        }
+
+        if (isMounted) {
+          setNews(formatted);
+          setIsLoading(false);
+        }
+      } catch {
+        if (isMounted) {
+          setNews([]);
+          setIsLoading(false);
+        }
+      }
+    }
+
+    loadNews();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const totalSlides = Math.max(1, news.length);
+  const maxIndex = Math.max(0, news.length - 3);
 
   const handlePrev = () => {
+    if (news.length <= 1) return;
     setCurrentIndex((prev) => (prev > 0 ? prev - 1 : maxIndex));
   };
 
   const handleNext = () => {
+    if (news.length <= 1) return;
     setCurrentIndex((prev) => (prev < maxIndex ? prev + 1 : 0));
   };
+
+  // If loading and no items yet, don't flash empty state
+  if (!isLoading && news.length === 0) {
+    return null;
+  }
 
   return (
     <section className="w-full bg-[#FAFCFB] relative py-16 sm:py-24 overflow-hidden border-b border-slate-200/80">
@@ -147,106 +156,136 @@ export function LatestNewsSection() {
           {/* Cards Carousel Window */}
           <div className="relative overflow-hidden">
             <div
-              className="flex transition-transform duration-500 ease-out"
+              className={`flex transition-transform duration-500 ease-out ${
+                news.length <= 3 ? 'justify-start' : ''
+              }`}
               style={{
-                transform: `translateX(-${currentIndex * (100 / 3)}%)`,
+                transform: news.length > 3 ? `translateX(-${currentIndex * (100 / 3)}%)` : undefined,
               }}
             >
-              {newsItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="w-full sm:w-1/2 lg:w-1/3 shrink-0 px-3 pb-2"
-                >
-                  <article className="h-full bg-white rounded-2xl border border-slate-200/90 overflow-hidden shadow-2xs hover:shadow-md transition-all duration-300 flex flex-col group">
-                    {/* Card Top Image */}
-                    <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-slate-100">
-                      <Image
-                        src={item.image}
-                        alt={item.title}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                    </div>
+              {news.map((item) => {
+                const CardWrapper = item.isExternal ? 'a' : Link;
+                const linkProps = item.isExternal
+                  ? { href: item.href, target: '_blank', rel: 'noopener noreferrer' }
+                  : { href: item.href };
 
-                    {/* Card Body */}
-                    <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between">
-                      <div>
-                        {/* Tag & Date Row */}
-                        <div className="flex items-center justify-between gap-2 mb-3">
-                          <span className="px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold tracking-wider uppercase bg-emerald-50 text-emerald-800 border border-emerald-200/70">
-                            {item.tag}
-                          </span>
-                          <span className="text-xs font-mono text-slate-400 font-medium">
-                            {item.date}
-                          </span>
+                return (
+                  <div
+                    key={item.id}
+                    className="w-full sm:w-1/2 lg:w-1/3 shrink-0 px-3 pb-2"
+                  >
+                    <article className="h-full bg-white rounded-2xl border border-slate-200/90 overflow-hidden shadow-2xs hover:shadow-md transition-all duration-300 flex flex-col group">
+                      {/* Card Top Image */}
+                      <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-slate-900">
+                        {item.image ? (
+                          <Image
+                            src={item.image}
+                            alt={item.title}
+                            fill
+                            unoptimized
+                            className="object-cover transition-transform duration-500 group-hover:scale-105"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-slate-500 bg-slate-800">
+                            <Newspaper className="w-10 h-10 opacity-40" />
+                          </div>
+                        )}
+                        {item.isExternal && (
+                          <div className="absolute top-3 right-3 w-7 h-7 rounded-full bg-black/40 backdrop-blur-md text-white flex items-center justify-center border border-white/20 group-hover:bg-[#16A34A] transition-all">
+                            <ArrowUpRight className="w-3.5 h-3.5" />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Card Body */}
+                      <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between">
+                        <div>
+                          {/* Date & Indicator Row */}
+                          <div className="flex items-center justify-between gap-2 mb-3">
+                            <span className="text-xs font-mono text-emerald-800 font-semibold flex items-center gap-1.5 truncate max-w-[170px]">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                              <span className="truncate">{item.tag}</span>
+                            </span>
+                            <span className="text-xs font-mono text-slate-400 font-medium shrink-0">
+                              {item.date}
+                            </span>
+                          </div>
+
+                          {/* Title */}
+                          <h3 className="text-base sm:text-lg font-bold text-slate-900 group-hover:text-[#16A34A] transition-colors leading-snug line-clamp-2">
+                            <CardWrapper {...(linkProps as any)}>
+                              {item.title}
+                            </CardWrapper>
+                          </h3>
                         </div>
 
-                        {/* Title */}
-                        <h3 className="text-base sm:text-lg font-bold text-slate-900 group-hover:text-[#16A34A] transition-colors leading-snug line-clamp-2">
-                          <Link href={item.href}>{item.title}</Link>
-                        </h3>
-                      </div>
+                        {/* Description & Action Button Row */}
+                        <div className="mt-4 flex items-end justify-between gap-3 pt-1">
+                          <p className="text-xs sm:text-sm text-slate-600 line-clamp-2 leading-relaxed flex-1">
+                            {item.description}
+                          </p>
 
-                      {/* Description & Action Button Row */}
-                      <div className="mt-4 flex items-end justify-between gap-3 pt-1">
-                        <p className="text-xs sm:text-sm text-slate-600 line-clamp-2 leading-relaxed flex-1">
-                          {item.description}
-                        </p>
-
-                        <Link
-                          href={item.href}
-                          aria-label={`Read article: ${item.title}`}
-                          className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-800 group-hover:bg-[#16A34A] group-hover:text-white flex items-center justify-center transition-all shrink-0"
-                        >
-                          <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
-                        </Link>
+                          <CardWrapper
+                            {...(linkProps as any)}
+                            aria-label={`Read article: ${item.title}`}
+                            className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-800 group-hover:bg-[#16A34A] group-hover:text-white flex items-center justify-center transition-all shrink-0"
+                          >
+                            {item.isExternal ? (
+                              <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                            ) : (
+                              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                            )}
+                          </CardWrapper>
+                        </div>
                       </div>
-                    </div>
-                  </article>
-                </div>
-              ))}
+                    </article>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
-          {/* Bottom Pagination & Navigation Controls */}
-          <div className="flex items-center justify-center gap-4 mt-8 sm:mt-10">
-            {/* Prev Arrow */}
-            <button
-              type="button"
-              onClick={handlePrev}
-              aria-label="Previous news slide"
-              className="w-9 h-9 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-600 hover:border-slate-400 hover:text-slate-900 transition-all shadow-2xs cursor-pointer"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
+          {/* Bottom Pagination & Navigation Controls (Only if > 3 items) */}
+          {news.length > 3 && (
+            <div className="flex items-center justify-center gap-4 mt-8 sm:mt-10">
+              {/* Prev Arrow */}
+              <button
+                type="button"
+                onClick={handlePrev}
+                aria-label="Previous news slide"
+                className="w-9 h-9 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-600 hover:border-slate-400 hover:text-slate-900 transition-all shadow-2xs cursor-pointer"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
 
-            {/* Pagination Dots */}
-            <div className="flex items-center gap-2">
-              {Array.from({ length: totalSlides }).map((_, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => setCurrentIndex(Math.min(idx, maxIndex))}
-                  aria-label={`Go to slide ${idx + 1}`}
-                  className={`h-2 transition-all rounded-full cursor-pointer ${
-                    currentIndex === idx
-                      ? 'w-6 bg-[#16A34A]'
-                      : 'w-2 bg-slate-300 hover:bg-slate-400'
-                  }`}
-                />
-              ))}
+              {/* Pagination Dots */}
+              <div className="flex items-center gap-2">
+                {Array.from({ length: totalSlides }).map((_, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setCurrentIndex(Math.min(idx, maxIndex))}
+                    aria-label={`Go to slide ${idx + 1}`}
+                    className={`h-2 transition-all rounded-full cursor-pointer ${
+                      currentIndex === idx
+                        ? 'w-6 bg-[#16A34A]'
+                        : 'w-2 bg-slate-300 hover:bg-slate-400'
+                    }`}
+                  />
+                ))}
+              </div>
+
+              {/* Next Arrow */}
+              <button
+                type="button"
+                onClick={handleNext}
+                aria-label="Next news slide"
+                className="w-9 h-9 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-600 hover:border-slate-400 hover:text-slate-900 transition-all shadow-2xs cursor-pointer"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
             </div>
-
-            {/* Next Arrow */}
-            <button
-              type="button"
-              onClick={handleNext}
-              aria-label="Next news slide"
-              className="w-9 h-9 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-600 hover:border-slate-400 hover:text-slate-900 transition-all shadow-2xs cursor-pointer"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
+          )}
         </ScrollReveal>
       </div>
     </section>
