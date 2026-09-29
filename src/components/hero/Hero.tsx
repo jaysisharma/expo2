@@ -70,6 +70,38 @@ export function Hero() {
           className="absolute inset-0 bg-gradient-to-r from-[#071322]/95 via-[#071322]/50 to-transparent z-[2] pointer-events-none"
         />
 
+        {/* ── TOP-RIGHT PROMINENT FLOATING CINEMATIC PLAY BUTTON ────────────── */}
+        <div className="absolute top-5 sm:top-8 lg:top-10 right-4 sm:right-8 lg:right-12 z-20">
+          <button
+            type="button"
+            onClick={() => setIsVideoOpen(true)}
+            aria-label="Play Drone Showcase Video by Saligram Dulal"
+            className="group relative flex items-center gap-3 sm:gap-3.5 pl-2.5 sm:pl-3 pr-3.5 sm:pr-5 py-2 sm:py-2.5 rounded-full bg-slate-950/75 hover:bg-slate-950/95 backdrop-blur-xl border border-white/20 hover:border-[#00E599]/70 shadow-[0_12px_32px_rgba(0,0,0,0.6),0_0_20px_rgba(0,229,153,0.2)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.8),0_0_35px_rgba(0,229,153,0.45)] transition-all duration-300 active:scale-95 cursor-pointer text-left"
+          >
+            {/* Glowing Pulsing Play Orb */}
+            <div className="relative flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-gradient-to-tr from-[#00A37A] to-[#00E599] text-slate-950 shadow-[0_0_20px_rgba(0,229,153,0.6)] group-hover:scale-110 group-hover:bg-[#00ffa6] transition-all duration-300 shrink-0">
+              <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-current ml-0.5" />
+              {/* Outer Ping Ring */}
+              <span className="absolute -inset-1 rounded-full border-2 border-[#00E599] opacity-75 animate-ping pointer-events-none" />
+            </div>
+
+            {/* Typography Docket */}
+            <div className="flex flex-col">
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs sm:text-sm font-extrabold text-white tracking-wider uppercase font-inter-tight group-hover:text-[#00E599] transition-colors">
+                  WATCH FILM
+                </span>
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold font-mono uppercase bg-[#00E599]/20 text-[#00E599] border border-[#00E599]/40">
+                  4K
+                </span>
+              </div>
+              <span className="text-[10px] sm:text-[11px] text-slate-300 font-medium tracking-tight">
+                Drone Film · Saligram Dulal
+              </span>
+            </div>
+          </button>
+        </div>
+
         {/* ── 2. HERO FOREGROUND CONTENT (Anchored to Bottom-Left) ─────────── */}
         <div className="relative z-10 w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 mt-auto pt-24 sm:pt-32 pb-10 sm:pb-14 lg:pb-16 flex flex-col lg:flex-row lg:items-end justify-between gap-8">
           {/* Left Column: Anchored Bottom-Left */}
