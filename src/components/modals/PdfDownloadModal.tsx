@@ -11,11 +11,82 @@ import {
   Mail,
   CheckCircle2,
   ArrowRight,
+  ArrowLeft,
+  Edit2,
+  Sparkles,
+  ShieldCheck,
+  RotateCcw,
 } from "lucide-react";
 
 export interface PdfModalEventDetail {
   pdfUrl: string;
   title?: string;
+}
+
+const PROFILE_STORAGE_KEY = "expo_download_profile";
+
+interface SavedProfile {
+  name: string;
+  company: string;
+  phone: string;
+  email: string;
+  savedAt?: string;
+}
+
+function loadSavedProfile(): SavedProfile | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(PROFILE_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed.name === "string" && parsed.name.trim() && parsed.email) {
+        return {
+          name: parsed.name.trim(),
+          company: parsed.company ? parsed.company.trim() : "",
+          phone: parsed.phone ? parsed.phone.trim() : "",
+          email: parsed.email ? parsed.email.trim() : "",
+          savedAt: parsed.savedAt,
+        };
+      }
+    }
+    // Fallback: check expo_pdf_leads if available
+    const rawLeads = localStorage.getItem("expo_pdf_leads");
+    if (rawLeads) {
+      const leads = JSON.parse(rawLeads);
+      if (Array.isArray(leads) && leads.length > 0) {
+        const last = leads[leads.length - 1];
+        if (last && last.name && last.name.trim() && last.email) {
+          return {
+            name: last.name.trim(),
+            company: last.company ? last.company.trim() : "",
+            phone: last.phone ? last.phone.trim() : "",
+            email: last.email ? last.email.trim() : "",
+          };
+        }
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return null;
+}
+
+function persistProfile(profile: { name: string; company: string; phone: string; email: string }) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(
+      PROFILE_STORAGE_KEY,
+      JSON.stringify({
+        name: profile.name.trim(),
+        company: profile.company.trim(),
+        phone: profile.phone.trim(),
+        email: profile.email.trim(),
+        savedAt: new Date().toISOString(),
+      })
+    );
+  } catch {
+    // ignore
+  }
 }
 
 export function triggerPdfDownloadModal(pdfUrl: string, title?: string) {
@@ -42,6 +113,8 @@ export default function PdfDownloadModal() {
     email: "",
   });
 
+  const [hasSavedProfile, setHasSavedProfile] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [submittedName, setSubmittedName] = useState<string>("");
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -58,12 +131,21 @@ export default function PdfDownloadModal() {
       }
       setIsSuccess(false);
       setErrors({});
-      setFormData({
-        name: "",
-        company: "",
-        phone: "",
-        email: "",
-      });
+
+      const saved = loadSavedProfile();
+      if (saved && saved.name && saved.email) {
+        setFormData({
+          name: saved.name,
+          company: saved.company || "",
+          phone: saved.phone || "",
+          email: saved.email || "",
+        });
+        setHasSavedProfile(true);
+        setIsEditing(false);
+      } else {
+        setHasSavedProfile(false);
+        setIsEditing(true);
+      }
       setIsOpen(true);
     };
 
@@ -95,7 +177,7 @@ export default function PdfDownloadModal() {
 
   const getDownloadMetadata = (url: string) => {
     const lower = url.toLowerCase();
-    if (lower.includes("booking") || lower.includes("form")) {
+    if (lower.includes("booking") || (lower.includes("form") && !lower.includes("challenge") && !lower.includes("competition"))) {
       return {
         downloadUrl: "/files/booking-form.pdf",
         filename: "Himalayan-Expo-Stall-Booking-Form.pdf",
@@ -105,6 +187,18 @@ export default function PdfDownloadModal() {
       return {
         downloadUrl: "/files/sponsors-sheet.pdf",
         filename: "Himalayan-Expo-Sponsorship-Rates-Sheet.pdf",
+      };
+    }
+    if (lower.includes("competition")) {
+      return {
+        downloadUrl: "/files/competition.pdf",
+        filename: "Himalayan-Expo-Competition.pdf",
+      };
+    }
+    if (lower.includes("challenge")) {
+      return {
+        downloadUrl: "/files/challenge.pdf",
+        filename: "Himalayan-Expo-Challenge.pdf",
       };
     }
     return {
@@ -157,14 +251,7 @@ export default function PdfDownloadModal() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validate()) return;
-
-    // 1. Trigger the download immediately within the trusted user event!
-    downloadPdfFile(pdfUrl);
-
-    // 2. Save lead locally
+  const logLead = (source: string) => {
     try {
       const existingLeads = JSON.parse(localStorage.getItem("expo_pdf_leads") || "[]");
       const newLead = {
@@ -172,25 +259,69 @@ export default function PdfDownloadModal() {
         pdfUrl,
         documentTitle,
         timestamp: new Date().toISOString(),
+        source,
       };
       localStorage.setItem("expo_pdf_leads", JSON.stringify([...existingLeads, newLead]));
     } catch {
       // LocalStorage fallback
     }
+  };
 
-    // 3. Retain name for confirmation and clear text fields
+  const handleInstantDownload = () => {
+    setIsSubmitting(true);
+
+    // 1. Trigger the download immediately within user gesture
+    downloadPdfFile(pdfUrl);
+
+    // 2. Log lead locally
+    logLead("saved_profile_1click");
+
+    // 3. Keep profile fresh
+    persistProfile(formData);
+
     setSubmittedName(formData.name.trim());
+    setIsSubmitting(false);
+    setIsSuccess(true);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validate()) return;
+
+    setIsSubmitting(true);
+
+    // 1. Trigger download
+    downloadPdfFile(pdfUrl);
+
+    // 2. Save lead locally
+    logLead(hasSavedProfile ? "profile_update_download" : "new_lead_download");
+
+    // 3. Persist profile so user never has to refill again!
+    persistProfile(formData);
+    setHasSavedProfile(true);
+    setIsEditing(false);
+
+    // 4. Show success screen
+    setSubmittedName(formData.name.trim());
+    setErrors({});
+    setIsSubmitting(false);
+    setIsSuccess(true);
+  };
+
+  const handleClearSavedProfile = () => {
+    try {
+      localStorage.removeItem(PROFILE_STORAGE_KEY);
+    } catch {
+      // ignore
+    }
     setFormData({
       name: "",
       company: "",
       phone: "",
       email: "",
     });
-    setErrors({});
-
-    // 4. Immediately transition to success confirmation
-    setIsSubmitting(false);
-    setIsSuccess(true);
+    setHasSavedProfile(false);
+    setIsEditing(true);
   };
 
   const handleClose = (e?: React.MouseEvent) => {
@@ -202,12 +333,23 @@ export default function PdfDownloadModal() {
     setIsSuccess(false);
     setIsSubmitting(false);
     setErrors({});
-    setFormData({
-      name: "",
-      company: "",
-      phone: "",
-      email: "",
-    });
+
+    // Keep saved profile intact if one exists
+    const saved = loadSavedProfile();
+    if (saved) {
+      setFormData(saved);
+      setHasSavedProfile(true);
+      setIsEditing(false);
+    } else {
+      setFormData({
+        name: "",
+        company: "",
+        phone: "",
+        email: "",
+      });
+      setHasSavedProfile(false);
+      setIsEditing(true);
+    }
   };
 
   useEffect(() => {
@@ -244,7 +386,7 @@ export default function PdfDownloadModal() {
             data-pdf-modal="true"
             className="relative w-full max-w-lg bg-[#061A2A] border border-white/20 rounded-3xl p-6 sm:p-8 text-white shadow-2xl overflow-hidden font-sans z-10"
           >
-            {/* Close Button - elevated z-index (z-50) so it is always above all content */}
+            {/* Close Button */}
             <button
               type="button"
               onClick={handleClose}
@@ -256,155 +398,270 @@ export default function PdfDownloadModal() {
 
             {/* Modal Content */}
             {!isSuccess ? (
-              <div className="space-y-6 relative z-10">
-                {/* Header */}
-                <div className="space-y-1.5">
-                  <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                    Download PDF
-                  </h3>
-
-                  <p className="text-xs sm:text-sm text-slate-300 font-normal leading-relaxed">
-                    Enter your details below to download the official expo document.
-                  </p>
-                </div>
-
-                {/* Form */}
-                <form onSubmit={handleSubmit} className="space-y-3.5">
-                  {/* Name */}
-                  <div className="space-y-1">
-                    <label className="block text-xs font-mono font-semibold text-slate-300 uppercase">
-                      Full Name <span className="text-[#10B981]">*</span>
-                    </label>
-                    <div className="relative">
-                      <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                      <input
-                        type="text"
-                        placeholder="e.g. Ramesh Shrestha"
-                        value={formData.name}
-                        onChange={(e) =>
-                          setFormData({ ...formData, name: e.target.value })
-                        }
-                        className={`w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/10 border text-sm text-white placeholder:text-slate-500 focus:outline-none transition-all ${
-                          errors.name
-                            ? "border-red-400 focus:border-red-400"
-                            : "border-white/15 focus:border-[#10B981] focus:bg-white/15"
-                        }`}
-                      />
+              hasSavedProfile && !isEditing ? (
+                /* ── 1-CLICK INSTANT DOWNLOAD FOR RETURNING USERS ── */
+                <div className="space-y-5 relative z-10">
+                  {/* Header */}
+                  <div className="space-y-1.5">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-mono">
+                      <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>Details Saved • 1-Click Access</span>
                     </div>
-                    {errors.name && (
-                      <p className="text-[11px] font-mono text-red-400">{errors.name}</p>
-                    )}
+
+                    <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight pt-1">
+                      {documentTitle}
+                    </h3>
+
+                    <p className="text-xs sm:text-sm text-slate-300 font-normal leading-relaxed">
+                      Welcome back, <span className="font-semibold text-white">{formData.name}</span>! We remembered your details so you don&apos;t have to refill the form.
+                    </p>
                   </div>
 
-                  {/* Company Name */}
-                  <div className="space-y-1">
-                    <label className="block text-xs font-mono font-semibold text-slate-300 uppercase">
-                      Company / Organization Name <span className="text-[#10B981]">*</span>
-                    </label>
-                    <div className="relative">
-                      <Building2 className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                      <input
-                        type="text"
-                        placeholder="e.g. Himalaya Hydropower Ltd."
-                        value={formData.company}
-                        onChange={(e) =>
-                          setFormData({ ...formData, company: e.target.value })
-                        }
-                        className={`w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/10 border text-sm text-white placeholder:text-slate-500 focus:outline-none transition-all ${
-                          errors.company
-                            ? "border-red-400 focus:border-red-400"
-                            : "border-white/15 focus:border-[#10B981] focus:bg-white/15"
-                        }`}
-                      />
-                    </div>
-                    {errors.company && (
-                      <p className="text-[11px] font-mono text-red-400">
-                        {errors.company}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Phone & Email Row */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                    {/* Phone Number */}
-                    <div className="space-y-1">
-                      <label className="block text-xs font-mono font-semibold text-slate-300 uppercase">
-                        Phone Number <span className="text-[#10B981]">*</span>
-                      </label>
-                      <div className="relative">
-                        <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                        <input
-                          type="tel"
-                          placeholder="+977 98XXXXXXXX"
-                          value={formData.phone}
-                          onChange={(e) =>
-                            setFormData({ ...formData, phone: e.target.value })
-                          }
-                          className={`w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/10 border text-sm text-white placeholder:text-slate-500 focus:outline-none transition-all ${
-                            errors.phone
-                              ? "border-red-400 focus:border-red-400"
-                              : "border-white/15 focus:border-[#10B981] focus:bg-white/15"
-                          }`}
-                        />
+                  {/* Saved Details Snapshot Card */}
+                  <div className="p-4 rounded-2xl bg-white/[0.06] border border-white/15 backdrop-blur-sm space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                        <span className="text-[11px] font-mono uppercase text-slate-300 font-semibold tracking-wider">
+                          Downloading As
+                        </span>
                       </div>
-                      {errors.phone && (
-                        <p className="text-[11px] font-mono text-red-400">
-                          {errors.phone}
-                        </p>
-                      )}
+                      <button
+                        type="button"
+                        onClick={() => setIsEditing(true)}
+                        className="text-xs text-emerald-400 hover:text-emerald-300 flex items-center gap-1.5 cursor-pointer font-medium hover:underline transition-all"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                        <span>Edit details</span>
+                      </button>
                     </div>
 
-                    {/* Email */}
-                    <div className="space-y-1">
-                      <label className="block text-xs font-mono font-semibold text-slate-300 uppercase">
-                        Email Address <span className="text-[#10B981]">*</span>
-                      </label>
-                      <div className="relative">
-                        <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                        <input
-                          type="email"
-                          placeholder="name@company.com"
-                          value={formData.email}
-                          onChange={(e) =>
-                            setFormData({ ...formData, email: e.target.value })
-                          }
-                          className={`w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/10 border text-sm text-white placeholder:text-slate-500 focus:outline-none transition-all ${
-                            errors.email
-                              ? "border-red-400 focus:border-red-400"
-                              : "border-white/15 focus:border-[#10B981] focus:bg-white/15"
-                          }`}
-                        />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-200">
+                      <div className="flex items-center gap-2 bg-white/5 rounded-lg px-2.5 py-1.5 border border-white/5 overflow-hidden">
+                        <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        <span className="truncate">{formData.name}</span>
                       </div>
-                      {errors.email && (
-                        <p className="text-[11px] font-mono text-red-400">
-                          {errors.email}
-                        </p>
-                      )}
+                      <div className="flex items-center gap-2 bg-white/5 rounded-lg px-2.5 py-1.5 border border-white/5 overflow-hidden">
+                        <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        <span className="truncate">{formData.company || "Not provided"}</span>
+                      </div>
+                      <div className="flex items-center gap-2 bg-white/5 rounded-lg px-2.5 py-1.5 border border-white/5 overflow-hidden">
+                        <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        <span className="truncate">{formData.email}</span>
+                      </div>
+                      <div className="flex items-center gap-2 bg-white/5 rounded-lg px-2.5 py-1.5 border border-white/5 overflow-hidden">
+                        <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        <span className="truncate font-mono">{formData.phone || "Not provided"}</span>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Submit Button */}
-                  <div className="pt-2">
+                  {/* Instant Download Action */}
+                  <div className="pt-1 space-y-3">
                     <button
-                      type="submit"
+                      type="button"
+                      onClick={handleInstantDownload}
                       disabled={isSubmitting}
-                      className="w-full py-3.5 px-6 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-200 shadow-md hover:shadow-lg active:scale-98 cursor-pointer disabled:opacity-50"
+                      className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-200 shadow-lg shadow-emerald-500/25 active:scale-98 cursor-pointer disabled:opacity-50"
                     >
                       {isSubmitting ? (
-                        <span>Downloading...</span>
+                        <span>Starting Download...</span>
                       ) : (
                         <>
-                          <Download className="w-4 h-4 text-slate-900" />
-                          <span>Download PDF</span>
-                          <ArrowRight className="w-4 h-4 text-slate-900" />
+                          <Download className="w-4 h-4 text-white" />
+                          <span>Download Now (1-Click)</span>
+                          <ArrowRight className="w-4 h-4 text-white" />
                         </>
                       )}
                     </button>
+
+                    <div className="flex items-center justify-between text-[11px] text-slate-400 px-1">
+                      <span className="flex items-center gap-1.5 text-slate-400">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        Saved on this device
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleClearSavedProfile}
+                        className="text-slate-400 hover:text-red-400 transition-colors flex items-center gap-1 cursor-pointer"
+                        title="Clear saved details on this device"
+                      >
+                        <RotateCcw className="w-3 h-3" />
+                        <span>Forget me</span>
+                      </button>
+                    </div>
                   </div>
-                </form>
-              </div>
+                </div>
+              ) : (
+                /* ── REGULAR FORM OR EDITING MODE ── */
+                <div className="space-y-6 relative z-10">
+                  {/* Header */}
+                  <div className="space-y-1.5">
+                    {hasSavedProfile && (
+                      <button
+                        type="button"
+                        onClick={() => setIsEditing(false)}
+                        className="inline-flex items-center gap-1 text-xs text-emerald-400 hover:text-emerald-300 font-medium mb-1 cursor-pointer transition-colors"
+                      >
+                        <ArrowLeft className="w-3.5 h-3.5" />
+                        <span>Back to 1-Click Download</span>
+                      </button>
+                    )}
+
+                    <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+                      {hasSavedProfile ? "Edit Your Details" : "Download PDF"}
+                    </h3>
+
+                    <p className="text-xs sm:text-sm text-slate-300 font-normal leading-relaxed">
+                      {hasSavedProfile
+                        ? "Update your details below for this and future downloads."
+                        : "Enter your details below. We'll remember you so you never have to re-enter them."}
+                    </p>
+                  </div>
+
+                  {/* Form */}
+                  <form onSubmit={handleSubmit} className="space-y-3.5">
+                    {/* Name */}
+                    <div className="space-y-1">
+                      <label className="block text-xs font-mono font-semibold text-slate-300 uppercase">
+                        Full Name <span className="text-[#10B981]">*</span>
+                      </label>
+                      <div className="relative">
+                        <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                        <input
+                          type="text"
+                          placeholder="e.g. Ramesh Shrestha"
+                          value={formData.name}
+                          onChange={(e) =>
+                            setFormData({ ...formData, name: e.target.value })
+                          }
+                          className={`w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/10 border text-sm text-white placeholder:text-slate-500 focus:outline-none transition-all ${
+                            errors.name
+                              ? "border-red-400 focus:border-red-400"
+                              : "border-white/15 focus:border-[#10B981] focus:bg-white/15"
+                          }`}
+                        />
+                      </div>
+                      {errors.name && (
+                        <p className="text-[11px] font-mono text-red-400">{errors.name}</p>
+                      )}
+                    </div>
+
+                    {/* Company Name */}
+                    <div className="space-y-1">
+                      <label className="block text-xs font-mono font-semibold text-slate-300 uppercase">
+                        Company / Organization Name <span className="text-[#10B981]">*</span>
+                      </label>
+                      <div className="relative">
+                        <Building2 className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                        <input
+                          type="text"
+                          placeholder="e.g. Himalaya Hydropower Ltd."
+                          value={formData.company}
+                          onChange={(e) =>
+                            setFormData({ ...formData, company: e.target.value })
+                          }
+                          className={`w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/10 border text-sm text-white placeholder:text-slate-500 focus:outline-none transition-all ${
+                            errors.company
+                              ? "border-red-400 focus:border-red-400"
+                              : "border-white/15 focus:border-[#10B981] focus:bg-white/15"
+                          }`}
+                        />
+                      </div>
+                      {errors.company && (
+                        <p className="text-[11px] font-mono text-red-400">
+                          {errors.company}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Phone & Email Row */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                      {/* Phone Number */}
+                      <div className="space-y-1">
+                        <label className="block text-xs font-mono font-semibold text-slate-300 uppercase">
+                          Phone Number <span className="text-[#10B981]">*</span>
+                        </label>
+                        <div className="relative">
+                          <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                          <input
+                            type="tel"
+                            placeholder="+977 98XXXXXXXX"
+                            value={formData.phone}
+                            onChange={(e) =>
+                              setFormData({ ...formData, phone: e.target.value })
+                            }
+                            className={`w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/10 border text-sm text-white placeholder:text-slate-500 focus:outline-none transition-all ${
+                              errors.phone
+                                ? "border-red-400 focus:border-red-400"
+                                : "border-white/15 focus:border-[#10B981] focus:bg-white/15"
+                            }`}
+                          />
+                        </div>
+                        {errors.phone && (
+                          <p className="text-[11px] font-mono text-red-400">
+                            {errors.phone}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Email */}
+                      <div className="space-y-1">
+                        <label className="block text-xs font-mono font-semibold text-slate-300 uppercase">
+                          Email Address <span className="text-[#10B981]">*</span>
+                        </label>
+                        <div className="relative">
+                          <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                          <input
+                            type="email"
+                            placeholder="name@company.com"
+                            value={formData.email}
+                            onChange={(e) =>
+                              setFormData({ ...formData, email: e.target.value })
+                            }
+                            className={`w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/10 border text-sm text-white placeholder:text-slate-500 focus:outline-none transition-all ${
+                              errors.email
+                                ? "border-red-400 focus:border-red-400"
+                                : "border-white/15 focus:border-[#10B981] focus:bg-white/15"
+                            }`}
+                          />
+                        </div>
+                        {errors.email && (
+                          <p className="text-[11px] font-mono text-red-400">
+                            {errors.email}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-[11px] text-slate-400 pt-1">
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      <span>Details are remembered securely on this device for 1-click downloads.</span>
+                    </div>
+
+                    {/* Submit Button */}
+                    <div className="pt-2">
+                      <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="w-full py-3.5 px-6 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-200 shadow-md hover:shadow-lg active:scale-98 cursor-pointer disabled:opacity-50"
+                      >
+                        {isSubmitting ? (
+                          <span>Starting Download...</span>
+                        ) : (
+                          <>
+                            <Download className="w-4 h-4 text-slate-900" />
+                            <span>{hasSavedProfile ? "Update & Download" : "Download & Remember Me"}</span>
+                            <ArrowRight className="w-4 h-4 text-slate-900" />
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )
             ) : (
-              /* Success State */
+              /* ── SUCCESS STATE ── */
               <div className="py-6 text-center space-y-4 relative z-10" data-pdf-modal="true">
                 <div className="w-16 h-16 rounded-full bg-emerald-500/20 border-2 border-[#10B981] text-[#34D399] flex items-center justify-center mx-auto shadow-lg">
                   <CheckCircle2 className="w-9 h-9" />
@@ -415,7 +672,7 @@ export default function PdfDownloadModal() {
                     Thank you{submittedName ? `, ${submittedName}` : ""}!
                   </h3>
                   <p className="text-xs sm:text-sm text-slate-300 font-normal max-w-sm mx-auto">
-                    Your PDF is downloading. If it didn&apos;t start, click below.
+                    Your PDF download has started. We&apos;ve remembered your details so future downloads are just 1 click away!
                   </p>
                 </div>
 
@@ -434,7 +691,7 @@ export default function PdfDownloadModal() {
                     onClick={handleClose}
                     className="w-full py-2.5 px-6 rounded-xl bg-white/10 hover:bg-white/20 text-slate-200 hover:text-white font-semibold text-xs uppercase tracking-wider transition-all cursor-pointer border border-white/10"
                   >
-                    Close Window
+                    Done
                   </button>
 
                   <a
@@ -445,7 +702,7 @@ export default function PdfDownloadModal() {
                     data-no-intercept="true"
                     className="inline-flex items-center gap-1.5 text-xs text-sky-400 hover:text-sky-300 font-mono underline cursor-pointer pt-1"
                   >
-                    <span>Open in new tab ↗</span>
+                    <span>Open directly in new tab ↗</span>
                   </a>
                 </div>
               </div>

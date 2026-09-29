@@ -226,6 +226,23 @@ export default function DelegateRegistration() {
           },
         }),
       });
+
+      // ── Remember attendee profile for instant 1-click downloads ──────────
+      try {
+        localStorage.setItem(
+          "expo_download_profile",
+          JSON.stringify({
+            name: formData.name.trim(),
+            company: formData.organization.trim(),
+            phone: formData.phone.trim(),
+            email: formData.email.trim(),
+            savedAt: new Date().toISOString(),
+          })
+        );
+      } catch {
+        // ignore
+      }
+
       // ── Send pass by email ────────────────────────────────────────
       setEmailSending(true);
       const resolvedRole =
