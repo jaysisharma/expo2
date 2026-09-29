@@ -195,11 +195,11 @@ function buildEmailHtml(opts: {
   role: string;
   qrTargetUrl: string;
 }) {
-  const { name, organization, jobTitle, stallNumber, phone, passId, securityChecksum, passType, role, qrTargetUrl } = opts;
+  const { name, organization, jobTitle, stallNumber, passId, securityChecksum, passType, role, qrTargetUrl } = opts;
   const isExhibitor = role === "exhibitor";
-  const isGala = role === "gala";
-  const headerBg = isExhibitor ? "#064e3b" : isGala ? "#2e1065" : "#04281E";
-  const accent = isExhibitor ? "#10b981" : isGala ? "#a78bfa" : "#12B981";
+  const badgeColor = isExhibitor ? "#065f46" : "#0f172a";
+  const badgeBg = isExhibitor ? "#ecfdf5" : "#f1f5f9";
+  const badgeBorder = isExhibitor ? "#a7f3d0" : "#e2e8f0";
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -208,164 +208,133 @@ function buildEmailHtml(opts: {
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Your Official Entry Pass — Himalayan Green Energy Expo 2027</title>
 </head>
-<body style="margin:0;padding:0;background:#eef2f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#eef2f6;padding:36px 12px;">
+<body style="margin:0;padding:0;background-color:#f4f6f8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;color:#1e293b;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f6f8;padding:36px 12px;">
     <tr>
       <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:18px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,0.08);border:1px solid #e2e8f0;">
+        <table width="580" cellpadding="0" cellspacing="0" style="max-width:580px;width:100%;background-color:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e2e8f0;box-shadow:0 4px 20px rgba(0,0,0,0.04);">
           
-          <!-- Event Header -->
+          <!-- Minimal Brand Header -->
           <tr>
-            <td style="background:${headerBg};padding:32px 36px 26px;text-align:center;">
-              <p style="margin:0 0 6px;font-size:11px;letter-spacing:0.2em;color:${accent};font-weight:800;text-transform:uppercase;">IPPAN · OFFICIAL ACCREDITATION</p>
-              <h1 style="margin:0;font-size:24px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;line-height:1.2;">Himalayan Green Energy Expo</h1>
-              <p style="margin:4px 0 0;font-size:14px;color:#94a3b8;font-weight:500;">5th Edition · 17–19 January 2027 (Magh 3–5, 2083)</p>
-              <p style="margin:4px 0 0;font-size:12px;color:#cbd5e1;">Bhrikutimandap Exhibition Hall, Kathmandu, Nepal</p>
-            </td>
-          </tr>
-
-          <!-- Success Banner -->
-          <tr>
-            <td style="background:#f0fdf4;border-bottom:1px solid #bbf7d0;padding:16px 24px;text-align:center;">
-              <p style="margin:0;font-size:14px;font-weight:700;color:#15803d;">
-                ✓ Registration Confirmed &amp; Official Pass Issued
-              </p>
-              <p style="margin:4px 0 0;font-size:12px;color:#166534;">
-                Dear <strong>${escapeXml(name)}</strong>, your digital badge and entrance QR code are ready below.
-              </p>
-            </td>
-          </tr>
-
-          <!-- Primary Badge Showcase -->
-          <tr>
-            <td style="padding:32px 24px 20px;text-align:center;background:#ffffff;">
-              <p style="margin:0 0 16px;font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#64748b;">
-                Official Digital Badge &amp; Gate Pass
-              </p>
-              
-              <!-- Badge Image (embedded via CID) -->
-              <div style="display:inline-block;border-radius:16px;box-shadow:0 12px 35px rgba(0,0,0,0.15);overflow:hidden;border:1px solid #cbd5e1;background:#ffffff;">
-                <img src="cid:pass_badge_image" width="320" alt="Official Pass Badge" style="display:block;width:320px;max-width:100%;height:auto;margin:0 auto;border:0;outline:none;" />
+            <td style="background-color:#04281E;padding:28px 32px;text-align:center;">
+              <div style="font-size:11px;font-weight:700;color:#10b981;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;">
+                Himalayan Green Energy Expo 2027
               </div>
+              <h1 style="margin:0;font-size:22px;font-weight:800;color:#ffffff;letter-spacing:-0.3px;">
+                Official Entry Accreditation
+              </h1>
+              <div style="margin-top:6px;font-size:13px;color:#94a3b8;">
+                17–19 January 2027 &bull; Bhrikutimandap Exhibition Hall, Kathmandu
+              </div>
+            </td>
+          </tr>
 
-              <p style="margin:16px auto 0;max-width:420px;font-size:12px;color:#64748b;line-height:1.5;">
-                📎 <strong>Badge attached:</strong> The high-resolution pass is also attached to this email as <code>Official-Pass-Badge.png</code> so you can save it to your phone photos or print it.
+          <!-- Greeting Body -->
+          <tr>
+            <td style="padding:28px 32px 16px;">
+              <p style="margin:0 0 12px;font-size:15px;color:#0f172a;line-height:1.6;">
+                Dear <strong>${escapeXml(name)}</strong>,
+              </p>
+              <p style="margin:0;font-size:14px;color:#475569;line-height:1.6;">
+                Your registration for the <strong>Himalayan Green Energy Expo 2027</strong> is confirmed. Below is your official digital entry pass and rapid gate admission QR code.
               </p>
             </td>
           </tr>
 
-          <!-- Standalone High-Speed Entry QR Code Section -->
+          <!-- Primary Scannable Pass Ticket -->
           <tr>
-            <td style="padding:0 24px 24px;">
-              <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border:2px dashed #cbd5e1;border-radius:14px;padding:22px;text-align:center;">
+            <td style="padding:0 32px 24px;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:24px 20px;text-align:center;">
                 <tr>
                   <td align="center">
-                    <p style="margin:0 0 8px;font-size:11px;font-weight:800;letter-spacing:0.15em;text-transform:uppercase;color:#007A5E;">
-                      Fast-Track Gate Scan QR
-                    </p>
+                    
+                    <!-- Role Pill Badge -->
+                    <div style="display:inline-block;padding:4px 14px;background-color:${badgeBg};color:${badgeColor};border:1px solid ${badgeBorder};border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:12px;">
+                      ${escapeXml(passType)}
+                    </div>
 
-                    <!-- Attendee Name & Role Banner -->
-                    <p style="margin:0 0 2px;font-size:17px;font-weight:800;color:#0f172a;">
+                    <!-- Attendee Name & Org -->
+                    <div style="font-size:20px;font-weight:800;color:#0f172a;letter-spacing:-0.3px;margin-bottom:4px;">
                       ${escapeXml(name)}
-                    </p>
-                    <p style="margin:0 0 2px;font-size:13px;font-weight:600;color:#087EA4;">
-                      ${escapeXml(organization)}
-                    </p>
-                    <p style="margin:0 0 4px;font-size:12px;font-family:monospace;font-weight:700;color:#64748b;">
-                      ID: <span style="color:#007A5E;">${escapeXml(passId)}</span> · ${escapeXml(passType)}
-                    </p>
-                    <p style="margin:0 0 12px;font-size:11px;font-family:monospace;font-weight:600;color:#15803d;">
-                      🔒 SEC CODE: <span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:4px;border:1px solid #86efac;">${escapeXml(securityChecksum)}</span> (Anti-Counterfeit)
-                    </p>
+                    </div>
+                    <div style="font-size:13px;color:#475569;font-weight:600;margin-bottom:16px;">
+                      ${escapeXml(organization)}${jobTitle ? ` &bull; ${escapeXml(jobTitle)}` : ""}
+                    </div>
 
-                    <!-- QR Image Box -->
-                    <div style="display:inline-block;background:#ffffff;padding:12px;border-radius:14px;border:1px solid #e2e8f0;box-shadow:0 4px 12px rgba(0,0,0,0.06);">
+                    <!-- Scannable QR Code -->
+                    <div style="display:inline-block;background-color:#ffffff;padding:12px;border-radius:12px;border:1px solid #e2e8f0;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
                       <a href="${qrTargetUrl}" target="_blank" style="display:block;text-decoration:none;">
-                        <img src="cid:pass_qr_code" width="160" height="160" alt="Entry QR" style="display:block;width:160px;height:160px;margin:0 auto;border:0;" />
+                        <img src="cid:pass_qr_code" width="160" height="160" alt="Gate Admission QR" style="display:block;width:160px;height:160px;margin:0 auto;border:0;" />
                       </a>
                     </div>
 
-                    <!-- Direct Open Pass & Save to Phone Button -->
-                    <div style="margin-top:14px;">
-                      <a href="${qrTargetUrl}" target="_blank" style="display:inline-block;background:#007A5E;color:#ffffff;text-decoration:none;font-size:13px;font-weight:700;padding:11px 22px;border-radius:10px;box-shadow:0 3px 8px rgba(0,122,94,0.3);">
-                        📱 Open Digital Pass &amp; Save to Phone &rarr;
+                    <!-- Pass ID & Security Code -->
+                    <div style="margin-top:12px;font-family:monospace;font-size:12px;color:#475569;font-weight:600;">
+                      <span>ID: <strong>${escapeXml(passId)}</strong></span>
+                      <span style="color:#cbd5e1;margin:0 6px;">&bull;</span>
+                      <span>SEC: <strong style="color:#047857;">${escapeXml(securityChecksum)}</strong></span>
+                    </div>
+
+                    <!-- Action Button -->
+                    <div style="margin-top:16px;">
+                      <a href="${qrTargetUrl}" target="_blank" style="display:inline-block;background-color:#04281E;color:#ffffff;text-decoration:none;font-size:13px;font-weight:700;padding:11px 26px;border-radius:8px;box-shadow:0 2px 6px rgba(4,40,30,0.25);">
+                        View Digital Pass &rarr;
                       </a>
                     </div>
 
-                    <p style="margin:10px 0 0;font-size:11px;color:#64748b;max-width:380px;line-height:1.4;">
-                      Scan this encrypted QR code with your phone camera or tap the button above to view your verified credentials and save the contact / pass badge to your phone.
-                    </p>
                   </td>
                 </tr>
               </table>
             </td>
           </tr>
 
-          <!-- Attendee Information Card -->
+          <!-- Structured Details Table -->
           <tr>
-            <td style="padding:0 24px 24px;">
-              <table width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;">
-                <tr style="background:#f8fafc;">
-                  <td colspan="2" style="padding:12px 18px;border-bottom:1px solid #e2e8f0;">
-                    <p style="margin:0;font-size:12px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:#334155;">Accreditation Details</p>
+            <td style="padding:0 32px 24px;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;font-size:13px;">
+                <tr style="background-color:#f8fafc;">
+                  <td colspan="2" style="padding:10px 16px;border-bottom:1px solid #e2e8f0;font-size:11px;font-weight:700;color:#64748b;letter-spacing:0.5px;text-transform:uppercase;">
+                    Credential Summary
                   </td>
                 </tr>
                 <tr>
-                  <td style="padding:12px 18px;border-bottom:1px solid #f1f5f9;width:38%;font-size:12px;color:#64748b;font-weight:600;">Attendee Name</td>
-                  <td style="padding:12px 18px;border-bottom:1px solid #f1f5f9;font-size:14px;color:#0f172a;font-weight:700;">${escapeXml(name)}</td>
+                  <td style="padding:10px 16px;border-bottom:1px solid #f1f5f9;color:#64748b;width:38%;">Attendee</td>
+                  <td style="padding:10px 16px;border-bottom:1px solid #f1f5f9;color:#0f172a;font-weight:600;">${escapeXml(name)}</td>
                 </tr>
                 <tr>
-                  <td style="padding:12px 18px;border-bottom:1px solid #f1f5f9;font-size:12px;color:#64748b;font-weight:600;">Pass ID</td>
-                  <td style="padding:12px 18px;border-bottom:1px solid #f1f5f9;font-size:13px;color:#007A5E;font-family:monospace;font-weight:700;">${escapeXml(passId)}</td>
+                  <td style="padding:10px 16px;border-bottom:1px solid #f1f5f9;color:#64748b;">Organization</td>
+                  <td style="padding:10px 16px;border-bottom:1px solid #f1f5f9;color:#0f172a;">${escapeXml(organization)}</td>
                 </tr>
-                <tr>
-                  <td style="padding:12px 18px;border-bottom:1px solid #f1f5f9;font-size:12px;color:#64748b;font-weight:600;">Security Code</td>
-                  <td style="padding:12px 18px;border-bottom:1px solid #f1f5f9;font-size:13px;color:#15803d;font-family:monospace;font-weight:700;">${escapeXml(securityChecksum)}</td>
-                </tr>
-                <tr>
-                  <td style="padding:12px 18px;border-bottom:1px solid #f1f5f9;font-size:12px;color:#64748b;font-weight:600;">Organization</td>
-                  <td style="padding:12px 18px;border-bottom:1px solid #f1f5f9;font-size:13px;color:#1e293b;font-weight:600;">${escapeXml(organization)}</td>
-                </tr>
-                ${jobTitle ? `
-                <tr>
-                  <td style="padding:12px 18px;border-bottom:1px solid #f1f5f9;font-size:12px;color:#64748b;font-weight:600;">Designation</td>
-                  <td style="padding:12px 18px;border-bottom:1px solid #f1f5f9;font-size:13px;color:#1e293b;">${escapeXml(jobTitle)}</td>
-                </tr>` : ""}
-                ${phone ? `
-                <tr>
-                  <td style="padding:12px 18px;border-bottom:1px solid #f1f5f9;font-size:12px;color:#64748b;font-weight:600;">Phone</td>
-                  <td style="padding:12px 18px;border-bottom:1px solid #f1f5f9;font-size:13px;color:#1e293b;">${escapeXml(phone)}</td>
-                </tr>` : ""}
                 ${stallNumber ? `
                 <tr>
-                  <td style="padding:12px 18px;border-bottom:1px solid #f1f5f9;font-size:12px;color:#64748b;font-weight:600;">Stall / Booth</td>
-                  <td style="padding:12px 18px;border-bottom:1px solid #f1f5f9;font-size:13px;color:#19A974;font-weight:700;">${escapeXml(stallNumber)}</td>
+                  <td style="padding:10px 16px;border-bottom:1px solid #f1f5f9;color:#64748b;">Stall / Booth</td>
+                  <td style="padding:10px 16px;border-bottom:1px solid #f1f5f9;color:#047857;font-weight:700;">${escapeXml(stallNumber)}</td>
                 </tr>` : ""}
                 <tr>
-                  <td style="padding:12px 18px;font-size:12px;color:#64748b;font-weight:600;">Pass Category</td>
-                  <td style="padding:12px 18px;font-size:13px;color:#1e293b;font-weight:600;">${escapeXml(passType)}</td>
+                  <td style="padding:10px 16px;border-bottom:1px solid #f1f5f9;color:#64748b;">Dates</td>
+                  <td style="padding:10px 16px;border-bottom:1px solid #f1f5f9;color:#0f172a;">17–19 January 2027 (10:00 AM – 6:00 PM)</td>
                 </tr>
-              </table>
-            </td>
-          </tr>
-                  <td style="padding:12px 18px;font-size:13px;color:#1e293b;font-weight:600;">${escapeXml(passType)}</td>
+                <tr>
+                  <td style="padding:10px 16px;color:#64748b;">Venue</td>
+                  <td style="padding:10px 16px;color:#0f172a;">Bhrikutimandap Exhibition Hall, Kathmandu</td>
                 </tr>
               </table>
             </td>
           </tr>
 
-          <!-- Entry Instructions -->
+          <!-- Quick Gate Guidelines (Clean, Minimal, No Clutter) -->
           <tr>
-            <td style="padding:0 24px 28px;">
-              <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:18px 20px;">
+            <td style="padding:0 32px 28px;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8fafc;border-radius:12px;padding:16px 20px;border:1px solid #e2e8f0;">
                 <tr>
                   <td>
-                    <p style="margin:0 0 10px;font-size:13px;font-weight:700;color:#15803d;">📋 Important Instructions for Expo Entry</p>
-                    <ul style="margin:0;padding-left:18px;font-size:12px;color:#166534;line-height:1.8;">
-                      <li>Present either this email, the attached badge PNG, or printout at the main entrance gate.</li>
-                      <li>Gate personnel will scan your QR code for rapid contactless accreditation.</li>
-                      <li>Please carry a valid government-issued photo ID or company business card.</li>
-                      <li>For questions or assistance, contact <a href="mailto:info@eventsolutionnepal.com.np" style="color:#007A5E;font-weight:700;text-decoration:none;">info@eventsolutionnepal.com.np</a>.</li>
+                    <div style="font-size:12px;font-weight:700;color:#0f172a;margin-bottom:8px;">
+                      Important Gate Instructions
+                    </div>
+                    <ul style="margin:0;padding-left:18px;font-size:12px;color:#475569;line-height:1.7;">
+                      <li>Present the QR code above on your mobile phone at any designated entrance.</li>
+                      <li>Your official pass badge (<code>Official-Pass-Badge.png</code>) is attached to this email for offline saving or printing.</li>
+                      <li>Please carry a valid government-issued photo ID or business card.</li>
                     </ul>
                   </td>
                 </tr>
@@ -373,18 +342,18 @@ function buildEmailHtml(opts: {
             </td>
           </tr>
 
-          <!-- Event Footer -->
+          <!-- Executive Footer -->
           <tr>
-            <td style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:22px 28px;text-align:center;">
-              <p style="margin:0;font-size:12px;color:#64748b;font-weight:600;">
-                Himalayan Green Energy Expo 2027
-              </p>
-              <p style="margin:4px 0 0;font-size:11px;color:#94a3b8;">
-                Jointly organized by Independent Power Producers&apos; Association, Nepal (IPPAN) &amp; Event Solution Pvt. Ltd.
-              </p>
-              <p style="margin:8px 0 0;font-size:10px;color:#cbd5e1;">
-                This is an automated credential delivery. Please do not reply directly to this email.
-              </p>
+            <td style="background-color:#f8fafc;border-top:1px solid #e2e8f0;padding:22px 32px;text-align:center;">
+              <div style="font-size:12px;font-weight:700;color:#334155;">
+                Organizing Secretariat &bull; Himalayan Green Energy Expo 2027
+              </div>
+              <div style="margin-top:4px;font-size:12px;color:#64748b;">
+                Inquiries: <a href="mailto:info@eventsolutionnepal.com.np" style="color:#047857;text-decoration:none;font-weight:600;">info@eventsolutionnepal.com.np</a> &bull; +977-9703606348
+              </div>
+              <div style="margin-top:8px;font-size:11px;color:#94a3b8;">
+                This is an automated credential delivery. Please do not reply directly to this message.
+              </div>
             </td>
           </tr>
 
@@ -488,10 +457,35 @@ export async function POST(req: NextRequest) {
     const fromName = process.env.SMTP_FROM_NAME || "Himalayan Green Energy Expo 2027";
     const fromEmail = process.env.SMTP_USER;
 
+    const textFallback = `
+Official Entry Pass — Himalayan Green Energy Expo 2027
+17–19 January 2027 · Bhrikutimandap Exhibition Hall, Kathmandu, Nepal
+
+Dear ${name},
+
+Your registration has been confirmed. Below are your accreditation details:
+
+• Attendee: ${name}
+• Organization: ${organization || "Himalayan Green Energy Expo"}
+• Pass Category: ${passType || "Trade Visitor Pass"}
+• Pass ID: ${passId}
+• Security Code: ${securityChecksum}
+${stallNumber ? `• Stall / Booth: ${stallNumber}\n` : ""}• Venue: Bhrikutimandap Exhibition Hall, Kathmandu
+• Dates: 17–19 January 2027 (10:00 AM – 6:00 PM)
+
+Digital Pass Link: ${qrTargetUrl}
+
+Please present your QR code or the attached official pass badge at the entrance gate for fast-track entry.
+
+Organizing Secretariat · Himalayan Green Energy Expo 2027
+Inquiries: info@eventsolutionnepal.com.np
+    `.trim();
+
     await transporter.sendMail({
       from: `"${fromName}" <${fromEmail}>`,
       to: email,
       subject: "Your Official Entry Pass | Himalayan Green Energy Expo 2027",
+      text: textFallback,
       html,
       attachments: [
         {
