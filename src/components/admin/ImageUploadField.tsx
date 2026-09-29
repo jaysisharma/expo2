@@ -82,15 +82,15 @@ export function ImageUploadField({
       {name && <input type="hidden" name={name} value={value} />}
 
       <div className="flex items-center justify-between">
-        <label className="block text-[11px] font-mono font-medium text-slate-700">
-          {label.toUpperCase()} {required && <span className="text-red-500">*</span>}
+        <label className="block text-xs font-semibold text-slate-700">
+          {label} {required && <span className="text-rose-500">*</span>}
         </label>
         <button
           type="button"
           onClick={() => setShowUrlInput(!showUrlInput)}
-          className="text-[10px] font-mono text-emerald-700 hover:text-emerald-800 flex items-center gap-1 cursor-pointer"
+          className="text-[11px] font-medium text-slate-500 hover:text-slate-800 flex items-center gap-1 cursor-pointer transition-colors"
         >
-          <LinkIcon className="w-3 h-3" />
+          <LinkIcon className="w-3 h-3 text-slate-400" />
           <span>{showUrlInput ? "Hide URL Input" : "Paste URL Instead"}</span>
         </button>
       </div>
@@ -98,9 +98,9 @@ export function ImageUploadField({
       {/* Main Upload Box / Preview Area */}
       <div className="space-y-2">
         {value ? (
-          <div className="relative rounded-xl border border-slate-200 bg-slate-50 p-2 flex items-center gap-3 group">
+          <div className="relative rounded-xl border border-slate-200 bg-slate-50/80 p-2.5 flex items-center gap-3 group">
             {/* Image Preview Thumbnail */}
-            <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-slate-200 shrink-0 border border-slate-200">
+            <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-slate-200 shrink-0 border border-slate-200/80">
               <Image
                 src={value}
                 alt="Preview"
@@ -112,7 +112,7 @@ export function ImageUploadField({
 
             {/* Image Details */}
             <div className="flex-1 min-w-0 pr-2">
-              <div className="flex items-center gap-1 text-[11px] font-medium text-emerald-700">
+              <div className="flex items-center gap-1.5 text-[11px] font-medium text-emerald-700">
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 <span>Image Attached</span>
               </div>
@@ -124,7 +124,7 @@ export function ImageUploadField({
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isUploading}
-                  className="text-[10.5px] font-semibold text-slate-700 hover:text-[#218A59] underline cursor-pointer"
+                  className="text-xs font-medium text-slate-600 hover:text-slate-900 cursor-pointer transition-colors"
                 >
                   Change image
                 </button>
@@ -135,7 +135,7 @@ export function ImageUploadField({
             <button
               type="button"
               onClick={() => onChange("")}
-              className="w-7 h-7 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-red-600 hover:border-red-200 flex items-center justify-center transition-colors shadow-2xs cursor-pointer shrink-0"
+              className="w-7 h-7 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-200 flex items-center justify-center transition-colors shadow-2xs cursor-pointer shrink-0"
               title="Remove image"
             >
               <X className="w-3.5 h-3.5" />
@@ -151,30 +151,30 @@ export function ImageUploadField({
             onDragLeave={() => setIsDragging(false)}
             onDrop={handleDrop}
             onClick={() => !isUploading && fileInputRef.current?.click()}
-            className={`relative rounded-xl border-2 border-dashed p-4 transition-all text-center flex flex-col items-center justify-center gap-2 cursor-pointer ${
+            className={`relative rounded-xl border border-dashed p-4 transition-all text-center flex flex-col items-center justify-center gap-2 cursor-pointer ${
               isDragging
-                ? "border-[#218A59] bg-emerald-50/50"
-                : "border-slate-200 hover:border-emerald-500/60 bg-slate-50/60 hover:bg-white"
+                ? "border-emerald-500 bg-emerald-50/40"
+                : "border-slate-300 hover:border-slate-400 bg-slate-50/50 hover:bg-slate-50"
             } ${isUploading ? "opacity-75 pointer-events-none" : ""}`}
           >
             {isUploading ? (
               <div className="py-2 flex flex-col items-center gap-2">
-                <Loader2 className="w-6 h-6 animate-spin text-[#218A59]" />
-                <span className="text-xs font-medium text-slate-700 font-mono">
-                  Uploading to Cloudinary...
+                <Loader2 className="w-5 h-5 animate-spin text-slate-600" />
+                <span className="text-xs font-medium text-slate-600">
+                  Uploading image...
                 </span>
               </div>
             ) : (
               <>
-                <div className="w-9 h-9 rounded-full bg-white border border-slate-200 text-[#218A59] flex items-center justify-center shadow-2xs">
+                <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-600 flex items-center justify-center shadow-2xs">
                   <Upload className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-slate-800">
+                  <p className="text-xs font-medium text-slate-800">
                     Click to upload or drag & drop image
                   </p>
-                  <p className="text-[11px] text-slate-500 font-normal">
-                    PNG, JPG, WEBP or SVG up to 10MB (Cloudinary Hosted)
+                  <p className="text-[11px] text-slate-400">
+                    PNG, JPG, WEBP, or SVG up to 10MB
                   </p>
                 </div>
               </>
