@@ -87,7 +87,20 @@ function createTransporter() {
   });
 }
 
-function loadBadgeTemplate(role: string) {
+async function loadBadgeTemplate(role: string) {
+  // 1. Try Firebase first (where admin panel saves the design)
+  try {
+    const { getFirebaseBadgeTemplates } = await import("@/lib/firebaseDb");
+    const fbData = await getFirebaseBadgeTemplates();
+    if (fbData) {
+      if (role === "exhibitor" && fbData.exhibitor) return fbData.exhibitor;
+      if (fbData.visitor) return fbData.visitor;
+    }
+  } catch (e) {
+    console.warn("[send-pass] Firebase badge template fetch failed, trying local file:", e);
+  }
+
+  // 2. Fallback: local file (works in dev)
   try {
     const rootPath = path.join(process.cwd(), "data", "badgeTemplates.json");
     const srcPath = path.join(process.cwd(), "src", "data", "badgeTemplates.json");
@@ -97,7 +110,6 @@ function loadBadgeTemplate(role: string) {
     } else if (fs.existsSync(srcPath)) {
       jsonStr = fs.readFileSync(srcPath, "utf-8");
     }
-
     if (jsonStr) {
       const data = JSON.parse(jsonStr);
       if (role === "exhibitor" && data.exhibitor) return data.exhibitor;
@@ -121,7 +133,7 @@ async function generateBadgePng(opts: {
   qrPngBuffer: Buffer;
 }): Promise<Buffer> {
   const { name, organization, jobTitle, stallNumber, country, passId, securityChecksum, role, qrPngBuffer } = opts;
-  const template = loadBadgeTemplate(role);
+  const template = await loadBadgeTemplate(role);
 
   const width = 640;
   const height = 960;

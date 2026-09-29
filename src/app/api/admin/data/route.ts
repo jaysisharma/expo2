@@ -29,7 +29,7 @@ import {
 let memoryAdminData: any = null;
 
 async function getAdminData() {
-  // Try loading from Firebase Firestore first
+  // Always try Firebase Firestore first — it's the persistent source of truth on Vercel
   try {
     const [fbRegs, fbBooths, fbInqs, fbSettings] = await Promise.all([
       getFirebaseRegistrations(),
@@ -38,12 +38,8 @@ async function getAdminData() {
       getFirebaseSettings(),
     ]);
 
-    const hasFirebaseData =
-      (fbRegs && fbRegs.length > 0) ||
-      (fbBooths && Object.keys(fbBooths).length > 0) ||
-      (fbInqs && fbInqs.length > 0);
-
-    if (hasFirebaseData) {
+    // Use Firebase data whenever the connection succeeds (even if arrays are empty)
+    if (fbRegs !== null) {
       const defaultSettings = {
         eventName: "Himalayan Green Energy Expo Nepal 2027",
         eventDates: "Magh 3 – 5 · 17–19 Jan 2027",
