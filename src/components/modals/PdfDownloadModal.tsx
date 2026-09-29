@@ -42,6 +42,7 @@ export default function PdfDownloadModal() {
     email: "",
   });
 
+  const [submittedName, setSubmittedName] = useState<string>("");
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -57,6 +58,12 @@ export default function PdfDownloadModal() {
       }
       setIsSuccess(false);
       setErrors({});
+      setFormData({
+        name: "",
+        company: "",
+        phone: "",
+        email: "",
+      });
       setIsOpen(true);
     };
 
@@ -171,7 +178,17 @@ export default function PdfDownloadModal() {
       // LocalStorage fallback
     }
 
-    // 3. Immediately transition to success confirmation
+    // 3. Retain name for confirmation and clear text fields
+    setSubmittedName(formData.name.trim());
+    setFormData({
+      name: "",
+      company: "",
+      phone: "",
+      email: "",
+    });
+    setErrors({});
+
+    // 4. Immediately transition to success confirmation
     setIsSubmitting(false);
     setIsSuccess(true);
   };
@@ -184,6 +201,13 @@ export default function PdfDownloadModal() {
     setIsOpen(false);
     setIsSuccess(false);
     setIsSubmitting(false);
+    setErrors({});
+    setFormData({
+      name: "",
+      company: "",
+      phone: "",
+      email: "",
+    });
   };
 
   useEffect(() => {
@@ -388,7 +412,7 @@ export default function PdfDownloadModal() {
 
                 <div className="space-y-1">
                   <h3 className="text-xl sm:text-2xl font-bold text-white">
-                    Thank you, {formData.name}!
+                    Thank you{submittedName ? `, ${submittedName}` : ""}!
                   </h3>
                   <p className="text-xs sm:text-sm text-slate-300 font-normal max-w-sm mx-auto">
                     Your PDF is downloading. If it didn&apos;t start, click below.
