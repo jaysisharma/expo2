@@ -4,7 +4,7 @@ import QRCode from "qrcode";
 import sharp from "sharp";
 import fs from "fs";
 import path from "path";
-import opentype from "opentype.js";
+import * as opentype from "opentype.js";
 import { encryptPassToken, generateSecurityChecksum } from "@/lib/passSecurity";
 import { getEmbeddedFont, NOTO_SANS_BASE64 } from "@/lib/badgeFont";
 
