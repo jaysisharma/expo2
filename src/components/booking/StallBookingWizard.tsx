@@ -31,6 +31,8 @@ import {
   Check,
   RotateCcw,
   Layers,
+  AlertCircle,
+  Globe,
 } from "lucide-react";
 
 export interface StallPackage {
@@ -222,6 +224,7 @@ export default function StallBookingWizard() {
   const [agreedTerms, setAgreedTerms] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [formError, setFormError] = useState<string>("");
+  const [exhibitorOrigin, setExhibitorOrigin] = useState<"domestic" | "international">("domestic");
 
   const [formData, setFormData] = useState({
     companyName: "",
@@ -500,6 +503,13 @@ export default function StallBookingWizard() {
         setFormError("Please fill in Company Name, Contact Person, Email, and Phone number.");
         return;
       }
+      if (
+        exhibitorOrigin === "international" &&
+        (!formData.country.trim() || formData.country.trim().toLowerCase() === "nepal")
+      ) {
+        setFormError("Please enter your International Country of Origin (e.g. India, Germany, China, USA).");
+        return;
+      }
       const emailRegex = /^[a-zA-Z0-9._%+-]{2,}@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
       if (!emailRegex.test(formData.email.trim())) {
         setFormError("Please enter a valid email address (e.g. name@company.com).");
@@ -556,8 +566,8 @@ export default function StallBookingWizard() {
             industryCategory: resolvedIndustry,
             specialRequirements:
               selectedPackage && selectedPackage.id !== "custom-selection"
-                ? `Package: ${selectedPackage.name} | Stalls: ${selectedBoothNumbers.join(", ")}`
-                : "",
+                ? `[${exhibitorOrigin.toUpperCase()} EXHIBITOR] Package: ${selectedPackage.name} | Stalls: ${selectedBoothNumbers.join(", ")}`
+                : `[${exhibitorOrigin.toUpperCase()} EXHIBITOR] Stalls: ${selectedBoothNumbers.join(", ")}`,
             paymentMethod,
           }),
         });
@@ -1059,8 +1069,98 @@ export default function StallBookingWizard() {
               Step 2: Exhibitor Organization Details
             </h3>
             <p className="text-xs text-slate-600 font-normal mt-1">
-              Provide company metadata for listing in the official 2027 Expo Directory, exhibitor badge badges, and pro-forma invoice.
+              Provide company metadata for listing in the official 2027 Expo Directory, exhibitor badges, and pro-forma invoice.
             </p>
+          </div>
+
+          {/* Exhibitor Classification: Domestic vs International */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-mono text-slate-700 font-bold uppercase tracking-wider">
+                ARE YOU A DOMESTIC OR INTERNATIONAL EXHIBITOR? *
+              </label>
+              <span className="text-[11px] font-mono text-slate-500 font-medium">
+                Select your company origin
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              {/* Domestic */}
+              <button
+                type="button"
+                onClick={() => {
+                  setExhibitorOrigin("domestic");
+                  setFormData((prev) => ({
+                    ...prev,
+                    country: prev.country === "" || prev.country.toLowerCase() !== "nepal" ? "Nepal" : prev.country,
+                  }));
+                }}
+                className={`p-4 rounded-xl border-2 text-left transition-all flex items-start gap-3 cursor-pointer ${
+                  exhibitorOrigin === "domestic"
+                    ? "border-[#10B981] bg-emerald-50/50 shadow-xs ring-2 ring-[#10B981]/20"
+                    : "border-slate-200 bg-white hover:border-slate-300"
+                }`}
+              >
+                <div className="text-2xl shrink-0">🇳🇵</div>
+                <div className="space-y-1">
+                  <div className="font-bold text-xs sm:text-sm text-slate-900 flex items-center gap-2">
+                    <span>Domestic Exhibitor</span>
+                    <span className="text-[10px] font-mono font-bold text-[#047857] bg-emerald-100 px-2 py-0.5 rounded-md">
+                      Nepal
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 font-normal leading-relaxed">
+                    Companies registered in Nepal. Payments settled in NPR via Khalti, Fonepay QR, or Local Bank Wire.
+                  </p>
+                </div>
+              </button>
+
+              {/* International */}
+              <button
+                type="button"
+                onClick={() => {
+                  setExhibitorOrigin("international");
+                  setPaymentMethod("bank");
+                  setFormData((prev) => ({
+                    ...prev,
+                    country: prev.country === "Nepal" ? "" : prev.country,
+                  }));
+                }}
+                className={`p-4 rounded-xl border-2 text-left transition-all flex items-start gap-3 cursor-pointer ${
+                  exhibitorOrigin === "international"
+                    ? "border-sky-500 bg-sky-50/50 shadow-xs ring-2 ring-sky-500/20"
+                    : "border-slate-200 bg-white hover:border-slate-300"
+                }`}
+              >
+                <div className="text-2xl shrink-0">🌐</div>
+                <div className="space-y-1">
+                  <div className="font-bold text-xs sm:text-sm text-slate-900 flex items-center gap-2">
+                    <span>International Exhibitor</span>
+                    <span className="text-[10px] font-mono font-bold text-sky-700 bg-sky-100 px-2 py-0.5 rounded-md">
+                      Overseas / Global
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 font-normal leading-relaxed">
+                    Overseas enterprises, foreign OEMs & delegations. Invoiced in USD with SWIFT bank wire remittance.
+                  </p>
+                </div>
+              </button>
+            </div>
+
+            {/* International Gateway Notice */}
+            {exhibitorOrigin === "international" && (
+              <div className="mt-3 p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                <div className="text-xs space-y-1">
+                  <span className="font-bold text-amber-950 block text-xs">
+                    Notice: International Online Payment Gateway Under Construction
+                  </span>
+                  <p className="text-[11px] text-amber-800 leading-relaxed font-normal">
+                    Our direct international online credit card payment gateway (Visa / Mastercard) is currently under scheduled development. International exhibitors will be issued an <strong>Official Pro-Forma Invoice</strong> with <strong>SWIFT wire transfer</strong> details upon booking to provisionally lock stalls immediately.
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1122,15 +1222,29 @@ export default function StallBookingWizard() {
 
             <div>
               <label className="block text-xs font-mono text-slate-700 mb-1 font-bold uppercase">
-                COUNTRY OF ORIGIN
+                COUNTRY OF ORIGIN {exhibitorOrigin === "international" ? "*" : ""}
               </label>
               <input
                 type="text"
-                placeholder="e.g. Nepal / India / Germany / Austria / China"
+                required={exhibitorOrigin === "international"}
+                placeholder={
+                  exhibitorOrigin === "international"
+                    ? "e.g. India / Germany / Austria / China / USA"
+                    : "e.g. Nepal"
+                }
                 value={formData.country}
                 onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                className="w-full p-3 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-[#10B981] shadow-xs"
+                className={`w-full p-3 rounded-xl bg-white border text-slate-900 text-xs focus:outline-none focus:border-[#10B981] shadow-xs ${
+                  exhibitorOrigin === "international" && (!formData.country || formData.country.toLowerCase() === "nepal")
+                    ? "border-amber-300 bg-amber-50/20"
+                    : "border-slate-300"
+                }`}
               />
+              {exhibitorOrigin === "international" && (!formData.country || formData.country.toLowerCase() === "nepal") && (
+                <span className="text-[10px] font-mono text-amber-700 mt-1 block">
+                  Please specify your foreign country (e.g. India, Germany, China, Austria).
+                </span>
+              )}
             </div>
 
             <div>
@@ -1179,9 +1293,35 @@ export default function StallBookingWizard() {
               Step 3: Select Payment Method & Finalize Booking
             </h3>
             <p className="text-xs text-slate-600 font-normal mt-1">
-              Choose your preferred payment gateway from Nepal (Khalti, Fonepay) or request an official Bank Wire Invoice.
+              {exhibitorOrigin === "international"
+                ? "Finalize your international stall reservation with an official SWIFT pro-forma invoice in USD."
+                : "Choose your preferred payment gateway from Nepal (Khalti, Fonepay) or request an official Bank Wire Invoice."}
             </p>
           </div>
+
+          {/* International Gateway Notice */}
+          {exhibitorOrigin === "international" && (
+            <div className="p-4 sm:p-5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-950 flex items-start gap-3.5 shadow-xs">
+              <div className="p-2.5 rounded-xl bg-amber-100 text-amber-800 shrink-0 mt-0.5">
+                <Globe className="w-5 h-5" />
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h4 className="font-bold text-sm text-amber-950 font-sans">
+                    International Online Payment Gateway Under Construction
+                  </h4>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 font-bold uppercase tracking-wider">
+                    Under Integration
+                  </span>
+                </div>
+                <p className="text-xs text-amber-900/90 leading-relaxed font-normal">
+                  Our automated international credit/debit card payment gateway (Visa / Mastercard) is currently under scheduled development.
+                  International bookings are confirmed with an <strong>Official Pro-Forma Invoice & SWIFT Wire Transfer</strong>.
+                  Selecting <strong>Bank Wire / SWIFT</strong> below will immediately lock your booth reservation in USD, and our secretariat will issue your stamp-sealed pro-forma invoice with banking coordinates.
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Booking Summary Box */}
           <div className="p-6 rounded-2xl bg-[#F8FAFC] border border-slate-200 space-y-4">
@@ -1198,8 +1338,15 @@ export default function StallBookingWizard() {
 
               <div>
                 <span className="text-[10px] font-mono text-slate-400 font-bold uppercase">EXHIBITOR ENTITY</span>
-                <div className="font-sans font-bold text-base text-slate-900">
-                  {formData.companyName || "Organization"}
+                <div className="font-sans font-bold text-base text-slate-900 flex items-center gap-1.5">
+                  <span>{formData.companyName || "Organization"}</span>
+                  <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded font-bold ${
+                    exhibitorOrigin === "international"
+                      ? "bg-sky-100 text-sky-800"
+                      : "bg-emerald-100 text-emerald-800"
+                  }`}>
+                    {exhibitorOrigin === "international" ? "International" : "Domestic"}
+                  </span>
                 </div>
                 <span className="text-[11px] text-slate-600">
                   {formData.contactPerson} ({formData.country})
@@ -1209,9 +1356,15 @@ export default function StallBookingWizard() {
               <div>
                 <span className="text-[10px] font-mono text-slate-400 font-bold uppercase">TOTAL INVESTMENT</span>
                 <div className="font-sans font-bold text-xl text-[#15803D]">
-                  NPR {finalPriceNPR.toLocaleString()}
+                  {exhibitorOrigin === "international"
+                    ? `USD $${finalPriceUSD.toLocaleString()}`
+                    : `NPR ${finalPriceNPR.toLocaleString()}`}
                 </div>
-                <span className="text-[11px] text-slate-600 font-mono">USD ${finalPriceUSD.toLocaleString()}</span>
+                <span className="text-[11px] text-slate-600 font-mono">
+                  {exhibitorOrigin === "international"
+                    ? `(~ NPR ${finalPriceNPR.toLocaleString()})`
+                    : `USD $${finalPriceUSD.toLocaleString()}`}
+                </span>
               </div>
             </div>
 
@@ -1238,9 +1391,26 @@ export default function StallBookingWizard() {
 
           {/* Payment Gateway Cards */}
           <div className="space-y-3">
-            <label className="block text-xs font-mono text-slate-700 font-bold uppercase">
-              SELECT PAYMENT GATEWAY
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-mono text-slate-700 font-bold uppercase">
+                SELECT PAYMENT GATEWAY
+              </label>
+              <div className="flex items-center gap-1.5 text-[11px] font-mono">
+                <span className="text-slate-500">Exhibitor:</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = exhibitorOrigin === "international" ? "domestic" : "international";
+                    setExhibitorOrigin(next);
+                    if (next === "international") setPaymentMethod("bank");
+                  }}
+                  className="font-bold text-sky-600 hover:text-sky-700 underline cursor-pointer"
+                >
+                  {exhibitorOrigin === "international" ? "Switch to Domestic (NPR)" : "Switch to International (USD)"}
+                </button>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Option 1: Khalti */}
               <div
@@ -1249,12 +1419,19 @@ export default function StallBookingWizard() {
                   paymentMethod === "khalti"
                     ? "border-[#5D2E8E] bg-[#5D2E8E]/5 shadow-md ring-2 ring-[#5D2E8E]/20"
                     : "border-slate-200 bg-white hover:border-slate-300"
-                }`}
+                } ${exhibitorOrigin === "international" ? "opacity-75" : ""}`}
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <div className="px-2.5 py-1 rounded-lg bg-[#5D2E8E] text-white font-mono text-[10px] font-bold">
-                      KHALTI
+                    <div className="flex items-center gap-1.5">
+                      <div className="px-2.5 py-1 rounded-lg bg-[#5D2E8E] text-white font-mono text-[10px] font-bold">
+                        KHALTI
+                      </div>
+                      {exhibitorOrigin === "international" && (
+                        <span className="text-[10px] font-mono text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
+                          Nepal Only
+                        </span>
+                      )}
                     </div>
                     {paymentMethod === "khalti" && (
                       <CheckCircle2 className="w-5 h-5 text-[#5D2E8E]" />
@@ -1264,7 +1441,9 @@ export default function StallBookingWizard() {
                     Khalti ePayment API v2
                   </h4>
                   <p className="text-xs text-slate-600 leading-relaxed font-normal">
-                    Instant checkout via Khalti Mobile Wallet, SCT Cards, eBanking & ConnectIPS.
+                    {exhibitorOrigin === "international"
+                      ? "For Nepalese domestic entities. Requires Khalti Wallet, SCT cards, or Nepal eBanking (not foreign cards)."
+                      : "Instant checkout via Khalti Mobile Wallet, SCT Cards, eBanking & ConnectIPS."}
                   </p>
                 </div>
                 <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-1 text-[11px] font-mono text-[#5D2E8E] font-bold">
@@ -1280,12 +1459,19 @@ export default function StallBookingWizard() {
                   paymentMethod === "fonepay"
                     ? "border-[#D92525] bg-[#D92525]/5 shadow-md ring-2 ring-[#D92525]/20"
                     : "border-slate-200 bg-white hover:border-slate-300"
-                }`}
+                } ${exhibitorOrigin === "international" ? "opacity-75" : ""}`}
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <div className="px-2.5 py-1 rounded-lg bg-[#D92525] text-white font-mono text-[10px] font-bold">
-                      FONEPAY
+                    <div className="flex items-center gap-1.5">
+                      <div className="px-2.5 py-1 rounded-lg bg-[#D92525] text-white font-mono text-[10px] font-bold">
+                        FONEPAY
+                      </div>
+                      {exhibitorOrigin === "international" && (
+                        <span className="text-[10px] font-mono text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
+                          Nepal Only
+                        </span>
+                      )}
                     </div>
                     {paymentMethod === "fonepay" && (
                       <CheckCircle2 className="w-5 h-5 text-[#D92525]" />
@@ -1295,7 +1481,9 @@ export default function StallBookingWizard() {
                     Fonepay Direct QR
                   </h4>
                   <p className="text-xs text-slate-600 leading-relaxed font-normal">
-                    Scan dynamic QR or pay directly from 50+ Nepalese commercial bank mobile apps.
+                    {exhibitorOrigin === "international"
+                      ? "For Nepalese entities. Requires Nepalese commercial bank mobile banking QR (not foreign apps)."
+                      : "Scan dynamic QR or pay directly from 50+ Nepalese commercial bank mobile apps."}
                   </p>
                 </div>
                 <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-1 text-[11px] font-mono text-[#D92525] font-bold">
@@ -1309,29 +1497,48 @@ export default function StallBookingWizard() {
                 onClick={() => setPaymentMethod("bank")}
                 className={`p-5 rounded-2xl border-2 transition-all cursor-pointer relative flex flex-col justify-between ${
                   paymentMethod === "bank"
-                    ? "border-[#218A59] bg-[#218A59]/5 shadow-md ring-2 ring-[#218A59]/20"
+                    ? exhibitorOrigin === "international"
+                      ? "border-sky-600 bg-sky-50/40 shadow-md ring-2 ring-sky-500/20"
+                      : "border-[#218A59] bg-[#218A59]/5 shadow-md ring-2 ring-[#218A59]/20"
                     : "border-slate-200 bg-white hover:border-slate-300"
                 }`}
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <div className="px-2.5 py-1 rounded-lg bg-[#218A59] text-white font-mono text-[10px] font-bold">
-                      BANK WIRE
+                    <div className="flex items-center gap-1.5">
+                      <div className={`px-2.5 py-1 rounded-lg text-white font-mono text-[10px] font-bold ${
+                        exhibitorOrigin === "international" ? "bg-sky-600" : "bg-[#218A59]"
+                      }`}>
+                        {exhibitorOrigin === "international" ? "SWIFT WIRE" : "BANK WIRE"}
+                      </div>
+                      {exhibitorOrigin === "international" && (
+                        <span className="text-[10px] font-mono text-sky-800 bg-sky-100 font-bold px-1.5 py-0.5 rounded">
+                          Recommended
+                        </span>
+                      )}
                     </div>
                     {paymentMethod === "bank" && (
-                      <CheckCircle2 className="w-5 h-5 text-[#218A59]" />
+                      <CheckCircle2 className={`w-5 h-5 ${
+                        exhibitorOrigin === "international" ? "text-sky-600" : "text-[#218A59]"
+                      }`} />
                     )}
                   </div>
                   <h4 className="font-sans font-bold text-base text-slate-900">
-                    Bank Remittance / Invoice
+                    {exhibitorOrigin === "international"
+                      ? "International SWIFT Remittance"
+                      : "Bank Remittance / Invoice"}
                   </h4>
                   <p className="text-xs text-slate-600 leading-relaxed font-normal">
-                    Lock stall provisionally and remit via SWIFT / RTGS directly to IPPAN account.
+                    {exhibitorOrigin === "international"
+                      ? "Lock stall allocation instantly. Pay in USD via SWIFT wire remittance directly to IPPAN official foreign currency account."
+                      : "Lock stall provisionally and remit via SWIFT / RTGS directly to IPPAN account."}
                   </p>
                 </div>
-                <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-1 text-[11px] font-mono text-[#218A59] font-bold">
+                <div className={`mt-4 pt-3 border-t border-slate-100 flex items-center gap-1 text-[11px] font-mono font-bold ${
+                  exhibitorOrigin === "international" ? "text-sky-700" : "text-[#218A59]"
+                }`}>
                   <Landmark className="w-3.5 h-3.5" />
-                  <span>Official Pro-Forma Invoice</span>
+                  <span>{exhibitorOrigin === "international" ? "Official USD Pro-Forma Invoice" : "Official Pro-Forma Invoice"}</span>
                 </div>
               </div>
             </div>
@@ -1428,13 +1635,15 @@ export default function StallBookingWizard() {
                   ? "bg-[#5D2E8E] hover:bg-[#482370] cursor-pointer"
                   : paymentMethod === "fonepay" && step === 3
                   ? "bg-[#D92525] hover:bg-[#b01c1c] cursor-pointer"
+                  : exhibitorOrigin === "international" && step === 3
+                  ? "bg-sky-600 hover:bg-sky-700 cursor-pointer"
                   : "bg-[#218A59] hover:bg-[#186a43] cursor-pointer"
               }`}
             >
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>PROCESSING PAYMENT GATEWAY...</span>
+                  <span>PROCESSING RESERVATION...</span>
                 </>
               ) : (
                 <>
@@ -1443,7 +1652,9 @@ export default function StallBookingWizard() {
                       ? "SELECT A STALL TO CONTINUE"
                       : step === 3
                       ? paymentMethod === "bank"
-                        ? "CONFIRM RESERVATION"
+                        ? exhibitorOrigin === "international"
+                          ? `LOCK STALL & GENERATE SWIFT INVOICE (USD $${finalPriceUSD.toLocaleString()})`
+                          : "CONFIRM RESERVATION & GENERATE INVOICE"
                         : `PAY WITH ${paymentMethod.toUpperCase()} (NPR ${finalPriceNPR.toLocaleString()})`
                       : "CONTINUE NEXT"}
                   </span>
