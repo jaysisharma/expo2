@@ -16,7 +16,8 @@ const SRC_ADMIN_DATA_PATH = path.join(process.cwd(), "src", "data", "adminData.j
 async function getAdminData() {
   try {
     const fbRegs = await getFirebaseRegistrations();
-    if (fbRegs && fbRegs.length > 0) {
+    // Use Firebase whenever connection succeeds (null = error, [] = empty but valid)
+    if (fbRegs !== null) {
       return { registrations: fbRegs };
     }
   } catch {}
@@ -75,10 +76,25 @@ function extractPassId(input: string): string {
   if (!input) return "";
   const trimmed = input.trim();
 
-  // If it's a URL like https://.../verify?id=HHE27-236435...
+  // Case 1: Full verify URL with encrypted token — https://.../verify?token=XXX
+  if (trimmed.includes("verify") && trimmed.includes("token=")) {
+    try {
+      const url = new URL(trimmed.startsWith("http") ? trimmed : `https://dummy.com/?${trimmed}`);
+      const token = url.searchParams.get("token");
+      if (token) {
+        // Decrypt the token to get the real pass ID
+        const { decryptPassToken } = require("@/lib/passSecurity");
+        const decoded = decryptPassToken(token);
+        if (decoded?.id) return decoded.id.trim();
+      }
+    } catch {
+      // If decryption fails, fall through to raw match
+    }
+  }
+
+  // Case 2: URL with plain ?id= param (legacy format)
   if (trimmed.includes("verify") && trimmed.includes("id=")) {
     try {
-      // Handles both full URL and query string
       const url = new URL(trimmed.startsWith("http") ? trimmed : `https://dummy.com/${trimmed}`);
       const idParam = url.searchParams.get("id");
       if (idParam) return idParam.trim();
@@ -88,7 +104,7 @@ function extractPassId(input: string): string {
     }
   }
 
-  // Handle JSON payload if QR contains JSON
+  // Case 3: JSON payload
   if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
     try {
       const parsed = JSON.parse(trimmed);
@@ -96,7 +112,7 @@ function extractPassId(input: string): string {
     } catch {}
   }
 
-  // Raw pass ID (e.g. HHE27-236435 or GALA-2027-817220)
+  // Case 4: Raw pass ID (e.g. HHE27-236435)
   return trimmed;
 }
 
