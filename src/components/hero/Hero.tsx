@@ -239,13 +239,7 @@ export function Hero() {
           {/* Modal Container */}
           <div className="relative z-10 w-full max-w-4xl bg-[#071322] border border-white/20 rounded-2xl sm:rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.95)] overflow-hidden flex flex-col max-h-[92vh] animate-in zoom-in-95 duration-200">
             {/* Modal Header */}
-            <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 border-b border-white/10 bg-slate-950/70">
-              <div className="flex items-center gap-2.5">
-                <span className="flex h-2 w-2 rounded-full bg-[#00E599] animate-pulse" />
-                <h3 className="text-xs sm:text-sm font-semibold tracking-wide text-slate-200 font-inter-tight">
-                  Himalayan Green Energy Expo 2027
-                </h3>
-              </div>
+            <div className="flex items-center justify-end px-4 sm:px-6 py-3 border-b border-white/10 bg-slate-950/70">
               <button
                 type="button"
                 onClick={() => setIsVideoOpen(false)}
@@ -270,15 +264,10 @@ export function Hero() {
             {/* Credits Docket Footer */}
             <div className="px-4 sm:px-6 py-4 bg-slate-950/95 border-t border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 font-inter-tight">
               <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider uppercase bg-emerald-500/15 text-[#00E599] border border-emerald-500/30">
-                    Featured Aerial Cinematography
-                  </span>
-                </div>
-                <h4 className="text-sm sm:text-[15px] font-semibold text-white">
+                <h4 className="text-sm sm:text-base font-semibold text-white">
                   Hydropower Drone Videomaking Competition 2022
                 </h4>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs sm:text-sm text-slate-400">
                   Footage &amp; Cinematography by{' '}
                   <span className="text-slate-200 font-medium">Saligram Dulal</span>
                 </p>
