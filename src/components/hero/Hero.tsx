@@ -241,9 +241,9 @@ export function Hero() {
             {/* Modal Header */}
             <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 border-b border-white/10 bg-slate-950/70">
               <div className="flex items-center gap-2.5">
-                <span className="flex h-2.5 w-2.5 rounded-full bg-[#00E599] animate-pulse" />
-                <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-white font-inter-tight">
-                  Cinematic Drone Showcase
+                <span className="flex h-2 w-2 rounded-full bg-[#00E599] animate-pulse" />
+                <h3 className="text-xs sm:text-sm font-semibold tracking-wide text-slate-200 font-inter-tight">
+                  Himalayan Green Energy Expo 2027
                 </h3>
               </div>
               <button
@@ -268,36 +268,36 @@ export function Hero() {
             </div>
 
             {/* Credits Docket Footer */}
-            <div className="px-4 sm:px-6 py-4 bg-slate-950/90 border-t border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 font-inter-tight">
+            <div className="px-4 sm:px-6 py-4 bg-slate-950/95 border-t border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 font-inter-tight">
               <div className="space-y-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="px-2 py-0.5 rounded bg-[#00E599]/20 border border-[#00E599]/40 text-[#00E599] text-[10px] font-bold uppercase tracking-wider font-mono">
-                    Official Competition Selection
-                  </span>
-                  <span className="text-xs text-slate-300 font-medium">
-                    Hydropower Drone Videomaking Competition 2022
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider uppercase bg-emerald-500/15 text-[#00E599] border border-emerald-500/30">
+                    Featured Aerial Cinematography
                   </span>
                 </div>
-                <p className="text-sm font-semibold text-white">
-                  Drone Pilot &amp; Cinematographer:{' '}
-                  <span className="text-[#00E599] font-bold">Saligram Dulal</span>
+                <h4 className="text-sm sm:text-[15px] font-semibold text-white">
+                  Hydropower Drone Videomaking Competition 2022
+                </h4>
+                <p className="text-xs text-slate-400">
+                  Footage &amp; Cinematography by{' '}
+                  <span className="text-slate-200 font-medium">Saligram Dulal</span>
                 </p>
               </div>
 
-              <div className="flex items-center gap-2.5 pt-1 sm:pt-0">
+              <div className="flex items-center gap-2.5 pt-2 sm:pt-0 shrink-0">
                 <a
                   href="https://www.youtube.com/watch?v=sJy3FVrESKk"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-medium border border-white/20 hover:border-white/40 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-semibold border border-white/15 hover:border-white/30 transition-all shadow-sm"
                 >
                   <span>Watch on YouTube</span>
-                  <ExternalLink className="w-3.5 h-3.5" />
+                  <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
                 </a>
                 <button
                   type="button"
                   onClick={() => setIsVideoOpen(false)}
-                  className="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium transition-colors"
+                  className="px-3.5 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-semibold border border-white/10 transition-colors"
                 >
                   Close
                 </button>
