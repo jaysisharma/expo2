@@ -40,17 +40,17 @@ interface CurrentPartner {
 }
 
 const SPONSORSHIP_TIERS_2027 = [
-  "Principal Partner",
-  "Co-Host / Patron",
-  "Diamond Sponsor",
-  "Platinum Partner",
-  "Gold Sponsor",
-  "Silver Sponsor",
+  "Title Sponsor",
+  "In Association With",
+  "Powered By",
+  "Sponsor",
+  "Official Partner",
+  "Co-Sponsor",
+  "Supporter",
   "Official Bank Partner",
   "Mobility Partner",
   "Technology Partner",
   "Media Partner",
-  "Associate Partner",
   "Supporting Organization",
 ];
 
@@ -1551,7 +1551,7 @@ export default function AdminSponsorsPage() {
                 </label>
                 <select
                   name="category"
-                  defaultValue="Platinum Partner"
+                  defaultValue="Title Sponsor"
                   className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59] focus:bg-white cursor-pointer"
                 >
                   {SPONSORSHIP_TIERS_2027.map((tier) => (

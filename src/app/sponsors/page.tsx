@@ -23,47 +23,160 @@ export const metadata: Metadata = {
     "Explore the official government patrons, diplomatic missions, apex industry federations, and global engineering OEMs supporting the Himalayan Green Energy Expo in Kathmandu.",
 };
 
-const sponsorshipTiers = [
+interface SponsorshipTierItem {
+  tier: string;
+  badge?: string;
+  priceNPR: string;
+  priceUSD: string;
+  space: string;
+  description: string;
+  features: string[];
+  recommended?: boolean;
+}
+
+const sponsorshipTiers: SponsorshipTierItem[] = [
   {
-    tier: "Platinum Title Partner",
+    tier: "Title Sponsor",
     badge: "FLAGSHIP",
-    description: "Exclusive top-tier brand placement across all plenary backdrops, badges, lanyards, and VIP gala events.",
+    priceNPR: "NPR 50,00,000",
+    priceUSD: "USD $35,000",
+    space: "6M × 6M × 2 (2 Bare Space Stalls · 72m²)",
+    description: "Exclusive highest-tier summit naming & plenary stage presence across all official backdrops, lanyards, and VIP gala.",
     features: [
-      "72 m² Prime Island Pavilion in Hall A (Central Atrium)",
-      "Opening Plenary Keynote Address (15 Minutes)",
-      "Title logo branding on delegate badges & lanyards",
-      "10 VIP Gala Dinner invitations with Ministers & NEA Chiefs",
-      "Full-page back cover advertisement in official Expo Directory",
-      "Dedicated VIP business lounge with private catering",
+      "2 Bare Space Stalls (72m² prime central positioning)",
+      "25 VIP Gala Dinner passes at Royal Tulip Kathmandu",
+      "50 Inauguration VIP passes & 500 entry passes",
+      "20 Official Exhibitor badges & VIP lounge access",
+      "6FT × 4FT × 5 Promotional display branding areas",
     ],
     recommended: true,
   },
   {
-    tier: "Gold Strategic Sponsor",
-    badge: "STRATEGIC",
-    description: "Prominent exhibition space with high-impact stage presence and targeted B2B media exposure.",
+    tier: "In Association With",
+    badge: "PRINCIPAL",
+    priceNPR: "NPR 40,00,000",
+    priceUSD: "USD $25,000",
+    space: "6M × 6M × 1 (1 Bare Space Stall · 36m²)",
+    description: "Principal summit partner co-branding on keynotes, summit literature, delegate badges, and official press releases.",
     features: [
-      "36 m² Corner Stand in Hall A or Hall B",
-      "Session Panelist slot in Technical or Finance track",
-      "Prominent logo on main stage backdrop & official portal",
-      "6 VIP Gala Dinner passes and delegate networking access",
-      "Full-page inner color advertisement in Expo Directory",
-      "Branded press release syndicated to regional energy networks",
+      "1 Bare Space Stall (36m² prime corner pavilion)",
+      "20 VIP Gala Dinner passes",
+      "50 Inauguration VIP passes & 300 entry passes",
+      "20 Official Exhibitor badges",
+      "6FT × 4FT × 4 Promotional display branding areas",
     ],
     recommended: false,
   },
   {
-    tier: "Silver Co-Sponsor",
-    badge: "COMMERCIAL",
-    description: "Ideal for equipment suppliers and technology providers seeking targeted B2B visibility.",
+    tier: "Powered By",
+    badge: "MAJOR",
+    priceNPR: "NPR 30,00,000",
+    priceUSD: "USD $20,000",
+    space: "6M × 6M × 1 (1 Bare Space Stall · 36m²)",
+    description: "Major partner positioning as a clean energy innovation champion with prominent exhibition presence.",
     features: [
-      "18 m² Shell Scheme Stall in prime aisle location",
-      "Logo on conference timetable and website sponsor matrix",
-      "4 Conference Delegate badges & VIP lounge access",
-      "Half-page color advertisement in Expo Directory",
-      "Inclusion in pre-expo digital newsletter to 50,000+ engineers",
+      "1 Bare Space Stall (36m² prime stall)",
+      "15 VIP Gala Dinner passes",
+      "40 Inauguration VIP passes & 200 entry passes",
+      "20 Official Exhibitor badges",
+      "6FT × 4FT × 3 Promotional display branding areas",
     ],
     recommended: false,
+  },
+  {
+    tier: "Sponsor",
+    badge: "STRATEGIC",
+    priceNPR: "NPR 15,00,000",
+    priceUSD: "USD $10,000",
+    space: "6M × 6M × 1 (1 Bare Space Stall · 36m²)",
+    description: "Strategic commercial exposure, B2B procurement visibility, and executive networking privileges.",
+    features: [
+      "1 Bare Space Stall (36m²)",
+      "8 VIP Gala Dinner passes",
+      "20 Inauguration VIP passes & 150 entry passes",
+      "20 Official Exhibitor badges",
+      "6FT × 4FT × 3 Promotional display branding areas",
+    ],
+    recommended: false,
+  },
+  {
+    tier: "Official Partner",
+    badge: "PARTNER",
+    priceNPR: "NPR 13,00,000",
+    priceUSD: "USD $9,000",
+    space: "6M × 6M × 1 (1 Bare Space Stall · 36m²)",
+    description: "Sector-focused partnership aligning your organization with Nepal's clean energy leadership.",
+    features: [
+      "1 Bare Space Stall (36m²)",
+      "5 VIP Gala Dinner passes",
+      "20 Inauguration VIP passes & 120 entry passes",
+      "20 Official Exhibitor badges",
+      "6FT × 4FT × 2 Promotional display branding areas",
+    ],
+    recommended: false,
+  },
+  {
+    tier: "Co-Sponsor",
+    badge: "COMMERCIAL",
+    priceNPR: "NPR 10,00,000",
+    priceUSD: "USD $7,000",
+    space: "6M × 6M × 1 (1 Bare Space Stall · 36m²)",
+    description: "High-yield commercial exposure for technology manufacturers, suppliers, and engineering consultancies.",
+    features: [
+      "1 Bare Space Stall (36m²)",
+      "5 VIP Gala Dinner passes",
+      "20 Inauguration VIP passes & 100 entry passes",
+      "20 Official Exhibitor badges",
+      "6FT × 4FT × 2 Promotional display branding areas",
+    ],
+    recommended: false,
+  },
+  {
+    tier: "Supporter",
+    badge: "ASSOCIATE",
+    priceNPR: "NPR 5,00,000",
+    priceUSD: "USD $5,000",
+    space: "6M × 6M × 1 (1 Bare Space Stall · 36m²)",
+    description: "Entry-level summit participation with exhibition stall and directory listing for growing enterprises.",
+    features: [
+      "1 Bare Space Stall (36m²)",
+      "3 VIP Gala Dinner passes",
+      "20 Inauguration VIP passes & 50 entry passes",
+      "20 Official Exhibitor badges",
+      "6FT × 4FT × 1 Promotional display branding area",
+    ],
+    recommended: false,
+  },
+];
+
+const exhibitionStalls = [
+  {
+    name: "Standard Stall (3m × 3m)",
+    badge: "BUILT STALL",
+    priceNPR: "NPR 85,000 – 1,80,000",
+    priceUSD: "USD $700 – $1,350",
+    space: "3M × 3M Built Stall (B1–B22, H1–H8)",
+    description: "Ready-to-move-in Octonorm shell stall with standard booth furniture, spotlights, and power supply.",
+    features: [
+      "Pre-built partition walls (3m × 3m · 9m²)",
+      "1 Information table & 2 Chairs",
+      "15A Multi-pin power socket & 2 Spotlights",
+      "Fascia board with official company name",
+    ],
+  },
+  {
+    name: "Bare Space Stall (Custom)",
+    badge: "RAW SPACE",
+    priceNPR: "From NPR 3,78,000",
+    priceUSD: "From USD $3,000",
+    space: "6M × 6M or 10M × 7M (Block A / Block C)",
+    description: "Open floor space for bespoke architectural fabrication, heavy machinery, or interactive demonstrations.",
+    features: [
+      "Marked floor footprint for custom fabrication",
+      "3-Phase industrial electricity hookup available",
+      "Direct vehicle and forklift access for setup",
+      "Ideal for turbine models, EV chargers & large equipment",
+    ],
   },
 ];
 
@@ -205,60 +318,163 @@ export default function SponsorsPage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {sponsorshipTiers.map((tier, idx) => (
                 <div
                   key={idx}
-                  className={`p-6 sm:p-8 rounded-2xl border transition-all flex flex-col justify-between relative ${
+                  className={`p-6 sm:p-7 rounded-2xl border transition-all flex flex-col justify-between relative ${
                     tier.recommended
-                      ? "bg-white border-[#087EA4] ring-2 ring-[#087EA4]/20 shadow-md"
-                      : "bg-white border-slate-200 shadow-xs hover:border-slate-300"
+                      ? "bg-white border-[#218A59] ring-2 ring-[#218A59]/20 shadow-md"
+                      : "bg-white border-slate-200 shadow-xs hover:border-slate-300 hover:shadow-sm"
                   }`}
                 >
-                  {tier.recommended && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-[#087EA4] text-white font-mono text-[10px] font-bold uppercase tracking-wider shadow-xs">
+                  {tier.badge && (
+                    <div
+                      className={`absolute -top-3 left-6 px-3 py-0.5 rounded-full font-mono text-[10px] font-bold uppercase tracking-wider shadow-xs ${
+                        tier.recommended
+                          ? "bg-[#218A59] text-white"
+                          : "bg-slate-800 text-white"
+                      }`}
+                    >
                       {tier.badge}
                     </div>
                   )}
 
                   <div>
-                    <span className="text-xs font-mono text-[#087EA4] font-bold block mb-1">
-                      TIER // 0{idx + 1}
-                    </span>
-                    <h3 className="font-bold text-lg text-slate-900">
+                    <div className="flex items-center justify-between gap-2 mb-1.5 pt-1">
+                      <span className="text-xs font-mono text-[#007A5E] font-bold">
+                        TIER // 0{idx + 1}
+                      </span>
+                      <span className="text-[11px] font-mono text-slate-500 font-medium truncate">
+                        {tier.space.split("(")[0].trim()}
+                      </span>
+                    </div>
+
+                    <h3 className="font-bold text-xl text-slate-900 tracking-tight">
                       {tier.tier}
                     </h3>
-                    <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+
+                    {/* Pricing */}
+                    <div className="my-3 p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+                      <div className="flex items-baseline justify-between gap-2">
+                        <span className="text-base font-extrabold text-slate-950 font-mono">
+                          {tier.priceNPR}
+                        </span>
+                        <span className="text-xs font-semibold text-slate-600 font-mono">
+                          {tier.priceUSD}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-1 font-medium">
+                        Booth: {tier.space}
+                      </p>
+                    </div>
+
+                    <p className="text-xs text-slate-600 leading-relaxed">
                       {tier.description}
                     </p>
 
-                    <div className="mt-5 pt-4 border-t border-slate-100 space-y-2.5">
-                      <span className="text-[11px] font-bold text-slate-800 uppercase tracking-wider block font-mono">
-                        Key Package Inclusions:
+                    <div className="mt-4 pt-3.5 border-t border-slate-100 space-y-2">
+                      <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block font-mono">
+                        Included Privileges:
                       </span>
                       {tier.features.map((feat, fIdx) => (
                         <div key={fIdx} className="flex items-start gap-2 text-xs text-slate-700">
-                          <Check className="w-3.5 h-3.5 text-[#19A974] shrink-0 mt-0.5" />
+                          <Check className="w-3.5 h-3.5 text-[#218A59] shrink-0 mt-0.5" />
                           <span>{feat}</span>
                         </div>
                       ))}
                     </div>
                   </div>
 
-                  <div className="mt-6 pt-5 border-t border-slate-100">
+                  <div className="mt-6 pt-4 border-t border-slate-100 grid grid-cols-2 gap-2">
                     <Link
-                      href={`/contact?subject=Sponsorship%20Inquiry%20${encodeURIComponent(tier.tier)}`}
-                      className={`w-full py-2.5 rounded-xl text-xs font-semibold text-center block transition-all shadow-xs ${
+                      href="/book-stall"
+                      className={`py-2 rounded-xl text-xs font-bold text-center block transition-all shadow-xs ${
                         tier.recommended
-                          ? "bg-[#087EA4] hover:bg-[#07698a] text-white"
+                          ? "bg-[#218A59] hover:bg-[#1b734a] text-white"
                           : "bg-slate-900 hover:bg-slate-800 text-white"
                       }`}
                     >
-                      Inquire for {tier.tier.split(" ")[0]} →
+                      Book Tier →
+                    </Link>
+                    <Link
+                      href={`/contact?subject=Sponsorship%20Inquiry%20${encodeURIComponent(tier.tier)}`}
+                      className="py-2 rounded-xl text-xs font-semibold text-center block text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors"
+                    >
+                      Inquire
                     </Link>
                   </div>
                 </div>
               ))}
+            </div>
+
+            {/* Exhibition Stalls Breakdown */}
+            <div className="mt-12 pt-8 border-t border-slate-200">
+              <div className="mb-6">
+                <span className="text-xs font-bold text-[#007A5E] uppercase tracking-wider block mb-1 font-mono">
+                  EXHIBITION STALL TIERS
+                </span>
+                <h3 className="text-xl font-bold text-slate-900 tracking-tight">
+                  Standard Built &amp; Custom Bare Space Stalls
+                </h3>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {exhibitionStalls.map((stall, sIdx) => (
+                  <div
+                    key={sIdx}
+                    className="p-6 rounded-2xl bg-white border border-slate-200 shadow-xs hover:border-[#218A59]/60 hover:shadow-sm transition-all flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 font-mono text-[10px] font-bold uppercase tracking-wider border border-slate-200">
+                          {stall.badge}
+                        </span>
+                        <span className="text-xs font-mono text-slate-500 font-medium">
+                          {stall.space}
+                        </span>
+                      </div>
+
+                      <h4 className="font-bold text-lg text-slate-900">
+                        {stall.name}
+                      </h4>
+
+                      <div className="my-3 p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+                        <div className="flex items-baseline justify-between gap-2">
+                          <span className="text-sm font-extrabold text-slate-950 font-mono">
+                            {stall.priceNPR}
+                          </span>
+                          <span className="text-xs font-semibold text-slate-600 font-mono">
+                            {stall.priceUSD}
+                          </span>
+                        </div>
+                      </div>
+
+                      <p className="text-xs text-slate-600 leading-relaxed mb-4">
+                        {stall.description}
+                      </p>
+
+                      <div className="space-y-2 pt-3 border-t border-slate-100">
+                        {stall.features.map((feat, fIdx) => (
+                          <div key={fIdx} className="flex items-start gap-2 text-xs text-slate-700">
+                            <Check className="w-3.5 h-3.5 text-[#218A59] shrink-0 mt-0.5" />
+                            <span>{feat}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="mt-6 pt-4 border-t border-slate-100">
+                      <Link
+                        href="/book-stall"
+                        className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-[#218A59] text-white text-xs font-bold text-center block transition-colors shadow-xs"
+                      >
+                        Select on Interactive Floor Plan →
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
