@@ -18,8 +18,10 @@ export default function AppLayoutClient({
   const pathname = usePathname();
   const isBuilderPage = pathname?.startsWith("/floor-plan/builder");
   const isAdminPage = pathname?.startsWith("/admin");
+  const isStaffPage = pathname?.startsWith("/staff");
+  const isVerifyPage = pathname?.startsWith("/verify");
 
-  if (isBuilderPage || isAdminPage) {
+  if (isBuilderPage || isAdminPage || isStaffPage || isVerifyPage) {
     return (
       <main className="w-full min-h-screen">
         {children}

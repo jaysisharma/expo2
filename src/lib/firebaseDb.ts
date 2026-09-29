@@ -37,6 +37,19 @@ export async function getFirebaseRegistrations() {
   }
 }
 
+export async function getFirebaseRegistrationById(regId: string) {
+  try {
+    const ref = doc(db, COLLECTIONS.REGISTRATIONS, regId);
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+      return { id: snap.id, ...snap.data() };
+    }
+    return null;
+  } catch (error) {
+    return null;
+  }
+}
+
 export async function addFirebaseRegistration(regData: any) {
   try {
     const id = regData.id || `HHE26-${Math.floor(100000 + Math.random() * 900000)}`;

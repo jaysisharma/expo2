@@ -244,6 +244,7 @@ export default function DelegateRegistration() {
             jobTitle: formData.jobTitle,
             stallNumber: registrationRole === "exhibitor" ? formData.stallNumber : "",
             country: formData.country,
+            phone: formData.phone,
             passId: generatedId,
             passType: resolvedPassType,
             role: resolvedRole,

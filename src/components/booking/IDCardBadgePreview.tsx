@@ -59,9 +59,8 @@ export default function IDCardBadgePreview({
   };
 
   // Generate clean verifiable QR target URL
-  const qrTarget = typeof window !== "undefined"
-    ? `${window.location.origin}/verify?id=${delegateId}&role=${role}&name=${encodeURIComponent(name || "")}&org=${encodeURIComponent(organization || "")}`
-    : `https://greenenergyexpo.org.np/verify?id=${delegateId}&role=${role}`;
+  const origin = typeof window !== "undefined" ? window.location.origin : "https://greenenergyexpo.org.np";
+  const qrTarget = `${origin}/verify?id=${delegateId}&role=${role}&name=${encodeURIComponent(name || "")}&org=${encodeURIComponent(organization || "")}&title=${encodeURIComponent(jobTitle || "")}&stall=${encodeURIComponent(stallNumber || "")}&country=${encodeURIComponent(country || "Nepal")}`;
 
   const qrMatrix = generateQRCodeMatrix(qrTarget);
   const qrCellCount = qrMatrix.length;

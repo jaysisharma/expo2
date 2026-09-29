@@ -23,6 +23,7 @@ import {
   ChevronRight,
   ClipboardList,
   FileText,
+  QrCode,
 } from "lucide-react";
 import { useAdminAuth } from "./AdminAuthContext";
 
@@ -70,6 +71,7 @@ export default function AdminSidebar({
       group: "Participants",
       items: [
         { label: "Registrations", href: "/admin/registrations", icon: ClipboardList },
+        { label: "Gate QR Scanner", href: "/staff", icon: QrCode },
         { label: "Exhibitors", href: "/admin/exhibitors", icon: Building2 },
         { label: "Organization Members", href: "/admin/speakers", icon: Users },
         { label: "Conference Schedule", href: "/admin/conference", icon: CalendarDays },

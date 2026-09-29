@@ -165,8 +165,11 @@ async function generateBadgePng(opts: {
       <!-- QR Image -->
       <image x="${qrX}" y="${qrY}" width="${qrPixelSize}" height="${qrPixelSize}" href="data:image/png;base64,${qrBase64}"/>
 
+      <!-- Pass ID -->
+      <text x="${idX}" y="${idY}" text-anchor="middle" dominant-baseline="middle" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, monospace" font-size="${idFontSize}" font-weight="bold" fill="${idColor}">ID: ${safeId}</text>
+
       <!-- Role Bottom Banner -->
-      <rect x="0" y="${bannerY - 26}" width="${width}" height="52" fill="${bannerBg}"/>
+      <rect x="0" y="${bannerY - 26}" width="${width}" height="${52}" fill="${bannerBg}"/>
       <text x="${width / 2}" y="${bannerY}" text-anchor="middle" dominant-baseline="middle" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif" font-size="22" font-weight="900" fill="${bannerColor}" letter-spacing="3">${escapeXml(bannerText.toUpperCase())}</text>
     </g>
     <!-- Outer Card Border -->
@@ -182,11 +185,13 @@ function buildEmailHtml(opts: {
   organization: string;
   jobTitle?: string;
   stallNumber?: string;
+  phone?: string;
   passId: string;
   passType: string;
   role: string;
+  qrTargetUrl: string;
 }) {
-  const { name, organization, jobTitle, stallNumber, passId, passType, role } = opts;
+  const { name, organization, jobTitle, stallNumber, phone, passId, passType, role, qrTargetUrl } = opts;
   const isExhibitor = role === "exhibitor";
   const isGala = role === "gala";
   const headerBg = isExhibitor ? "#064e3b" : isGala ? "#2e1065" : "#04281E";
@@ -248,20 +253,40 @@ function buildEmailHtml(opts: {
           <!-- Standalone High-Speed Entry QR Code Section -->
           <tr>
             <td style="padding:0 24px 24px;">
-              <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border:2px dashed #cbd5e1;border-radius:14px;padding:20px;text-align:center;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border:2px dashed #cbd5e1;border-radius:14px;padding:22px;text-align:center;">
                 <tr>
                   <td align="center">
-                    <p style="margin:0 0 10px;font-size:11px;font-weight:800;letter-spacing:0.15em;text-transform:uppercase;color:#007A5E;">
+                    <p style="margin:0 0 8px;font-size:11px;font-weight:800;letter-spacing:0.15em;text-transform:uppercase;color:#007A5E;">
                       Fast-Track Gate Scan QR
                     </p>
-                    <div style="display:inline-block;background:#ffffff;padding:12px;border-radius:12px;border:1px solid #e2e8f0;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
-                      <img src="cid:pass_qr_code" width="160" height="160" alt="Entry QR" style="display:block;width:160px;height:160px;margin:0 auto;border:0;" />
-                    </div>
-                    <p style="margin:10px 0 0;font-size:12px;font-weight:800;letter-spacing:0.1em;color:#007A5E;text-transform:uppercase;">
-                      OFFICIAL ENTRANCE PASS
+
+                    <!-- Attendee Name & Role Banner -->
+                    <p style="margin:0 0 2px;font-size:17px;font-weight:800;color:#0f172a;">
+                      ${escapeXml(name)}
                     </p>
-                    <p style="margin:4px 0 0;font-size:11px;color:#64748b;">
-                      Present at Turnstile Gate or Security Desk for Instant Entry
+                    <p style="margin:0 0 2px;font-size:13px;font-weight:600;color:#087EA4;">
+                      ${escapeXml(organization)}
+                    </p>
+                    <p style="margin:0 0 12px;font-size:12px;font-family:monospace;font-weight:700;color:#64748b;">
+                      ID: <span style="color:#007A5E;">${escapeXml(passId)}</span> · ${escapeXml(passType)}
+                    </p>
+
+                    <!-- QR Image Box -->
+                    <div style="display:inline-block;background:#ffffff;padding:12px;border-radius:14px;border:1px solid #e2e8f0;box-shadow:0 4px 12px rgba(0,0,0,0.06);">
+                      <a href="${qrTargetUrl}" target="_blank" style="display:block;text-decoration:none;">
+                        <img src="cid:pass_qr_code" width="160" height="160" alt="Entry QR" style="display:block;width:160px;height:160px;margin:0 auto;border:0;" />
+                      </a>
+                    </div>
+
+                    <!-- Direct Open Pass & Save to Phone Button -->
+                    <div style="margin-top:14px;">
+                      <a href="${qrTargetUrl}" target="_blank" style="display:inline-block;background:#007A5E;color:#ffffff;text-decoration:none;font-size:13px;font-weight:700;padding:11px 22px;border-radius:10px;box-shadow:0 3px 8px rgba(0,122,94,0.3);">
+                        📱 Open Digital Pass &amp; Save to Phone &rarr;
+                      </a>
+                    </div>
+
+                    <p style="margin:10px 0 0;font-size:11px;color:#64748b;max-width:380px;line-height:1.4;">
+                      Scan this QR code with your phone camera or tap the button above to view your verified credentials and save the contact / pass badge to your phone.
                     </p>
                   </td>
                 </tr>
@@ -283,6 +308,10 @@ function buildEmailHtml(opts: {
                   <td style="padding:12px 18px;border-bottom:1px solid #f1f5f9;font-size:14px;color:#0f172a;font-weight:700;">${escapeXml(name)}</td>
                 </tr>
                 <tr>
+                  <td style="padding:12px 18px;border-bottom:1px solid #f1f5f9;font-size:12px;color:#64748b;font-weight:600;">Pass ID</td>
+                  <td style="padding:12px 18px;border-bottom:1px solid #f1f5f9;font-size:13px;color:#007A5E;font-family:monospace;font-weight:700;">${escapeXml(passId)}</td>
+                </tr>
+                <tr>
                   <td style="padding:12px 18px;border-bottom:1px solid #f1f5f9;font-size:12px;color:#64748b;font-weight:600;">Organization</td>
                   <td style="padding:12px 18px;border-bottom:1px solid #f1f5f9;font-size:13px;color:#1e293b;font-weight:600;">${escapeXml(organization)}</td>
                 </tr>
@@ -291,6 +320,11 @@ function buildEmailHtml(opts: {
                   <td style="padding:12px 18px;border-bottom:1px solid #f1f5f9;font-size:12px;color:#64748b;font-weight:600;">Designation</td>
                   <td style="padding:12px 18px;border-bottom:1px solid #f1f5f9;font-size:13px;color:#1e293b;">${escapeXml(jobTitle)}</td>
                 </tr>` : ""}
+                ${phone ? `
+                <tr>
+                  <td style="padding:12px 18px;border-bottom:1px solid #f1f5f9;font-size:12px;color:#64748b;font-weight:600;">Phone</td>
+                  <td style="padding:12px 18px;border-bottom:1px solid #f1f5f9;font-size:13px;color:#1e293b;">${escapeXml(phone)}</td>
+                </tr>` : ""}
                 ${stallNumber ? `
                 <tr>
                   <td style="padding:12px 18px;border-bottom:1px solid #f1f5f9;font-size:12px;color:#64748b;font-weight:600;">Stall / Booth</td>
@@ -298,6 +332,11 @@ function buildEmailHtml(opts: {
                 </tr>` : ""}
                 <tr>
                   <td style="padding:12px 18px;font-size:12px;color:#64748b;font-weight:600;">Pass Category</td>
+                  <td style="padding:12px 18px;font-size:13px;color:#1e293b;font-weight:600;">${escapeXml(passType)}</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
                   <td style="padding:12px 18px;font-size:13px;color:#1e293b;font-weight:600;">${escapeXml(passType)}</td>
                 </tr>
               </table>
@@ -349,7 +388,7 @@ function buildEmailHtml(opts: {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, email, organization, jobTitle, stallNumber, country, passId, passType, role } = body;
+    const { name, email, organization, jobTitle, stallNumber, country, phone, passId, passType, role } = body;
 
     if (!email || !name || !passId) {
       return NextResponse.json(
@@ -359,10 +398,31 @@ export async function POST(req: NextRequest) {
     }
 
     const resolvedRole = role || "visitor";
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://greenenergyexpo.org.np";
-    const qrTargetUrl = `${appUrl}/verify?id=${encodeURIComponent(passId)}&role=${encodeURIComponent(
-      resolvedRole
-    )}&name=${encodeURIComponent(name)}&org=${encodeURIComponent(organization || "")}`;
+
+    // Determine public or request URL dynamically
+    const reqHost = req.headers.get("x-forwarded-host") || req.headers.get("host") || "";
+    const reqProto = req.headers.get("x-forwarded-proto") || (reqHost.includes("localhost") ? "http" : "https");
+    let appUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+    if (!appUrl || (appUrl.includes("localhost") && reqHost && !reqHost.includes("localhost"))) {
+      appUrl = `${reqProto}://${reqHost}`;
+    }
+    if (!appUrl) {
+      appUrl = reqHost ? `${reqProto}://${reqHost}` : "https://greenenergyexpo.org.np";
+    }
+
+    const qrParams = new URLSearchParams({
+      id: passId,
+      role: resolvedRole,
+      name: name || "",
+      org: organization || "",
+      title: jobTitle || "",
+      stall: stallNumber || "",
+      email: email || "",
+      phone: phone || "",
+      country: country || "Nepal",
+      passType: passType || (resolvedRole === "exhibitor" ? "Official Exhibitor Pass" : "Trade Visitor Pass"),
+    });
+    const qrTargetUrl = `${appUrl}/verify?${qrParams.toString()}`;
 
     // 1. Generate standalone high-res QR PNG Buffer
     const qrDataUrl = await QRCode.toDataURL(qrTargetUrl, {
@@ -397,9 +457,11 @@ export async function POST(req: NextRequest) {
       organization: organization || "Himalayan Green Energy Expo",
       jobTitle,
       stallNumber,
+      phone,
       passId,
       passType: passType || "Trade Visitor Pass",
       role: resolvedRole,
+      qrTargetUrl,
     });
 
     // 4. Send Email with both inline CID embeddings & user-accessible attachments
