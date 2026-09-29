@@ -561,187 +561,145 @@ export default function AdminSponsorsPage() {
         </div>
       )}
 
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+      {/* Clean Minimal Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200/80">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-mono text-[10px] font-semibold uppercase tracking-wider">
-              Partnership Management
-            </span>
-            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-              Sponsors &amp; Partners
-            </h1>
-          </div>
-          <p className="text-xs text-slate-500 mt-1">
-            Manage 2027 5th edition summit partners and historical archive sponsors.
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+            Sponsors &amp; Partners
+          </h1>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Manage 2027 Edition partners displayed on the homepage and historical summit sponsors.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          {activeTab === "current2027" ? (
+          {activeTab === "archive" && (
             <button
-              onClick={() => {
-                setAdd2027Logo("/images/logo.webp");
-                setShowAdd2027Modal(true);
-              }}
-              className="px-3.5 py-1.5 rounded-lg bg-[#218A59] hover:bg-[#1b734a] text-white font-medium text-xs flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+              onClick={exportCSV}
+              className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium border border-slate-200 shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
             >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Add 2027 Partner</span>
+              <Download className="w-3.5 h-3.5 text-slate-500" />
+              <span>Export CSV</span>
             </button>
-          ) : (
-            <>
-              <button
-                onClick={exportCSV}
-                className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium border border-slate-200 shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
-              >
-                <Download className="w-3.5 h-3.5 text-slate-500" />
-                <span>Export CSV</span>
-              </button>
-              <button
-                onClick={() => setShowAddModal(true)}
-                className="px-3.5 py-1.5 rounded-lg bg-[#218A59] hover:bg-[#1b734a] text-white font-medium text-xs flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Add Archive Partner</span>
-              </button>
-            </>
           )}
+
+          <button
+            onClick={() => {
+              if (activeTab === "current2027") {
+                setAdd2027Logo("/images/logo.webp");
+                setAdd2027Category("Title Sponsor");
+                setShowAdd2027Modal(true);
+              } else {
+                setShowAddModal(true);
+              }
+            }}
+            className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>{activeTab === "current2027" ? "Add 2027 Partner" : "Add Archive Partner"}</span>
+          </button>
         </div>
       </div>
 
-      {/* Edition Navigation Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
-        <button
-          onClick={() => setActiveTab("current2027")}
-          className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer ${
-            activeTab === "current2027"
-              ? "bg-[#218A59] text-white shadow-sm shadow-[#218A59]/30"
-              : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-          }`}
-        >
-          <Sparkles className="w-4 h-4" />
-          <span>2027 Edition Partners (Landing Page)</span>
-          <span
-            className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${
-              activeTab === "current2027" ? "bg-white/20 text-white" : "bg-slate-200 text-slate-700"
+      {/* Segmented Control & Minimal Status Pill */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        {/* Segmented Tabs */}
+        <div className="inline-flex p-1 rounded-xl bg-slate-100 border border-slate-200/80 text-xs font-semibold self-start">
+          <button
+            onClick={() => setActiveTab("current2027")}
+            className={`px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-2 cursor-pointer ${
+              activeTab === "current2027"
+                ? "bg-white text-slate-900 shadow-xs font-bold"
+                : "text-slate-500 hover:text-slate-800"
             }`}
           >
-            {currentPartners.length}
-          </span>
-        </button>
+            <Sparkles className={`w-3.5 h-3.5 ${activeTab === "current2027" ? "text-[#218A59]" : "text-slate-400"}`} />
+            <span>2027 Edition (Landing Page)</span>
+            <span
+              className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
+                activeTab === "current2027"
+                  ? "bg-emerald-50 text-emerald-700 font-bold"
+                  : "bg-slate-200 text-slate-600"
+              }`}
+            >
+              {currentPartners.length}
+            </span>
+          </button>
 
-        <button
-          onClick={() => setActiveTab("archive")}
-          className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer ${
-            activeTab === "archive"
-              ? "bg-slate-900 text-white shadow-sm"
-              : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-          }`}
-        >
-          <Award className="w-4 h-4" />
-          <span>Previous Editions Archive</span>
-          <span
-            className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${
-              activeTab === "archive" ? "bg-white/20 text-white" : "bg-slate-200 text-slate-700"
+          <button
+            onClick={() => setActiveTab("archive")}
+            className={`px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-2 cursor-pointer ${
+              activeTab === "archive"
+                ? "bg-white text-slate-900 shadow-xs font-bold"
+                : "text-slate-500 hover:text-slate-800"
             }`}
           >
-            {totalPartners}
-          </span>
-        </button>
+            <Award className={`w-3.5 h-3.5 ${activeTab === "archive" ? "text-slate-800" : "text-slate-400"}`} />
+            <span>Previous Editions Archive</span>
+            <span
+              className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
+                activeTab === "archive"
+                  ? "bg-slate-900 text-white font-bold"
+                  : "bg-slate-200 text-slate-600"
+              }`}
+            >
+              {totalPartners}
+            </span>
+          </button>
+        </div>
+
+        {/* Minimal Live Status Bar */}
+        {activeTab === "current2027" && (
+          <div className="flex items-center gap-3 text-xs self-start sm:self-auto">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-slate-200 shadow-2xs">
+              <span
+                className={`w-2 h-2 rounded-full ${
+                  active2027Count > 0
+                    ? "bg-emerald-500 shadow-[0_0_8px_#10B981]"
+                    : "bg-slate-300"
+                }`}
+              />
+              <span className="text-slate-700 font-medium text-[11px]">
+                {active2027Count > 0 ? (
+                  <>
+                    Homepage Strip: <strong className="text-emerald-700 font-semibold">Live</strong> ({active2027Count} active)
+                  </>
+                ) : (
+                  <>
+                    Homepage Strip: <span className="text-slate-500 font-normal">Hidden</span> (0 active)
+                  </>
+                )}
+              </span>
+            </div>
+
+            <Link
+              href="/"
+              target="_blank"
+              className="text-[11px] font-medium text-slate-500 hover:text-slate-900 inline-flex items-center gap-1 transition-colors"
+            >
+              <span>Preview Homepage</span>
+              <ExternalLink className="w-3 h-3 text-slate-400" />
+            </Link>
+          </div>
+        )}
       </div>
 
       {activeTab === "current2027" ? (
-        <div className="space-y-4">
-          {/* Landing Page Live Status Callout */}
-          <div
-            className={`p-4 rounded-2xl border flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all ${
-              active2027Count === 0
-                ? "bg-amber-50/70 border-amber-200/90 text-amber-900"
-                : "bg-emerald-50/70 border-emerald-200/90 text-emerald-950"
-            }`}
-          >
-            <div className="flex items-start gap-3">
-              <div
-                className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-                  active2027Count === 0
-                    ? "bg-amber-100 text-amber-800"
-                    : "bg-emerald-100 text-emerald-800"
-                }`}
-              >
-                {active2027Count === 0 ? (
-                  <EyeOff className="w-5 h-5 text-amber-700" />
-                ) : (
-                  <Eye className="w-5 h-5 text-emerald-700" />
-                )}
-              </div>
-              <div className="space-y-0.5">
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase font-mono tracking-wider ${
-                      active2027Count === 0
-                        ? "bg-amber-200/80 text-amber-900"
-                        : "bg-emerald-200/80 text-emerald-900"
-                    }`}
-                  >
-                    {active2027Count === 0
-                      ? "Landing Page Strip: Currently Hidden"
-                      : `Landing Page Strip: LIVE (${active2027Count} Active)`}
-                  </span>
-                </div>
-                <p className="text-xs font-medium">
-                  {active2027Count === 0
-                    ? "The 2027 Edition Partners Strip is automatically hidden from visitors on the landing page because no active partners are uploaded yet. As soon as you add partners below, the strip will appear on the homepage."
-                    : `Currently displaying ${active2027Count} partner${
-                        active2027Count > 1 ? "s" : ""
-                      } in the marquee strip right before the previous partners section.`}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 self-start md:self-auto shrink-0">
-              <Link
-                href="/"
-                target="_blank"
-                className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-800 text-xs font-semibold border border-slate-200 shadow-xs flex items-center gap-1.5 transition-colors"
-              >
-                <span>Preview Homepage</span>
-                <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
-              </Link>
-              <button
-                onClick={() => {
-                  setAdd2027Logo("/images/logo.webp");
-                  setShowAdd2027Modal(true);
-                }}
-                className="px-4 py-1.5 rounded-xl bg-[#218A59] hover:bg-[#1b734a] text-white text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Add 2027 Partner</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Filter Bar for 2027 Partners */}
+        <div className="space-y-4 pt-1">
+          {/* Minimal Toolbar */}
           {currentPartners.length > 0 && (
-            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200 shadow-xs">
+            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-white p-2.5 rounded-xl border border-slate-200/90 shadow-2xs">
               {/* Category Filter Pills */}
-              <div className="flex items-center gap-1 overflow-x-auto scrollbar-none pb-1 md:pb-0">
+              <div className="flex items-center gap-1 overflow-x-auto scrollbar-none pb-0.5 md:pb-0">
                 <button
                   onClick={() => setSelected2027Tier("All")}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer flex items-center gap-1.5 ${
+                  className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
                     selected2027Tier === "All"
                       ? "bg-slate-900 text-white font-semibold"
                       : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                   }`}
                 >
-                  <span>All</span>
-                  <span
-                    className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                      selected2027Tier === "All" ? "bg-slate-800 text-slate-200" : "bg-slate-100 text-slate-500"
-                    }`}
-                  >
-                    {currentPartners.length}
-                  </span>
+                  All ({currentPartners.length})
                 </button>
 
                 {tiers2027Present.map(({ tier, count }) => {
@@ -750,18 +708,14 @@ export default function AdminSponsorsPage() {
                     <button
                       key={tier}
                       onClick={() => setSelected2027Tier(tier)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer flex items-center gap-1.5 ${
+                      className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
                         isActive
                           ? "bg-slate-900 text-white font-semibold"
                           : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                       }`}
                     >
-                      <span className="truncate max-w-[150px]">{tier}</span>
-                      <span
-                        className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                          isActive ? "bg-slate-800 text-slate-200" : "bg-slate-100 text-slate-500"
-                        }`}
-                      >
+                      <span className="truncate max-w-[140px]">{tier}</span>
+                      <span className={`text-[10px] ${isActive ? "text-slate-300" : "text-slate-400"}`}>
                         {count}
                       </span>
                     </button>
@@ -770,112 +724,103 @@ export default function AdminSponsorsPage() {
               </div>
 
               {/* Search Bar */}
-              <div className="flex items-center gap-2">
-                <div className="relative flex-1 sm:w-60">
-                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                  <input
-                    type="text"
-                    value={search2027}
-                    onChange={(e) => setSearch2027(e.target.value)}
-                    placeholder="Search 2027 partner or category..."
-                    className="w-full pl-8 pr-7 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#218A59] focus:bg-white"
-                  />
-                  {search2027 && (
-                    <button
-                      onClick={() => setSearch2027("")}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  )}
-                </div>
-                <span className="text-xs text-slate-500 font-medium whitespace-nowrap">
-                  {filtered2027.length} {filtered2027.length === 1 ? "organization" : "organizations"}
-                </span>
+              <div className="relative md:w-60 shrink-0">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  type="text"
+                  value={search2027}
+                  onChange={(e) => setSearch2027(e.target.value)}
+                  placeholder="Filter by name or tier..."
+                  className="w-full pl-8 pr-7 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-400 focus:bg-white transition-colors"
+                />
+                {search2027 && (
+                  <button
+                    onClick={() => setSearch2027("")}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
             </div>
           )}
 
           {/* Partners Grid */}
           {isLoadingCurrent ? (
-            <div className="p-12 bg-white rounded-2xl border border-slate-200 flex flex-col items-center justify-center gap-2">
-              <Loader2 className="w-6 h-6 text-[#218A59] animate-spin" />
-              <span className="text-xs text-slate-500">Loading 2027 edition partners...</span>
+            <div className="p-16 bg-white rounded-2xl border border-slate-200 flex flex-col items-center justify-center gap-2">
+              <Loader2 className="w-5 h-5 text-slate-400 animate-spin" />
+              <span className="text-xs text-slate-400">Loading partners...</span>
             </div>
           ) : currentPartners.length === 0 ? (
-            <div className="p-12 sm:p-16 bg-white rounded-2xl border border-dashed border-slate-300 text-center flex flex-col items-center justify-center gap-3">
-              <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-[#218A59] flex items-center justify-center shadow-inner">
-                <Sparkles className="w-7 h-7" />
+            <div className="py-16 px-6 bg-white rounded-2xl border border-slate-200 text-center flex flex-col items-center justify-center max-w-md mx-auto space-y-3 shadow-2xs">
+              <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-500 flex items-center justify-center">
+                <Sparkles className="w-6 h-6 text-slate-400" />
               </div>
-              <div className="space-y-1 max-w-md">
-                <h3 className="text-base font-bold text-slate-900">No 2027 Partners Added Yet</h3>
+              <div className="space-y-1">
+                <h3 className="text-sm font-semibold text-slate-900">No 2027 Partners Added</h3>
                 <p className="text-xs text-slate-500 leading-relaxed">
-                  The homepage partners strip is currently hidden. Once you upload and activate your
-                  first partner or sponsor for the 2027 edition, it will instantly display on the
-                  landing page.
+                  The homepage partner strip is automatically hidden until you add active partners.
                 </p>
               </div>
               <button
                 onClick={() => {
                   setAdd2027Logo("/images/logo.webp");
+                  setAdd2027Category("Title Sponsor");
                   setShowAdd2027Modal(true);
                 }}
-                className="mt-2 px-4 py-2 rounded-xl bg-[#218A59] hover:bg-[#1b734a] text-white text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="mt-1 px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
               >
-                <Plus className="w-4 h-4" />
-                <span>Add First 2027 Partner</span>
+                <Plus className="w-3.5 h-3.5" />
+                <span>Add 2027 Partner</span>
               </button>
             </div>
           ) : filtered2027.length === 0 ? (
-            <div className="p-8 bg-white rounded-xl border border-slate-200 text-center">
-              <p className="text-xs text-slate-500">No partners match your search query &quot;{search2027}&quot;</p>
+            <div className="p-10 bg-white rounded-2xl border border-slate-200 text-center">
+              <p className="text-xs text-slate-500">No partners match &quot;{search2027}&quot;</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {filtered2027.map((partner) => (
                 <div
                   key={partner.id}
-                  className={`bg-white rounded-2xl border p-4 shadow-xs flex flex-col justify-between transition-all duration-200 hover:shadow-md ${
+                  className={`bg-white rounded-2xl border p-4 shadow-2xs hover:shadow-md transition-all duration-200 flex flex-col justify-between group ${
                     partner.active
-                      ? "border-emerald-200/90 ring-1 ring-emerald-500/10"
-                      : "border-slate-200 opacity-60 bg-slate-50/50"
+                      ? "border-slate-200 hover:border-slate-300"
+                      : "border-slate-200/60 bg-slate-50/40 opacity-70"
                   }`}
                 >
                   <div className="space-y-3">
-                    {/* Header Row: Category Badge + Active Toggle */}
+                    {/* Top row: Category Badge & Visibility Toggle */}
                     <div className="flex items-center justify-between gap-2">
-                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase font-mono tracking-wider bg-emerald-50 text-[#007A5E] border border-emerald-200">
+                      <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200/80 truncate">
                         {partner.category}
                       </span>
+
                       <button
                         type="button"
                         onClick={() => handleToggle2027Active(partner.id, partner.name)}
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold transition-colors cursor-pointer ${
-                          partner.active
-                            ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
-                            : "bg-slate-200 text-slate-700 hover:bg-slate-300"
-                        }`}
-                        title="Click to toggle visibility on landing page"
+                        className="inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-500 hover:text-slate-900 cursor-pointer transition-colors"
+                        title={partner.active ? "Click to hide from landing page" : "Click to show on landing page"}
                       >
-                        {partner.active ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-                        <span>{partner.active ? "Live" : "Hidden"}</span>
+                        <span className={`w-2 h-2 rounded-full ${partner.active ? "bg-emerald-500" : "bg-slate-300"}`} />
+                        <span className="text-[10px] font-mono">{partner.active ? "Live" : "Hidden"}</span>
                       </button>
                     </div>
 
                     {/* Logo Box */}
-                    <div className="h-24 w-full relative flex items-center justify-center bg-slate-50/80 rounded-xl p-3 border border-slate-100">
+                    <div className="h-24 w-full relative flex items-center justify-center bg-slate-50/70 rounded-xl p-3 border border-slate-100 group-hover:bg-slate-50 transition-colors">
                       <Image
                         src={partner.logo || "/images/logo.webp"}
                         alt={partner.name}
                         fill
-                        sizes="200px"
+                        sizes="180px"
                         className="object-contain p-2"
                       />
                     </div>
 
                     {/* Partner Name & Website */}
                     <div>
-                      <h4 className="text-sm font-bold text-slate-900 truncate" title={partner.name}>
+                      <h4 className="text-sm font-semibold text-slate-900 truncate" title={partner.name}>
                         {partner.name}
                       </h4>
                       {partner.url ? (
@@ -883,34 +828,36 @@ export default function AdminSponsorsPage() {
                           href={partner.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-[11px] text-slate-500 hover:text-[#218A59] mt-0.5 truncate max-w-full"
+                          className="inline-flex items-center gap-1 text-[11px] text-slate-400 hover:text-slate-700 mt-0.5 truncate max-w-full transition-colors"
                         >
                           <Globe className="w-3 h-3 shrink-0" />
                           <span className="truncate">{partner.url.replace(/^https?:\/\//, "")}</span>
+                          <ExternalLink className="w-2.5 h-2.5 shrink-0 opacity-60" />
                         </a>
                       ) : (
-                        <span className="text-[11px] text-slate-400 italic">No URL provided</span>
+                        <span className="text-[11px] text-slate-400">No URL</span>
                       )}
                     </div>
                   </div>
 
-                  {/* Actions */}
+                  {/* Actions Footer */}
                   <div className="flex items-center justify-between pt-3 mt-3 border-t border-slate-100 text-xs">
                     <span className="text-[10px] text-slate-400 font-mono">
                       Order: {partner.order || 1}
                     </span>
+
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => setEditing2027Partner(partner)}
-                        className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
-                        title="Edit partner"
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
+                        title="Edit Partner"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => handleDelete2027Partner(partner.id, partner.name)}
                         className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-                        title="Delete partner"
+                        title="Delete Partner"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -922,431 +869,403 @@ export default function AdminSponsorsPage() {
           )}
         </div>
       ) : (
-        <div className="space-y-4">
-          {/* Summary KPI Strip */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs">
-            <div>
-              <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">
-                Total Partners
-              </span>
-              <div className="flex items-baseline gap-1.5 mt-0.5">
-                <span className="text-xl font-bold text-slate-900">{totalPartners}</span>
-                <span className="text-xs text-slate-500 font-mono">organizations</span>
-              </div>
-            </div>
-
-            <div>
-              <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">
-                Active Tiers
-              </span>
-              <div className="flex items-baseline gap-1.5 mt-0.5">
-                <span className="text-xl font-bold text-slate-900">{categories.length}</span>
-                <span className="text-xs text-slate-500 font-mono">tiers</span>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between sm:justify-end">
-              <Link
-                href="/sponsors"
-                target="_blank"
-                className="text-xs font-medium text-slate-600 hover:text-[#218A59] flex items-center gap-1.5 transition-colors"
-              >
-                <span>View Public Showcase</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-          </div>
-
-      {/* Filter Bar */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200 shadow-xs">
-        {/* Tier Pills */}
-        <div className="flex items-center gap-1 overflow-x-auto scrollbar-none pb-1 md:pb-0">
-          <button
-            onClick={() => setSelectedTier("All")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer flex items-center gap-1.5 ${
-              selectedTier === "All"
-                ? "bg-slate-900 text-white font-semibold"
-                : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-            }`}
-          >
-            <span>All</span>
-            <span
-              className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                selectedTier === "All" ? "bg-slate-800 text-slate-200" : "bg-slate-100 text-slate-500"
-              }`}
-            >
-              {totalPartners}
-            </span>
-          </button>
-
-          {categories.map((cat) => {
-            const isActive = selectedTier === cat.tier;
-            return (
+        <div className="space-y-4 pt-1">
+          {/* Archive Minimal Toolbar */}
+          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-white p-2.5 rounded-xl border border-slate-200/90 shadow-2xs">
+            {/* Tier Pills */}
+            <div className="flex items-center gap-1 overflow-x-auto scrollbar-none pb-0.5 md:pb-0">
               <button
-                key={cat.tier}
-                onClick={() => setSelectedTier(cat.tier)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer flex items-center gap-1.5 ${
-                  isActive
+                onClick={() => setSelectedTier("All")}
+                className={`px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer flex items-center gap-1.5 ${
+                  selectedTier === "All"
                     ? "bg-slate-900 text-white font-semibold"
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                 }`}
               >
-                <span className="truncate max-w-[150px]">{cat.tier}</span>
+                <span>All</span>
                 <span
-                  className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                    isActive ? "bg-slate-800 text-slate-200" : "bg-slate-100 text-slate-500"
+                  className={`text-[10px] ${
+                    selectedTier === "All" ? "text-slate-300" : "text-slate-400"
                   }`}
                 >
-                  {cat.sponsors.length}
+                  {totalPartners}
                 </span>
               </button>
-            );
-          })}
-        </div>
 
-        {/* Search & View Mode */}
-        <div className="flex items-center gap-2">
-          <div className="relative flex-1 sm:w-60">
-            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search partner, role..."
-              className="w-full pl-8 pr-7 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#218A59] focus:bg-white"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-
-          <div className="flex items-center p-0.5 rounded-lg bg-slate-100 border border-slate-200 shrink-0">
-            <button
-              onClick={() => setViewMode("table")}
-              className={`p-1.5 rounded-md transition-colors cursor-pointer ${
-                viewMode === "table"
-                  ? "bg-white text-slate-900 shadow-xs"
-                  : "text-slate-500 hover:text-slate-800"
-              }`}
-              title="Table view"
-            >
-              <List className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => setViewMode("grid")}
-              className={`p-1.5 rounded-md transition-colors cursor-pointer ${
-                viewMode === "grid"
-                  ? "bg-white text-slate-900 shadow-xs"
-                  : "text-slate-500 hover:text-slate-800"
-              }`}
-              title="Grid view"
-            >
-              <LayoutGrid className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Floating Bulk Action Bar */}
-      {selectedIds.length > 0 && (
-        <div className="sticky top-4 z-30 p-2.5 px-4 rounded-xl bg-slate-900 text-white shadow-xl flex items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2 duration-150">
-          <div className="flex items-center gap-2.5 text-xs">
-            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-500 text-slate-950 font-bold text-[11px]">
-              {selectedIds.length}
-            </span>
-            <span className="font-medium text-slate-200">
-              {selectedIds.length === 1 ? "1 partner selected" : `${selectedIds.length} partners selected`}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setSelectedIds([])}
-              className="px-2.5 py-1 text-xs text-slate-300 hover:text-white transition-colors cursor-pointer"
-            >
-              Deselect All
-            </button>
-            <button
-              onClick={() => setShowBulkDeleteModal(true)}
-              className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-medium text-xs flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-              <span>Delete Selected</span>
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Content: Table or Grid */}
-      {isLoading ? (
-        <div className="py-20 flex flex-col items-center justify-center text-slate-400 bg-white rounded-xl border border-slate-200">
-          <Loader2 className="w-6 h-6 animate-spin text-[#218A59] mb-2" />
-          <span className="text-xs">Loading partners...</span>
-        </div>
-      ) : filteredSponsors.length === 0 ? (
-        <div className="py-16 px-4 flex flex-col items-center justify-center text-center bg-white rounded-xl border border-slate-200 shadow-xs">
-          <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
-            <Award className="w-6 h-6" />
-          </div>
-          <h3 className="text-sm font-semibold text-slate-800">No partners found</h3>
-          <p className="text-xs text-slate-500 max-w-sm mt-1 mb-4">
-            {searchQuery || selectedTier !== "All"
-              ? "Try selecting another tier or clearing your search term."
-              : "Get started by adding your first official sponsor or supporting partner."}
-          </p>
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="px-3.5 py-1.5 rounded-lg bg-[#218A59] hover:bg-[#1b734a] text-white text-xs font-medium cursor-pointer shadow-xs"
-          >
-            Add Partner
-          </button>
-        </div>
-      ) : viewMode === "table" ? (
-        /* Minimal Table View */
-        <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="bg-slate-50/80 border-b border-slate-200 text-[11px] font-mono text-slate-500 uppercase tracking-wider">
-                  <th className="py-3 pl-4 pr-2 w-10">
-                    <input
-                      ref={masterCheckboxRef}
-                      type="checkbox"
-                      checked={isAllFilteredSelected}
-                      onChange={handleToggleSelectAll}
-                      className="w-4 h-4 rounded border-slate-300 text-[#218A59] focus:ring-[#218A59] cursor-pointer"
-                      title={isAllFilteredSelected ? "Deselect all" : "Select all"}
-                    />
-                  </th>
-                  <th className="py-3 px-3">Organization & Partner</th>
-                  <th className="py-3 px-3">Sponsorship Tier</th>
-                  <th className="py-3 px-3">Designation Role</th>
-                  <th className="py-3 px-3">Website</th>
-                  <th className="py-3 pr-4 pl-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700">
-                {filteredSponsors.map((sponsor) => {
-                  const isSelected = selectedIds.includes(sponsor.id);
-
-                  return (
-                    <tr
-                      key={sponsor.id}
-                      className={`hover:bg-slate-50/70 transition-colors ${
-                        isSelected ? "bg-emerald-50/30" : ""
+              {categories.map((cat) => {
+                const isActive = selectedTier === cat.tier;
+                return (
+                  <button
+                    key={cat.tier}
+                    onClick={() => setSelectedTier(cat.tier)}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer flex items-center gap-1.5 ${
+                      isActive
+                        ? "bg-slate-900 text-white font-semibold"
+                        : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                    }`}
+                  >
+                    <span className="truncate max-w-[140px]">{cat.tier}</span>
+                    <span
+                      className={`text-[10px] ${
+                        isActive ? "text-slate-300" : "text-slate-400"
                       }`}
                     >
-                      {/* Checkbox */}
-                      <td className="py-3 pl-4 pr-2">
+                      {cat.sponsors.length}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Actions, Search & View Switcher */}
+            <div className="flex items-center gap-2 shrink-0">
+              <div className="relative flex-1 sm:w-56">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Filter archive..."
+                  className="w-full pl-8 pr-7 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-400 focus:bg-white transition-colors"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+
+              {/* View Switcher */}
+              <div className="flex items-center p-0.5 rounded-lg bg-slate-100 border border-slate-200/80 shrink-0">
+                <button
+                  onClick={() => setViewMode("table")}
+                  className={`p-1.5 rounded-md transition-colors cursor-pointer ${
+                    viewMode === "table"
+                      ? "bg-white text-slate-900 shadow-2xs"
+                      : "text-slate-500 hover:text-slate-800"
+                  }`}
+                  title="Table view"
+                >
+                  <List className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`p-1.5 rounded-md transition-colors cursor-pointer ${
+                    viewMode === "grid"
+                      ? "bg-white text-slate-900 shadow-2xs"
+                      : "text-slate-500 hover:text-slate-800"
+                  }`}
+                  title="Grid view"
+                >
+                  <LayoutGrid className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <Link
+                href="/sponsors"
+                target="_blank"
+                className="hidden sm:inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-900 font-medium px-1.5 transition-colors"
+                title="View public showcase"
+              >
+                <span>Public Page</span>
+                <ExternalLink className="w-3 h-3 text-slate-400" />
+              </Link>
+            </div>
+          </div>
+
+          {/* Floating Bulk Action Bar */}
+          {selectedIds.length > 0 && (
+            <div className="sticky top-4 z-30 p-2.5 px-4 rounded-xl bg-slate-900 text-white shadow-xl flex items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2 duration-150">
+              <div className="flex items-center gap-2.5 text-xs">
+                <span className="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-500 text-slate-950 font-bold text-[11px]">
+                  {selectedIds.length}
+                </span>
+                <span className="font-medium text-slate-200">
+                  {selectedIds.length === 1 ? "1 partner selected" : `${selectedIds.length} partners selected`}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setSelectedIds([])}
+                  className="px-2.5 py-1 text-xs text-slate-300 hover:text-white transition-colors cursor-pointer"
+                >
+                  Deselect All
+                </button>
+                <button
+                  onClick={() => setShowBulkDeleteModal(true)}
+                  className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-medium text-xs flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Delete Selected</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Content: Table or Grid */}
+          {isLoading ? (
+            <div className="py-20 flex flex-col items-center justify-center text-slate-400 bg-white rounded-2xl border border-slate-200">
+              <Loader2 className="w-5 h-5 animate-spin text-slate-400 mb-2" />
+              <span className="text-xs">Loading partners...</span>
+            </div>
+          ) : filteredSponsors.length === 0 ? (
+            <div className="py-16 px-4 flex flex-col items-center justify-center text-center bg-white rounded-2xl border border-slate-200 shadow-2xs">
+              <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
+                <Award className="w-6 h-6 text-slate-400" />
+              </div>
+              <h3 className="text-sm font-semibold text-slate-800">No partners found</h3>
+              <p className="text-xs text-slate-500 max-w-sm mt-1 mb-4">
+                {searchQuery || selectedTier !== "All"
+                  ? "Try selecting another tier or clearing your search term."
+                  : "Get started by adding your first historical partner."}
+              </p>
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold cursor-pointer shadow-xs transition-colors"
+              >
+                Add Partner
+              </button>
+            </div>
+          ) : viewMode === "table" ? (
+            /* Minimal Table View */
+            <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="bg-slate-50/70 border-b border-slate-200/80 text-[11px] font-mono text-slate-500 uppercase tracking-wider font-semibold">
+                      <th className="py-3 pl-4 pr-2 w-10">
+                        <input
+                          ref={masterCheckboxRef}
+                          type="checkbox"
+                          checked={isAllFilteredSelected}
+                          onChange={handleToggleSelectAll}
+                          className="w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900 cursor-pointer"
+                          title={isAllFilteredSelected ? "Deselect all" : "Select all"}
+                        />
+                      </th>
+                      <th className="py-3 px-3">Organization</th>
+                      <th className="py-3 px-3">Sponsorship Tier</th>
+                      <th className="py-3 px-3">Designation Role</th>
+                      <th className="py-3 px-3">Website</th>
+                      <th className="py-3 pr-4 pl-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-slate-700">
+                    {filteredSponsors.map((sponsor) => {
+                      const isSelected = selectedIds.includes(sponsor.id);
+
+                      return (
+                        <tr
+                          key={sponsor.id}
+                          className={`hover:bg-slate-50/80 transition-colors ${
+                            isSelected ? "bg-slate-50" : ""
+                          }`}
+                        >
+                          {/* Checkbox */}
+                          <td className="py-3 pl-4 pr-2">
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => handleToggleSelectOne(sponsor.id)}
+                              className="w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900 cursor-pointer"
+                            />
+                          </td>
+
+                          {/* Partner & Logo */}
+                          <td className="py-3 px-3">
+                            <div className="flex items-center gap-3">
+                              <div className="relative w-8 h-8 rounded-lg bg-slate-50 border border-slate-200/80 overflow-hidden shrink-0 flex items-center justify-center">
+                                {sponsor.logo ? (
+                                  <Image
+                                    src={sponsor.logo}
+                                    alt={sponsor.name}
+                                    fill
+                                    unoptimized
+                                    className="object-contain p-1"
+                                  />
+                                ) : (
+                                  <Building2 className="w-4 h-4 text-slate-400" />
+                                )}
+                              </div>
+                              <span className="font-semibold text-slate-900 truncate max-w-xs">
+                                {sponsor.name}
+                              </span>
+                            </div>
+                          </td>
+
+                          {/* Tier */}
+                          <td className="py-3 px-3 whitespace-nowrap">
+                            <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[11px] font-mono font-medium">
+                              {sponsor.tier}
+                            </span>
+                          </td>
+
+                          {/* Designation */}
+                          <td className="py-3 px-3 text-slate-600 font-medium">
+                            {sponsor.type || <span className="text-slate-400">—</span>}
+                          </td>
+
+                          {/* URL */}
+                          <td className="py-3 px-3 whitespace-nowrap">
+                            {sponsor.url ? (
+                              <a
+                                href={sponsor.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-slate-400 hover:text-slate-700 font-mono text-[11px] inline-flex items-center gap-1 transition-colors"
+                              >
+                                <span className="truncate max-w-[160px]">
+                                  {sponsor.url.replace(/^https?:\/\//, "")}
+                                </span>
+                                <ExternalLink className="w-2.5 h-2.5 shrink-0 opacity-60" />
+                              </a>
+                            ) : (
+                              <span className="text-slate-400">—</span>
+                            )}
+                          </td>
+
+                          {/* Actions */}
+                          <td className="py-3 pr-4 pl-3 text-right whitespace-nowrap">
+                            <div className="flex items-center justify-end gap-1">
+                              <button
+                                onClick={() => setEditingSponsor(sponsor)}
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
+                                title="Edit"
+                              >
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteSponsor(sponsor.id, sponsor.name)}
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                                title="Delete"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Footer */}
+              <div className="p-3 px-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between text-[11px] text-slate-500 font-mono">
+                <span>
+                  Showing {filteredSponsors.length} of {totalPartners} partners
+                </span>
+                <span>{categories.length} sponsorship tiers</span>
+              </div>
+            </div>
+          ) : (
+            /* Minimal Grid View */
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {filteredSponsors.map((sponsor) => {
+                const isSelected = selectedIds.includes(sponsor.id);
+
+                return (
+                  <div
+                    key={sponsor.id}
+                    className={`bg-white rounded-2xl border p-4 shadow-2xs hover:shadow-md transition-all duration-200 flex flex-col justify-between group ${
+                      isSelected
+                        ? "border-slate-900 ring-1 ring-slate-900"
+                        : "border-slate-200/90 hover:border-slate-300"
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between gap-2 mb-2">
                         <input
                           type="checkbox"
                           checked={isSelected}
                           onChange={() => handleToggleSelectOne(sponsor.id)}
-                          className="w-4 h-4 rounded border-slate-300 text-[#218A59] focus:ring-[#218A59] cursor-pointer"
+                          className="w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900 cursor-pointer"
                         />
-                      </td>
-
-                      {/* Partner & Logo */}
-                      <td className="py-3 px-3">
-                        <div className="flex items-center gap-3">
-                          <div className="relative w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center">
-                            {sponsor.logo ? (
-                              <Image
-                                src={sponsor.logo}
-                                alt={sponsor.name}
-                                fill
-                                unoptimized
-                                className="object-contain p-1"
-                              />
-                            ) : (
-                              <Building2 className="w-4 h-4 text-slate-400" />
-                            )}
-                          </div>
-                          <div>
-                            <span className="font-semibold text-slate-900 block">
-                              {sponsor.name}
-                            </span>
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* Tier */}
-                      <td className="py-3 px-3 whitespace-nowrap">
-                        <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[11px] font-medium">
+                        <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[10px] font-mono font-medium truncate max-w-[140px]">
                           {sponsor.tier}
                         </span>
-                      </td>
+                      </div>
 
-                      {/* Designation */}
-                      <td className="py-3 px-3 text-slate-600">
-                        <span className="text-[#218A59] font-medium">
-                          {sponsor.type}
-                        </span>
-                      </td>
-
-                      {/* URL */}
-                      <td className="py-3 px-3 whitespace-nowrap">
-                        {sponsor.url ? (
-                          <a
-                            href={sponsor.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-slate-500 hover:text-[#218A59] font-mono text-[11px] flex items-center gap-1 transition-colors"
-                          >
-                            <span className="truncate max-w-[160px]">
-                              {sponsor.url.replace(/^https?:\/\//, "")}
-                            </span>
-                            <ExternalLink className="w-3 h-3 shrink-0" />
-                          </a>
+                      <div className="h-20 w-full relative flex items-center justify-center bg-slate-50/70 rounded-xl p-3 border border-slate-100 group-hover:bg-slate-50 transition-colors my-2.5">
+                        {sponsor.logo ? (
+                          <Image
+                            src={sponsor.logo}
+                            alt={sponsor.name}
+                            fill
+                            unoptimized
+                            className="object-contain p-2"
+                          />
                         ) : (
-                          <span className="text-slate-400">—</span>
+                          <Building2 className="w-5 h-5 text-slate-400" />
                         )}
-                      </td>
+                      </div>
 
-                      {/* Actions */}
-                      <td className="py-3 pr-4 pl-3 text-right whitespace-nowrap">
-                        <div className="flex items-center justify-end gap-1">
-                          <button
-                            onClick={() => setEditingSponsor(sponsor)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-[#218A59] hover:bg-slate-100 transition-colors cursor-pointer"
-                            title="Edit"
-                          >
-                            <Edit2 className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteSponsor(sponsor.id, sponsor.name)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                      <div className="space-y-0.5">
+                        <h4 className="font-semibold text-xs text-slate-900 truncate" title={sponsor.name}>
+                          {sponsor.name}
+                        </h4>
+                        <p className="text-[11px] text-slate-500 font-medium truncate">
+                          {sponsor.type || "—"}
+                        </p>
+                      </div>
+                    </div>
 
-          {/* Footer */}
-          <div className="p-3 px-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between text-[11px] text-slate-500">
-            <span>
-              Showing {filteredSponsors.length} of {totalPartners} partners
-            </span>
-            <span>{categories.length} sponsorship tiers</span>
-          </div>
-        </div>
-      ) : (
-        /* Minimal Grid View */
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5">
-          {filteredSponsors.map((sponsor) => {
-            const isSelected = selectedIds.includes(sponsor.id);
-
-            return (
-              <div
-                key={sponsor.id}
-                className={`bg-white rounded-xl border p-3.5 flex flex-col justify-between gap-3 transition-all shadow-xs ${
-                  isSelected
-                    ? "border-emerald-500 ring-1 ring-emerald-500 bg-emerald-50/20"
-                    : "border-slate-200 hover:border-slate-300"
-                }`}
-              >
-                <div>
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => handleToggleSelectOne(sponsor.id)}
-                      className="w-4 h-4 rounded border-slate-300 text-[#218A59] focus:ring-[#218A59] cursor-pointer"
-                    />
-                    <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-medium truncate max-w-[140px]">
-                      {sponsor.tier}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2.5">
-                    <div className="relative w-10 h-10 rounded-lg bg-slate-50 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center">
-                      {sponsor.logo ? (
-                        <Image
-                          src={sponsor.logo}
-                          alt={sponsor.name}
-                          fill
-                          unoptimized
-                          className="object-contain p-1"
-                        />
+                    <div className="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                      {sponsor.url ? (
+                        <a
+                          href={sponsor.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-slate-400 hover:text-slate-700 inline-flex items-center gap-1 font-mono text-[10px] truncate max-w-[120px] transition-colors"
+                        >
+                          <span className="truncate">{sponsor.url.replace(/^https?:\/\//, "")}</span>
+                          <ExternalLink className="w-2.5 h-2.5 shrink-0 opacity-60" />
+                        </a>
                       ) : (
-                        <Building2 className="w-5 h-5 text-slate-400" />
+                        <span className="text-slate-400 text-[10px]">—</span>
                       )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h4 className="font-semibold text-xs text-slate-900 line-clamp-1">
-                        {sponsor.name}
-                      </h4>
-                      <p className="text-[11px] text-[#218A59] font-medium line-clamp-1 mt-0.5">
-                        {sponsor.type}
-                      </p>
+
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => setEditingSponsor(sponsor)}
+                          className="p-1 rounded-md text-slate-400 hover:text-slate-800 hover:bg-slate-100 cursor-pointer transition-colors"
+                          title="Edit"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteSponsor(sponsor.id, sponsor.name)}
+                          className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer transition-colors"
+                          title="Delete"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
-                  {sponsor.url ? (
-                    <a
-                      href={sponsor.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-slate-500 hover:text-slate-800 flex items-center gap-1 font-mono text-[10px] truncate max-w-[120px]"
-                    >
-                      <span className="truncate">{sponsor.url.replace(/^https?:\/\//, "")}</span>
-                      <ExternalLink className="w-2.5 h-2.5 shrink-0" />
-                    </a>
-                  ) : (
-                    <span className="text-slate-400 text-[10px]">—</span>
-                  )}
-
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => setEditingSponsor(sponsor)}
-                      className="p-1 rounded-md text-slate-400 hover:text-[#218A59] hover:bg-slate-100 cursor-pointer"
-                      title="Edit"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteSponsor(sponsor.id, sponsor.name)}
-                      className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer"
-                      title="Delete"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 
       {/* Bulk Delete Modal */}
       {showBulkDeleteModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-sm bg-white rounded-2xl p-5 shadow-2xl space-y-4 border border-slate-200 animate-in fade-in zoom-in-95 duration-150">
-            <div className="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
+        <div className="fixed inset-0 z-50 bg-slate-950/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-sm bg-white rounded-2xl p-6 shadow-2xl space-y-4 border border-slate-200/90 animate-in fade-in zoom-in-95 duration-150">
+            <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto border border-rose-100">
               <Trash2 className="w-5 h-5" />
             </div>
             <div className="text-center space-y-1">
-              <h3 className="text-base font-bold text-slate-900">
+              <h3 className="text-sm font-bold text-slate-900">
                 Remove {selectedIds.length} {selectedIds.length === 1 ? "partner" : "partners"}?
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 leading-relaxed">
                 This will remove the selected organizations from the official sponsors showcase.
               </p>
             </div>
@@ -1355,7 +1274,7 @@ export default function AdminSponsorsPage() {
                 type="button"
                 onClick={() => setShowBulkDeleteModal(false)}
                 disabled={isBulkDeleting}
-                className="flex-1 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold cursor-pointer"
+                className="flex-1 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold cursor-pointer transition-colors"
               >
                 Cancel
               </button>
@@ -1363,7 +1282,7 @@ export default function AdminSponsorsPage() {
                 type="button"
                 onClick={handleBulkDelete}
                 disabled={isBulkDeleting}
-                className="flex-1 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60"
+                className="flex-1 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60 transition-colors"
               >
                 {isBulkDeleting ? (
                   <>
@@ -1379,15 +1298,15 @@ export default function AdminSponsorsPage() {
         </div>
       )}
 
-      {/* Add Partner Modal */}
+      {/* Add Partner Modal (Archive) */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl p-5 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 bg-slate-950/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-white border border-slate-200/90 rounded-2xl p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="font-bold text-base text-slate-900">Add Partner or Sponsor</h3>
+              <h3 className="font-bold text-sm text-slate-900">Add Historical Partner</h3>
               <button
                 onClick={() => setShowAddModal(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 cursor-pointer"
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 cursor-pointer transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1395,27 +1314,27 @@ export default function AdminSponsorsPage() {
 
             <form onSubmit={handleAddSubmit} className="space-y-3.5 text-xs">
               <div>
-                <label className="block text-[11px] font-mono font-medium text-slate-700 mb-1">
-                  ORGANIZATION NAME *
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Organization Name *
                 </label>
                 <input
                   type="text"
                   name="name"
                   required
                   placeholder="e.g. World Bank Nepal / Voith Hydro"
-                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#218A59] focus:bg-white"
+                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-400 focus:bg-white transition-colors"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-mono font-medium text-slate-700 mb-1">
-                    SPONSORSHIP TIER *
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    Sponsorship Tier *
                   </label>
                   <select
                     name="tier"
                     defaultValue={categories[0]?.tier || "Government & Patron"}
-                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59] focus:bg-white cursor-pointer"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-slate-400 focus:bg-white cursor-pointer transition-colors"
                   >
                     {categories.map((c) => (
                       <option key={c.tier} value={c.tier}>
@@ -1425,35 +1344,35 @@ export default function AdminSponsorsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[11px] font-mono font-medium text-slate-700 mb-1">
-                    DESIGNATION ROLE
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    Designation Role
                   </label>
                   <input
                     type="text"
                     name="type"
                     placeholder="e.g. Platinum Partner"
-                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#218A59] focus:bg-white"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-400 focus:bg-white transition-colors"
                   />
                 </div>
               </div>
 
               <ImageUploadField
                 name="logo"
-                label="Sponsor Logo"
+                label="Partner Logo"
                 value={addModalLogo}
                 onChange={setAddModalLogo}
                 folder="sponsors"
               />
 
               <div>
-                <label className="block text-[11px] font-mono font-medium text-slate-700 mb-1">
-                  OFFICIAL WEBSITE URL
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Official Website URL
                 </label>
                 <input
                   type="url"
                   name="url"
                   placeholder="https://..."
-                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#218A59] focus:bg-white"
+                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-400 focus:bg-white transition-colors"
                 />
               </div>
 
@@ -1461,14 +1380,14 @@ export default function AdminSponsorsPage() {
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-3.5 py-2 rounded-xl text-slate-600 hover:text-slate-900 font-medium cursor-pointer"
+                  className="px-3.5 py-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 font-medium cursor-pointer transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-4 py-2 rounded-xl bg-[#218A59] hover:bg-[#1b734a] text-white font-medium flex items-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-60"
+                  className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-60 transition-colors"
                 >
                   <Save className="w-3.5 h-3.5" />
                   <span>{isSaving ? "Saving..." : "Add Partner"}</span>
@@ -1479,15 +1398,15 @@ export default function AdminSponsorsPage() {
         </div>
       )}
 
-      {/* Edit Partner Modal */}
+      {/* Edit Partner Modal (Archive) */}
       {editingSponsor && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl p-5 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 bg-slate-950/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-white border border-slate-200/90 rounded-2xl p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="font-bold text-base text-slate-900">Edit Partner</h3>
+              <h3 className="font-bold text-sm text-slate-900">Edit Historical Partner</h3>
               <button
                 onClick={() => setEditingSponsor(null)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 cursor-pointer"
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 cursor-pointer transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1495,27 +1414,27 @@ export default function AdminSponsorsPage() {
 
             <form onSubmit={handleSaveEdit} className="space-y-3.5 text-xs">
               <div>
-                <label className="block text-[11px] font-mono font-medium text-slate-700 mb-1">
-                  ORGANIZATION NAME *
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Organization Name *
                 </label>
                 <input
                   type="text"
                   name="name"
                   required
                   defaultValue={editingSponsor.name}
-                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59] focus:bg-white"
+                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-slate-400 focus:bg-white transition-colors"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-mono font-medium text-slate-700 mb-1">
-                    SPONSORSHIP TIER *
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    Sponsorship Tier *
                   </label>
                   <select
                     name="tier"
                     defaultValue={editingSponsor.tier}
-                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59] focus:bg-white cursor-pointer"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-slate-400 focus:bg-white cursor-pointer transition-colors"
                   >
                     {categories.map((c) => (
                       <option key={c.tier} value={c.tier}>
@@ -1525,21 +1444,21 @@ export default function AdminSponsorsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[11px] font-mono font-medium text-slate-700 mb-1">
-                    DESIGNATION ROLE
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    Designation Role
                   </label>
                   <input
                     type="text"
                     name="type"
                     defaultValue={editingSponsor.type}
-                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59] focus:bg-white"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-slate-400 focus:bg-white transition-colors"
                   />
                 </div>
               </div>
 
               <ImageUploadField
                 name="logo"
-                label="Sponsor Logo"
+                label="Partner Logo"
                 value={editingSponsor.logo}
                 onChange={(url) =>
                   setEditingSponsor({ ...editingSponsor, logo: url })
@@ -1548,14 +1467,14 @@ export default function AdminSponsorsPage() {
               />
 
               <div>
-                <label className="block text-[11px] font-mono font-medium text-slate-700 mb-1">
-                  OFFICIAL WEBSITE URL
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Official Website URL
                 </label>
                 <input
                   type="url"
                   name="url"
                   defaultValue={editingSponsor.url}
-                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59] focus:bg-white"
+                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-slate-400 focus:bg-white transition-colors"
                 />
               </div>
 
@@ -1563,14 +1482,14 @@ export default function AdminSponsorsPage() {
                 <button
                   type="button"
                   onClick={() => setEditingSponsor(null)}
-                  className="px-3.5 py-2 rounded-xl text-slate-600 hover:text-slate-900 font-medium cursor-pointer"
+                  className="px-3.5 py-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 font-medium cursor-pointer transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-4 py-2 rounded-xl bg-[#218A59] hover:bg-[#1b734a] text-white font-medium flex items-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-60"
+                  className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-60 transition-colors"
                 >
                   <Save className="w-3.5 h-3.5" />
                   <span>{isSaving ? "Saving..." : "Save Changes"}</span>
@@ -1583,18 +1502,18 @@ export default function AdminSponsorsPage() {
 
       {/* Add 2027 Partner Modal */}
       {showAdd2027Modal && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl p-5 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 bg-slate-950/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-white border border-slate-200/90 rounded-2xl p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-[#218A59] font-mono text-[10px] font-bold uppercase">
+                <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-mono text-[10px] font-bold uppercase tracking-wider">
                   2027 Edition
                 </span>
-                <h3 className="font-bold text-base text-slate-900">Add 2027 Partner</h3>
+                <h3 className="font-bold text-sm text-slate-900">Add 2027 Partner</h3>
               </div>
               <button
                 onClick={() => setShowAdd2027Modal(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 cursor-pointer"
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 cursor-pointer transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1602,22 +1521,22 @@ export default function AdminSponsorsPage() {
 
             <form onSubmit={handleAdd2027Submit} className="space-y-3.5 text-xs">
               <div>
-                <label className="block text-[11px] font-mono font-medium text-slate-700 mb-1">
-                  ORGANIZATION NAME *
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Organization Name *
                 </label>
                 <input
                   type="text"
                   name="name"
                   required
                   placeholder="e.g. Nepal Electricity Authority / Huawei Digital Power"
-                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#218A59] focus:bg-white"
+                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-400 focus:bg-white transition-colors"
                 />
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-[11px] font-mono font-medium text-slate-700">
-                    SPONSORSHIP CATEGORY / TIER *
+                  <label className="block text-xs font-semibold text-slate-700">
+                    Sponsorship Category / Tier *
                   </label>
                   <span className="text-[10px] text-slate-400 font-mono">
                     Presets or custom text
@@ -1631,10 +1550,10 @@ export default function AdminSponsorsPage() {
                       key={chip}
                       type="button"
                       onClick={() => setAdd2027Category(chip)}
-                      className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer border ${
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all cursor-pointer border ${
                         add2027Category === chip
-                          ? "bg-[#218A59] text-white border-[#218A59] shadow-xs"
-                          : "bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200"
+                          ? "bg-slate-900 text-white border-slate-900 shadow-2xs font-semibold"
+                          : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200"
                       }`}
                     >
                       {chip}
@@ -1651,7 +1570,7 @@ export default function AdminSponsorsPage() {
                     onChange={(e) => setAdd2027Category(e.target.value)}
                     list="sponsorship-tiers-add-list"
                     placeholder="e.g. Title Sponsor, In Association With, Sponsorship..."
-                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59] focus:bg-white text-xs font-medium"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-slate-400 focus:bg-white text-xs font-medium transition-colors"
                   />
                   <datalist id="sponsorship-tiers-add-list">
                     {SPONSORSHIP_TIERS_2027.map((tier) => (
@@ -1670,14 +1589,14 @@ export default function AdminSponsorsPage() {
               />
 
               <div>
-                <label className="block text-[11px] font-mono font-medium text-slate-700 mb-1">
-                  OFFICIAL WEBSITE URL
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Official Website URL
                 </label>
                 <input
                   type="url"
                   name="url"
                   placeholder="https://..."
-                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#218A59] focus:bg-white"
+                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-400 focus:bg-white transition-colors"
                 />
               </div>
 
@@ -1687,7 +1606,7 @@ export default function AdminSponsorsPage() {
                     type="checkbox"
                     name="active"
                     defaultChecked={true}
-                    className="w-4 h-4 rounded border-slate-300 text-[#218A59] focus:ring-[#218A59]"
+                    className="w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900"
                   />
                   <span className="text-xs font-semibold text-slate-800">
                     Display on Homepage Marquee Strip
@@ -1702,21 +1621,21 @@ export default function AdminSponsorsPage() {
                 <button
                   type="button"
                   onClick={() => setShowAdd2027Modal(false)}
-                  className="px-3.5 py-2 rounded-xl text-slate-600 hover:text-slate-900 font-medium cursor-pointer"
+                  className="px-3.5 py-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 font-medium cursor-pointer transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving2027}
-                  className="px-4 py-2 rounded-xl bg-[#218A59] hover:bg-[#1b734a] text-white font-medium flex items-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-60"
+                  className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-60 transition-colors"
                 >
                   {isSaving2027 ? (
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
                   ) : (
                     <Save className="w-3.5 h-3.5" />
                   )}
-                  <span>{isSaving2027 ? "Saving..." : "Add to 2027 Edition"}</span>
+                  <span>{isSaving2027 ? "Saving..." : "Add Partner"}</span>
                 </button>
               </div>
             </form>
@@ -1726,18 +1645,18 @@ export default function AdminSponsorsPage() {
 
       {/* Edit 2027 Partner Modal */}
       {editing2027Partner && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl p-5 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 bg-slate-950/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-white border border-slate-200/90 rounded-2xl p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-[#218A59] font-mono text-[10px] font-bold uppercase">
+                <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-mono text-[10px] font-bold uppercase tracking-wider">
                   2027 Edition
                 </span>
-                <h3 className="font-bold text-base text-slate-900">Edit 2027 Partner</h3>
+                <h3 className="font-bold text-sm text-slate-900">Edit 2027 Partner</h3>
               </div>
               <button
                 onClick={() => setEditing2027Partner(null)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 cursor-pointer"
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 cursor-pointer transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1745,22 +1664,22 @@ export default function AdminSponsorsPage() {
 
             <form onSubmit={handleEdit2027Submit} className="space-y-3.5 text-xs">
               <div>
-                <label className="block text-[11px] font-mono font-medium text-slate-700 mb-1">
-                  ORGANIZATION NAME *
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Organization Name *
                 </label>
                 <input
                   type="text"
                   name="name"
                   required
                   defaultValue={editing2027Partner.name}
-                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59] focus:bg-white"
+                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-slate-400 focus:bg-white transition-colors"
                 />
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-[11px] font-mono font-medium text-slate-700">
-                    SPONSORSHIP CATEGORY / TIER *
+                  <label className="block text-xs font-semibold text-slate-700">
+                    Sponsorship Category / Tier *
                   </label>
                   <span className="text-[10px] text-slate-400 font-mono">
                     Presets or custom text
@@ -1776,10 +1695,10 @@ export default function AdminSponsorsPage() {
                       onClick={() =>
                         setEditing2027Partner({ ...editing2027Partner, category: chip })
                       }
-                      className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer border ${
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all cursor-pointer border ${
                         editing2027Partner.category === chip
-                          ? "bg-[#218A59] text-white border-[#218A59] shadow-xs"
-                          : "bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200"
+                          ? "bg-slate-900 text-white border-slate-900 shadow-2xs font-semibold"
+                          : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200"
                       }`}
                     >
                       {chip}
@@ -1797,7 +1716,7 @@ export default function AdminSponsorsPage() {
                       setEditing2027Partner({ ...editing2027Partner, category: e.target.value })
                     }
                     list="sponsorship-tiers-edit-list"
-                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59] focus:bg-white text-xs font-medium"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-slate-400 focus:bg-white text-xs font-medium transition-colors"
                   />
                   <datalist id="sponsorship-tiers-edit-list">
                     {SPONSORSHIP_TIERS_2027.map((tier) => (
@@ -1818,15 +1737,15 @@ export default function AdminSponsorsPage() {
               />
 
               <div>
-                <label className="block text-[11px] font-mono font-medium text-slate-700 mb-1">
-                  OFFICIAL WEBSITE URL
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Official Website URL
                 </label>
                 <input
                   type="url"
                   name="url"
                   defaultValue={editing2027Partner.url || ""}
                   placeholder="https://..."
-                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59] focus:bg-white"
+                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-slate-400 focus:bg-white transition-colors"
                 />
               </div>
 
@@ -1836,7 +1755,7 @@ export default function AdminSponsorsPage() {
                     type="checkbox"
                     name="active"
                     defaultChecked={editing2027Partner.active !== false}
-                    className="w-4 h-4 rounded border-slate-300 text-[#218A59] focus:ring-[#218A59]"
+                    className="w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900"
                   />
                   <span className="text-xs font-semibold text-slate-800">
                     Display on Homepage Marquee Strip
@@ -1851,14 +1770,14 @@ export default function AdminSponsorsPage() {
                 <button
                   type="button"
                   onClick={() => setEditing2027Partner(null)}
-                  className="px-3.5 py-2 rounded-xl text-slate-600 hover:text-slate-900 font-medium cursor-pointer"
+                  className="px-3.5 py-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 font-medium cursor-pointer transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving2027}
-                  className="px-4 py-2 rounded-xl bg-[#218A59] hover:bg-[#1b734a] text-white font-medium flex items-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-60"
+                  className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-60 transition-colors"
                 >
                   {isSaving2027 ? (
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
