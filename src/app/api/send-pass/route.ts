@@ -6,31 +6,12 @@ import fs from "fs";
 import path from "path";
 import opentype from "opentype.js";
 import { encryptPassToken, generateSecurityChecksum } from "@/lib/passSecurity";
+import { getEmbeddedFont, NOTO_SANS_BASE64 } from "@/lib/badgeFont";
 
 export const dynamic = "force-dynamic";
 
-let cachedFont: opentype.Font | null = null;
-
 function getFont(): opentype.Font | null {
-  if (cachedFont) return cachedFont;
-  try {
-    const candidates = [
-      path.join(process.cwd(), "src", "data", "fonts", "NotoSans-Regular.ttf"),
-      path.join(process.cwd(), "public", "fonts", "NotoSans-Regular.ttf"),
-      path.join(process.cwd(), "data", "fonts", "NotoSans-Regular.ttf"),
-      path.join(process.cwd(), "node_modules", "next", "dist", "compiled", "@vercel", "og", "noto-sans-v27-latin-regular.ttf"),
-    ];
-    for (const p of candidates) {
-      if (fs.existsSync(p)) {
-        const buf = fs.readFileSync(p);
-        cachedFont = opentype.parse(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength));
-        return cachedFont;
-      }
-    }
-  } catch (err) {
-    console.warn("[send-pass] Could not load font for SVG path rendering:", err);
-  }
-  return null;
+  return getEmbeddedFont();
 }
 
 function renderTextToPath(opts: {
@@ -201,82 +182,93 @@ async function generateBadgePng(opts: {
 
   // Positioning
   const nameX = ((template?.namePlacement?.x ?? 50) / 100) * width;
-  const nameY = ((template?.namePlacement?.y ?? 38) / 100) * height;
+  const nameY = ((template?.namePlacement?.y ?? 50) / 100) * height;
   const nameColor = template?.namePlacement?.color || "#061A2A";
-  const nameFontSize = (template?.namePlacement?.fontSize || 20) * scale;
+  const nameFontSize = (template?.namePlacement?.fontSize || 18) * scale;
 
   const orgX = ((template?.orgPlacement?.x ?? 50) / 100) * width;
-  const orgY = ((template?.orgPlacement?.y ?? 46) / 100) * height;
-  const orgColor = template?.orgPlacement?.color || (role === "exhibitor" ? "#19A974" : "#087EA4");
-  const orgFontSize = (template?.orgPlacement?.fontSize || 13) * scale;
+  const orgY = 742;
+  const orgColor = template?.orgPlacement?.color || (role === "exhibitor" ? "#19A974" : "#007A5E");
+  const orgFontSize = (template?.orgPlacement?.fontSize || 12) * scale;
 
   const desPlacement = template?.designationPlacement || template?.stallPlacement;
   const desX = ((desPlacement?.x ?? 50) / 100) * width;
-  const desY = ((desPlacement?.y ?? 53) / 100) * height;
-  const desColor = desPlacement?.color || "#64748B";
-  const desFontSize = (desPlacement?.fontSize || 11) * scale;
+  const desY = 774;
+  const desColor = desPlacement?.color || "#334155";
+  const desFontSize = (desPlacement?.fontSize || 9) * scale;
 
   const qrPixelSize = (template?.qrPlacement?.size || 96) * scale;
   const qrX = ((template?.qrPlacement?.x ?? 50) / 100) * width - qrPixelSize / 2;
-  const qrY = ((template?.qrPlacement?.y ?? 70) / 100) * height - qrPixelSize / 2;
+  const qrY = ((template?.qrPlacement?.y ?? 65) / 100) * height - qrPixelSize / 2;
 
   const idX = ((template?.idPlacement?.x ?? 50) / 100) * width;
-  const idY = ((template?.idPlacement?.y ?? 83) / 100) * height;
-  const idColor = template?.idPlacement?.color || "#061A2A";
-  const idFontSize = (template?.idPlacement?.fontSize || 11) * scale;
+  const idY = 805;
+  const idColor = "#475569";
+  const idFontSize = (template?.idPlacement?.fontSize || 7) * scale;
 
   // Role Banner
   const banner = template?.roleBannerPlacement || {};
-  const defaultBannerText = role === "exhibitor" ? "OFFICIAL EXHIBITOR" : role === "gala" ? "GALA DINNER PASS" : "TRADE VISITOR";
-  const bannerText = banner.text || defaultBannerText;
-  const bannerBg = banner.bgColor || (role === "exhibitor" ? "#19A974" : role === "gala" ? "#4F46E5" : "#087EA4");
+  let defaultBannerText = role === "exhibitor" ? "OFFICIAL EXHIBITOR" : role === "gala" ? "GALA DINNER PASS" : role === "delegate" ? "OFFICIAL DELEGATE" : "TRADE VISITOR";
+  let bannerText = banner.text || defaultBannerText;
+  if (bannerText.toLowerCase() === "visitor") {
+    bannerText = "TRADE VISITOR";
+  }
+  const bannerBg = banner.bgColor || (role === "exhibitor" ? "#19A974" : role === "gala" ? "#4F46E5" : "#007A5E");
   const bannerColor = banner.textColor || "#FFFFFF";
-  const bannerY = ((banner.y ?? 92) / 100) * height;
+  const bannerY = 882;
+  const bannerHeight = 80;
+  const bannerTop = 842;
 
   // Render text elements into vector paths to avoid missing fonts (tofu □ boxes) on Linux/Vercel
+  const rawName = name || "Registered Delegate";
+  const rawOrg = organization || "Himalayan Green Energy Expo";
+  const rawDes = role === "exhibitor"
+    ? (stallNumber ? `STALL: ${stallNumber}` : "MAIN EXHIBITION HALL")
+    : `${jobTitle || "Trade Delegate"}${country ? ` | ${country}` : " | Nepal"}`;
+  const rawIdText = `ID: ${passId}${securityChecksum ? ` | SEC: ${securityChecksum}` : ""}`;
+
   const nameSvg = renderTextToPath({
-    text: safeName,
+    text: rawName,
     cx: nameX,
     cy: nameY,
     fontSize: nameFontSize,
     fill: nameColor,
     isBold: true,
     maxWidth: 520,
-    fallbackSvg: `<text x="${nameX}" y="${nameY}" text-anchor="middle" dominant-baseline="middle" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif" font-size="${nameFontSize}" font-weight="bold" fill="${nameColor}">${safeName}</text>`,
+    fallbackSvg: `<text x="${nameX}" y="${nameY}" text-anchor="middle" dominant-baseline="middle" font-family="'NotoSansEmbedded', 'Segoe UI', -apple-system, sans-serif" font-size="${nameFontSize}" font-weight="bold" fill="${nameColor}">${safeName}</text>`,
   });
 
   const orgSvg = renderTextToPath({
-    text: safeOrg,
+    text: rawOrg,
     cx: orgX,
     cy: orgY,
     fontSize: orgFontSize,
     fill: orgColor,
     isBold: true,
     maxWidth: 520,
-    fallbackSvg: `<text x="${orgX}" y="${orgY}" text-anchor="middle" dominant-baseline="middle" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif" font-size="${orgFontSize}" font-weight="bold" fill="${orgColor}">${safeOrg}</text>`,
+    fallbackSvg: `<text x="${orgX}" y="${orgY}" text-anchor="middle" dominant-baseline="middle" font-family="'NotoSansEmbedded', 'Segoe UI', -apple-system, sans-serif" font-size="${orgFontSize}" font-weight="bold" fill="${orgColor}">${safeOrg}</text>`,
   });
 
   const desSvg = renderTextToPath({
-    text: safeDes,
+    text: rawDes,
     cx: desX,
     cy: desY,
     fontSize: desFontSize,
     fill: desColor,
     isBold: false,
     maxWidth: 520,
-    fallbackSvg: `<text x="${desX}" y="${desY}" text-anchor="middle" dominant-baseline="middle" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif" font-size="${desFontSize}" font-weight="500" fill="${desColor}">${safeDes}</text>`,
+    fallbackSvg: `<text x="${desX}" y="${desY}" text-anchor="middle" dominant-baseline="middle" font-family="'NotoSansEmbedded', 'Segoe UI', -apple-system, sans-serif" font-size="${desFontSize}" font-weight="500" fill="${desColor}">${safeDes}</text>`,
   });
 
-  const idText = `ID: ${safeId}${safeChecksum ? ` | SEC: ${safeChecksum}` : ""}`;
   const idSvg = renderTextToPath({
-    text: idText,
+    text: rawIdText,
     cx: idX,
     cy: idY,
     fontSize: idFontSize,
     fill: idColor,
     isBold: true,
     maxWidth: 500,
-    fallbackSvg: `<text x="${idX}" y="${idY}" text-anchor="middle" dominant-baseline="middle" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, monospace" font-size="${idFontSize}" font-weight="bold" fill="${idColor}">${idText}</text>`,
+    fallbackSvg: `<text x="${idX}" y="${idY}" text-anchor="middle" dominant-baseline="middle" font-family="'NotoSansEmbedded', 'Segoe UI', monospace" font-size="${idFontSize}" font-weight="bold" fill="${idColor}">${escapeXml(rawIdText)}</text>`,
   });
 
   const bannerSvg = renderTextToPath({
@@ -287,14 +279,27 @@ async function generateBadgePng(opts: {
     fill: bannerColor,
     isBold: true,
     maxWidth: 520,
-    fallbackSvg: `<text x="${width / 2}" y="${bannerY}" text-anchor="middle" dominant-baseline="middle" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif" font-size="22" font-weight="900" fill="${bannerColor}" letter-spacing="3">${escapeXml(bannerText.toUpperCase())}</text>`,
+    fallbackSvg: `<text x="${width / 2}" y="${bannerY}" text-anchor="middle" dominant-baseline="middle" font-family="'NotoSansEmbedded', 'Segoe UI', -apple-system, sans-serif" font-size="22" font-weight="900" fill="${bannerColor}" letter-spacing="3">${escapeXml(bannerText.toUpperCase())}</text>`,
   });
 
   const svg = `
   <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
-    <clipPath id="badgeClip">
-      <rect width="${width}" height="${height}" rx="28" />
-    </clipPath>
+    <defs>
+      <style>
+        @font-face {
+          font-family: 'NotoSansEmbedded';
+          src: url('data:font/truetype;charset=utf-8;base64,${NOTO_SANS_BASE64}') format('truetype');
+          font-weight: normal;
+          font-style: normal;
+        }
+        text {
+          font-family: 'NotoSansEmbedded', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+      </style>
+      <clipPath id="badgeClip">
+        <rect width="${width}" height="${height}" rx="28" />
+      </clipPath>
+    </defs>
     <g clip-path="url(#badgeClip)">
       ${bgElement}
 
@@ -304,22 +309,22 @@ async function generateBadgePng(opts: {
       <!-- Attendee Name -->
       ${nameSvg}
 
+      <!-- QR Code Container Box -->
+      <rect x="${qrX - 10}" y="${qrY - 10}" width="${qrPixelSize + 20}" height="${qrPixelSize + 20}" rx="16" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+      <!-- QR Image -->
+      <image x="${qrX}" y="${qrY}" width="${qrPixelSize}" height="${qrPixelSize}" href="data:image/png;base64,${qrBase64}"/>
+
       <!-- Organization -->
       ${orgSvg}
 
       <!-- Designation or Stall -->
       ${desSvg}
 
-      <!-- QR Code Container Box -->
-      <rect x="${qrX - 10}" y="${qrY - 10}" width="${qrPixelSize + 20}" height="${qrPixelSize + 20}" rx="16" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
-      <!-- QR Image -->
-      <image x="${qrX}" y="${qrY}" width="${qrPixelSize}" height="${qrPixelSize}" href="data:image/png;base64,${qrBase64}"/>
-
       <!-- Pass ID & Security Fingerprint -->
       ${idSvg}
 
       <!-- Role Bottom Banner -->
-      <rect x="0" y="${bannerY - 26}" width="${width}" height="${52}" fill="${bannerBg}"/>
+      <rect x="0" y="${bannerTop}" width="${width}" height="${bannerHeight}" fill="${bannerBg}"/>
       ${bannerSvg}
     </g>
     <!-- Outer Card Border -->
