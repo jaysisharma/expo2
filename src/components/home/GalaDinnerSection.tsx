@@ -7,7 +7,6 @@ import {
   Clock,
   MapPin,
   ArrowRight,
-  Sparkles,
 } from 'lucide-react';
 import { ScrollReveal } from '@/components/ui';
 
@@ -54,11 +53,6 @@ export function GalaDinnerSection() {
                       <Clock className="w-4 h-4 text-[#F5B544]" />
                       <span className="font-semibold text-slate-200">6:00 PM onwards</span>
                     </div>
-                    <span className="text-slate-600 hidden sm:inline">|</span>
-                    <div className="flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-amber-300" />
-                      <span className="font-medium text-slate-200">Executive Banquet & VIP Networking</span>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -102,10 +96,6 @@ export function GalaDinnerSection() {
                     <span>BOOK GALA DINNER PASS</span>
                     <ArrowRight className="w-4 h-4 text-[#071722]" />
                   </Link>
-
-                  <p className="text-center text-[11px] font-mono text-slate-400 mt-4">
-                    Instant Khalti ePayment & corporate table reservations.
-                  </p>
                 </div>
               </div>
             </div>

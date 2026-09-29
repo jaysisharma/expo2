@@ -769,10 +769,10 @@ export default function AboutPage() {
             fill
             className="object-cover object-center"
           />
-          {/* Deep overlay: dark green tint so text pops */}
-          <div className="absolute inset-0 bg-gradient-to-b from-[#03160F]/90 via-[#04281E]/80 to-[#03160F]/95" />
-          {/* Subtle emerald glow from bottom */}
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-[#10B981]/10 rounded-full blur-3xl pointer-events-none" />
+          {/* Refined midnight overlay matching hero styling */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#071322]/95 via-[#061A2A]/85 to-[#071322]/95" />
+          {/* Subtle ambient energy glow */}
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
         </div>
 
         <div className="relative z-10 max-w-4xl mx-auto text-center space-y-7">
@@ -783,48 +783,48 @@ export default function AboutPage() {
                 src={fifthEditionDark?.logo || "/images/logo-expo.webp"}
                 alt={fifthEditionDark?.badge1 || "Himalayan Green Energy Expo"}
                 fill
-                className="object-contain drop-shadow-[0_0_40px_rgba(16,185,129,0.5)]"
+                className="object-contain drop-shadow-[0_10px_30px_rgba(0,0,0,0.6)]"
               />
             </div>
           </div>
 
           {/* Expo full name */}
-          <p className="text-xs sm:text-sm font-mono font-bold text-[#34D399] uppercase tracking-[0.3em]">
+          <p className="text-xs sm:text-sm font-mono font-bold text-[#00E599] uppercase tracking-[0.25em]">
             {fifthEditionDark?.badge1 || "Himalayan Green Energy Expo"}
           </p>
 
-          <p className="text-[11px] font-mono text-emerald-300/60 uppercase tracking-[0.2em]">
+          <p className="text-[11px] font-mono text-slate-400 uppercase tracking-[0.2em]">
             {fifthEditionDark?.badge2 || "2027 / 5TH EDITION"}
           </p>
 
           <h2 className="text-5xl sm:text-7xl font-bold text-white leading-[1.0] tracking-tight">
             {fifthEditionDark?.titleLine1 || "THE NEXT"}<br />
-            <span className="text-[#34D399]">{fifthEditionDark?.titleHighlight || "CHAPTER"}</span><br />
+            <span className="text-[#00E599]">{fifthEditionDark?.titleHighlight || "CHAPTER"}</span><br />
             {fifthEditionDark?.titleLine2 || "STARTS HERE."}
           </h2>
 
-          <div className="flex flex-wrap justify-center gap-3 text-xs font-mono text-emerald-200/70">
+          <div className="flex flex-wrap justify-center gap-3 text-xs font-mono text-slate-200">
             {(fifthEditionDark?.pills || ["16–18 JANUARY 2027", "KATHMANDU, NEPAL", "5TH EDITION"]).map((pill: string, idx: number) => (
-              <span key={idx} className="px-4 py-2 rounded-xl bg-emerald-900/50 border border-emerald-500/25 backdrop-blur-sm">
+              <span key={idx} className="px-4 py-2 rounded-xl bg-white/[0.06] border border-white/15 backdrop-blur-md hover:border-white/30 transition-colors">
                 {pill}
               </span>
             ))}
           </div>
 
-          <p className="text-sm sm:text-base text-emerald-100/70 max-w-xl mx-auto leading-relaxed">
+          <p className="text-sm sm:text-base text-slate-300 max-w-xl mx-auto leading-relaxed">
             {fifthEditionDark?.description}
           </p>
 
           <div className="flex flex-wrap justify-center gap-4 pt-2">
             <Link
               href="/expo"
-              className="px-8 py-3.5 rounded-xl bg-emerald-900/60 border border-emerald-500/30 text-white font-mono text-xs font-bold hover:bg-emerald-800/70 transition-all backdrop-blur-sm"
+              className="px-8 py-3.5 rounded-xl bg-white/10 border border-white/20 text-white font-mono text-xs font-bold hover:bg-white/20 transition-all backdrop-blur-sm"
             >
               {fifthEditionDark?.exploreButtonText || "EXPLORE THE 5TH EDITION"}
             </Link>
             <Link
               href="/register"
-              className="px-8 py-3.5 rounded-xl bg-[#007A5E] hover:bg-[#005C42] text-white font-mono text-xs font-bold transition-all shadow-[0_0_30px_rgba(0,122,94,0.4)]"
+              className="px-8 py-3.5 rounded-xl bg-[#007A5E] hover:bg-[#005C42] text-white font-mono text-xs font-bold transition-all shadow-[0_0_30px_rgba(0,122,94,0.3)]"
             >
               {fifthEditionDark?.registerButtonText || "REGISTER NOW"}
             </Link>
