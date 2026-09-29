@@ -43,14 +43,21 @@ const SPONSORSHIP_TIERS_2027 = [
   "Title Sponsor",
   "In Association With",
   "Powered By",
+  "Sponsorship",
   "Sponsor",
-  "Official Partner",
   "Co-Sponsor",
-  "Supporter",
+  "Principal Partner",
+  "Official Partner",
+  "Diamond Sponsor",
+  "Platinum Partner",
+  "Gold Sponsor",
+  "Silver Sponsor",
   "Official Bank Partner",
   "Mobility Partner",
   "Technology Partner",
   "Media Partner",
+  "Associate Partner",
+  "Supporter",
   "Supporting Organization",
 ];
 
@@ -73,6 +80,8 @@ export default function AdminSponsorsPage() {
   const [showAdd2027Modal, setShowAdd2027Modal] = useState(false);
   const [editing2027Partner, setEditing2027Partner] = useState<CurrentPartner | null>(null);
   const [add2027Logo, setAdd2027Logo] = useState("/images/logo.webp");
+  const [add2027Category, setAdd2027Category] = useState("Title Sponsor");
+  const [selected2027Tier, setSelected2027Tier] = useState<string>("All");
   const [isSaving2027, setIsSaving2027] = useState(false);
 
   // Archive / Previous Sponsors State
@@ -289,15 +298,27 @@ export default function AdminSponsorsPage() {
 
   // 2027 Filtered & Computed Counts
   const filtered2027 = useMemo(() => {
+    let list = currentPartners;
+    if (selected2027Tier !== "All") {
+      list = list.filter((p) => p.category === selected2027Tier);
+    }
     const q = search2027.toLowerCase().trim();
-    if (!q) return currentPartners;
-    return currentPartners.filter(
+    if (!q) return list;
+    return list.filter(
       (p) =>
         p.name.toLowerCase().includes(q) ||
         p.category.toLowerCase().includes(q) ||
         (p.url && p.url.toLowerCase().includes(q))
     );
-  }, [currentPartners, search2027]);
+  }, [currentPartners, search2027, selected2027Tier]);
+
+  const tiers2027Present = useMemo(() => {
+    const map = new Map<string, number>();
+    currentPartners.forEach((p) => {
+      map.set(p.category, (map.get(p.category) || 0) + 1);
+    });
+    return Array.from(map.entries()).map(([tier, count]) => ({ tier, count }));
+  }, [currentPartners]);
 
   const active2027Count = useMemo(() => {
     return currentPartners.filter((p) => p.active !== false).length;
@@ -700,30 +721,78 @@ export default function AdminSponsorsPage() {
             </div>
           </div>
 
-          {/* Search bar for 2027 partners */}
+          {/* Filter Bar for 2027 Partners */}
           {currentPartners.length > 0 && (
-            <div className="flex items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200 shadow-xs">
-              <div className="relative flex-1 max-w-sm">
-                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                <input
-                  type="text"
-                  value={search2027}
-                  onChange={(e) => setSearch2027(e.target.value)}
-                  placeholder="Search 2027 partner or category..."
-                  className="w-full pl-8 pr-7 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#218A59] focus:bg-white"
-                />
-                {search2027 && (
-                  <button
-                    onClick={() => setSearch2027("")}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200 shadow-xs">
+              {/* Category Filter Pills */}
+              <div className="flex items-center gap-1 overflow-x-auto scrollbar-none pb-1 md:pb-0">
+                <button
+                  onClick={() => setSelected2027Tier("All")}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer flex items-center gap-1.5 ${
+                    selected2027Tier === "All"
+                      ? "bg-slate-900 text-white font-semibold"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                  }`}
+                >
+                  <span>All</span>
+                  <span
+                    className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                      selected2027Tier === "All" ? "bg-slate-800 text-slate-200" : "bg-slate-100 text-slate-500"
+                    }`}
                   >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                )}
+                    {currentPartners.length}
+                  </span>
+                </button>
+
+                {tiers2027Present.map(({ tier, count }) => {
+                  const isActive = selected2027Tier === tier;
+                  return (
+                    <button
+                      key={tier}
+                      onClick={() => setSelected2027Tier(tier)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer flex items-center gap-1.5 ${
+                        isActive
+                          ? "bg-slate-900 text-white font-semibold"
+                          : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                      }`}
+                    >
+                      <span className="truncate max-w-[150px]">{tier}</span>
+                      <span
+                        className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                          isActive ? "bg-slate-800 text-slate-200" : "bg-slate-100 text-slate-500"
+                        }`}
+                      >
+                        {count}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
-              <span className="text-xs text-slate-500 font-medium">
-                {filtered2027.length} organization{filtered2027.length === 1 ? "" : "s"}
-              </span>
+
+              {/* Search Bar */}
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1 sm:w-60">
+                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={search2027}
+                    onChange={(e) => setSearch2027(e.target.value)}
+                    placeholder="Search 2027 partner or category..."
+                    className="w-full pl-8 pr-7 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#218A59] focus:bg-white"
+                  />
+                  {search2027 && (
+                    <button
+                      onClick={() => setSearch2027("")}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+                <span className="text-xs text-slate-500 font-medium whitespace-nowrap">
+                  {filtered2027.length} {filtered2027.length === 1 ? "organization" : "organizations"}
+                </span>
+              </div>
             </div>
           )}
 
@@ -1546,20 +1615,50 @@ export default function AdminSponsorsPage() {
               </div>
 
               <div>
-                <label className="block text-[11px] font-mono font-medium text-slate-700 mb-1">
-                  SPONSORSHIP CATEGORY / TIER *
-                </label>
-                <select
-                  name="category"
-                  defaultValue="Title Sponsor"
-                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59] focus:bg-white cursor-pointer"
-                >
-                  {SPONSORSHIP_TIERS_2027.map((tier) => (
-                    <option key={tier} value={tier}>
-                      {tier}
-                    </option>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-[11px] font-mono font-medium text-slate-700">
+                    SPONSORSHIP CATEGORY / TIER *
+                  </label>
+                  <span className="text-[10px] text-slate-400 font-mono">
+                    Presets or custom text
+                  </span>
+                </div>
+
+                {/* Quick Selection Chips */}
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {["Title Sponsor", "In Association With", "Sponsorship", "Powered By", "Co-Sponsor", "Official Partner"].map((chip) => (
+                    <button
+                      key={chip}
+                      type="button"
+                      onClick={() => setAdd2027Category(chip)}
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer border ${
+                        add2027Category === chip
+                          ? "bg-[#218A59] text-white border-[#218A59] shadow-xs"
+                          : "bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200"
+                      }`}
+                    >
+                      {chip}
+                    </button>
                   ))}
-                </select>
+                </div>
+
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="category"
+                    required
+                    value={add2027Category}
+                    onChange={(e) => setAdd2027Category(e.target.value)}
+                    list="sponsorship-tiers-add-list"
+                    placeholder="e.g. Title Sponsor, In Association With, Sponsorship..."
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59] focus:bg-white text-xs font-medium"
+                  />
+                  <datalist id="sponsorship-tiers-add-list">
+                    {SPONSORSHIP_TIERS_2027.map((tier) => (
+                      <option key={tier} value={tier} />
+                    ))}
+                  </datalist>
+                </div>
               </div>
 
               <ImageUploadField
@@ -1659,23 +1758,53 @@ export default function AdminSponsorsPage() {
               </div>
 
               <div>
-                <label className="block text-[11px] font-mono font-medium text-slate-700 mb-1">
-                  SPONSORSHIP CATEGORY / TIER *
-                </label>
-                <select
-                  name="category"
-                  defaultValue={editing2027Partner.category}
-                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59] focus:bg-white cursor-pointer"
-                >
-                  {SPONSORSHIP_TIERS_2027.map((tier) => (
-                    <option key={tier} value={tier}>
-                      {tier}
-                    </option>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-[11px] font-mono font-medium text-slate-700">
+                    SPONSORSHIP CATEGORY / TIER *
+                  </label>
+                  <span className="text-[10px] text-slate-400 font-mono">
+                    Presets or custom text
+                  </span>
+                </div>
+
+                {/* Quick Selection Chips */}
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {["Title Sponsor", "In Association With", "Sponsorship", "Powered By", "Co-Sponsor", "Official Partner"].map((chip) => (
+                    <button
+                      key={chip}
+                      type="button"
+                      onClick={() =>
+                        setEditing2027Partner({ ...editing2027Partner, category: chip })
+                      }
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer border ${
+                        editing2027Partner.category === chip
+                          ? "bg-[#218A59] text-white border-[#218A59] shadow-xs"
+                          : "bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200"
+                      }`}
+                    >
+                      {chip}
+                    </button>
                   ))}
-                  {!SPONSORSHIP_TIERS_2027.includes(editing2027Partner.category) && (
-                    <option value={editing2027Partner.category}>{editing2027Partner.category}</option>
-                  )}
-                </select>
+                </div>
+
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="category"
+                    required
+                    value={editing2027Partner.category}
+                    onChange={(e) =>
+                      setEditing2027Partner({ ...editing2027Partner, category: e.target.value })
+                    }
+                    list="sponsorship-tiers-edit-list"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59] focus:bg-white text-xs font-medium"
+                  />
+                  <datalist id="sponsorship-tiers-edit-list">
+                    {SPONSORSHIP_TIERS_2027.map((tier) => (
+                      <option key={tier} value={tier} />
+                    ))}
+                  </datalist>
+                </div>
               </div>
 
               <ImageUploadField

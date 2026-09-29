@@ -116,9 +116,38 @@ export function CurrentPartnersStrip() {
 }
 
 function PartnerCard({ item }: { item: CurrentPartner }) {
+  const cat = (item.category || '').toLowerCase();
+  const isTitle = cat.includes('title');
+  const isAssociation = cat.includes('association');
+  const isPowered = cat.includes('powered');
+
+  let badgeClasses =
+    'bg-emerald-500/15 text-[#007A5E] dark:text-emerald-400 border-emerald-500/25';
+  let cardBorder =
+    'border-emerald-500/20 dark:border-emerald-500/30 hover:border-emerald-500/60';
+
+  if (isTitle) {
+    badgeClasses =
+      'bg-amber-400/20 text-amber-800 dark:text-amber-300 border-amber-400/40 shadow-xs font-extrabold';
+    cardBorder =
+      'border-amber-400/50 dark:border-amber-400/50 hover:border-amber-400 shadow-[0_8px_25px_rgba(245,158,11,0.12)]';
+  } else if (isAssociation) {
+    badgeClasses =
+      'bg-sky-500/20 text-sky-800 dark:text-sky-300 border-sky-400/40 shadow-xs font-bold';
+    cardBorder =
+      'border-sky-400/40 dark:border-sky-400/50 hover:border-sky-400 shadow-[0_8px_25px_rgba(14,165,233,0.1)]';
+  } else if (isPowered) {
+    badgeClasses =
+      'bg-purple-500/20 text-purple-800 dark:text-purple-300 border-purple-400/40 font-bold';
+    cardBorder =
+      'border-purple-400/40 dark:border-purple-400/50 hover:border-purple-400';
+  }
+
   const content = (
     <div className="flex flex-col items-center justify-center p-3 h-full w-full">
-      <span className="text-[10px] font-bold uppercase tracking-wider font-mono text-[#007A5E] dark:text-emerald-400 mb-1.5 line-clamp-1">
+      <span
+        className={`text-[9px] sm:text-[10px] uppercase tracking-wider font-mono px-2 py-0.5 rounded-md border mb-1.5 line-clamp-1 ${badgeClasses}`}
+      >
         {item.category || 'Official Partner'}
       </span>
       <div className="relative w-full flex-1 flex items-center justify-center min-h-[46px]">
@@ -136,8 +165,7 @@ function PartnerCard({ item }: { item: CurrentPartner }) {
     </div>
   );
 
-  const wrapperClasses =
-    'h-28 sm:h-32 w-44 sm:w-56 lg:w-64 relative flex items-center justify-center flex-shrink-0 bg-white/95 dark:bg-slate-900/90 rounded-2xl px-4 py-3 border border-emerald-500/20 dark:border-emerald-500/30 shadow-[0_8px_20px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_20px_rgba(0,0,0,0.3)] hover:border-emerald-500/60 hover:shadow-lg transition-all duration-200 group';
+  const wrapperClasses = `h-28 sm:h-32 w-44 sm:w-56 lg:w-64 relative flex items-center justify-center flex-shrink-0 bg-white/95 dark:bg-slate-900/90 rounded-2xl px-4 py-3 border ${cardBorder} shadow-[0_8px_20px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_20px_rgba(0,0,0,0.3)] hover:shadow-lg transition-all duration-200 group`;
 
   if (item.url) {
     return (
