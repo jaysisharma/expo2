@@ -52,6 +52,20 @@ export function encryptPassToken(payload: PassSecurityPayload): string {
     .replace(/=+$/, "");
 }
 
+const CANDIDATE_SECRETS = Array.from(
+  new Set(
+    [
+      process.env.PASS_SECRET_KEY,
+      "ippan-green-energy-expo-2027-aes256gcm-secure-token-vault-key",
+      "himalayan-green-energy-expo-2027-secret-key-32bytes-salt",
+    ].filter(Boolean) as string[]
+  )
+);
+
+const CANDIDATE_KEYS = CANDIDATE_SECRETS.map((secret) =>
+  crypto.createHash("sha256").update(secret).digest()
+);
+
 /**
  * Decrypts and cryptographically verifies an anti-counterfeit pass token.
  * Returns null if token was tampered with, forged, or malformed.
@@ -73,17 +87,27 @@ export function decryptPassToken(token: string): PassSecurityPayload | null {
     const tag = buffer.subarray(12, 28);
     const encrypted = buffer.subarray(28);
 
-    const decipher = crypto.createDecipheriv("aes-256-gcm", ENCRYPTION_KEY, iv);
-    decipher.setAuthTag(tag);
+    for (const key of CANDIDATE_KEYS) {
+      try {
+        const decipher = crypto.createDecipheriv("aes-256-gcm", key, iv);
+        decipher.setAuthTag(tag);
 
-    const decrypted = Buffer.concat([
-      decipher.update(encrypted),
-      decipher.final(),
-    ]);
+        const decrypted = Buffer.concat([
+          decipher.update(encrypted),
+          decipher.final(),
+        ]);
 
-    return JSON.parse(decrypted.toString("utf8")) as PassSecurityPayload;
-  } catch (error) {
-    // Authentication failed (tampered token) or JSON parse failed
+        const parsed = JSON.parse(decrypted.toString("utf8")) as PassSecurityPayload;
+        if (parsed && parsed.id) {
+          return parsed;
+        }
+      } catch {
+        // Try next key
+      }
+    }
+
+    return null;
+  } catch {
     return null;
   }
 }

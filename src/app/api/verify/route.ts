@@ -106,14 +106,22 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // 2. Try local adminData.json
+    // 2. Try local adminData.json (Exact ID match only)
     if (!attendee && id) {
       const localData = readLocalAdminData();
       if (localData?.registrations) {
         attendee = localData.registrations.find(
-          (r: any) =>
-            r.id?.toLowerCase() === id.toLowerCase() ||
-            (r.email && emailParam && r.email.toLowerCase() === emailParam.toLowerCase())
+          (r: any) => r.id && r.id.toLowerCase() === id.toLowerCase()
+        );
+      }
+    }
+
+    // 2b. Only if NO id was provided, fallback to email lookup
+    if (!attendee && !id && emailParam) {
+      const localData = readLocalAdminData();
+      if (localData?.registrations) {
+        attendee = localData.registrations.find(
+          (r: any) => r.email && r.email.toLowerCase() === emailParam.toLowerCase()
         );
       }
     }

@@ -4,9 +4,78 @@ import QRCode from "qrcode";
 import sharp from "sharp";
 import fs from "fs";
 import path from "path";
+import opentype from "opentype.js";
 import { encryptPassToken, generateSecurityChecksum } from "@/lib/passSecurity";
 
 export const dynamic = "force-dynamic";
+
+let cachedFont: opentype.Font | null = null;
+
+function getFont(): opentype.Font | null {
+  if (cachedFont) return cachedFont;
+  try {
+    const candidates = [
+      path.join(process.cwd(), "src", "data", "fonts", "NotoSans-Regular.ttf"),
+      path.join(process.cwd(), "public", "fonts", "NotoSans-Regular.ttf"),
+      path.join(process.cwd(), "data", "fonts", "NotoSans-Regular.ttf"),
+      path.join(process.cwd(), "node_modules", "next", "dist", "compiled", "@vercel", "og", "noto-sans-v27-latin-regular.ttf"),
+    ];
+    for (const p of candidates) {
+      if (fs.existsSync(p)) {
+        const buf = fs.readFileSync(p);
+        cachedFont = opentype.parse(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength));
+        return cachedFont;
+      }
+    }
+  } catch (err) {
+    console.warn("[send-pass] Could not load font for SVG path rendering:", err);
+  }
+  return null;
+}
+
+function renderTextToPath(opts: {
+  text: string;
+  cx: number;
+  cy: number;
+  fontSize: number;
+  fill: string;
+  isBold?: boolean;
+  maxWidth?: number;
+  fallbackSvg: string;
+}): string {
+  const { text, cx, cy, fill, isBold = false, maxWidth = 540, fallbackSvg } = opts;
+  const font = getFont();
+  if (!font || !text) {
+    return fallbackSvg;
+  }
+
+  // Replace non-ASCII / special bullet characters to guarantee valid vector paths
+  const clean = text.replace(/[·•]/g, "|").replace(/[^\x20-\x7E]/g, "").trim();
+  if (!clean) return fallbackSvg;
+
+  try {
+    let currentFontSize = opts.fontSize;
+    let textWidth = font.getAdvanceWidth(clean, currentFontSize);
+    if (textWidth > maxWidth && maxWidth > 0) {
+      currentFontSize = Math.floor((maxWidth / textWidth) * currentFontSize);
+      textWidth = font.getAdvanceWidth(clean, currentFontSize);
+    }
+
+    const x = cx - textWidth / 2;
+    // Optical baseline center: baseline sits approx 0.35 * fontSize below center
+    const y = cy + currentFontSize * 0.35;
+    const p = font.getPath(clean, x, y, currentFontSize);
+    const d = p.toPathData(2);
+    const strokeAttr = isBold
+      ? `stroke="${fill}" stroke-width="${Math.max(0.6, currentFontSize * 0.045).toFixed(1)}" stroke-linejoin="round"`
+      : "";
+
+    return `<path d="${d}" fill="${fill}" ${strokeAttr} />`;
+  } catch (err) {
+    console.warn("[send-pass] Failed to generate path for text:", text, err);
+    return fallbackSvg;
+  }
+}
 
 function escapeXml(unsafe: string): string {
   if (!unsafe) return "";
@@ -84,7 +153,7 @@ async function generateBadgePng(opts: {
   const safeDes = escapeXml(
     role === "exhibitor"
       ? (stallNumber ? `STALL: ${stallNumber}` : "MAIN EXHIBITION HALL")
-      : `${jobTitle || "Trade Delegate"}${country ? ` · ${country}` : " · Nepal"}`
+      : `${jobTitle || "Trade Delegate"}${country ? ` | ${country}` : " | Nepal"}`
   );
   const safeId = escapeXml(passId);
   const safeChecksum = escapeXml(securityChecksum || "");
@@ -96,6 +165,26 @@ async function generateBadgePng(opts: {
   } else {
     const themeGradStart = "#FFFFFF";
     const themeGradEnd = role === "exhibitor" ? "#F0FDF4" : role === "gala" ? "#FAF5FF" : "#F0F9FF";
+    const headerTitle1 = renderTextToPath({
+      text: "HIMALAYAN GREEN ENERGY EXPO 2027",
+      cx: width / 2,
+      cy: 70,
+      fontSize: 20,
+      fill: "#007A5E",
+      isBold: true,
+      maxWidth: 580,
+      fallbackSvg: `<text x="${width / 2}" y="70" text-anchor="middle" font-family="'Segoe UI', Roboto, sans-serif" font-size="20" font-weight="800" fill="#007A5E" letter-spacing="2">HIMALAYAN GREEN ENERGY EXPO 2027</text>`
+    });
+    const headerTitle2 = renderTextToPath({
+      text: "17-19 JANUARY 2027 | BHRIKUTIMANDAP, KATHMANDU",
+      cx: width / 2,
+      cy: 100,
+      fontSize: 14,
+      fill: "#64748B",
+      isBold: false,
+      maxWidth: 580,
+      fallbackSvg: `<text x="${width / 2}" y="100" text-anchor="middle" font-family="'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="600" fill="#64748B" letter-spacing="1">17–19 JANUARY 2027 · BHRIKUTIMANDAP, KATHMANDU</text>`
+    });
     bgElement = `
       <defs>
         <linearGradient id="cardBg" x1="0" y1="0" x2="0" y2="1">
@@ -105,8 +194,8 @@ async function generateBadgePng(opts: {
       </defs>
       <rect width="${width}" height="${height}" fill="url(#cardBg)"/>
       <rect x="0" y="0" width="${width}" height="140" fill="${role === "exhibitor" ? "#19A974" : role === "gala" ? "#4F46E5" : "#007A5E"}" opacity="0.08"/>
-      <text x="${width / 2}" y="70" text-anchor="middle" font-family="'Segoe UI', Roboto, sans-serif" font-size="20" font-weight="800" fill="#007A5E" letter-spacing="2">HIMALAYAN GREEN ENERGY EXPO 2027</text>
-      <text x="${width / 2}" y="100" text-anchor="middle" font-family="'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="600" fill="#64748B" letter-spacing="1">17–19 JANUARY 2027 · BHRIKUTIMANDAP, KATHMANDU</text>
+      ${headerTitle1}
+      ${headerTitle2}
     `;
   }
 
@@ -121,10 +210,11 @@ async function generateBadgePng(opts: {
   const orgColor = template?.orgPlacement?.color || (role === "exhibitor" ? "#19A974" : "#087EA4");
   const orgFontSize = (template?.orgPlacement?.fontSize || 13) * scale;
 
-  const desX = ((template?.designationPlacement?.x ?? 50) / 100) * width;
-  const desY = ((template?.designationPlacement?.y ?? 53) / 100) * height;
-  const desColor = template?.designationPlacement?.color || "#64748B";
-  const desFontSize = (template?.designationPlacement?.fontSize || 11) * scale;
+  const desPlacement = template?.designationPlacement || template?.stallPlacement;
+  const desX = ((desPlacement?.x ?? 50) / 100) * width;
+  const desY = ((desPlacement?.y ?? 53) / 100) * height;
+  const desColor = desPlacement?.color || "#64748B";
+  const desFontSize = (desPlacement?.fontSize || 11) * scale;
 
   const qrPixelSize = (template?.qrPlacement?.size || 96) * scale;
   const qrX = ((template?.qrPlacement?.x ?? 50) / 100) * width - qrPixelSize / 2;
@@ -143,6 +233,63 @@ async function generateBadgePng(opts: {
   const bannerColor = banner.textColor || "#FFFFFF";
   const bannerY = ((banner.y ?? 92) / 100) * height;
 
+  // Render text elements into vector paths to avoid missing fonts (tofu □ boxes) on Linux/Vercel
+  const nameSvg = renderTextToPath({
+    text: safeName,
+    cx: nameX,
+    cy: nameY,
+    fontSize: nameFontSize,
+    fill: nameColor,
+    isBold: true,
+    maxWidth: 520,
+    fallbackSvg: `<text x="${nameX}" y="${nameY}" text-anchor="middle" dominant-baseline="middle" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif" font-size="${nameFontSize}" font-weight="bold" fill="${nameColor}">${safeName}</text>`,
+  });
+
+  const orgSvg = renderTextToPath({
+    text: safeOrg,
+    cx: orgX,
+    cy: orgY,
+    fontSize: orgFontSize,
+    fill: orgColor,
+    isBold: true,
+    maxWidth: 520,
+    fallbackSvg: `<text x="${orgX}" y="${orgY}" text-anchor="middle" dominant-baseline="middle" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif" font-size="${orgFontSize}" font-weight="bold" fill="${orgColor}">${safeOrg}</text>`,
+  });
+
+  const desSvg = renderTextToPath({
+    text: safeDes,
+    cx: desX,
+    cy: desY,
+    fontSize: desFontSize,
+    fill: desColor,
+    isBold: false,
+    maxWidth: 520,
+    fallbackSvg: `<text x="${desX}" y="${desY}" text-anchor="middle" dominant-baseline="middle" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif" font-size="${desFontSize}" font-weight="500" fill="${desColor}">${safeDes}</text>`,
+  });
+
+  const idText = `ID: ${safeId}${safeChecksum ? ` | SEC: ${safeChecksum}` : ""}`;
+  const idSvg = renderTextToPath({
+    text: idText,
+    cx: idX,
+    cy: idY,
+    fontSize: idFontSize,
+    fill: idColor,
+    isBold: true,
+    maxWidth: 500,
+    fallbackSvg: `<text x="${idX}" y="${idY}" text-anchor="middle" dominant-baseline="middle" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, monospace" font-size="${idFontSize}" font-weight="bold" fill="${idColor}">${idText}</text>`,
+  });
+
+  const bannerSvg = renderTextToPath({
+    text: bannerText.toUpperCase(),
+    cx: width / 2,
+    cy: bannerY,
+    fontSize: 22,
+    fill: bannerColor,
+    isBold: true,
+    maxWidth: 520,
+    fallbackSvg: `<text x="${width / 2}" y="${bannerY}" text-anchor="middle" dominant-baseline="middle" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif" font-size="22" font-weight="900" fill="${bannerColor}" letter-spacing="3">${escapeXml(bannerText.toUpperCase())}</text>`,
+  });
+
   const svg = `
   <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
     <clipPath id="badgeClip">
@@ -155,13 +302,13 @@ async function generateBadgePng(opts: {
       <rect x="${width / 2 - 50}" y="14" width="100" height="14" rx="7" fill="#0F172A" opacity="0.35"/>
 
       <!-- Attendee Name -->
-      <text x="${nameX}" y="${nameY}" text-anchor="middle" dominant-baseline="middle" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif" font-size="${nameFontSize}" font-weight="bold" fill="${nameColor}">${safeName}</text>
+      ${nameSvg}
 
       <!-- Organization -->
-      <text x="${orgX}" y="${orgY}" text-anchor="middle" dominant-baseline="middle" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif" font-size="${orgFontSize}" font-weight="bold" fill="${orgColor}">${safeOrg}</text>
+      ${orgSvg}
 
       <!-- Designation or Stall -->
-      <text x="${desX}" y="${desY}" text-anchor="middle" dominant-baseline="middle" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif" font-size="${desFontSize}" font-weight="500" fill="${desColor}">${safeDes}</text>
+      ${desSvg}
 
       <!-- QR Code Container Box -->
       <rect x="${qrX - 10}" y="${qrY - 10}" width="${qrPixelSize + 20}" height="${qrPixelSize + 20}" rx="16" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
@@ -169,11 +316,11 @@ async function generateBadgePng(opts: {
       <image x="${qrX}" y="${qrY}" width="${qrPixelSize}" height="${qrPixelSize}" href="data:image/png;base64,${qrBase64}"/>
 
       <!-- Pass ID & Security Fingerprint -->
-      <text x="${idX}" y="${idY}" text-anchor="middle" dominant-baseline="middle" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, monospace" font-size="${idFontSize}" font-weight="bold" fill="${idColor}">ID: ${safeId}${safeChecksum ? ` · SEC: ${safeChecksum}` : ""}</text>
+      ${idSvg}
 
       <!-- Role Bottom Banner -->
       <rect x="0" y="${bannerY - 26}" width="${width}" height="${52}" fill="${bannerBg}"/>
-      <text x="${width / 2}" y="${bannerY}" text-anchor="middle" dominant-baseline="middle" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif" font-size="22" font-weight="900" fill="${bannerColor}" letter-spacing="3">${escapeXml(bannerText.toUpperCase())}</text>
+      ${bannerSvg}
     </g>
     <!-- Outer Card Border -->
     <rect width="${width}" height="${height}" rx="28" fill="none" stroke="#CBD5E1" stroke-width="3"/>

@@ -1,36 +1,36 @@
 "use client";
 
-import React, { Suspense, useEffect, useState, useRef } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   CheckCircle2,
-  ShieldCheck,
   Building2,
-  Briefcase,
-  Mail,
-  Phone,
   Calendar,
   MapPin,
   Download,
   Share2,
   UserPlus,
-  QrCode,
   Copy,
   Check,
-  Sparkles,
-  ExternalLink,
-  Printer,
-  ChevronRight,
-  AlertCircle,
   Clock,
   Ticket,
-  Lock,
-  Eye,
-  EyeOff,
+  AlertCircle,
+  ArrowLeft,
+  ShieldCheck,
+  ExternalLink,
 } from "lucide-react";
 import QRCodeLib from "qrcode";
-import { maskPassId } from "@/lib/passSecurity";
+import { motion } from "framer-motion";
+
+interface TicketDetails {
+  category?: string;
+  venue?: string;
+  date?: string;
+  time?: string;
+  passTier?: string;
+  quantity?: number;
+}
 
 interface AttendeeData {
   id: string;
@@ -48,12 +48,14 @@ interface AttendeeData {
   securityChecksum?: string;
   secureToken?: string;
   tokenVerified?: boolean;
+  paymentStatus?: string;
+  ticketDetails?: TicketDetails;
 }
 
 function VerifyContent() {
   const searchParams = useSearchParams();
   const tokenParam = searchParams.get("token") || "";
-  const id = searchParams.get("id") || "";
+  const idParam = searchParams.get("id") || "";
   const nameParam = searchParams.get("name") || "";
   const orgParam = searchParams.get("org") || "";
   const roleParam = searchParams.get("role") || "";
@@ -67,18 +69,11 @@ function VerifyContent() {
   const [attendee, setAttendee] = useState<AttendeeData | null>(null);
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
   const [copied, setCopied] = useState(false);
-  const [checkinLoading, setCheckinLoading] = useState(false);
   const [shared, setShared] = useState(false);
   const [isStaff, setIsStaff] = useState(false);
   const [staffName, setStaffName] = useState("");
-  const [maskId, setMaskId] = useState(false);
+  const [checkinLoading, setCheckinLoading] = useState(false);
   const [tamperedError, setTamperedError] = useState(false);
-  const [antiCounterfeit, setAntiCounterfeit] = useState<{
-    verified: boolean;
-    algorithm?: string;
-    checksum?: string;
-    alreadyCheckedIn?: boolean;
-  } | null>(null);
 
   useEffect(() => {
     async function checkStaffAuth() {
@@ -89,7 +84,9 @@ function VerifyContent() {
           setIsStaff(true);
           setStaffName(data.staff.name || "Gate Staff");
         }
-      } catch {}
+      } catch {
+        // ignore
+      }
     }
     checkStaffAuth();
   }, []);
@@ -101,7 +98,7 @@ function VerifyContent() {
       try {
         const query = new URLSearchParams();
         if (tokenParam) query.set("token", tokenParam);
-        if (id) query.set("id", id);
+        if (idParam) query.set("id", idParam);
         if (nameParam) query.set("name", nameParam);
         if (orgParam) query.set("org", orgParam);
         if (roleParam) query.set("role", roleParam);
@@ -122,13 +119,10 @@ function VerifyContent() {
 
         if (data.success && data.attendee) {
           setAttendee(data.attendee);
-          if (data.antiCounterfeit) {
-            setAntiCounterfeit(data.antiCounterfeit);
-          }
-        } else if (nameParam || id) {
-          // Graceful fallback to query parameters
+        } else if (nameParam || idParam) {
+          // Graceful fallback to provided query data
           setAttendee({
-            id: id || "HHE27-VERIFIED",
+            id: idParam || "HHE27-VERIFIED",
             name: nameParam || "Registered Attendee",
             organization: orgParam || "Himalayan Green Energy Expo",
             jobTitle: titleParam || "",
@@ -142,10 +136,10 @@ function VerifyContent() {
           });
         }
       } catch (err) {
-        console.warn("Verify fetch error, falling back to URL data", err);
-        if (nameParam || id) {
+        console.warn("Verify fetch error", err);
+        if (nameParam || idParam) {
           setAttendee({
-            id: id || "HHE27-VERIFIED",
+            id: idParam || "HHE27-VERIFIED",
             name: nameParam || "Registered Attendee",
             organization: orgParam || "Himalayan Green Energy Expo",
             jobTitle: titleParam || "",
@@ -164,9 +158,9 @@ function VerifyContent() {
     }
 
     fetchVerification();
-  }, [tokenParam, id, nameParam, orgParam, roleParam, titleParam, stallParam, emailParam, phoneParam, passTypeParam]);
+  }, [tokenParam, idParam, nameParam, orgParam, roleParam, titleParam, stallParam, emailParam, phoneParam, passTypeParam]);
 
-  // Generate high-resolution encrypted Gate QR Code for turnstile scanning
+  // Generate crisp gate QR code
   useEffect(() => {
     if (!attendee) return;
     const origin = typeof window !== "undefined" ? window.location.origin : "https://greenenergyexpo.org.np";
@@ -176,14 +170,14 @@ function VerifyContent() {
       : `${origin}/verify?id=${encodeURIComponent(attendee.id)}`;
 
     QRCodeLib.toDataURL(urlToEncode, {
-      width: 320,
+      width: 400,
       margin: 1,
       errorCorrectionLevel: "H",
-      color: { dark: "#061A2A", light: "#FFFFFF" },
+      color: { dark: "#071322", light: "#FFFFFF" },
     }).then(setQrDataUrl).catch(() => {});
   }, [attendee, tokenParam]);
 
-  // 1. Save vCard (.vcf) directly into phone contacts
+  // Save Contact to phone (.vcf)
   const handleSaveContact = () => {
     if (!attendee) return;
     const fullName = attendee.name || "Delegate";
@@ -201,7 +195,7 @@ function VerifyContent() {
       `TITLE:${title}`,
       phone ? `TEL;TYPE=CELL,VOICE:${phone}` : "",
       email ? `EMAIL;TYPE=INTERNET,WORK:${email}` : "",
-      `NOTE:Himalayan Green Energy Expo 2027 Accreditation [Pass ID: ${attendee.id}]`,
+      `NOTE:Official Accreditation - Himalayan Green Energy Expo 2027 [Pass ID: ${attendee.id}]`,
       currentUrl ? `URL:${currentUrl}` : "",
       "END:VCARD",
     ].filter(Boolean);
@@ -215,8 +209,18 @@ function VerifyContent() {
     document.body.removeChild(link);
   };
 
-  // 2. Save Calendar Event (.ics)
+  // Save Calendar Event (.ics)
   const handleSaveCalendar = () => {
+    const isGala = attendee?.role === "gala" || attendee?.passType?.toLowerCase().includes("gala");
+    const summary = isGala
+      ? "Himalayan Green Energy Expo - Gala Dinner"
+      : "Himalayan Green Energy Expo 2027";
+    const location = isGala
+      ? "Royal Tulip, Kathmandu, Nepal"
+      : "Bhrikutimandap Exhibition Hall, Kathmandu, Nepal";
+    const dtStart = isGala ? "20270117T121500Z" : "20270117T041500Z";
+    const dtEnd = isGala ? "20270117T161500Z" : "20270119T121500Z";
+
     const icsContent = [
       "BEGIN:VCALENDAR",
       "VERSION:2.0",
@@ -224,11 +228,11 @@ function VerifyContent() {
       "CALSCALE:GREGORIAN",
       "METHOD:PUBLISH",
       "BEGIN:VEVENT",
-      "DTSTART:20270117T041500Z",
-      "DTEND:20270119T121500Z",
-      "SUMMARY:Himalayan Green Energy Expo 2027",
-      `DESCRIPTION:Official Accreditation for ${attendee?.name || "Delegate"} (Pass ID: ${attendee?.id || "HHE27"}). Venue: Bhrikutimandap Exhibition Hall, Kathmandu.`,
-      "LOCATION:Bhrikutimandap Exhibition Hall, Kathmandu, Nepal",
+      `DTSTART:${dtStart}`,
+      `DTEND:${dtEnd}`,
+      `SUMMARY:${summary}`,
+      `DESCRIPTION:Official Accreditation for ${attendee?.name || "Delegate"} (Pass ID: ${attendee?.id || "HHE27"}). Venue: ${location}.`,
+      `LOCATION:${location}`,
       "STATUS:CONFIRMED",
       "END:VEVENT",
       "END:VCALENDAR",
@@ -237,114 +241,97 @@ function VerifyContent() {
     const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = "Himalayan_Green_Energy_Expo_2027.ics";
+    link.download = `${summary.replace(/\s+/g, "_")}.ics`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
-  // 3. Save / Download Digital Badge as PNG Image
+  // Download Digital Badge Image (.png)
   const handleDownloadBadge = () => {
     if (!attendee) return;
     const canvas = document.createElement("canvas");
     const scale = 2;
-    const width = 360 * scale;
-    const height = 540 * scale;
+    const width = 380 * scale;
+    const height = 580 * scale;
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Background gradient
-    const isExhibitor = attendee.role === "exhibitor";
-    const isGala = attendee.role === "gala";
-    const grad = ctx.createLinearGradient(0, 0, 0, height);
-    grad.addColorStop(0, "#FFFFFF");
-    grad.addColorStop(1, isExhibitor ? "#F0FDF4" : isGala ? "#FAF5FF" : "#F0F9FF");
-    ctx.fillStyle = grad;
+    // Card background
+    ctx.fillStyle = "#0A1929";
     ctx.fillRect(0, 0, width, height);
 
-    // Top Header Banner
-    ctx.fillStyle = isExhibitor ? "#064E3B" : isGala ? "#2E1065" : "#04281E";
-    ctx.fillRect(0, 0, width, 120 * scale);
-
+    // Subtle top border highlight
     ctx.fillStyle = "#10B981";
-    ctx.font = `bold ${8 * scale}px sans-serif`;
+    ctx.fillRect(0, 0, width, 6 * scale);
+
+    // Top Header
+    ctx.fillStyle = "#34D399";
+    ctx.font = `bold ${9 * scale}px monospace`;
     ctx.textAlign = "center";
-    ctx.letterSpacing = "2px";
-    ctx.fillText("IPPAN · OFFICIAL ACCREDITATION", width / 2, 35 * scale);
+    ctx.fillText("IPPAN · OFFICIAL ACCREDITATION", width / 2, 40 * scale);
 
     ctx.fillStyle = "#FFFFFF";
-    ctx.font = `bold ${15 * scale}px sans-serif`;
-    ctx.fillText("HIMALAYAN GREEN ENERGY EXPO 2027", width / 2, 60 * scale);
+    ctx.font = `bold ${16 * scale}px sans-serif`;
+    ctx.fillText("HIMALAYAN GREEN ENERGY EXPO", width / 2, 68 * scale);
 
-    ctx.fillStyle = "#94A3B8";
-    ctx.font = `normal ${8 * scale}px sans-serif`;
-    ctx.fillText("17–19 JANUARY 2027 · KATHMANDU, NEPAL", width / 2, 80 * scale);
+    // Pass Type Pill
+    const isExhibitor = attendee.role === "exhibitor" || Boolean(attendee.stallNumber);
+    const isGala = attendee.role === "gala" || attendee.passType?.toLowerCase().includes("gala");
+    const rolePill = attendee.passType || (isExhibitor ? "OFFICIAL EXHIBITOR" : isGala ? "GALA DINNER VIP" : "TRADE VISITOR");
 
-    // Pass ID Tag
-    ctx.fillStyle = "#FFFFFF";
+    ctx.fillStyle = isExhibitor ? "#065F46" : isGala ? "#581C87" : "#064E3B";
     ctx.beginPath();
-    ctx.roundRect(width / 2 - 80 * scale, 95 * scale, 160 * scale, 20 * scale, 6 * scale);
+    ctx.roundRect(width / 2 - 100 * scale, 85 * scale, 200 * scale, 24 * scale, 12 * scale);
     ctx.fill();
 
-    ctx.fillStyle = "#0F172A";
-    ctx.font = `bold ${9 * scale}px monospace`;
-    ctx.fillText(`PASS ID: ${attendee.id}`, width / 2, 109 * scale);
+    ctx.fillStyle = "#FFFFFF";
+    ctx.font = `bold ${10 * scale}px sans-serif`;
+    ctx.fillText(rolePill.toUpperCase(), width / 2, 101 * scale);
 
     // Attendee Name
-    ctx.fillStyle = "#0F172A";
-    ctx.font = `bold ${20 * scale}px sans-serif`;
-    ctx.fillText(attendee.name || "Registered Delegate", width / 2, 165 * scale);
+    ctx.fillStyle = "#FFFFFF";
+    ctx.font = `bold ${22 * scale}px sans-serif`;
+    ctx.fillText(attendee.name || "Accredited Delegate", width / 2, 160 * scale);
 
     // Organization
-    ctx.fillStyle = isExhibitor ? "#10B981" : "#087EA4";
-    ctx.font = `bold ${12 * scale}px sans-serif`;
-    ctx.fillText(attendee.organization || "Company / Organization", width / 2, 190 * scale);
+    ctx.fillStyle = "#94A3B8";
+    ctx.font = `normal ${12 * scale}px sans-serif`;
+    const subtitle = attendee.organization + (attendee.jobTitle ? ` · ${attendee.jobTitle}` : "");
+    ctx.fillText(subtitle, width / 2, 185 * scale);
 
-    // Title / Stall
-    ctx.fillStyle = "#64748B";
-    ctx.font = `normal ${10 * scale}px sans-serif`;
-    const subText = isExhibitor
-      ? `STALL: ${attendee.stallNumber || "MAIN EXHIBITION HALL"}`
-      : `${attendee.jobTitle || "Trade Delegate"}${attendee.country ? ` · ${attendee.country}` : " · Nepal"}`;
-    ctx.fillText(subText, width / 2, 210 * scale);
-
-    // Draw QR Code
+    // QR Code Frame
     if (qrDataUrl) {
       const img = new Image();
       img.onload = () => {
-        const qrSize = 130 * scale;
+        const qrSize = 160 * scale;
         const qrX = width / 2 - qrSize / 2;
-        const qrY = 240 * scale;
+        const qrY = 220 * scale;
 
-        // QR Container
         ctx.fillStyle = "#FFFFFF";
         ctx.beginPath();
-        ctx.roundRect(qrX - 10 * scale, qrY - 10 * scale, qrSize + 20 * scale, qrSize + 20 * scale, 12 * scale);
+        ctx.roundRect(qrX - 12 * scale, qrY - 12 * scale, qrSize + 24 * scale, qrSize + 24 * scale, 16 * scale);
         ctx.fill();
-        ctx.strokeStyle = "#E2E8F0";
-        ctx.lineWidth = 2 * scale;
-        ctx.stroke();
 
         ctx.drawImage(img, qrX, qrY, qrSize, qrSize);
 
-        // Turnstile instruction
-        ctx.fillStyle = "#64748B";
-        ctx.font = `normal ${8 * scale}px sans-serif`;
-        ctx.fillText("SCAN AT TURNSTILE GATE OR REGISTRATION DESK", width / 2, 415 * scale);
-
-        // Bottom Role Banner
-        const bannerBg = isExhibitor ? "#10B981" : isGala ? "#7C3AED" : "#087EA4";
-        ctx.fillStyle = bannerBg;
-        ctx.fillRect(0, height - 50 * scale, width, 50 * scale);
-
+        // Pass ID
         ctx.fillStyle = "#FFFFFF";
-        ctx.font = `bold ${14 * scale}px sans-serif`;
-        const bannerText = (attendee.passType || (isExhibitor ? "OFFICIAL EXHIBITOR" : isGala ? "GALA DINNER VIP" : "TRADE VISITOR")).toUpperCase();
-        ctx.fillText(bannerText, width / 2, height - 20 * scale);
+        ctx.font = `bold ${11 * scale}px monospace`;
+        ctx.fillText(`PASS ID: ${attendee.id}`, width / 2, 440 * scale);
 
-        // Download PNG
+        // Dates & Venue
+        ctx.fillStyle = "#64748B";
+        ctx.font = `normal ${9 * scale}px sans-serif`;
+        const venueText = isGala ? "Royal Tulip, Kathmandu · 17 Jan 2027" : "Bhrikutimandap Hall, Kathmandu · 17–19 Jan 2027";
+        ctx.fillText(venueText, width / 2, 470 * scale);
+
+        ctx.fillStyle = "#10B981";
+        ctx.font = `bold ${8 * scale}px monospace`;
+        ctx.fillText("VALIDATED ACCESS CREDENTIAL", width / 2, 530 * scale);
+
         const link = document.createElement("a");
         link.download = `Official_Pass_${attendee.id}.png`;
         link.href = canvas.toDataURL("image/png");
@@ -356,34 +343,36 @@ function VerifyContent() {
     }
   };
 
-  // 4. Share Pass
+  // Share Pass
   const handleShare = async () => {
     if (typeof navigator !== "undefined" && navigator.share) {
       try {
         await navigator.share({
           title: `Official Pass - ${attendee?.name} | Himalayan Green Energy Expo 2027`,
-          text: `Here is the official verified pass for ${attendee?.name} (${attendee?.organization}) at Himalayan Green Energy Expo 2027.`,
+          text: `Official accreditation pass for ${attendee?.name} (${attendee?.organization}) at Himalayan Green Energy Expo 2027.`,
           url: window.location.href,
         });
         setShared(true);
-        setTimeout(() => setShared(false), 3000);
-      } catch (e) {}
+        setTimeout(() => setShared(false), 2500);
+      } catch {
+        // ignore
+      }
     } else {
       navigator.clipboard.writeText(window.location.href);
       setShared(true);
-      setTimeout(() => setShared(false), 3000);
+      setTimeout(() => setShared(false), 2500);
     }
   };
 
-  // 5. Copy Pass ID
+  // Copy ID
   const handleCopyId = () => {
     if (!attendee?.id) return;
     navigator.clipboard.writeText(attendee.id);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
+    setTimeout(() => setCopied(false), 2000);
   };
 
-  // 6. Check-in toggle for organizers
+  // Toggle Checkin for Staff
   const handleToggleCheckin = async () => {
     if (!attendee?.id) return;
     setCheckinLoading(true);
@@ -398,7 +387,7 @@ function VerifyContent() {
         setAttendee((prev) => (prev ? { ...prev, checkedIn: data.checkedIn } : null));
       }
     } catch (err) {
-      console.warn("Checkin update failed", err);
+      console.warn("Check-in update failed", err);
     } finally {
       setCheckinLoading(false);
     }
@@ -406,13 +395,12 @@ function VerifyContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-xl border border-slate-200 text-center">
-          <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center animate-spin">
-            <ShieldCheck className="w-8 h-8 text-emerald-600" />
-          </div>
-          <h2 className="text-lg font-bold text-slate-900">Verifying Official Pass...</h2>
-          <p className="text-xs text-slate-500 mt-2">Checking accreditation credentials against IPPAN registry</p>
+      <div className="min-h-screen bg-[#071322] flex items-center justify-center p-4">
+        <div className="text-center space-y-3">
+          <div className="w-10 h-10 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-xs font-mono uppercase tracking-widest text-slate-400">
+            Verifying Official Accreditation...
+          </p>
         </div>
       </div>
     );
@@ -420,27 +408,24 @@ function VerifyContent() {
 
   if (tamperedError) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-xl border border-rose-300 text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-rose-50 border border-rose-200 flex items-center justify-center">
-            <AlertCircle className="w-8 h-8 text-rose-600" />
+      <div className="min-h-screen bg-[#071322] flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-[#0D1F33] border border-white/10 rounded-3xl p-6 sm:p-8 text-center text-white space-y-4 shadow-2xl">
+          <div className="w-12 h-12 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center mx-auto">
+            <AlertCircle className="w-6 h-6" />
           </div>
-          <h2 className="text-xl font-bold text-slate-900">Security Verification Failed</h2>
-          <p className="text-sm text-rose-700 font-semibold mt-2">
-            Potential Tampering or Forged Credential Detected
-          </p>
-          <p className="text-xs text-slate-600 mt-2 leading-relaxed">
-            The cryptographic security signature attached to this pass is invalid or has been modified.
-            Digital passes cannot be duplicated or altered. Access to the exhibition hall is denied.
-          </p>
-          <div className="mt-6">
-            <Link
-              href="/"
-              className="inline-flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm shadow-md transition-all"
-            >
-              Return to Expo Home
-            </Link>
+          <div className="space-y-1">
+            <h2 className="text-lg font-bold">Verification Failed</h2>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              This pass token could not be verified by the official IPPAN registry. Please present your original registration email at the venue desk.
+            </p>
           </div>
+          <Link
+            href="/"
+            className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-white/10 hover:bg-white/15 text-white font-medium text-xs transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Return to Expo Homepage</span>
+          </Link>
         </div>
       </div>
     );
@@ -448,23 +433,23 @@ function VerifyContent() {
 
   if (!attendee) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-xl border border-rose-200 text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-rose-50 border border-rose-200 flex items-center justify-center">
-            <AlertCircle className="w-8 h-8 text-rose-600" />
+      <div className="min-h-screen bg-[#071322] flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-[#0D1F33] border border-white/10 rounded-3xl p-6 sm:p-8 text-center text-white space-y-4 shadow-2xl">
+          <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto">
+            <AlertCircle className="w-6 h-6" />
           </div>
-          <h2 className="text-xl font-bold text-slate-900">Accreditation Not Found</h2>
-          <p className="text-sm text-slate-600 mt-2">
-            We could not verify an active accreditation pass with the provided link or QR code.
-          </p>
-          <div className="mt-6">
-            <Link
-              href="/register"
-              className="inline-flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md transition-all"
-            >
-              Register for Official Pass <ChevronRight className="w-4 h-4" />
-            </Link>
+          <div className="space-y-1">
+            <h2 className="text-lg font-bold">Accreditation Not Found</h2>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              We could not locate an active credential for the provided verification link.
+            </p>
           </div>
+          <Link
+            href="/register"
+            className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-colors"
+          >
+            <span>Register for Official Pass</span>
+          </Link>
         </div>
       </div>
     );
@@ -472,331 +457,247 @@ function VerifyContent() {
 
   const isExhibitor = attendee.role === "exhibitor" || Boolean(attendee.stallNumber);
   const isGala = attendee.role === "gala" || attendee.passType?.toLowerCase().includes("gala");
-  const roleBadgeColor = isExhibitor
-    ? "bg-emerald-600 text-white"
-    : isGala
-    ? "bg-purple-600 text-white"
-    : "bg-teal-600 text-white";
+  const venueLocation = isGala
+    ? attendee.ticketDetails?.venue || "Royal Tulip, Kathmandu"
+    : "Bhrikutimandap Hall, Kathmandu";
+  const eventDate = isGala
+    ? attendee.ticketDetails?.date || "17 January 2027 · 6:00 PM"
+    : "17–19 January 2027";
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-100 via-slate-50 to-slate-100 py-6 px-4 sm:px-6">
-      <div className="max-w-xl mx-auto">
-        
-        {/* Verification Success Header Badge */}
-        <div className="mb-4 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 text-xs font-bold uppercase tracking-wider shadow-sm">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-            Official Pass Verified &amp; Confirmed
+    <div className="min-h-screen bg-[#071322] text-white py-10 px-4 sm:px-6 flex flex-col items-center justify-center relative font-sans">
+      {/* Background Ambience */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-900/15 via-transparent to-transparent pointer-events-none" />
+
+      <div className="w-full max-w-md relative z-10 space-y-4">
+        {/* Verification Status Banner */}
+        <div className="text-center">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-[11px] font-medium tracking-wide">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Official Verified Accreditation</span>
           </div>
         </div>
 
-        {/* Main Accreditation Card */}
-        <div className="bg-white rounded-3xl shadow-2xl border border-slate-200/80 overflow-hidden backdrop-blur-sm">
-          
-          {/* Header Strip */}
-          <div className={`p-6 sm:p-7 text-center ${isExhibitor ? "bg-emerald-900" : isGala ? "bg-purple-950" : "bg-[#04281E]"} text-white relative`}>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-emerald-300 text-[10px] font-bold tracking-widest uppercase mb-2">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              IPPAN · Official Accreditation
-            </div>
-            <h1 className="text-xl sm:text-2xl font-black tracking-tight leading-snug">
-              Himalayan Green Energy Expo
-            </h1>
-            <p className="text-xs text-slate-300 font-medium mt-1">
-              5th Edition · 17–19 January 2027 (Magh 3–5, 2083)
-            </p>
-            <p className="text-[11px] text-slate-400 mt-0.5">
-              Bhrikutimandap Exhibition Hall, Kathmandu, Nepal
-            </p>
-
-            {/* Pass Category Ribbon */}
-            <div className="mt-4">
-              <span className={`inline-block px-4 py-1.5 rounded-full text-xs font-black tracking-wider uppercase shadow-md ${roleBadgeColor}`}>
-                {attendee.passType || (isExhibitor ? "Official Exhibitor Pass" : isGala ? "Gala Dinner VIP" : "Trade Visitor Pass")}
+        {/* ── DIGITAL ACCREDITATION PASS CARD ──────────────────────────── */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="w-full bg-[#0B1A2C] border border-white/15 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-md"
+        >
+          {/* Card Header Strip */}
+          <div className="px-6 pt-6 pb-4 border-b border-white/10 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-[10px] font-mono tracking-widest uppercase text-slate-300 font-semibold">
+                IPPAN · ACCREDITATION
               </span>
             </div>
+
+            <span
+              className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                isExhibitor
+                  ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                  : isGala
+                  ? "bg-purple-500/20 text-purple-300 border border-purple-500/30"
+                  : "bg-teal-500/20 text-teal-300 border border-teal-500/30"
+              }`}
+            >
+              {isGala ? "Gala VIP" : isExhibitor ? "Exhibitor" : "Trade Visitor"}
+            </span>
           </div>
 
-          {/* Attendee Details Core Section */}
-          <div className="p-6 sm:p-8">
-            
-            {/* 🔒 Anti-Counterfeiting & Cryptographic Protection Banner */}
-            <div className="mb-5 p-3.5 rounded-2xl bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border border-emerald-200 flex items-center justify-between shadow-2xs">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-emerald-700 text-white flex items-center justify-center flex-shrink-0 shadow-sm">
-                  <Lock className="w-4 h-4" />
-                </div>
-                <div>
-                  <div className="font-bold text-xs text-emerald-950 flex items-center gap-1.5">
-                    <span>Cryptographically Protected Pass</span>
-                    <span className="text-[9px] bg-emerald-200/80 text-emerald-900 px-1.5 py-0.5 rounded font-mono font-bold">AES-256</span>
-                  </div>
-                  <div className="text-[11px] text-emerald-700 mt-0.5">
-                    Security Code: <span className="font-mono font-bold">{attendee.securityChecksum || "SEC-VERIFIED"}</span>
-                  </div>
-                </div>
-              </div>
-              <div className="text-right">
-                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-white px-2 py-1 rounded-md border border-emerald-200 shadow-2xs">
-                  <ShieldCheck className="w-3 h-3 text-emerald-600" />
-                  Anti-Copy
+          {/* Attendee Details Core */}
+          <div className="px-6 pt-6 pb-5 text-center space-y-2">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+              {attendee.name}
+            </h1>
+
+            <div className="flex items-center justify-center gap-1.5 text-xs text-slate-300">
+              <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+              <span className="font-medium text-slate-200">{attendee.organization}</span>
+              {attendee.jobTitle && (
+                <>
+                  <span className="text-slate-500">•</span>
+                  <span className="text-slate-400">{attendee.jobTitle}</span>
+                </>
+              )}
+            </div>
+
+            {/* Exhibitor Stall Pill */}
+            {attendee.stallNumber && (
+              <div className="pt-1">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs font-mono font-semibold">
+                  <span>Stall Allocated:</span>
+                  <span className="font-bold text-white">{attendee.stallNumber}</span>
                 </span>
               </div>
-            </div>
-
-            {/* ⚠️ Anti-Duplication Warning if already checked in */}
-            {attendee.checkedIn && (
-              <div className="mb-5 p-3.5 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 text-xs">
-                <div className="flex items-center gap-2 font-bold text-amber-900">
-                  <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
-                  <span>Turnstile Gate: Already Admitted</span>
-                </div>
-                <p className="mt-1 text-[11px] text-amber-800 leading-relaxed">
-                  This pass was already scanned and marked as admitted at the gate. Duplicate entries using copies or screenshots will be rejected by gate security.
-                </p>
-              </div>
             )}
+          </div>
 
-            <div className="text-center pb-6 border-b border-slate-100">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600 block mb-1">
-                Accredited Delegate
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                {attendee.name}
-              </h2>
-              <div className="flex items-center justify-center gap-2 mt-2 text-emerald-700 font-bold text-sm sm:text-base">
-                <Building2 className="w-4 h-4 flex-shrink-0" />
-                <span>{attendee.organization || "Himalayan Green Energy Expo"}</span>
-              </div>
-              {(attendee.jobTitle || attendee.country) && (
-                <div className="flex items-center justify-center gap-1.5 mt-1 text-slate-500 text-xs sm:text-sm">
-                  {attendee.jobTitle && (
-                    <>
-                      <Briefcase className="w-3.5 h-3.5" />
-                      <span>{attendee.jobTitle}</span>
-                    </>
-                  )}
-                  {attendee.country && (
-                    <span>· {attendee.country}</span>
-                  )}
-                </div>
-              )}
-
-              {/* Stall badge if exhibitor */}
-              {attendee.stallNumber && (
-                <div className="inline-flex items-center gap-1.5 mt-3 px-3 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold">
-                  <span>Allocated Stall:</span>
-                  <span className="font-mono text-sm font-black text-emerald-600">{attendee.stallNumber}</span>
+          {/* Gate Scanner QR Code Frame */}
+          <div className="px-6 py-4 flex flex-col items-center justify-center bg-white/[0.02] border-y border-white/5">
+            <div className="bg-white p-3.5 rounded-2xl shadow-xl border border-white/20">
+              {qrDataUrl ? (
+                <img
+                  src={qrDataUrl}
+                  alt="Gate Access QR"
+                  className="w-44 h-44 sm:w-48 sm:h-48 rounded-lg block"
+                />
+              ) : (
+                <div className="w-44 h-44 sm:w-48 sm:h-48 flex items-center justify-center">
+                  <div className="w-8 h-8 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
                 </div>
               )}
             </div>
 
-            {/* Pass ID with Masking & Copy Button */}
-            <div className="my-5 p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
-              <div>
-                <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 block">
-                    Accreditation Code / Pass ID
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setMaskId(!maskId)}
-                    className="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-500 hover:text-slate-800 px-1.5 py-0.5 rounded bg-slate-200/70 transition-colors"
-                  >
-                    {maskId ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-                    <span>{maskId ? "Reveal" : "Mask ID"}</span>
-                  </button>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-base font-bold text-slate-900">
-                    {maskId ? maskPassId(attendee.id) : attendee.id}
-                  </span>
-                  {attendee.securityChecksum && (
-                    <span className="text-[10px] font-mono font-bold text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-200">
-                      SEC: {attendee.securityChecksum}
-                    </span>
-                  )}
-                </div>
-              </div>
+            {/* Pass ID Pill with Copy */}
+            <div className="mt-3.5 flex items-center gap-2">
+              <span className="text-[11px] font-mono text-slate-400 uppercase tracking-wider">
+                ID:
+              </span>
               <button
+                type="button"
                 onClick={handleCopyId}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-50 shadow-sm transition-all active:scale-95"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white/5 hover:bg-white/10 text-white font-mono text-xs font-semibold border border-white/10 transition-colors cursor-pointer"
+                title="Click to copy Pass ID"
               >
+                <span>{attendee.id}</span>
                 {copied ? (
-                  <>
-                    <Check className="w-3.5 h-3.5 text-emerald-600" />
-                    <span className="text-emerald-600 font-bold">Copied!</span>
-                  </>
+                  <Check className="w-3 h-3 text-emerald-400" />
                 ) : (
-                  <>
-                    <Copy className="w-3.5 h-3.5" />
-                    <span>Copy</span>
-                  </>
+                  <Copy className="w-3 h-3 text-slate-400" />
                 )}
               </button>
             </div>
+            <p className="text-[11px] text-slate-400 mt-1">
+              Present for gate check-in &amp; badge collection
+            </p>
+          </div>
 
-            {/* High-Resolution Fast Track QR Code */}
-            <div className="p-5 rounded-2xl bg-slate-50 border-2 border-dashed border-slate-300 text-center my-6">
-              <span className="text-[11px] font-black uppercase tracking-widest text-emerald-700 block mb-2">
-                Fast-Track Turnstile Entry QR
-              </span>
-              <div className="inline-block p-3 bg-white rounded-2xl border border-slate-200 shadow-md">
-                {qrDataUrl ? (
-                  <img
-                    src={qrDataUrl}
-                    alt="Fast Track Gate QR"
-                    className="w-48 h-48 mx-auto rounded-lg"
-                  />
-                ) : (
-                  <div className="w-48 h-48 flex items-center justify-center">
-                    <QrCode className="w-12 h-12 text-slate-300 animate-pulse" />
-                  </div>
-                )}
+          {/* Event Logistics Grid */}
+          <div className="p-6 grid grid-cols-2 gap-2.5 text-left text-xs">
+            <div className="bg-white/[0.03] border border-white/5 rounded-xl p-3 space-y-1">
+              <div className="flex items-center gap-1.5 text-slate-400 text-[11px]">
+                <Calendar className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span>Date &amp; Time</span>
               </div>
-              <p className="text-[11px] text-slate-600 mt-3 font-medium">
-                Present this QR code at turnstile gate scanner or registration desk for instant contactless check-in.
+              <p className="font-semibold text-white leading-tight">{eventDate}</p>
+            </div>
+
+            <div className="bg-white/[0.03] border border-white/5 rounded-xl p-3 space-y-1">
+              <div className="flex items-center gap-1.5 text-slate-400 text-[11px]">
+                <MapPin className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span>Venue</span>
+              </div>
+              <p className="font-semibold text-white leading-tight truncate">{venueLocation}</p>
+            </div>
+
+            <div className="bg-white/[0.03] border border-white/5 rounded-xl p-3 space-y-1">
+              <div className="flex items-center gap-1.5 text-slate-400 text-[11px]">
+                <Ticket className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span>Pass Category</span>
+              </div>
+              <p className="font-semibold text-white leading-tight truncate">
+                {attendee.passType || "Official Pass"}
               </p>
             </div>
 
-            {/* Quick Contact & Accreditation Details */}
-            <div className="space-y-2.5 text-xs text-slate-700 mb-6 bg-white p-4 rounded-2xl border border-slate-100">
-              {attendee.email && (
-                <div className="flex items-center gap-2">
-                  <Mail className="w-4 h-4 text-slate-600 flex-shrink-0" />
-                  <span className="text-slate-600 font-medium">Email:</span>
-                  <a href={`mailto:${attendee.email}`} className="text-slate-900 font-semibold hover:underline truncate">
-                    {attendee.email}
-                  </a>
-                </div>
-              )}
-              {attendee.phone && (
-                <div className="flex items-center gap-2">
-                  <Phone className="w-4 h-4 text-slate-600 flex-shrink-0" />
-                  <span className="text-slate-600 font-medium">Phone:</span>
-                  <a href={`tel:${attendee.phone}`} className="text-slate-900 font-semibold hover:underline">
-                    {attendee.phone}
-                  </a>
-                </div>
-              )}
-              <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-slate-600 flex-shrink-0" />
-                <span className="text-slate-600 font-medium">Venue:</span>
-                <span className="text-slate-900 font-semibold">Bhrikutimandap Hall, Kathmandu</span>
+            <div className="bg-white/[0.03] border border-white/5 rounded-xl p-3 space-y-1">
+              <div className="flex items-center gap-1.5 text-slate-400 text-[11px]">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span>Gate Status</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-slate-600 flex-shrink-0" />
-                <span className="text-slate-600 font-medium">Dates:</span>
-                <span className="text-slate-900 font-semibold">17–19 January 2027</span>
-              </div>
+              <p
+                className={`font-semibold leading-tight ${
+                  attendee.checkedIn ? "text-emerald-400" : "text-sky-300"
+                }`}
+              >
+                {attendee.checkedIn ? "Admitted ✓" : "Valid & Active"}
+              </p>
             </div>
+          </div>
 
-            {/* ── SAVE TO PHONE ACTION BUTTONS ────────────────────── */}
-            <div className="space-y-3 pt-2 border-t border-slate-100">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600 block text-center">
-                Save &amp; Keep Pass on Your Phone
-              </span>
-
-              {/* 1. Save Contact to Phone (.vcf) */}
+          {/* Unified Action Buttons */}
+          <div className="px-6 pb-6 pt-1 space-y-2.5">
+            <div className="grid grid-cols-2 gap-2">
               <button
+                type="button"
                 onClick={handleSaveContact}
-                className="w-full flex items-center justify-center gap-2.5 py-3.5 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-lg shadow-emerald-600/25 transition-all active:scale-[0.98]"
+                className="py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs flex items-center justify-center gap-1.5 shadow-md transition-all active:scale-98 cursor-pointer"
               >
-                <UserPlus className="w-4 h-4" />
-                <span>Save Contact to Phone (vCard)</span>
+                <UserPlus className="w-3.5 h-3.5" />
+                <span>Save Contact (vCard)</span>
               </button>
 
-              <div className="grid grid-cols-2 gap-2.5">
-                {/* 2. Download Badge Image */}
-                <button
-                  onClick={handleDownloadBadge}
-                  className="flex items-center justify-center gap-2 py-3 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs shadow-md transition-all active:scale-[0.98]"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>Save Badge PNG</span>
-                </button>
-
-                {/* 3. Add to Calendar */}
-                <button
-                  onClick={handleSaveCalendar}
-                  className="flex items-center justify-center gap-2 py-3 px-3 rounded-xl bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 font-semibold text-xs shadow-sm transition-all active:scale-[0.98]"
-                >
-                  <Calendar className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Add to Calendar</span>
-                </button>
-              </div>
-
-              {/* 4. Share Pass Link */}
               <button
-                onClick={handleShare}
-                className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition-all active:scale-[0.98]"
+                type="button"
+                onClick={handleDownloadBadge}
+                className="py-2.5 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-semibold text-xs flex items-center justify-center gap-1.5 border border-white/10 transition-all active:scale-98 cursor-pointer"
               >
-                <Share2 className="w-3.5 h-3.5" />
-                <span>{shared ? "Link Copied / Shared!" : "Share Official Pass"}</span>
+                <Download className="w-3.5 h-3.5" />
+                <span>Save Badge Image</span>
               </button>
             </div>
 
-            {/* Gate Check-In Status & Staff Action */}
-            <div className="mt-8 pt-4 border-t border-slate-100 text-center">
-              <div className="inline-flex items-center gap-2 mb-2">
-                <span className="text-[11px] text-slate-500 font-semibold">Gate Status:</span>
-                <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
-                  attendee.checkedIn ? "bg-emerald-100 text-emerald-800" : "bg-blue-100 text-blue-800"
-                }`}>
-                  {attendee.checkedIn ? "Checked In at Gate ✓" : "Ready for Turnstile"}
-                </span>
-              </div>
-              {isStaff ? (
-                <div className="space-y-1.5 mt-1">
-                  <button
-                    onClick={handleToggleCheckin}
-                    disabled={checkinLoading}
-                    className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs ${
-                      attendee.checkedIn
-                        ? "bg-slate-100 hover:bg-slate-200 text-slate-700"
-                        : "bg-[#218A59] hover:bg-[#1b734a] text-white"
-                    }`}
-                  >
-                    {checkinLoading ? "Updating..." : attendee.checkedIn ? "Revert Gate Check-in" : "Admit & Mark Checked In (Staff)"}
-                  </button>
-                  <p className="text-[10px] text-emerald-700 font-mono">
-                    ✓ Authenticated as Staff ({staffName})
-                  </p>
-                </div>
-              ) : (
-                <div className="mt-1">
-                  <Link
-                    href={`/staff/login?from=${encodeURIComponent(typeof window !== "undefined" ? window.location.pathname + window.location.search : "/staff")}`}
-                    className="text-[11px] text-slate-500 hover:text-emerald-700 underline font-medium transition-colors"
-                  >
-                    Gate Staff? Log in to admit attendee →
-                  </Link>
-                </div>
-              )}
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={handleSaveCalendar}
+                className="py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white font-medium text-xs flex items-center justify-center gap-1.5 border border-white/5 transition-all active:scale-98 cursor-pointer"
+              >
+                <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                <span>Add to Calendar</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleShare}
+                className="py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white font-medium text-xs flex items-center justify-center gap-1.5 border border-white/5 transition-all active:scale-98 cursor-pointer"
+              >
+                <Share2 className="w-3.5 h-3.5 text-slate-400" />
+                <span>{shared ? "Link Copied!" : "Share Pass"}</span>
+              </button>
             </div>
-
           </div>
 
-          {/* Footer Card Info */}
-          <div className="bg-slate-50 p-4 border-t border-slate-200 text-center text-[11px] text-slate-500">
-            <p>Jointly Organized by IPPAN &amp; Event Solution Pvt. Ltd.</p>
-            <p className="mt-0.5 text-[10px] text-slate-400">
-              Need assistance? Email <a href="mailto:info@eventsolutionnepal.com.np" className="text-emerald-600 underline">info@eventsolutionnepal.com.np</a>
-            </p>
+          {/* Staff Gate Control (only visible to authenticated organizers/staff) */}
+          {isStaff && (
+            <div className="px-6 py-3.5 bg-emerald-950/40 border-t border-emerald-500/20 text-center space-y-1.5">
+              <button
+                type="button"
+                onClick={handleToggleCheckin}
+                disabled={checkinLoading}
+                className="w-full py-2 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-colors cursor-pointer disabled:opacity-50"
+              >
+                {checkinLoading
+                  ? "Updating Gate..."
+                  : attendee.checkedIn
+                  ? "Undo Gate Admission"
+                  : "Admit Attendee (Staff Check-in)"}
+              </button>
+              <p className="text-[10px] text-emerald-400 font-mono">
+                Staff Verified: {staffName}
+              </p>
+            </div>
+          )}
+        </motion.div>
+
+        {/* Minimal Footer */}
+        <div className="text-center space-y-2 pt-2 text-xs text-slate-500">
+          <p>
+            Himalayan Green Energy Expo 2027 · Organised by IPPAN &amp; Event Solution
+          </p>
+          <div>
+            <Link
+              href="/"
+              className="text-slate-400 hover:text-white transition-colors inline-flex items-center gap-1 font-medium"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Back to Expo Homepage</span>
+            </Link>
           </div>
-
         </div>
-
-        {/* Back to Expo Link */}
-        <div className="mt-6 text-center">
-          <Link
-            href="/"
-            className="text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors inline-flex items-center gap-1"
-          >
-            &larr; Return to Himalayan Green Energy Expo Homepage
-          </Link>
-        </div>
-
       </div>
     </div>
   );
@@ -806,8 +707,8 @@ export default function VerifyPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-          <div className="w-10 h-10 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="min-h-screen bg-[#071322] flex items-center justify-center p-4">
+          <div className="w-8 h-8 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
         </div>
       }
     >

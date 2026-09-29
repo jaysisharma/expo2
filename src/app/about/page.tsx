@@ -407,24 +407,16 @@ export default function AboutPage() {
                   </div>
                 </div>
 
-                {journeyExpo.milestoneCard.bannerImage && (
+                {(journeyExpo.milestoneCard.bannerImage || true) && (
                   <div className="lg:col-span-6">
                     <div className="relative aspect-[16/10] w-full rounded-2xl overflow-hidden border border-white/20 shadow-2xl group">
                       <Image
-                        src={journeyExpo.milestoneCard.bannerImage}
-                        alt="Himalayan Green Energy Expo 2027 Official Press Meet Banner"
+                        src={journeyExpo.milestoneCard.bannerImage || "/fifth_edition.jpeg"}
+                        alt="Himalayan Green Energy Expo 2027 - 5th Milestone Edition"
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-700"
+                        priority
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
-                      <div className="absolute bottom-3 left-3 right-3 px-3 py-2 rounded-lg bg-black/70 backdrop-blur-md border border-white/10 text-left">
-                        <span className="text-[10px] font-mono text-[#34D399] uppercase font-bold tracking-wider block">
-                          {journeyExpo.milestoneCard.bannerBadge || "OFFICIAL PRESS MEET CREATIVE"}
-                        </span>
-                        <span className="text-xs text-white font-medium">
-                          {journeyExpo.milestoneCard.bannerCaption || "Bhrikutimandap, Kathmandu · IPPAN × Event Solution"}
-                        </span>
-                      </div>
                     </div>
                   </div>
                 )}
