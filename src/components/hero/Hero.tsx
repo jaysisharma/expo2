@@ -1,15 +1,38 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Calendar,
   MapPin,
   ArrowRight,
+  Play,
+  X,
+  ExternalLink,
+  Film,
 } from 'lucide-react';
 import { TopographicContours, MountainCrestSvg } from '@/components/ui';
 
 export function Hero() {
+  const [isVideoOpen, setIsVideoOpen] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsVideoOpen(false);
+      }
+    };
+    if (isVideoOpen) {
+      document.body.style.overflow = 'hidden';
+      window.addEventListener('keydown', handleKeyDown);
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isVideoOpen]);
   return (
     <div className="relative w-full bg-[#071322]">
       {/* ── 1. CINEMATIC FULL-WIDTH HERO SECTION ───────────────────────────── */}
@@ -123,6 +146,38 @@ export function Hero() {
               >
                 REGISTER FOR FREE PASS
               </Link>
+
+              {/* Play Video CTA */}
+              <button
+                type="button"
+                onClick={() => setIsVideoOpen(true)}
+                className="group inline-flex items-center gap-2.5 px-5 py-3 rounded-full bg-slate-900/80 hover:bg-slate-900 text-white border border-[#00E599]/40 hover:border-[#00E599] text-xs font-bold tracking-wider uppercase font-inter-tight backdrop-blur-md transition-all duration-200 active:scale-98 shadow-[0_8px_20px_rgba(0,0,0,0.4)] hover:shadow-[0_0_25px_rgba(0,229,153,0.35)]"
+              >
+                <span className="relative flex h-5 w-5 items-center justify-center rounded-full bg-[#00E599] text-slate-950 group-hover:scale-110 transition-transform">
+                  <Play className="w-2.5 h-2.5 fill-current ml-0.5" />
+                  <span className="absolute -inset-1 rounded-full bg-[#00E599]/40 animate-ping" />
+                </span>
+                <span>WATCH FILM</span>
+              </button>
+            </div>
+
+            {/* Video Footage Credits Badge / Subtitle */}
+            <div className="pt-1 flex items-center">
+              <button
+                type="button"
+                onClick={() => setIsVideoOpen(true)}
+                className="inline-flex items-center gap-2 text-[11px] sm:text-xs text-slate-300/90 hover:text-white transition-colors group cursor-pointer text-left bg-black/35 backdrop-blur-sm px-3.5 py-1.5 rounded-full border border-white/10 hover:border-[#00E599]/40"
+              >
+                <Film className="w-3.5 h-3.5 text-[#00E599] shrink-0" />
+                <span className="text-slate-400">Cinematography:</span>
+                <span className="font-semibold text-white group-hover:text-[#00E599] transition-colors underline decoration-white/30 underline-offset-2">
+                  Saligram Dulal
+                </span>
+                <span className="text-slate-500 hidden sm:inline">•</span>
+                <span className="text-slate-300 hidden sm:inline">
+                  Hydropower Drone Videomaking Competition 2022 (Responses)
+                </span>
+              </button>
             </div>
           </div>
 
@@ -131,7 +186,11 @@ export function Hero() {
         </div>
 
         {/* ── Awwwards-Style 5th Edition Circular Rotating Badge (Bottom Right) ── */}
-        <div className="absolute bottom-8 sm:bottom-12 right-6 sm:right-10 lg:right-16 z-20 group cursor-pointer select-none">
+        <div
+          onClick={() => setIsVideoOpen(true)}
+          className="absolute bottom-8 sm:bottom-12 right-6 sm:right-10 lg:right-16 z-20 group cursor-pointer select-none"
+          title="Watch Cinematic Film"
+        >
           <div className="relative w-28 h-28 sm:w-32 sm:h-32 lg:w-36 lg:h-36 flex items-center justify-center transition-transform duration-500 group-hover:scale-105">
             {/* Subtle Glowing Aura */}
             <div className="absolute inset-0 rounded-full bg-[#00E599]/20 blur-xl group-hover:bg-[#00E599]/40 transition-all duration-500 pointer-events-none" />
@@ -169,6 +228,92 @@ export function Hero() {
           </div>
         </div>
       </section>
+
+      {/* ── 3. CINEMATIC VIDEO OVERLAY MODAL & CREDITS ──────────────────────── */}
+      {isVideoOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Hydropower Drone Videomaking Competition 2022 Showcase"
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 lg:p-8 animate-in fade-in duration-200"
+        >
+          {/* Backdrop Blur */}
+          <div
+            className="fixed inset-0 bg-black/90 backdrop-blur-md transition-opacity cursor-pointer"
+            onClick={() => setIsVideoOpen(false)}
+            aria-hidden="true"
+          />
+
+          {/* Modal Container */}
+          <div className="relative z-10 w-full max-w-4xl bg-[#071322] border border-white/20 rounded-2xl sm:rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.95)] overflow-hidden flex flex-col max-h-[92vh] animate-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 border-b border-white/10 bg-slate-950/70">
+              <div className="flex items-center gap-2.5">
+                <span className="flex h-2.5 w-2.5 rounded-full bg-[#00E599] animate-pulse" />
+                <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-white font-inter-tight">
+                  Cinematic Drone Showcase
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsVideoOpen(false)}
+                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white flex items-center justify-center transition-colors focus:outline-none focus:ring-2 focus:ring-[#00E599]"
+                aria-label="Close video modal"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* 16:9 Video Frame */}
+            <div className="relative w-full aspect-video bg-black">
+              <iframe
+                src="https://www.youtube-nocookie.com/embed/sJy3FVrESKk?autoplay=1&rel=0&modestbranding=1"
+                title="Hydropower Drone Videomaking Competition 2022 (Responses) - Saligram Dulal"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+                className="absolute inset-0 w-full h-full border-0"
+              />
+            </div>
+
+            {/* Credits Docket Footer */}
+            <div className="px-4 sm:px-6 py-4 bg-slate-950/90 border-t border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 font-inter-tight">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="px-2 py-0.5 rounded bg-[#00E599]/20 border border-[#00E599]/40 text-[#00E599] text-[10px] font-bold uppercase tracking-wider">
+                    Official Credits
+                  </span>
+                  <span className="text-xs text-slate-300 font-medium">
+                    Hydropower Drone Videomaking Competition 2022 (Responses)
+                  </span>
+                </div>
+                <p className="text-sm font-semibold text-white">
+                  Drone Pilot &amp; Cinematographer:{' '}
+                  <span className="text-[#00E599] font-bold">Saligram Dulal</span>
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2.5 pt-1 sm:pt-0">
+                <a
+                  href="https://www.youtube.com/watch?v=sJy3FVrESKk"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-medium border border-white/20 hover:border-white/40 transition-colors"
+                >
+                  <span>Watch on YouTube</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setIsVideoOpen(false)}
+                  className="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
