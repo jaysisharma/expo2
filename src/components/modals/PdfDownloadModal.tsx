@@ -86,52 +86,54 @@ export default function PdfDownloadModal() {
     };
   }, []);
 
-  const downloadPdfFile = async (url: string) => {
-    const filename = url.split("/").pop() || "Himalayan-Green-Energy-Expo-Proposal.pdf";
-    const candidates = [
-      url,
-      "/files/Proposal.pdf",
-      "/Proposal.pdf",
-      "/api/proposal",
-    ].filter((u, i, arr) => arr.indexOf(u) === i);
+  const getDownloadMetadata = (url: string) => {
+    const lower = url.toLowerCase();
+    if (lower.includes("booking") || lower.includes("form")) {
+      return {
+        downloadUrl: "/files/booking-form.pdf",
+        filename: "Himalayan-Expo-Stall-Booking-Form.pdf",
+      };
+    }
+    if (lower.includes("sponsor")) {
+      return {
+        downloadUrl: "/files/sponsors-sheet.pdf",
+        filename: "Himalayan-Expo-Sponsorship-Rates-Sheet.pdf",
+      };
+    }
+    return {
+      downloadUrl: "/files/Proposal.pdf",
+      filename: "Himalayan-Green-Energy-Expo-Proposal.pdf",
+    };
+  };
 
-    for (const targetUrl of candidates) {
-      try {
-        const res = await fetch(targetUrl);
-        if (res.ok) {
-          const blob = await res.blob();
-          const blobUrl = window.URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.style.display = "none";
-          a.href = blobUrl;
-          a.download = filename;
-          a.setAttribute("data-no-intercept", "true");
-          document.body.appendChild(a);
-          a.click();
-          setTimeout(() => {
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(blobUrl);
-          }, 1000);
-          return;
-        }
-      } catch (err) {
-        console.warn(`Download attempt failed from ${targetUrl}:`, err);
-      }
+  const downloadPdfFile = (url: string) => {
+    const { downloadUrl, filename } = getDownloadMetadata(url);
+
+    // 1. Direct anchor download with HTML5 download attribute
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.download = filename;
+    link.setAttribute("data-no-intercept", "true");
+    link.style.display = "none";
+    document.body.appendChild(link);
+    link.click();
+
+    // 2. Hidden iframe fallback to guarantee download trigger across all browsers
+    try {
+      const iframe = document.createElement("iframe");
+      iframe.style.display = "none";
+      iframe.src = downloadUrl;
+      document.body.appendChild(iframe);
+      setTimeout(() => {
+        if (document.body.contains(iframe)) document.body.removeChild(iframe);
+      }, 5000);
+    } catch {
+      // ignore
     }
 
-    // Direct anchor fallback
-    const a = document.createElement("a");
-    a.style.display = "none";
-    a.href = "/files/Proposal.pdf";
-    a.download = filename;
-    a.target = "_blank";
-    a.rel = "noopener noreferrer";
-    a.setAttribute("data-no-intercept", "true");
-    document.body.appendChild(a);
-    a.click();
     setTimeout(() => {
-      document.body.removeChild(a);
-    }, 1000);
+      if (document.body.contains(link)) document.body.removeChild(link);
+    }, 1500);
   };
 
   const validate = () => {
@@ -152,9 +154,10 @@ export default function PdfDownloadModal() {
     e.preventDefault();
     if (!validate()) return;
 
-    setIsSubmitting(true);
+    // 1. Trigger the download immediately within the trusted user event!
+    downloadPdfFile(pdfUrl);
 
-    // Save lead locally
+    // 2. Save lead locally
     try {
       const existingLeads = JSON.parse(localStorage.getItem("expo_pdf_leads") || "[]");
       const newLead = {
@@ -168,13 +171,9 @@ export default function PdfDownloadModal() {
       // LocalStorage fallback
     }
 
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setIsSuccess(true);
-
-      // Trigger reliable PDF download
-      downloadPdfFile(pdfUrl);
-    }, 400);
+    // 3. Immediately transition to success confirmation
+    setIsSubmitting(false);
+    setIsSuccess(true);
   };
 
   const handleClose = (e?: React.MouseEvent) => {
@@ -415,7 +414,8 @@ export default function PdfDownloadModal() {
                   </button>
 
                   <a
-                    href={pdfUrl}
+                    href={getDownloadMetadata(pdfUrl).downloadUrl}
+                    download={getDownloadMetadata(pdfUrl).filename}
                     target="_blank"
                     rel="noopener noreferrer"
                     data-no-intercept="true"
