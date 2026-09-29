@@ -70,33 +70,40 @@ export function Hero() {
           className="absolute inset-0 bg-gradient-to-r from-[#071322]/95 via-[#071322]/50 to-transparent z-[2] pointer-events-none"
         />
 
-        {/* ── TOP-RIGHT PROMINENT FLOATING CINEMATIC PLAY BUTTON ────────────── */}
+        {/* ── TOP-RIGHT FLOATING CINEMATIC PLAY CARD ───────────────────────── */}
         <div className="absolute top-5 sm:top-8 lg:top-10 right-4 sm:right-8 lg:right-12 z-20">
           <button
             type="button"
             onClick={() => setIsVideoOpen(true)}
             aria-label="Play Drone Showcase Video by Saligram Dulal"
-            className="group relative flex items-center gap-3 sm:gap-3.5 pl-2.5 sm:pl-3 pr-3.5 sm:pr-5 py-2 sm:py-2.5 rounded-full bg-slate-950/75 hover:bg-slate-950/95 backdrop-blur-xl border border-white/20 hover:border-[#00E599]/70 shadow-[0_12px_32px_rgba(0,0,0,0.6),0_0_20px_rgba(0,229,153,0.2)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.8),0_0_35px_rgba(0,229,153,0.45)] transition-all duration-300 active:scale-95 cursor-pointer text-left"
+            className="group relative flex items-center gap-3 sm:gap-3.5 pl-3 pr-4 sm:pr-5 py-2.5 sm:py-3 rounded-2xl bg-slate-950/75 hover:bg-slate-950/95 backdrop-blur-xl border border-white/20 hover:border-[#00E599]/70 shadow-[0_12px_36px_rgba(0,0,0,0.7),0_0_24px_rgba(0,229,153,0.18)] hover:shadow-[0_16px_45px_rgba(0,0,0,0.85),0_0_35px_rgba(0,229,153,0.4)] transition-all duration-300 active:scale-98 cursor-pointer text-left"
           >
+            {/* Ambient backlight glow on hover */}
+            <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-[#00E599]/0 via-[#00E599]/25 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm pointer-events-none" />
+
             {/* Glowing Pulsing Play Orb */}
-            <div className="relative flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-gradient-to-tr from-[#00A37A] to-[#00E599] text-slate-950 shadow-[0_0_20px_rgba(0,229,153,0.6)] group-hover:scale-110 group-hover:bg-[#00ffa6] transition-all duration-300 shrink-0">
+            <div className="relative flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[#00E599] to-[#00A37A] text-slate-950 shadow-[0_0_20px_rgba(0,229,153,0.5)] group-hover:scale-105 group-hover:shadow-[0_0_28px_rgba(0,229,153,0.8)] transition-all duration-300 shrink-0">
               <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-current ml-0.5" />
-              {/* Outer Ping Ring */}
-              <span className="absolute -inset-1 rounded-full border-2 border-[#00E599] opacity-75 animate-ping pointer-events-none" />
+              {/* Outer Ripple Ring */}
+              <span className="absolute -inset-1 rounded-xl border border-[#00E599]/70 animate-ping opacity-75 pointer-events-none" />
             </div>
 
             {/* Typography Docket */}
-            <div className="flex flex-col">
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs sm:text-sm font-extrabold text-white tracking-wider uppercase font-inter-tight group-hover:text-[#00E599] transition-colors">
-                  WATCH FILM
+            <div className="relative flex flex-col justify-center">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-[#00E599] font-mono flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#00E599] animate-pulse" />
+                  DRONE FILM
                 </span>
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold font-mono uppercase bg-[#00E599]/20 text-[#00E599] border border-[#00E599]/40">
+                <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold font-mono uppercase bg-white/10 text-white/90 border border-white/20">
                   4K
                 </span>
               </div>
-              <span className="text-[10px] sm:text-[11px] text-slate-300 font-medium tracking-tight">
-                Drone Film · Saligram Dulal
+              <span className="text-xs sm:text-sm font-bold text-white tracking-tight font-inter-tight group-hover:text-emerald-300 transition-colors">
+                Watch Aerial Showcase
+              </span>
+              <span className="text-[11px] text-slate-400 font-medium">
+                Saligram Dulal · Drone Competition 2022
               </span>
             </div>
           </button>
@@ -207,7 +214,7 @@ export function Hero() {
                 </span>
                 <span className="text-slate-500 hidden sm:inline">•</span>
                 <span className="text-slate-300 hidden sm:inline">
-                  Hydropower Drone Videomaking Competition 2022 (Responses)
+                  Hydropower Drone Videomaking Competition 2022
                 </span>
               </button>
             </div>
@@ -300,7 +307,7 @@ export function Hero() {
             <div className="relative w-full aspect-video bg-black">
               <iframe
                 src="https://www.youtube-nocookie.com/embed/sJy3FVrESKk?autoplay=1&rel=0&modestbranding=1"
-                title="Hydropower Drone Videomaking Competition 2022 (Responses) - Saligram Dulal"
+                title="Hydropower Drone Videomaking Competition 2022 - Saligram Dulal"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowFullScreen
                 className="absolute inset-0 w-full h-full border-0"
@@ -311,11 +318,11 @@ export function Hero() {
             <div className="px-4 sm:px-6 py-4 bg-slate-950/90 border-t border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 font-inter-tight">
               <div className="space-y-1">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="px-2 py-0.5 rounded bg-[#00E599]/20 border border-[#00E599]/40 text-[#00E599] text-[10px] font-bold uppercase tracking-wider">
-                    Official Credits
+                  <span className="px-2 py-0.5 rounded bg-[#00E599]/20 border border-[#00E599]/40 text-[#00E599] text-[10px] font-bold uppercase tracking-wider font-mono">
+                    Official Competition Selection
                   </span>
                   <span className="text-xs text-slate-300 font-medium">
-                    Hydropower Drone Videomaking Competition 2022 (Responses)
+                    Hydropower Drone Videomaking Competition 2022
                   </span>
                 </div>
                 <p className="text-sm font-semibold text-white">
