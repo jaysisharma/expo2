@@ -45,7 +45,11 @@ export default function AdminRegistrationsPage() {
 
   const fetchData = async () => {
     try {
-      const res = await fetch("/api/admin/data");
+      // Always bypass cache so new registrations appear immediately
+      const res = await fetch(`/api/admin/data?t=${Date.now()}`, {
+        cache: "no-store",
+        headers: { "Cache-Control": "no-cache" },
+      });
       const json = await res.json();
       if (json.success) {
         setData(json.data);
@@ -71,6 +75,9 @@ export default function AdminRegistrationsPage() {
     fetchData();
     fetchBadgeTemplates();
 
+    // Auto-refresh every 30 seconds so new registrations appear without manual reload
+    const interval = setInterval(() => fetchData(), 30000);
+
     const handleTemplatesUpdated = (e: any) => {
       if (e.detail) {
         setBadgeTemplates(e.detail);
@@ -91,6 +98,7 @@ export default function AdminRegistrationsPage() {
     window.addEventListener("hhe_badge_templates_updated", handleTemplatesUpdated);
     window.addEventListener("storage", handleStorage);
     return () => {
+      clearInterval(interval);
       window.removeEventListener("hhe_badge_templates_updated", handleTemplatesUpdated);
       window.removeEventListener("storage", handleStorage);
     };
@@ -268,6 +276,14 @@ export default function AdminRegistrationsPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => { setIsLoading(true); fetchData(); }}
+            className="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+            title="Refresh registrations"
+          >
+            <svg className="w-3.5 h-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+            <span>Refresh</span>
+          </button>
           <button
             onClick={exportCSV}
             className="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
