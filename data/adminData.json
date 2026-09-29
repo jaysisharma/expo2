@@ -216,5 +216,16 @@
       ]
     }
   ],
-  "currentPartners": []
+  "currentPartners": [
+    {
+      "id": "partner-1790663262433-nyf7",
+      "name": "hfhfh",
+      "category": "Platinum Partner",
+      "logo": "/images/logo.webp",
+      "url": "",
+      "order": 1,
+      "active": true,
+      "addedAt": "2026-09-29T06:27:42.433Z"
+    }
+  ]
 }

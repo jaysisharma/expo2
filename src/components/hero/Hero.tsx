@@ -88,10 +88,6 @@ export function Hero() {
               Watch Drone Film
             </span>
 
-            {/* 4K Badge */}
-            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold font-mono uppercase bg-white/10 text-slate-200 border border-white/15">
-              4K
-            </span>
           </button>
         </div>
 
