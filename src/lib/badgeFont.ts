@@ -11,7 +11,11 @@ export function getEmbeddedFont(): opentype.Font | null {
   if (cachedFont) return cachedFont;
   try {
     const buf = Buffer.from(NOTO_SANS_BASE64, "base64");
-    cachedFont = opentype.parse(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength));
+    // Use Uint8Array copy to avoid Node.js pooled-ArrayBuffer offset issues on Vercel Linux
+    const u8 = new Uint8Array(buf);
+    const ab = u8.buffer.slice(u8.byteOffset, u8.byteOffset + u8.byteLength);
+    cachedFont = opentype.parse(ab);
+    console.log("[badgeFont] Font parsed successfully:", cachedFont?.names?.postScriptName?.en ?? "ok");
     return cachedFont;
   } catch (err) {
     console.error("[badgeFont] Failed to parse embedded font:", err);
