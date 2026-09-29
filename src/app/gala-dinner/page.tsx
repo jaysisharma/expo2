@@ -277,10 +277,10 @@ export default function GalaDinnerPage() {
           </div>
           <div className="flex items-center gap-3 shrink-0">
             <a
-              href="tel:+9779703606340"
+              href="tel:+9779703606348"
               className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white font-mono text-xs transition-colors"
             >
-              +977-9703606340
+              +977-9703606348
             </a>
             <a
               href="mailto:info@nepalenergyexpo.com"

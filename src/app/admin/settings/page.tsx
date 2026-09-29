@@ -18,7 +18,7 @@ export default function AdminSettingsPage() {
     registrationsOpen: true,
     stallBookingsOpen: true,
     contactEmail: "info@nepalenergyexpo.com",
-    contactPhone: "+977-9703606340",
+    contactPhone: "+977-9703606348",
     currencyRateUSD_NPR: 134.5,
   });
 

@@ -249,7 +249,7 @@ export default function PressPage() {
                 <Phone className="w-4 h-4 text-[#34D399] shrink-0 mt-0.5" />
                 <div className="space-y-0.5">
                   <div className="font-mono text-slate-400 text-[10px] uppercase">MOBILE / HOTLINE</div>
-                  <div className="text-white font-bold text-sm">+977-9703606340 / 9703606355</div>
+                  <div className="text-white font-bold text-sm">+977-9703606348 / 9703606345</div>
                   <div className="text-slate-400 text-xs">Landline: 01-5268535, 4169175</div>
                 </div>
               </div>

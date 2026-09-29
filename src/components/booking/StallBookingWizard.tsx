@@ -1046,7 +1046,7 @@ export default function StallBookingWizard() {
                   <div className="font-bold text-slate-800">Need Assistance?</div>
                   <div className="flex items-center gap-1 text-emerald-800 font-mono">
                     <Phone className="w-3 h-3 text-emerald-600 shrink-0" />
-                    <span>+977-9703606340 | 9703606355</span>
+                    <span>+977-9703606348 | 9703606345</span>
                   </div>
                   <div className="flex items-center gap-1 text-emerald-800 font-mono">
                     <Mail className="w-3 h-3 text-emerald-600 shrink-0" />

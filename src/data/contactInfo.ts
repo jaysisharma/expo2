@@ -6,10 +6,10 @@
 export const CONTACT_DETAILS = {
   // Mobile / Hotline Numbers
   mobiles: [
-    { display: '+977-9703606340', raw: '+9779703606340', label: 'Primary Hotline' },
-    { display: '9703606355', raw: '+9779703606355', label: 'Help Desk' },
+    { display: '+977-9703606348', raw: '+9779703606348', label: 'Primary Hotline' },
+    { display: '9703606345', raw: '+9779703606345', label: 'Help Desk' },
   ],
-  hotlineDisplay: '+977-9703606340 | 9703606355',
+  hotlineDisplay: '+977-9703606348 | 9703606345',
 
   // Landline Numbers
   landlines: [

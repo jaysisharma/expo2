@@ -319,7 +319,7 @@ Direct reply: mailto:${trimmedEmail}
                 <strong>Event Highlights:</strong><br/>
                 &bull; <strong>Dates:</strong> 17–19 January 2027 (Magh 3–5, 2083)<br/>
                 &bull; <strong>Venue:</strong> Bhrikutimandap Exhibition Hall, Kathmandu, Nepal<br/>
-                &bull; <strong>Direct Hotline:</strong> +977-9703606340 / 9703606355
+                &bull; <strong>Direct Hotline:</strong> +977-9703606348 / 9703606345
               </div>
 
               <p style="font-size: 14px; color: #334155; line-height: 1.6; margin-bottom: 0;">

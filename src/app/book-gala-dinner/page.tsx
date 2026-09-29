@@ -545,12 +545,12 @@ function BookGalaDinnerForm() {
                       Mobile / Hotlines
                     </div>
                     <div className="text-white font-mono text-xs pt-0.5">
-                      <a href="tel:+9779703606340" className="hover:text-emerald-400 transition-colors">
-                        +977-9703606340
+                      <a href="tel:+9779703606348" className="hover:text-emerald-400 transition-colors">
+                        +977-9703606348
                       </a>
                       <span className="text-slate-600 mx-1.5">|</span>
-                      <a href="tel:+9779703606355" className="hover:text-emerald-400 transition-colors">
-                        9703606355
+                      <a href="tel:+9779703606345" className="hover:text-emerald-400 transition-colors">
+                        9703606345
                       </a>
                     </div>
                   </div>

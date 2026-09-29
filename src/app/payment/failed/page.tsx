@@ -99,7 +99,7 @@ function PaymentFailedContent() {
             <div className="flex flex-wrap items-center gap-4 text-xs font-mono text-slate-700 pt-1">
               <span className="flex items-center gap-1.5">
                 <Phone className="w-3.5 h-3.5 text-[#218A59]" />
-                <span>+977-9703606340 | 9703606355</span>
+                <span>+977-9703606348 | 9703606345</span>
               </span>
               <span className="flex items-center gap-1.5">
                 <Mail className="w-3.5 h-3.5 text-[#10B981]" />

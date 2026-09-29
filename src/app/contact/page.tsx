@@ -139,12 +139,12 @@ export default function ContactPage() {
                       Direct Hotlines &amp; Phones
                     </span>
                     <div className="flex flex-wrap items-center gap-x-2 text-sm font-bold text-slate-900 mt-0.5 font-mono">
-                      <a href="tel:+9779703606340" className="hover:text-emerald-600 transition-colors">
-                        +977-9703606340
+                      <a href="tel:+9779703606348" className="hover:text-emerald-600 transition-colors">
+                        +977-9703606348
                       </a>
                       <span className="text-slate-400">|</span>
-                      <a href="tel:+9779703606355" className="hover:text-emerald-600 transition-colors">
-                        9703606355
+                      <a href="tel:+9779703606345" className="hover:text-emerald-600 transition-colors">
+                        9703606345
                       </a>
                     </div>
                     <div className="text-xs text-slate-600 font-mono mt-1">
