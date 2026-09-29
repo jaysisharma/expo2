@@ -201,11 +201,6 @@ async function generateBadgePng(opts: {
   const qrX = ((template?.qrPlacement?.x ?? 50) / 100) * width - qrPixelSize / 2;
   const qrY = ((template?.qrPlacement?.y ?? 65) / 100) * height - qrPixelSize / 2;
 
-  const idX = ((template?.idPlacement?.x ?? 50) / 100) * width;
-  const idY = 805;
-  const idColor = "#475569";
-  const idFontSize = (template?.idPlacement?.fontSize || 7) * scale;
-
   // Role Banner
   const banner = template?.roleBannerPlacement || {};
   let defaultBannerText = role === "exhibitor" ? "OFFICIAL EXHIBITOR" : role === "gala" ? "GALA DINNER PASS" : role === "delegate" ? "OFFICIAL DELEGATE" : "TRADE VISITOR";
@@ -225,7 +220,6 @@ async function generateBadgePng(opts: {
   const rawDes = role === "exhibitor"
     ? (stallNumber ? `STALL: ${stallNumber}` : "MAIN EXHIBITION HALL")
     : `${jobTitle || "Trade Delegate"}${country ? ` | ${country}` : " | Nepal"}`;
-  const rawIdText = `ID: ${passId}${securityChecksum ? ` | SEC: ${securityChecksum}` : ""}`;
 
   const nameSvg = renderTextToPath({
     text: rawName,
@@ -258,17 +252,6 @@ async function generateBadgePng(opts: {
     isBold: false,
     maxWidth: 520,
     fallbackSvg: `<text x="${desX}" y="${desY}" text-anchor="middle" dominant-baseline="middle" font-family="'NotoSansEmbedded', 'Segoe UI', -apple-system, sans-serif" font-size="${desFontSize}" font-weight="500" fill="${desColor}">${safeDes}</text>`,
-  });
-
-  const idSvg = renderTextToPath({
-    text: rawIdText,
-    cx: idX,
-    cy: idY,
-    fontSize: idFontSize,
-    fill: idColor,
-    isBold: true,
-    maxWidth: 500,
-    fallbackSvg: `<text x="${idX}" y="${idY}" text-anchor="middle" dominant-baseline="middle" font-family="'NotoSansEmbedded', 'Segoe UI', monospace" font-size="${idFontSize}" font-weight="bold" fill="${idColor}">${escapeXml(rawIdText)}</text>`,
   });
 
   const bannerSvg = renderTextToPath({
@@ -319,9 +302,6 @@ async function generateBadgePng(opts: {
 
       <!-- Designation or Stall -->
       ${desSvg}
-
-      <!-- Pass ID & Security Fingerprint -->
-      ${idSvg}
 
       <!-- Role Bottom Banner -->
       <rect x="0" y="${bannerTop}" width="${width}" height="${bannerHeight}" fill="${bannerBg}"/>
