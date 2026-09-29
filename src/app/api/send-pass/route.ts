@@ -4,6 +4,7 @@ import QRCode from "qrcode";
 import sharp from "sharp";
 import fs from "fs";
 import path from "path";
+import { encryptPassToken, generateSecurityChecksum } from "@/lib/passSecurity";
 
 export const dynamic = "force-dynamic";
 
@@ -65,10 +66,11 @@ async function generateBadgePng(opts: {
   stallNumber?: string;
   country?: string;
   passId: string;
+  securityChecksum?: string;
   role: string;
   qrPngBuffer: Buffer;
 }): Promise<Buffer> {
-  const { name, organization, jobTitle, stallNumber, country, passId, role, qrPngBuffer } = opts;
+  const { name, organization, jobTitle, stallNumber, country, passId, securityChecksum, role, qrPngBuffer } = opts;
   const template = loadBadgeTemplate(role);
 
   const width = 640;
@@ -85,6 +87,7 @@ async function generateBadgePng(opts: {
       : `${jobTitle || "Trade Delegate"}${country ? ` · ${country}` : " · Nepal"}`
   );
   const safeId = escapeXml(passId);
+  const safeChecksum = escapeXml(securityChecksum || "");
 
   // Background handling
   let bgElement = "";
@@ -165,8 +168,8 @@ async function generateBadgePng(opts: {
       <!-- QR Image -->
       <image x="${qrX}" y="${qrY}" width="${qrPixelSize}" height="${qrPixelSize}" href="data:image/png;base64,${qrBase64}"/>
 
-      <!-- Pass ID -->
-      <text x="${idX}" y="${idY}" text-anchor="middle" dominant-baseline="middle" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, monospace" font-size="${idFontSize}" font-weight="bold" fill="${idColor}">ID: ${safeId}</text>
+      <!-- Pass ID & Security Fingerprint -->
+      <text x="${idX}" y="${idY}" text-anchor="middle" dominant-baseline="middle" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, monospace" font-size="${idFontSize}" font-weight="bold" fill="${idColor}">ID: ${safeId}${safeChecksum ? ` · SEC: ${safeChecksum}` : ""}</text>
 
       <!-- Role Bottom Banner -->
       <rect x="0" y="${bannerY - 26}" width="${width}" height="${52}" fill="${bannerBg}"/>
@@ -187,11 +190,12 @@ function buildEmailHtml(opts: {
   stallNumber?: string;
   phone?: string;
   passId: string;
+  securityChecksum: string;
   passType: string;
   role: string;
   qrTargetUrl: string;
 }) {
-  const { name, organization, jobTitle, stallNumber, phone, passId, passType, role, qrTargetUrl } = opts;
+  const { name, organization, jobTitle, stallNumber, phone, passId, securityChecksum, passType, role, qrTargetUrl } = opts;
   const isExhibitor = role === "exhibitor";
   const isGala = role === "gala";
   const headerBg = isExhibitor ? "#064e3b" : isGala ? "#2e1065" : "#04281E";
@@ -267,8 +271,11 @@ function buildEmailHtml(opts: {
                     <p style="margin:0 0 2px;font-size:13px;font-weight:600;color:#087EA4;">
                       ${escapeXml(organization)}
                     </p>
-                    <p style="margin:0 0 12px;font-size:12px;font-family:monospace;font-weight:700;color:#64748b;">
+                    <p style="margin:0 0 4px;font-size:12px;font-family:monospace;font-weight:700;color:#64748b;">
                       ID: <span style="color:#007A5E;">${escapeXml(passId)}</span> · ${escapeXml(passType)}
+                    </p>
+                    <p style="margin:0 0 12px;font-size:11px;font-family:monospace;font-weight:600;color:#15803d;">
+                      🔒 SEC CODE: <span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:4px;border:1px solid #86efac;">${escapeXml(securityChecksum)}</span> (Anti-Counterfeit)
                     </p>
 
                     <!-- QR Image Box -->
@@ -286,7 +293,7 @@ function buildEmailHtml(opts: {
                     </div>
 
                     <p style="margin:10px 0 0;font-size:11px;color:#64748b;max-width:380px;line-height:1.4;">
-                      Scan this QR code with your phone camera or tap the button above to view your verified credentials and save the contact / pass badge to your phone.
+                      Scan this encrypted QR code with your phone camera or tap the button above to view your verified credentials and save the contact / pass badge to your phone.
                     </p>
                   </td>
                 </tr>
@@ -310,6 +317,10 @@ function buildEmailHtml(opts: {
                 <tr>
                   <td style="padding:12px 18px;border-bottom:1px solid #f1f5f9;font-size:12px;color:#64748b;font-weight:600;">Pass ID</td>
                   <td style="padding:12px 18px;border-bottom:1px solid #f1f5f9;font-size:13px;color:#007A5E;font-family:monospace;font-weight:700;">${escapeXml(passId)}</td>
+                </tr>
+                <tr>
+                  <td style="padding:12px 18px;border-bottom:1px solid #f1f5f9;font-size:12px;color:#64748b;font-weight:600;">Security Code</td>
+                  <td style="padding:12px 18px;border-bottom:1px solid #f1f5f9;font-size:13px;color:#15803d;font-family:monospace;font-weight:700;">${escapeXml(securityChecksum)}</td>
                 </tr>
                 <tr>
                   <td style="padding:12px 18px;border-bottom:1px solid #f1f5f9;font-size:12px;color:#64748b;font-weight:600;">Organization</td>
@@ -410,19 +421,25 @@ export async function POST(req: NextRequest) {
       appUrl = reqHost ? `${reqProto}://${reqHost}` : "https://greenenergyexpo.org.np";
     }
 
-    const qrParams = new URLSearchParams({
+    const securityChecksum = generateSecurityChecksum(passId);
+
+    // Cryptographically encrypt pass data using AES-256-GCM
+    // Prevents ID enumeration, ticket forging, tampering, or duplication
+    const secureToken = encryptPassToken({
       id: passId,
-      role: resolvedRole,
-      name: name || "",
-      org: organization || "",
-      title: jobTitle || "",
-      stall: stallNumber || "",
-      email: email || "",
-      phone: phone || "",
+      name,
+      organization: organization || "Himalayan Green Energy Expo",
+      jobTitle,
+      stallNumber,
+      phone,
+      email,
       country: country || "Nepal",
       passType: passType || (resolvedRole === "exhibitor" ? "Official Exhibitor Pass" : "Trade Visitor Pass"),
+      role: resolvedRole,
+      iat: Date.now(),
     });
-    const qrTargetUrl = `${appUrl}/verify?${qrParams.toString()}`;
+
+    const qrTargetUrl = `${appUrl}/verify?token=${secureToken}`;
 
     // 1. Generate standalone high-res QR PNG Buffer
     const qrDataUrl = await QRCode.toDataURL(qrTargetUrl, {
@@ -443,6 +460,7 @@ export async function POST(req: NextRequest) {
         stallNumber,
         country: country || "Nepal",
         passId,
+        securityChecksum,
         role: resolvedRole,
         qrPngBuffer,
       });
@@ -459,6 +477,7 @@ export async function POST(req: NextRequest) {
       stallNumber,
       phone,
       passId,
+      securityChecksum,
       passType: passType || "Trade Visitor Pass",
       role: resolvedRole,
       qrTargetUrl,

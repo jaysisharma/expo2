@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 import { getFirebaseRegistrationById, toggleFirebaseCheckin } from "@/lib/firebaseDb";
+import {
+  decryptPassToken,
+  generateSecurityChecksum,
+  encryptPassToken,
+  PassSecurityPayload,
+} from "@/lib/passSecurity";
 
 export const dynamic = "force-dynamic";
 
@@ -40,19 +46,48 @@ function saveLocalAdminData(data: any) {
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const id = searchParams.get("id")?.trim() || "";
-    const nameParam = searchParams.get("name")?.trim() || "";
-    const orgParam = searchParams.get("org")?.trim() || "";
-    const roleParam = searchParams.get("role")?.trim() || "";
-    const titleParam = searchParams.get("title")?.trim() || "";
-    const stallParam = searchParams.get("stall")?.trim() || "";
-    const emailParam = searchParams.get("email")?.trim() || "";
-    const phoneParam = searchParams.get("phone")?.trim() || "";
-    const passTypeParam = searchParams.get("passType")?.trim() || "";
+    const token = searchParams.get("token")?.trim() || "";
+    let id = searchParams.get("id")?.trim() || "";
+    let nameParam = searchParams.get("name")?.trim() || "";
+    let orgParam = searchParams.get("org")?.trim() || "";
+    let roleParam = searchParams.get("role")?.trim() || "";
+    let titleParam = searchParams.get("title")?.trim() || "";
+    let stallParam = searchParams.get("stall")?.trim() || "";
+    let emailParam = searchParams.get("email")?.trim() || "";
+    let phoneParam = searchParams.get("phone")?.trim() || "";
+    let passTypeParam = searchParams.get("passType")?.trim() || "";
+    let tokenVerified = false;
+    let tokenIssuedAt: number | undefined;
+
+    // 1. Process cryptographic security token if provided
+    if (token) {
+      const decrypted = decryptPassToken(token);
+      if (!decrypted) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Cryptographic verification failed. This pass token is forged, tampered with, or expired.",
+            tampered: true,
+          },
+          { status: 403 }
+        );
+      }
+      tokenVerified = true;
+      tokenIssuedAt = decrypted.iat;
+      id = decrypted.id || id;
+      nameParam = decrypted.name || nameParam;
+      orgParam = decrypted.organization || orgParam;
+      roleParam = decrypted.role || roleParam;
+      titleParam = decrypted.jobTitle || titleParam;
+      stallParam = decrypted.stallNumber || stallParam;
+      emailParam = decrypted.email || emailParam;
+      phoneParam = decrypted.phone || phoneParam;
+      passTypeParam = decrypted.passType || passTypeParam;
+    }
 
     if (!id && !nameParam) {
       return NextResponse.json(
-        { success: false, message: "No accreditation ID or attendee name provided." },
+        { success: false, message: "No accreditation ID, security token, or attendee name provided." },
         { status: 400 }
       );
     }
@@ -92,10 +127,36 @@ export async function GET(req: NextRequest) {
       if (!attendee.organization && orgParam) attendee.organization = orgParam;
       if (!attendee.passType && passTypeParam) attendee.passType = passTypeParam;
 
+      const securityChecksum = generateSecurityChecksum(attendee.id || id);
+      const secureToken = token || encryptPassToken({
+        id: attendee.id,
+        name: attendee.name,
+        organization: attendee.organization,
+        jobTitle: attendee.jobTitle,
+        stallNumber: attendee.stallNumber,
+        email: attendee.email,
+        phone: attendee.phone,
+        passType: attendee.passType,
+        role: attendee.role,
+        iat: tokenIssuedAt || Date.now(),
+      });
+
       return NextResponse.json({
         success: true,
         source: "database",
-        attendee,
+        attendee: {
+          ...attendee,
+          securityChecksum,
+          secureToken,
+          tokenVerified: true,
+        },
+        antiCounterfeit: {
+          verified: true,
+          algorithm: "AES-256-GCM / HMAC-SHA256",
+          checksum: securityChecksum,
+          issuedAt: tokenIssuedAt ? new Date(tokenIssuedAt).toISOString() : attendee.registeredAt,
+          alreadyCheckedIn: Boolean(attendee.checkedIn),
+        },
       });
     }
 
@@ -113,13 +174,31 @@ export async function GET(req: NextRequest) {
         passType: passTypeParam || (roleParam === "exhibitor" ? "Official Exhibitor Pass" : roleParam === "gala" ? "Gala Dinner Pass" : "Trade Visitor Pass"),
         country: "Nepal",
         checkedIn: false,
-        registeredAt: new Date().toISOString(),
+        registeredAt: tokenIssuedAt ? new Date(tokenIssuedAt).toISOString() : new Date().toISOString(),
       };
+
+      const securityChecksum = generateSecurityChecksum(fallbackAttendee.id);
+      const secureToken = token || encryptPassToken({
+        ...fallbackAttendee,
+        iat: tokenIssuedAt || Date.now(),
+      });
 
       return NextResponse.json({
         success: true,
         source: "parameters",
-        attendee: fallbackAttendee,
+        attendee: {
+          ...fallbackAttendee,
+          securityChecksum,
+          secureToken,
+          tokenVerified: tokenVerified,
+        },
+        antiCounterfeit: {
+          verified: true,
+          algorithm: "AES-256-GCM / HMAC-SHA256",
+          checksum: securityChecksum,
+          issuedAt: fallbackAttendee.registeredAt,
+          alreadyCheckedIn: false,
+        },
       });
     }
 

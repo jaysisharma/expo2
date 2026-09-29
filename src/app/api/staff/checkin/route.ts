@@ -6,7 +6,7 @@ import {
   getFirebaseRegistrations,
   toggleFirebaseCheckin,
 } from "@/lib/firebaseDb";
-import { verifyStaffToken } from "../auth/route";
+import { verifyStaffToken } from "@/lib/staffAuth";
 
 export const dynamic = "force-dynamic";
 

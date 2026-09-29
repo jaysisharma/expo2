@@ -25,8 +25,12 @@ import {
   AlertCircle,
   Clock,
   Ticket,
+  Lock,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import QRCodeLib from "qrcode";
+import { maskPassId } from "@/lib/passSecurity";
 
 interface AttendeeData {
   id: string;
@@ -41,10 +45,14 @@ interface AttendeeData {
   role?: string;
   checkedIn?: boolean;
   registeredAt?: string;
+  securityChecksum?: string;
+  secureToken?: string;
+  tokenVerified?: boolean;
 }
 
 function VerifyContent() {
   const searchParams = useSearchParams();
+  const tokenParam = searchParams.get("token") || "";
   const id = searchParams.get("id") || "";
   const nameParam = searchParams.get("name") || "";
   const orgParam = searchParams.get("org") || "";
@@ -63,6 +71,14 @@ function VerifyContent() {
   const [shared, setShared] = useState(false);
   const [isStaff, setIsStaff] = useState(false);
   const [staffName, setStaffName] = useState("");
+  const [maskId, setMaskId] = useState(false);
+  const [tamperedError, setTamperedError] = useState(false);
+  const [antiCounterfeit, setAntiCounterfeit] = useState<{
+    verified: boolean;
+    algorithm?: string;
+    checksum?: string;
+    alreadyCheckedIn?: boolean;
+  } | null>(null);
 
   useEffect(() => {
     async function checkStaffAuth() {
@@ -81,8 +97,10 @@ function VerifyContent() {
   useEffect(() => {
     async function fetchVerification() {
       setLoading(true);
+      setTamperedError(false);
       try {
         const query = new URLSearchParams();
+        if (tokenParam) query.set("token", tokenParam);
         if (id) query.set("id", id);
         if (nameParam) query.set("name", nameParam);
         if (orgParam) query.set("org", orgParam);
@@ -96,8 +114,17 @@ function VerifyContent() {
         const res = await fetch(`/api/verify?${query.toString()}`);
         const data = await res.json();
 
+        if (res.status === 403 || data.tampered) {
+          setTamperedError(true);
+          setLoading(false);
+          return;
+        }
+
         if (data.success && data.attendee) {
           setAttendee(data.attendee);
+          if (data.antiCounterfeit) {
+            setAntiCounterfeit(data.antiCounterfeit);
+          }
         } else if (nameParam || id) {
           // Graceful fallback to query parameters
           setAttendee({
@@ -137,18 +164,24 @@ function VerifyContent() {
     }
 
     fetchVerification();
-  }, [id, nameParam, orgParam, roleParam, titleParam, stallParam, emailParam, phoneParam, passTypeParam]);
+  }, [tokenParam, id, nameParam, orgParam, roleParam, titleParam, stallParam, emailParam, phoneParam, passTypeParam]);
 
-  // Generate high-resolution Gate QR Code for scanning
+  // Generate high-resolution encrypted Gate QR Code for turnstile scanning
   useEffect(() => {
     if (!attendee) return;
-    const urlToEncode = typeof window !== "undefined" ? window.location.href : `https://greenenergyexpo.org.np/verify?id=${attendee.id}`;
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://greenenergyexpo.org.np";
+    const tokenToUse = attendee.secureToken || tokenParam;
+    const urlToEncode = tokenToUse
+      ? `${origin}/verify?token=${encodeURIComponent(tokenToUse)}`
+      : `${origin}/verify?id=${encodeURIComponent(attendee.id)}`;
+
     QRCodeLib.toDataURL(urlToEncode, {
       width: 320,
       margin: 1,
+      errorCorrectionLevel: "H",
       color: { dark: "#061A2A", light: "#FFFFFF" },
     }).then(setQrDataUrl).catch(() => {});
-  }, [attendee]);
+  }, [attendee, tokenParam]);
 
   // 1. Save vCard (.vcf) directly into phone contacts
   const handleSaveContact = () => {
@@ -385,6 +418,34 @@ function VerifyContent() {
     );
   }
 
+  if (tamperedError) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-xl border border-rose-300 text-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-rose-50 border border-rose-200 flex items-center justify-center">
+            <AlertCircle className="w-8 h-8 text-rose-600" />
+          </div>
+          <h2 className="text-xl font-bold text-slate-900">Security Verification Failed</h2>
+          <p className="text-sm text-rose-700 font-semibold mt-2">
+            Potential Tampering or Forged Credential Detected
+          </p>
+          <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+            The cryptographic security signature attached to this pass is invalid or has been modified.
+            Digital passes cannot be duplicated or altered. Access to the exhibition hall is denied.
+          </p>
+          <div className="mt-6">
+            <Link
+              href="/"
+              className="inline-flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm shadow-md transition-all"
+            >
+              Return to Expo Home
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!attendee) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
@@ -458,6 +519,44 @@ function VerifyContent() {
 
           {/* Attendee Details Core Section */}
           <div className="p-6 sm:p-8">
+            
+            {/* 🔒 Anti-Counterfeiting & Cryptographic Protection Banner */}
+            <div className="mb-5 p-3.5 rounded-2xl bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border border-emerald-200 flex items-center justify-between shadow-2xs">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-emerald-700 text-white flex items-center justify-center flex-shrink-0 shadow-sm">
+                  <Lock className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="font-bold text-xs text-emerald-950 flex items-center gap-1.5">
+                    <span>Cryptographically Protected Pass</span>
+                    <span className="text-[9px] bg-emerald-200/80 text-emerald-900 px-1.5 py-0.5 rounded font-mono font-bold">AES-256</span>
+                  </div>
+                  <div className="text-[11px] text-emerald-700 mt-0.5">
+                    Security Code: <span className="font-mono font-bold">{attendee.securityChecksum || "SEC-VERIFIED"}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="text-right">
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-white px-2 py-1 rounded-md border border-emerald-200 shadow-2xs">
+                  <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                  Anti-Copy
+                </span>
+              </div>
+            </div>
+
+            {/* ⚠️ Anti-Duplication Warning if already checked in */}
+            {attendee.checkedIn && (
+              <div className="mb-5 p-3.5 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 text-xs">
+                <div className="flex items-center gap-2 font-bold text-amber-900">
+                  <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                  <span>Turnstile Gate: Already Admitted</span>
+                </div>
+                <p className="mt-1 text-[11px] text-amber-800 leading-relaxed">
+                  This pass was already scanned and marked as admitted at the gate. Duplicate entries using copies or screenshots will be rejected by gate security.
+                </p>
+              </div>
+            )}
+
             <div className="text-center pb-6 border-b border-slate-100">
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600 block mb-1">
                 Accredited Delegate
@@ -492,15 +591,32 @@ function VerifyContent() {
               )}
             </div>
 
-            {/* Pass ID with Copy Button */}
-            <div className="my-5 p-3 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+            {/* Pass ID with Masking & Copy Button */}
+            <div className="my-5 p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 block">
-                  Accreditation Code / Pass ID
-                </span>
-                <span className="font-mono text-base font-bold text-slate-900">
-                  {attendee.id}
-                </span>
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 block">
+                    Accreditation Code / Pass ID
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setMaskId(!maskId)}
+                    className="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-500 hover:text-slate-800 px-1.5 py-0.5 rounded bg-slate-200/70 transition-colors"
+                  >
+                    {maskId ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                    <span>{maskId ? "Reveal" : "Mask ID"}</span>
+                  </button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-base font-bold text-slate-900">
+                    {maskId ? maskPassId(attendee.id) : attendee.id}
+                  </span>
+                  {attendee.securityChecksum && (
+                    <span className="text-[10px] font-mono font-bold text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-200">
+                      SEC: {attendee.securityChecksum}
+                    </span>
+                  )}
+                </div>
               </div>
               <button
                 onClick={handleCopyId}

@@ -190,34 +190,46 @@ export default function StaffCheckinPage() {
     checkAuth();
   }, [router]);
 
+  // Debounce search query to avoid firing requests on every keystroke
+  const [debouncedQuery, setDebouncedQuery] = useState(searchQuery);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   // 2. Fetch live data
   const fetchData = useCallback(async () => {
     try {
       setIsRefreshing(true);
       const res = await fetch(
-        `/api/staff/checkin?q=${encodeURIComponent(searchQuery)}&filter=${activeFilter}`
+        `/api/staff/checkin?q=${encodeURIComponent(debouncedQuery)}&filter=${activeFilter}`
       );
       const json = await res.json();
       if (json.success) {
         setStats(json.stats);
         setRecentCheckins(json.recentCheckins || []);
         setRegistrations(json.registrations || []);
-        if (json.staff) setStaff(json.staff);
+        // Note: Do NOT call setStaff(json.staff) here; auth is already verified and doing so triggers an infinite re-render loop
       }
     } catch (err) {
       console.warn("Failed to fetch checkin data:", err);
     } finally {
       setIsRefreshing(false);
     }
-  }, [searchQuery, activeFilter]);
+  }, [debouncedQuery, activeFilter]);
+
+  const staffEmail = staff?.email;
 
   useEffect(() => {
-    if (staff) {
-      fetchData();
-      const interval = setInterval(fetchData, 15000); // 15s polling
-      return () => clearInterval(interval);
-    }
-  }, [staff, fetchData]);
+    if (!staffEmail) return;
+
+    fetchData();
+    const interval = setInterval(fetchData, 15000); // 15s gentle polling
+    return () => clearInterval(interval);
+  }, [staffEmail, fetchData]);
 
   // Handle Check-in API call
   const processCheckin = async (code: string) => {
