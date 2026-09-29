@@ -9,7 +9,6 @@ import {
   Play,
   X,
   ExternalLink,
-  Film,
 } from 'lucide-react';
 import { TopographicContours, MountainCrestSvg } from '@/components/ui';
 
@@ -60,14 +59,14 @@ export function Hero() {
           opacity="opacity-[0.06]"
         />
 
-        {/* Directional Vignette: Deep contrast at bottom-left, natural daylight across upper-center & right */}
+        {/* Directional Vignette: Deep contrast at bottom-left for text legibility, clear daylight across center & right so the dam and mountains shine through */}
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-t from-[#071322] via-[#071322]/65 to-transparent/10 z-[2] pointer-events-none"
+          className="absolute inset-0 bg-gradient-to-t from-[#071322] via-[#071322]/55 via-40% to-transparent z-[2] pointer-events-none"
         />
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-r from-[#071322]/95 via-[#071322]/50 to-transparent z-[2] pointer-events-none"
+          className="absolute inset-0 bg-gradient-to-r from-[#071322]/95 via-[#071322]/45 via-45% to-transparent z-[2] pointer-events-none"
         />
 
         {/* ── TOP-RIGHT FLOATING CINEMATIC PLAY CARD ───────────────────────── */}
@@ -170,7 +169,7 @@ export function Hero() {
               {/* Primary CTA */}
               <Link
                 href="/book-stall"
-                className="group inline-flex items-center gap-2.5 px-6 py-3 rounded-full bg-[#00B98B] hover:bg-[#00A37A] text-white text-xs font-bold tracking-wider uppercase font-inter-tight shadow-[0_12px_28px_-6px_rgba(0,185,139,0.5),0_4px_12px_rgba(0,0,0,0.3)] hover:shadow-[0_16px_36px_-6px_rgba(0,185,139,0.7)] active:scale-98 transition-all duration-200"
+                className="group inline-flex items-center gap-2.5 px-6 sm:px-7 py-3 rounded-full bg-[#00B98B] hover:bg-[#00A37A] text-white text-xs sm:text-sm font-bold tracking-wider uppercase font-inter-tight shadow-[0_12px_28px_-6px_rgba(0,185,139,0.5),0_4px_12px_rgba(0,0,0,0.3)] hover:shadow-[0_16px_36px_-6px_rgba(0,185,139,0.7)] active:scale-98 transition-all duration-200"
               >
                 <span>BOOK A STALL</span>
                 <span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center group-hover:translate-x-0.5 transition-transform">
@@ -181,42 +180,10 @@ export function Hero() {
               {/* Secondary CTA */}
               <Link
                 href="/register"
-                className="inline-flex items-center px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/40 hover:border-white text-xs font-bold tracking-wider uppercase font-inter-tight backdrop-blur-md transition-all duration-200 active:scale-98 shadow-[0_8px_20px_rgba(0,0,0,0.3)] hover:shadow-[0_12px_25px_rgba(255,255,255,0.15)]"
+                className="inline-flex items-center px-6 sm:px-7 py-3 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/40 hover:border-white text-xs sm:text-sm font-bold tracking-wider uppercase font-inter-tight backdrop-blur-md transition-all duration-200 active:scale-98 shadow-[0_8px_20px_rgba(0,0,0,0.3)] hover:shadow-[0_12px_25px_rgba(255,255,255,0.15)]"
               >
                 REGISTER FOR FREE PASS
               </Link>
-
-              {/* Play Video CTA */}
-              <button
-                type="button"
-                onClick={() => setIsVideoOpen(true)}
-                className="group inline-flex items-center gap-2.5 px-5 py-3 rounded-full bg-slate-900/80 hover:bg-slate-900 text-white border border-[#00E599]/40 hover:border-[#00E599] text-xs font-bold tracking-wider uppercase font-inter-tight backdrop-blur-md transition-all duration-200 active:scale-98 shadow-[0_8px_20px_rgba(0,0,0,0.4)] hover:shadow-[0_0_25px_rgba(0,229,153,0.35)]"
-              >
-                <span className="relative flex h-5 w-5 items-center justify-center rounded-full bg-[#00E599] text-slate-950 group-hover:scale-110 transition-transform">
-                  <Play className="w-2.5 h-2.5 fill-current ml-0.5" />
-                  <span className="absolute -inset-1 rounded-full bg-[#00E599]/40 animate-ping" />
-                </span>
-                <span>WATCH FILM</span>
-              </button>
-            </div>
-
-            {/* Video Footage Credits Badge / Subtitle */}
-            <div className="pt-1 flex items-center">
-              <button
-                type="button"
-                onClick={() => setIsVideoOpen(true)}
-                className="inline-flex items-center gap-2 text-[11px] sm:text-xs text-slate-300/90 hover:text-white transition-colors group cursor-pointer text-left bg-black/35 backdrop-blur-sm px-3.5 py-1.5 rounded-full border border-white/10 hover:border-[#00E599]/40"
-              >
-                <Film className="w-3.5 h-3.5 text-[#00E599] shrink-0" />
-                <span className="text-slate-400">Cinematography:</span>
-                <span className="font-semibold text-white group-hover:text-[#00E599] transition-colors underline decoration-white/30 underline-offset-2">
-                  Saligram Dulal
-                </span>
-                <span className="text-slate-500 hidden sm:inline">•</span>
-                <span className="text-slate-300 hidden sm:inline">
-                  Hydropower Drone Videomaking Competition 2022
-                </span>
-              </button>
             </div>
           </div>
 
@@ -226,9 +193,8 @@ export function Hero() {
 
         {/* ── Awwwards-Style 5th Edition Circular Rotating Badge (Bottom Right) ── */}
         <div
-          onClick={() => setIsVideoOpen(true)}
-          className="absolute bottom-8 sm:bottom-12 right-6 sm:right-10 lg:right-16 z-20 group cursor-pointer select-none"
-          title="Watch Cinematic Film"
+          className="absolute bottom-8 sm:bottom-12 right-6 sm:right-10 lg:right-16 z-20 group select-none pointer-events-none"
+          title="5th Edition · Himalayan Green Energy Expo 2027"
         >
           <div className="relative w-28 h-28 sm:w-32 sm:h-32 lg:w-36 lg:h-36 flex items-center justify-center transition-transform duration-500 group-hover:scale-105">
             {/* Subtle Glowing Aura */}
