@@ -19,10 +19,40 @@ import {
   Download,
   Building2,
   Loader2,
+  Sparkles,
+  Globe,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { sponsorsData as initialSponsors } from "@/data/sponsors";
 import { SponsorCategory } from "@/lib/types";
 import { ImageUploadField } from "@/components/admin/ImageUploadField";
+
+interface CurrentPartner {
+  id: string;
+  name: string;
+  category: string;
+  logo: string;
+  url?: string;
+  order: number;
+  active: boolean;
+  addedAt: string;
+}
+
+const SPONSORSHIP_TIERS_2027 = [
+  "Principal Partner",
+  "Co-Host / Patron",
+  "Diamond Sponsor",
+  "Platinum Partner",
+  "Gold Sponsor",
+  "Silver Sponsor",
+  "Official Bank Partner",
+  "Mobility Partner",
+  "Technology Partner",
+  "Media Partner",
+  "Associate Partner",
+  "Supporting Organization",
+];
 
 interface FlatSponsor {
   id: string;
@@ -34,6 +64,18 @@ interface FlatSponsor {
 }
 
 export default function AdminSponsorsPage() {
+  const [activeTab, setActiveTab] = useState<"current2027" | "archive">("current2027");
+
+  // 2027 Edition Partners State
+  const [currentPartners, setCurrentPartners] = useState<CurrentPartner[]>([]);
+  const [isLoadingCurrent, setIsLoadingCurrent] = useState(true);
+  const [search2027, setSearch2027] = useState("");
+  const [showAdd2027Modal, setShowAdd2027Modal] = useState(false);
+  const [editing2027Partner, setEditing2027Partner] = useState<CurrentPartner | null>(null);
+  const [add2027Logo, setAdd2027Logo] = useState("/images/logo.webp");
+  const [isSaving2027, setIsSaving2027] = useState(false);
+
+  // Archive / Previous Sponsors State
   const [categories, setCategories] = useState<SponsorCategory[]>(initialSponsors);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTier, setSelectedTier] = useState<string>("All");
@@ -45,7 +87,7 @@ export default function AdminSponsorsPage() {
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
 
-  // Modals & Editing
+  // Modals & Editing (Archive)
   const [editingSponsor, setEditingSponsor] = useState<FlatSponsor | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [addModalLogo, setAddModalLogo] = useState("/images/logo.webp");
@@ -87,9 +129,148 @@ export default function AdminSponsorsPage() {
     }
   };
 
+  // Fetch 2027 Edition Partners
+  const fetchCurrentPartners = async () => {
+    setIsLoadingCurrent(true);
+    try {
+      const res = await fetch("/api/partners/current?all=true&t=" + Date.now(), { cache: "no-store" });
+      const json = await res.json();
+      if (json.success && Array.isArray(json.partners)) {
+        setCurrentPartners(json.partners);
+      }
+    } catch {
+      notify("Failed to load 2027 edition partners", "error");
+    } finally {
+      setIsLoadingCurrent(false);
+    }
+  };
+
   useEffect(() => {
     fetchSponsors();
+    fetchCurrentPartners();
   }, []);
+
+  // 2027 Action: Add Partner
+  const handleAdd2027Submit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSaving2027(true);
+    const formData = new FormData(e.currentTarget);
+    const name = (formData.get("name") as string)?.trim();
+    const category = (formData.get("category") as string)?.trim() || "Official Partner";
+    const url = (formData.get("url") as string)?.trim() || "";
+    const active = formData.get("active") === "on";
+
+    try {
+      const res = await fetch("/api/partners/current", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "add",
+          payload: {
+            name,
+            category,
+            logo: add2027Logo || "/images/logo.webp",
+            url,
+            active,
+          },
+        }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setCurrentPartners(json.partners);
+        setShowAdd2027Modal(false);
+        setAdd2027Logo("/images/logo.webp");
+        notify(`Added "${name}" to 2027 Edition Partners`);
+      } else {
+        notify(json.message || "Failed to add partner", "error");
+      }
+    } catch {
+      notify("Error saving 2027 partner", "error");
+    } finally {
+      setIsSaving2027(false);
+    }
+  };
+
+  // 2027 Action: Edit Partner
+  const handleEdit2027Submit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!editing2027Partner) return;
+    setIsSaving2027(true);
+    const formData = new FormData(e.currentTarget);
+    const name = (formData.get("name") as string)?.trim();
+    const category = (formData.get("category") as string)?.trim() || "Official Partner";
+    const url = (formData.get("url") as string)?.trim() || "";
+    const active = formData.get("active") === "on";
+
+    try {
+      const res = await fetch("/api/partners/current", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "update",
+          payload: {
+            id: editing2027Partner.id,
+            name,
+            category,
+            logo: editing2027Partner.logo || "/images/logo.webp",
+            url,
+            active,
+          },
+        }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setCurrentPartners(json.partners);
+        setEditing2027Partner(null);
+        notify(`Updated "${name}"`);
+      } else {
+        notify(json.message || "Failed to update partner", "error");
+      }
+    } catch {
+      notify("Error updating partner", "error");
+    } finally {
+      setIsSaving2027(false);
+    }
+  };
+
+  // 2027 Action: Toggle Active
+  const handleToggle2027Active = async (id: string, name: string) => {
+    try {
+      const res = await fetch("/api/partners/current", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "toggle_active", payload: { id } }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setCurrentPartners(json.partners);
+        notify(json.message);
+      }
+    } catch {
+      notify("Failed to update partner visibility", "error");
+    }
+  };
+
+  // 2027 Action: Delete Partner
+  const handleDelete2027Partner = async (id: string, name: string) => {
+    if (!confirm(`Are you sure you want to remove "${name}" from the 2027 Edition Partners?`)) return;
+    try {
+      const res = await fetch("/api/partners/current", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "delete", payload: { id } }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setCurrentPartners(json.partners);
+        notify(`Removed "${name}" from 2027 Edition`);
+      } else {
+        notify(json.message || "Failed to remove partner", "error");
+      }
+    } catch {
+      notify("Error deleting partner", "error");
+    }
+  };
 
   // Save changes to backend and localStorage
   const persistCategories = async (updated: SponsorCategory[]) => {
@@ -105,6 +286,22 @@ export default function AdminSponsorsPage() {
       console.warn("Failed to persist sponsors to backend");
     }
   };
+
+  // 2027 Filtered & Computed Counts
+  const filtered2027 = useMemo(() => {
+    const q = search2027.toLowerCase().trim();
+    if (!q) return currentPartners;
+    return currentPartners.filter(
+      (p) =>
+        p.name.toLowerCase().includes(q) ||
+        p.category.toLowerCase().includes(q) ||
+        (p.url && p.url.toLowerCase().includes(q))
+    );
+  }, [currentPartners, search2027]);
+
+  const active2027Count = useMemo(() => {
+    return currentPartners.filter((p) => p.active !== false).length;
+  }, [currentPartners]);
 
   // Flatten all sponsors for table search & selection
   const flatSponsors: FlatSponsor[] = useMemo(() => {
@@ -351,65 +548,345 @@ export default function AdminSponsorsPage() {
               Partnership Management
             </span>
             <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-              Sponsors & Partners
+              Sponsors &amp; Partners
             </h1>
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            Manage official patrons, international cooperation missions, and supporting bodies.
+            Manage 2027 5th edition summit partners and historical archive sponsors.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            onClick={exportCSV}
-            className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium border border-slate-200 shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
-          >
-            <Download className="w-3.5 h-3.5 text-slate-500" />
-            <span>Export CSV</span>
-          </button>
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="px-3.5 py-1.5 rounded-lg bg-[#218A59] hover:bg-[#1b734a] text-white font-medium text-xs flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Add Partner</span>
-          </button>
+          {activeTab === "current2027" ? (
+            <button
+              onClick={() => {
+                setAdd2027Logo("/images/logo.webp");
+                setShowAdd2027Modal(true);
+              }}
+              className="px-3.5 py-1.5 rounded-lg bg-[#218A59] hover:bg-[#1b734a] text-white font-medium text-xs flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add 2027 Partner</span>
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={exportCSV}
+                className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium border border-slate-200 shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <Download className="w-3.5 h-3.5 text-slate-500" />
+                <span>Export CSV</span>
+              </button>
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="px-3.5 py-1.5 rounded-lg bg-[#218A59] hover:bg-[#1b734a] text-white font-medium text-xs flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Add Archive Partner</span>
+              </button>
+            </>
+          )}
         </div>
       </div>
 
-      {/* Summary KPI Strip */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs">
-        <div>
-          <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">
-            Total Partners
-          </span>
-          <div className="flex items-baseline gap-1.5 mt-0.5">
-            <span className="text-xl font-bold text-slate-900">{totalPartners}</span>
-            <span className="text-xs text-slate-500 font-mono">organizations</span>
-          </div>
-        </div>
-
-        <div>
-          <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">
-            Active Tiers
-          </span>
-          <div className="flex items-baseline gap-1.5 mt-0.5">
-            <span className="text-xl font-bold text-slate-900">{categories.length}</span>
-            <span className="text-xs text-slate-500 font-mono">tiers</span>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between sm:justify-end">
-          <Link
-            href="/sponsors"
-            target="_blank"
-            className="text-xs font-medium text-slate-600 hover:text-[#218A59] flex items-center gap-1.5 transition-colors"
+      {/* Edition Navigation Tabs */}
+      <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
+        <button
+          onClick={() => setActiveTab("current2027")}
+          className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer ${
+            activeTab === "current2027"
+              ? "bg-[#218A59] text-white shadow-sm shadow-[#218A59]/30"
+              : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+          }`}
+        >
+          <Sparkles className="w-4 h-4" />
+          <span>2027 Edition Partners (Landing Page)</span>
+          <span
+            className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${
+              activeTab === "current2027" ? "bg-white/20 text-white" : "bg-slate-200 text-slate-700"
+            }`}
           >
-            <span>View Public Showcase</span>
-            <ExternalLink className="w-3.5 h-3.5" />
-          </Link>
-        </div>
+            {currentPartners.length}
+          </span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab("archive")}
+          className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer ${
+            activeTab === "archive"
+              ? "bg-slate-900 text-white shadow-sm"
+              : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+          }`}
+        >
+          <Award className="w-4 h-4" />
+          <span>Previous Editions Archive</span>
+          <span
+            className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${
+              activeTab === "archive" ? "bg-white/20 text-white" : "bg-slate-200 text-slate-700"
+            }`}
+          >
+            {totalPartners}
+          </span>
+        </button>
       </div>
+
+      {activeTab === "current2027" ? (
+        <div className="space-y-4">
+          {/* Landing Page Live Status Callout */}
+          <div
+            className={`p-4 rounded-2xl border flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all ${
+              active2027Count === 0
+                ? "bg-amber-50/70 border-amber-200/90 text-amber-900"
+                : "bg-emerald-50/70 border-emerald-200/90 text-emerald-950"
+            }`}
+          >
+            <div className="flex items-start gap-3">
+              <div
+                className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                  active2027Count === 0
+                    ? "bg-amber-100 text-amber-800"
+                    : "bg-emerald-100 text-emerald-800"
+                }`}
+              >
+                {active2027Count === 0 ? (
+                  <EyeOff className="w-5 h-5 text-amber-700" />
+                ) : (
+                  <Eye className="w-5 h-5 text-emerald-700" />
+                )}
+              </div>
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase font-mono tracking-wider ${
+                      active2027Count === 0
+                        ? "bg-amber-200/80 text-amber-900"
+                        : "bg-emerald-200/80 text-emerald-900"
+                    }`}
+                  >
+                    {active2027Count === 0
+                      ? "Landing Page Strip: Currently Hidden"
+                      : `Landing Page Strip: LIVE (${active2027Count} Active)`}
+                  </span>
+                </div>
+                <p className="text-xs font-medium">
+                  {active2027Count === 0
+                    ? "The 2027 Edition Partners Strip is automatically hidden from visitors on the landing page because no active partners are uploaded yet. As soon as you add partners below, the strip will appear on the homepage."
+                    : `Currently displaying ${active2027Count} partner${
+                        active2027Count > 1 ? "s" : ""
+                      } in the marquee strip right before the previous partners section.`}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 self-start md:self-auto shrink-0">
+              <Link
+                href="/"
+                target="_blank"
+                className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-800 text-xs font-semibold border border-slate-200 shadow-xs flex items-center gap-1.5 transition-colors"
+              >
+                <span>Preview Homepage</span>
+                <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
+              </Link>
+              <button
+                onClick={() => {
+                  setAdd2027Logo("/images/logo.webp");
+                  setShowAdd2027Modal(true);
+                }}
+                className="px-4 py-1.5 rounded-xl bg-[#218A59] hover:bg-[#1b734a] text-white text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Add 2027 Partner</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Search bar for 2027 partners */}
+          {currentPartners.length > 0 && (
+            <div className="flex items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200 shadow-xs">
+              <div className="relative flex-1 max-w-sm">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  type="text"
+                  value={search2027}
+                  onChange={(e) => setSearch2027(e.target.value)}
+                  placeholder="Search 2027 partner or category..."
+                  className="w-full pl-8 pr-7 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#218A59] focus:bg-white"
+                />
+                {search2027 && (
+                  <button
+                    onClick={() => setSearch2027("")}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+              <span className="text-xs text-slate-500 font-medium">
+                {filtered2027.length} organization{filtered2027.length === 1 ? "" : "s"}
+              </span>
+            </div>
+          )}
+
+          {/* Partners Grid */}
+          {isLoadingCurrent ? (
+            <div className="p-12 bg-white rounded-2xl border border-slate-200 flex flex-col items-center justify-center gap-2">
+              <Loader2 className="w-6 h-6 text-[#218A59] animate-spin" />
+              <span className="text-xs text-slate-500">Loading 2027 edition partners...</span>
+            </div>
+          ) : currentPartners.length === 0 ? (
+            <div className="p-12 sm:p-16 bg-white rounded-2xl border border-dashed border-slate-300 text-center flex flex-col items-center justify-center gap-3">
+              <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-[#218A59] flex items-center justify-center shadow-inner">
+                <Sparkles className="w-7 h-7" />
+              </div>
+              <div className="space-y-1 max-w-md">
+                <h3 className="text-base font-bold text-slate-900">No 2027 Partners Added Yet</h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  The homepage partners strip is currently hidden. Once you upload and activate your
+                  first partner or sponsor for the 2027 edition, it will instantly display on the
+                  landing page.
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setAdd2027Logo("/images/logo.webp");
+                  setShowAdd2027Modal(true);
+                }}
+                className="mt-2 px-4 py-2 rounded-xl bg-[#218A59] hover:bg-[#1b734a] text-white text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add First 2027 Partner</span>
+              </button>
+            </div>
+          ) : filtered2027.length === 0 ? (
+            <div className="p-8 bg-white rounded-xl border border-slate-200 text-center">
+              <p className="text-xs text-slate-500">No partners match your search query &quot;{search2027}&quot;</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {filtered2027.map((partner) => (
+                <div
+                  key={partner.id}
+                  className={`bg-white rounded-2xl border p-4 shadow-xs flex flex-col justify-between transition-all duration-200 hover:shadow-md ${
+                    partner.active
+                      ? "border-emerald-200/90 ring-1 ring-emerald-500/10"
+                      : "border-slate-200 opacity-60 bg-slate-50/50"
+                  }`}
+                >
+                  <div className="space-y-3">
+                    {/* Header Row: Category Badge + Active Toggle */}
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase font-mono tracking-wider bg-emerald-50 text-[#007A5E] border border-emerald-200">
+                        {partner.category}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleToggle2027Active(partner.id, partner.name)}
+                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold transition-colors cursor-pointer ${
+                          partner.active
+                            ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
+                            : "bg-slate-200 text-slate-700 hover:bg-slate-300"
+                        }`}
+                        title="Click to toggle visibility on landing page"
+                      >
+                        {partner.active ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                        <span>{partner.active ? "Live" : "Hidden"}</span>
+                      </button>
+                    </div>
+
+                    {/* Logo Box */}
+                    <div className="h-24 w-full relative flex items-center justify-center bg-slate-50/80 rounded-xl p-3 border border-slate-100">
+                      <Image
+                        src={partner.logo || "/images/logo.webp"}
+                        alt={partner.name}
+                        fill
+                        sizes="200px"
+                        className="object-contain p-2"
+                      />
+                    </div>
+
+                    {/* Partner Name & Website */}
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-900 truncate" title={partner.name}>
+                        {partner.name}
+                      </h4>
+                      {partner.url ? (
+                        <a
+                          href={partner.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-[11px] text-slate-500 hover:text-[#218A59] mt-0.5 truncate max-w-full"
+                        >
+                          <Globe className="w-3 h-3 shrink-0" />
+                          <span className="truncate">{partner.url.replace(/^https?:\/\//, "")}</span>
+                        </a>
+                      ) : (
+                        <span className="text-[11px] text-slate-400 italic">No URL provided</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center justify-between pt-3 mt-3 border-t border-slate-100 text-xs">
+                    <span className="text-[10px] text-slate-400 font-mono">
+                      Order: {partner.order || 1}
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => setEditing2027Partner(partner)}
+                        className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
+                        title="Edit partner"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete2027Partner(partner.id, partner.name)}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                        title="Delete partner"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {/* Summary KPI Strip */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs">
+            <div>
+              <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">
+                Total Partners
+              </span>
+              <div className="flex items-baseline gap-1.5 mt-0.5">
+                <span className="text-xl font-bold text-slate-900">{totalPartners}</span>
+                <span className="text-xs text-slate-500 font-mono">organizations</span>
+              </div>
+            </div>
+
+            <div>
+              <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">
+                Active Tiers
+              </span>
+              <div className="flex items-baseline gap-1.5 mt-0.5">
+                <span className="text-xl font-bold text-slate-900">{categories.length}</span>
+                <span className="text-xs text-slate-500 font-mono">tiers</span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between sm:justify-end">
+              <Link
+                href="/sponsors"
+                target="_blank"
+                className="text-xs font-medium text-slate-600 hover:text-[#218A59] flex items-center gap-1.5 transition-colors"
+              >
+                <span>View Public Showcase</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          </div>
 
       {/* Filter Bar */}
       <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200 shadow-xs">
@@ -786,6 +1263,8 @@ export default function AdminSponsorsPage() {
           })}
         </div>
       )}
+        </div>
+      )}
 
       {/* Bulk Delete Modal */}
       {showBulkDeleteModal && (
@@ -1026,6 +1505,238 @@ export default function AdminSponsorsPage() {
                 >
                   <Save className="w-3.5 h-3.5" />
                   <span>{isSaving ? "Saving..." : "Save Changes"}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Add 2027 Partner Modal */}
+      {showAdd2027Modal && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl p-5 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-[#218A59] font-mono text-[10px] font-bold uppercase">
+                  2027 Edition
+                </span>
+                <h3 className="font-bold text-base text-slate-900">Add 2027 Partner</h3>
+              </div>
+              <button
+                onClick={() => setShowAdd2027Modal(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAdd2027Submit} className="space-y-3.5 text-xs">
+              <div>
+                <label className="block text-[11px] font-mono font-medium text-slate-700 mb-1">
+                  ORGANIZATION NAME *
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  required
+                  placeholder="e.g. Nepal Electricity Authority / Huawei Digital Power"
+                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#218A59] focus:bg-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-mono font-medium text-slate-700 mb-1">
+                  SPONSORSHIP CATEGORY / TIER *
+                </label>
+                <select
+                  name="category"
+                  defaultValue="Platinum Partner"
+                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59] focus:bg-white cursor-pointer"
+                >
+                  {SPONSORSHIP_TIERS_2027.map((tier) => (
+                    <option key={tier} value={tier}>
+                      {tier}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <ImageUploadField
+                name="logo"
+                label="Partner Logo"
+                value={add2027Logo}
+                onChange={setAdd2027Logo}
+                folder="sponsors"
+              />
+
+              <div>
+                <label className="block text-[11px] font-mono font-medium text-slate-700 mb-1">
+                  OFFICIAL WEBSITE URL
+                </label>
+                <input
+                  type="url"
+                  name="url"
+                  placeholder="https://..."
+                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#218A59] focus:bg-white"
+                />
+              </div>
+
+              <div className="pt-1">
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    name="active"
+                    defaultChecked={true}
+                    className="w-4 h-4 rounded border-slate-300 text-[#218A59] focus:ring-[#218A59]"
+                  />
+                  <span className="text-xs font-semibold text-slate-800">
+                    Display on Homepage Marquee Strip
+                  </span>
+                </label>
+                <p className="text-[11px] text-slate-500 ml-6 mt-0.5">
+                  When enabled, this partner appears in the live 2027 Edition Strip on the landing page.
+                </p>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowAdd2027Modal(false)}
+                  className="px-3.5 py-2 rounded-xl text-slate-600 hover:text-slate-900 font-medium cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSaving2027}
+                  className="px-4 py-2 rounded-xl bg-[#218A59] hover:bg-[#1b734a] text-white font-medium flex items-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-60"
+                >
+                  {isSaving2027 ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Save className="w-3.5 h-3.5" />
+                  )}
+                  <span>{isSaving2027 ? "Saving..." : "Add to 2027 Edition"}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit 2027 Partner Modal */}
+      {editing2027Partner && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl p-5 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-[#218A59] font-mono text-[10px] font-bold uppercase">
+                  2027 Edition
+                </span>
+                <h3 className="font-bold text-base text-slate-900">Edit 2027 Partner</h3>
+              </div>
+              <button
+                onClick={() => setEditing2027Partner(null)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleEdit2027Submit} className="space-y-3.5 text-xs">
+              <div>
+                <label className="block text-[11px] font-mono font-medium text-slate-700 mb-1">
+                  ORGANIZATION NAME *
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  required
+                  defaultValue={editing2027Partner.name}
+                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59] focus:bg-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-mono font-medium text-slate-700 mb-1">
+                  SPONSORSHIP CATEGORY / TIER *
+                </label>
+                <select
+                  name="category"
+                  defaultValue={editing2027Partner.category}
+                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59] focus:bg-white cursor-pointer"
+                >
+                  {SPONSORSHIP_TIERS_2027.map((tier) => (
+                    <option key={tier} value={tier}>
+                      {tier}
+                    </option>
+                  ))}
+                  {!SPONSORSHIP_TIERS_2027.includes(editing2027Partner.category) && (
+                    <option value={editing2027Partner.category}>{editing2027Partner.category}</option>
+                  )}
+                </select>
+              </div>
+
+              <ImageUploadField
+                name="logo"
+                label="Partner Logo"
+                value={editing2027Partner.logo}
+                onChange={(url) =>
+                  setEditing2027Partner({ ...editing2027Partner, logo: url })
+                }
+                folder="sponsors"
+              />
+
+              <div>
+                <label className="block text-[11px] font-mono font-medium text-slate-700 mb-1">
+                  OFFICIAL WEBSITE URL
+                </label>
+                <input
+                  type="url"
+                  name="url"
+                  defaultValue={editing2027Partner.url || ""}
+                  placeholder="https://..."
+                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59] focus:bg-white"
+                />
+              </div>
+
+              <div className="pt-1">
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    name="active"
+                    defaultChecked={editing2027Partner.active !== false}
+                    className="w-4 h-4 rounded border-slate-300 text-[#218A59] focus:ring-[#218A59]"
+                  />
+                  <span className="text-xs font-semibold text-slate-800">
+                    Display on Homepage Marquee Strip
+                  </span>
+                </label>
+                <p className="text-[11px] text-slate-500 ml-6 mt-0.5">
+                  Uncheck to immediately hide this partner from the landing page.
+                </p>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setEditing2027Partner(null)}
+                  className="px-3.5 py-2 rounded-xl text-slate-600 hover:text-slate-900 font-medium cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSaving2027}
+                  className="px-4 py-2 rounded-xl bg-[#218A59] hover:bg-[#1b734a] text-white font-medium flex items-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-60"
+                >
+                  {isSaving2027 ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Save className="w-3.5 h-3.5" />
+                  )}
+                  <span>{isSaving2027 ? "Saving..." : "Save Changes"}</span>
                 </button>
               </div>
             </form>

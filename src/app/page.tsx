@@ -4,7 +4,7 @@ import { AboutExpoPlatform, WhyParticipateSection, WhoWillYouMeetSection, EventA
 import { ExpoJourney, OrganizersSection, InaugurationMomentsSection } from '@/components/story';
 import { ConferenceThemesSection } from '@/components/conference';
 import { SpeakersSection } from '@/components/speakers';
-import { OfficialPatronsStrip } from '@/components/sponsors';
+import { OfficialPatronsStrip, CurrentPartnersStrip } from '@/components/sponsors';
 import { ConversionCTASection } from '@/components/booking';
 
 export default function Home() {
@@ -50,7 +50,10 @@ export default function Home() {
         {/* 11: Behind The Expo (IPPAN × Event Solution Joint Summit Leadership) */}
         <OrganizersSection />
 
-        {/* 12: Official Patronage, Government Endorsements & Partners */}
+        {/* 12a: Current 2027 Edition Official Partners & Sponsors (Hidden automatically when empty) */}
+        <CurrentPartnersStrip />
+
+        {/* 12b: Official Patronage, Government Endorsements & Previous Partners */}
         <OfficialPatronsStrip />
 
         {/* 13: Latest News & Events Section */}

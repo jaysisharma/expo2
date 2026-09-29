@@ -70,6 +70,7 @@ async function getAdminData() {
     const raw = await fs.readFile(ROOT_ADMIN_DATA_PATH, "utf-8");
     memoryAdminData = JSON.parse(raw);
     if (!memoryAdminData.news) memoryAdminData.news = [];
+    if (!memoryAdminData.currentPartners) memoryAdminData.currentPartners = [];
     return memoryAdminData;
   } catch (err) {}
 
@@ -78,6 +79,7 @@ async function getAdminData() {
     const raw = await fs.readFile(SRC_ADMIN_DATA_PATH, "utf-8");
     memoryAdminData = JSON.parse(raw);
     if (!memoryAdminData.news) memoryAdminData.news = [];
+    if (!memoryAdminData.currentPartners) memoryAdminData.currentPartners = [];
     return memoryAdminData;
   } catch (err) {}
 
@@ -93,6 +95,7 @@ async function getAdminData() {
       stallBookingsOpen: true,
     },
     news: [],
+    currentPartners: [],
   };
   return memoryAdminData;
 }
@@ -501,6 +504,16 @@ export async function POST(req: Request) {
         data.sponsors = payload.categories || payload.sponsors || [];
         await saveAdminData(data);
         return NextResponse.json({ success: true, message: "Sponsors saved" });
+      }
+
+      case "save_current_partners": {
+        data.currentPartners = Array.isArray(payload.partners) ? payload.partners : [];
+        await saveAdminData(data);
+        return NextResponse.json({
+          success: true,
+          message: "2027 Edition partners saved successfully",
+          count: data.currentPartners.length,
+        });
       }
 
       default:
