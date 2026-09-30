@@ -1,18 +1,36 @@
-import React from "react";
-import type { Metadata } from "next";
+"use client";
+
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import SpeakerGrid from "@/components/speakers/SpeakerGrid";
 import Link from "next/link";
 import { Building2, ExternalLink } from "lucide-react";
-import { eventSolutionTeam } from "@/data/eventSolutionTeam";
-
-export const metadata: Metadata = {
-  title: "Leadership & Committee | Himalayan Green Energy Expo 2027",
-  description:
-    "Official Executive Committee Members of IPPAN and Event Solution Leadership steering the Himalayan Green Energy Expo.",
-};
+import { eventSolutionTeam as staticEventSolutionTeam } from "@/data/eventSolutionTeam";
 
 export default function SpeakersPage() {
+  const [eventSolutionTeam, setEventSolutionTeam] = useState(staticEventSolutionTeam);
+
+  // Load Event Solution team from Firebase via API
+  useEffect(() => {
+    fetch(`/api/members?t=${Date.now()}`)
+      .then((r) => r.json())
+      .then((json) => {
+        if (json.success && json.members && json.members.length > 0) {
+          const esteam = json.members
+            .filter((m: any) => m.orgType === "Event Solution")
+            .map((m: any) => ({
+              id: m.id,
+              name: m.name,
+              position: m.title,
+              photo: m.photo,
+              category: m.category,
+            }));
+          if (esteam.length > 0) setEventSolutionTeam(esteam);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-900 flex flex-col">
       {/* =========================================================================

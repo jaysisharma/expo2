@@ -23,6 +23,7 @@ import {
 import { speakersData as initialIPPANMembers } from "@/data/speakers";
 import { eventSolutionTeam as initialEventSolutionTeam } from "@/data/eventSolutionTeam";
 import { ImageUploadField } from "@/components/admin/ImageUploadField";
+import { saveFirebaseMembers, getFirebaseMembers } from "@/lib/firebaseDb";
 
 export interface UnifiedMember {
   id: string;
@@ -75,33 +76,56 @@ export default function AdminMembersPage() {
   const [addModalPhoto, setAddModalPhoto] = useState("/images/committee/mohan-kumar-dangi.webp");
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
-  // Load from localStorage or defaults
+  // Load from Firebase first, fall back to localStorage, then defaults
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setMembers(parsed);
-          setMounted(true);
-          return;
-        }
+    getFirebaseMembers().then((fbMembers) => {
+      if (fbMembers && fbMembers.length > 0) {
+        setMembers(fbMembers);
+        setMounted(true);
+        return;
       }
-    } catch (e) {
-      console.error("Failed to load members from localStorage", e);
-    }
-    setMembers(defaultMembers);
-    setMounted(true);
+      // Fallback: localStorage
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setMembers(parsed);
+            setMounted(true);
+            // Migrate to Firebase
+            saveFirebaseMembers(parsed).catch(() => {});
+            return;
+          }
+        }
+      } catch (e) {}
+      setMembers(defaultMembers);
+      setMounted(true);
+      // Seed Firebase with defaults
+      saveFirebaseMembers(defaultMembers).catch(() => {});
+    }).catch(() => {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setMembers(parsed);
+            setMounted(true);
+            return;
+          }
+        }
+      } catch {}
+      setMembers(defaultMembers);
+      setMounted(true);
+    });
   }, []);
 
-  // Save to localStorage
+  // Save to localStorage AND Firebase
   const saveMembers = (updated: UnifiedMember[]) => {
     setMembers(updated);
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-    } catch (e) {
-      console.error("Failed to save members to localStorage", e);
-    }
+    } catch {}
+    saveFirebaseMembers(updated).catch(() => {});
   };
 
   const notify = (msg: string) => {

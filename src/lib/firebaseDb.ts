@@ -261,3 +261,33 @@ export async function saveFirebaseGallery(items: any[]): Promise<boolean> {
     return false;
   }
 }
+
+// ----------------- MEMBERS (Speakers / Committee) -----------------
+export async function getFirebaseMembers(): Promise<any[] | null> {
+  try {
+    const ref = doc(db, "members", "members_config");
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+      const data = snap.data();
+      return data.members || null;
+    }
+    return null;
+  } catch (error) {
+    console.warn("Firestore getMembers error:", error);
+    return null;
+  }
+}
+
+export async function saveFirebaseMembers(members: any[]): Promise<boolean> {
+  try {
+    const ref = doc(db, "members", "members_config");
+    await setDoc(ref, {
+      members,
+      updatedAt: new Date().toISOString(),
+    });
+    return true;
+  } catch (error) {
+    console.warn("Firestore saveMembers error:", error);
+    return false;
+  }
+}

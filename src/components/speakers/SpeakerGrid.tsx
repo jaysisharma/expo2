@@ -1,13 +1,28 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
-import { speakersData } from "@/data/speakers";
+import { speakersData as staticSpeakersData } from "@/data/speakers";
 import { Search, Users } from "lucide-react";
 
 export default function SpeakerGrid({ limit }: { limit?: number }) {
   const [selectedRole, setSelectedRole] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [speakersData, setSpeakersData] = useState(staticSpeakersData);
+
+  // Load from Firebase via API on mount
+  useEffect(() => {
+    fetch(`/api/members?t=${Date.now()}`)
+      .then((r) => r.json())
+      .then((json) => {
+        if (json.success && json.members && json.members.length > 0) {
+          // Filter to IPPAN members only for this grid
+          const ippan = json.members.filter((m: any) => m.orgType === "IPPAN" || !m.orgType);
+          if (ippan.length > 0) setSpeakersData(ippan);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const roleCategories = [
     { key: "ALL", label: "All Members" },
@@ -18,7 +33,6 @@ export default function SpeakerGrid({ limit }: { limit?: number }) {
 
   const filteredMembers = useMemo(() => {
     return speakersData.filter((member) => {
-      // Role categorization filter
       let matchesRole = true;
       if (selectedRole === "PRESIDENCY") {
         matchesRole =
@@ -34,7 +48,6 @@ export default function SpeakerGrid({ limit }: { limit?: number }) {
         matchesRole = member.title.includes("Member");
       }
 
-      // Search query filter
       const matchesSearch =
         searchQuery.trim() === "" ||
         member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -42,7 +55,7 @@ export default function SpeakerGrid({ limit }: { limit?: number }) {
 
       return matchesRole && matchesSearch;
     });
-  }, [selectedRole, searchQuery]);
+  }, [selectedRole, searchQuery, speakersData]);
 
   const displayedMembers = limit
     ? filteredMembers.slice(0, limit)
