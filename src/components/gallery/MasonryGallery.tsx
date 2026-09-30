@@ -1,16 +1,16 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { galleryData } from "@/data/gallery";
+import { galleryData as staticGalleryData } from "@/data/gallery";
 import { videosData } from "@/data/videos";
 import { GalleryItem, VideoItem } from "@/lib/types";
 import ImageLightbox from "./ImageLightbox";
 import VideoModal from "./VideoModal";
 import { Play, Maximize2, Columns, LayoutGrid, Grid3X3, ArrowUpRight, Sparkles } from "lucide-react";
 
-type GalleryTab = "ALL" | "2024" | "2022" | "2019" | "2018" | "VIDEOS";
+type GalleryTab = "ALL" | "2024" | "2022" | "2019" | "2018" | "2027" | "VIDEOS";
 type LayoutMode = "masonry" | "bento" | "grid";
 
 export default function MasonryGallery({ limit }: { limit?: number }) {
@@ -19,13 +19,33 @@ export default function MasonryGallery({ limit }: { limit?: number }) {
   const [activePhoto, setActivePhoto] = useState<GalleryItem | null>(null);
   const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);
   const [visibleCount, setVisibleCount] = useState<number>(limit || 36);
+  const [galleryData, setGalleryData] = useState<GalleryItem[]>(staticGalleryData);
+
+  // Load from Firebase on mount — admin-published photos replace static data
+  useEffect(() => {
+    fetch(`/api/gallery?t=${Date.now()}`)
+      .then((r) => r.json())
+      .then((json) => {
+        if (json.success && json.items && json.items.length > 0) {
+          setGalleryData(json.items);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  // Build tabs dynamically from actual data
+  const years = useMemo(() => {
+    const ys = new Set(galleryData.map((i) => i.year).filter(Boolean));
+    return Array.from(ys).sort((a, b) => Number(b) - Number(a));
+  }, [galleryData]);
 
   const tabs: { id: GalleryTab; label: string; count: number }[] = [
     { id: "ALL", label: "ALL PLATES", count: galleryData.length },
-    { id: "2024", label: "2024 · 4TH", count: galleryData.filter((i) => i.year === "2024").length },
-    { id: "2022", label: "2022 · 3RD", count: galleryData.filter((i) => i.year === "2022").length },
-    { id: "2019", label: "2019 · 2ND", count: galleryData.filter((i) => i.year === "2019").length },
-    { id: "2018", label: "2018 · 1ST", count: galleryData.filter((i) => i.year === "2018").length },
+    ...years.map((y) => ({
+      id: y as GalleryTab,
+      label: y,
+      count: galleryData.filter((i) => i.year === y).length,
+    })),
     { id: "VIDEOS", label: "VIDEO VAULT", count: videosData.length },
   ];
 
@@ -34,7 +54,7 @@ export default function MasonryGallery({ limit }: { limit?: number }) {
     if (activeTab === "VIDEOS") return [];
     if (activeTab === "ALL") return galleryData;
     return galleryData.filter((p) => p.year === activeTab);
-  }, [activeTab]);
+  }, [activeTab, galleryData]);
 
   const displayedPhotos = filteredPhotos.slice(0, visibleCount);
 

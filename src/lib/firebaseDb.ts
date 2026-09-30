@@ -232,3 +232,32 @@ export async function saveFirebaseBadgeTemplates(templatesData: any) {
   }
 }
 
+// ----------------- GALLERY -----------------
+export async function getFirebaseGallery(): Promise<any[] | null> {
+  try {
+    const ref = doc(db, "gallery", "items_config");
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+      const data = snap.data();
+      return data.items || null;
+    }
+    return null;
+  } catch (error) {
+    console.warn("Firestore getGallery error:", error);
+    return null;
+  }
+}
+
+export async function saveFirebaseGallery(items: any[]): Promise<boolean> {
+  try {
+    const ref = doc(db, "gallery", "items_config");
+    await setDoc(ref, {
+      items,
+      updatedAt: new Date().toISOString(),
+    });
+    return true;
+  } catch (error) {
+    console.warn("Firestore saveGallery error:", error);
+    return false;
+  }
+}

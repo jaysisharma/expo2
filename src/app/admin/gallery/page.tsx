@@ -23,6 +23,7 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import { galleryData as initialGallery } from "@/data/gallery";
+import { saveFirebaseGallery, getFirebaseGallery } from "@/lib/firebaseDb";
 import { GalleryItem } from "@/lib/types";
 import { ImageUploadField } from "@/components/admin/ImageUploadField";
 
@@ -105,12 +106,23 @@ export default function AdminGalleryPage() {
     } catch {}
   }, [editions]);
 
-  // Sync items to localStorage
+  // Sync items to localStorage AND Firebase
   useEffect(() => {
     try {
       localStorage.setItem("expo_admin_gallery_items_v2", JSON.stringify(items));
     } catch {}
+    // Save to Firebase so public gallery page sees the latest
+    saveFirebaseGallery(items).catch(() => {});
   }, [items]);
+
+  // On mount, try to load from Firebase first (overrides localStorage)
+  useEffect(() => {
+    getFirebaseGallery().then((fbItems) => {
+      if (fbItems && fbItems.length > 0) {
+        setItems(fbItems);
+      }
+    }).catch(() => {});
+  }, []);
 
   // Derive categories list dynamically
   const categoriesList = useMemo(() => {
