@@ -41,7 +41,7 @@ export default function Home() {
         {/* 08: Distinguished Keynote Speakers & Organising Leadership */}
         <SpeakersSection />
 
-        {/* 09: Gala Dinner */}
+        {/* 09: Networking Dinner */}
         <GalaDinnerSection />
 
         {/* 10: State Inaugural Moments & Chief Guests */}

@@ -139,8 +139,8 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/gala-dinner" className="hover:text-emerald-400 transition-colors">
-                  Gala Dinner
+                <Link href="/networking-dinner" className="hover:text-emerald-400 transition-colors">
+                  Networking Dinner
                 </Link>
               </li>
               <li>

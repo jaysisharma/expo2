@@ -71,8 +71,8 @@ export async function POST(req: Request) {
 
     const resolvedPassTitle =
       passType === 'international'
-        ? `Gala Dinner Pass (Royal Tulip) - International [${qty} Pax]`
-        : `Gala Dinner Pass (Royal Tulip) - National [${qty} Pax]`;
+        ? `Networking Dinner Pass (Royal Tulip) - International [${qty} Pax]`
+        : `Networking Dinner Pass (Royal Tulip) - National [${qty} Pax]`;
 
     const newRegistration = {
       id: orderId,
@@ -85,7 +85,7 @@ export async function POST(req: Request) {
       country,
       passType: resolvedPassTitle,
       ticketDetails: {
-        category: 'Gala Dinner',
+        category: 'Networking Dinner',
         venue: 'Royal Tulip Kathmandu (Gwarko)',
         date: 'Monday, 18 January 2027',
         time: '6:00 PM onwards',
@@ -115,9 +115,9 @@ export async function POST(req: Request) {
       email,
       phone,
       company: organization || name,
-      subject: `Gala Dinner Reservation [${qty}x ${passType.toUpperCase()}] - ${paymentMethod.toUpperCase()}`,
+      subject: `Networking Dinner Reservation [${qty}x ${passType.toUpperCase()}] - ${paymentMethod.toUpperCase()}`,
       message: `Order: ${orderId}. Pass: ${resolvedPassTitle}. Quantity: ${qty}. Total: NPR ${totalAmountNPR.toLocaleString()} (USD ${totalAmountUSD}). Dietary: ${dietary}. Payment: ${paymentMethod.toUpperCase()}.`,
-      stallInterest: 'Gala Dinner (Royal Tulip)',
+      stallInterest: 'Networking Dinner (Royal Tulip)',
       status: 'New',
       submittedAt: new Date().toISOString(),
     });
@@ -142,7 +142,7 @@ export async function POST(req: Request) {
           website_url: baseUrl,
           amount: Math.round(totalAmountNPR * 100), // Rs to Paisa
           purchase_order_id: orderId,
-          purchase_order_name: `Gala Dinner Ticket (${qty}x ${passType.toUpperCase()}) - Royal Tulip`,
+          purchase_order_name: `Networking Dinner Ticket (${qty}x ${passType.toUpperCase()}) - Royal Tulip`,
           customer_info: {
             name,
             email,
@@ -151,7 +151,7 @@ export async function POST(req: Request) {
           product_details: [
             {
               identity: orderId,
-              name: `Gala Dinner VIP Pass (${passType.toUpperCase()})`,
+              name: `Networking Dinner VIP Pass (${passType.toUpperCase()})`,
               total_price: Math.round(totalAmountNPR * 100),
               quantity: qty,
               unit_price: Math.round(unitPriceNPR * 100),

@@ -65,7 +65,7 @@ export const PARTICIPATION_PACKAGES: StallPackage[] = [
     spaceCount: 2,
     spaceType: "bare",
     preferredStalls: ["A1", "A2"],
-    perks: ["2 Bare Space Stalls (72m²)", "25 Gala Dinner Passes", "50 Inauguration Passes", "500 Entry Passes", "5 Promotional Displays"],
+    perks: ["2 Bare Space Stalls (72m²)", "25 Networking Dinner Passes", "50 Inauguration Passes", "500 Entry Passes", "5 Promotional Displays"],
   },
   {
     id: "in-association-with",
@@ -80,7 +80,7 @@ export const PARTICIPATION_PACKAGES: StallPackage[] = [
     spaceCount: 1,
     spaceType: "bare",
     preferredStalls: ["A1"],
-    perks: ["1 Bare Space Stall (36m²)", "20 Gala Dinner Passes", "50 Inauguration Passes", "300 Entry Passes"],
+    perks: ["1 Bare Space Stall (36m²)", "20 Networking Dinner Passes", "50 Inauguration Passes", "300 Entry Passes"],
   },
   {
     id: "powered-by",
@@ -95,7 +95,7 @@ export const PARTICIPATION_PACKAGES: StallPackage[] = [
     spaceCount: 1,
     spaceType: "bare",
     preferredStalls: ["A2"],
-    perks: ["1 Bare Space Stall (36m²)", "15 Gala Dinner Passes", "40 Inauguration Passes", "200 Entry Passes"],
+    perks: ["1 Bare Space Stall (36m²)", "15 Networking Dinner Passes", "40 Inauguration Passes", "200 Entry Passes"],
   },
   {
     id: "sponsor",
@@ -109,7 +109,7 @@ export const PARTICIPATION_PACKAGES: StallPackage[] = [
     spaceCount: 1,
     spaceType: "bare",
     preferredStalls: ["A3"],
-    perks: ["1 Bare Space Stall (36m²)", "8 Gala Dinner Passes", "20 Inauguration Passes", "150 Entry Passes"],
+    perks: ["1 Bare Space Stall (36m²)", "8 Networking Dinner Passes", "20 Inauguration Passes", "150 Entry Passes"],
   },
   {
     id: "official-partner",
@@ -123,12 +123,13 @@ export const PARTICIPATION_PACKAGES: StallPackage[] = [
     spaceCount: 1,
     spaceType: "bare",
     preferredStalls: ["A4"],
-    perks: ["1 Bare Space Stall (36m²)", "5 Gala Dinner Passes", "20 Inauguration Passes", "120 Entry Passes"],
+    perks: ["1 Bare Space Stall (36m²)", "5 Networking Dinner Passes", "20 Inauguration Passes", "120 Entry Passes"],
   },
   {
     id: "co-sponsor",
     name: "Co-Sponsor",
     type: "sponsor",
+    badge: undefined,
     priceNPR: 1000000,
     priceUSD: 7000,
     priceDisplayNPR: "NPR 10,00,000",
@@ -137,7 +138,7 @@ export const PARTICIPATION_PACKAGES: StallPackage[] = [
     spaceCount: 1,
     spaceType: "bare",
     preferredStalls: ["A26"],
-    perks: ["1 Bare Space Stall (36m²)", "5 Gala Dinner Passes", "20 Inauguration Passes", "100 Entry Passes"],
+    perks: ["1 Bare Space Stall (36m²)", "5 Networking Dinner Passes", "20 Inauguration Passes", "100 Entry Passes"],
   },
   {
     id: "supporter",
@@ -151,7 +152,7 @@ export const PARTICIPATION_PACKAGES: StallPackage[] = [
     spaceCount: 1,
     spaceType: "bare",
     preferredStalls: ["A27"],
-    perks: ["1 Bare Space Stall (36m²)", "3 Gala Dinner Passes", "20 Inauguration Passes", "50 Entry Passes"],
+    perks: ["1 Bare Space Stall (36m²)", "3 Networking Dinner Passes", "20 Inauguration Passes", "50 Entry Passes"],
   },
   {
     id: "standard-stall",

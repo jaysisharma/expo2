@@ -33,7 +33,7 @@ export function GalaDinnerSection() {
 
                   <h2 className="text-3xl sm:text-4xl lg:text-[44px] font-bold text-white tracking-tight leading-[1.15]">
                     Himalayan Green Energy Expo <br />
-                    <span className="text-[#F5B544]">Gala Dinner</span>
+                    <span className="text-[#F5B544]">Networking Dinner</span>
                   </h2>
                 </div>
 
@@ -64,7 +64,7 @@ export function GalaDinnerSection() {
                   <div>
                     {/* Overline */}
                     <div className="text-[11px] font-mono tracking-widest uppercase text-slate-400 font-semibold">
-                      GALA DINNER PASS BOOKING
+                      NETWORKING DINNER PASS BOOKING
                     </div>
 
                     {/* Card Title */}
@@ -90,10 +90,10 @@ export function GalaDinnerSection() {
 
                   {/* CTA Button — navigates to dedicated page */}
                   <Link
-                    href="/book-gala-dinner"
+                    href="/book-networking-dinner"
                     className="w-full py-3.5 px-6 rounded-xl bg-[#F5B544] hover:bg-[#e5a83b] active:scale-[0.99] text-[#071722] font-bold text-xs sm:text-sm uppercase tracking-wider text-center flex items-center justify-center gap-2 shadow-lg shadow-amber-500/10 transition-all duration-200 cursor-pointer"
                   >
-                    <span>BOOK GALA DINNER PASS</span>
+                    <span>BOOK NETWORKING DINNER PASS</span>
                     <ArrowRight className="w-4 h-4 text-[#071722]" />
                   </Link>
                 </div>

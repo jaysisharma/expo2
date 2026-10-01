@@ -31,8 +31,8 @@ export const ALL_11_ATTRACTIONS: EventAttractionItem[] = [
     image: '/images/attractions/country-pavilions.webp',
   },
   {
-    id: 'gala-dinner',
-    title: 'Gala Networking Dinner',
+    id: 'networking-dinner',
+    title: 'Networking Dinner',
     pillar: 'business',
     desc: 'High-level diplomatic banquet and sovereign clean energy networking.',
     image: '/images/attractions/gala-dinner.webp',

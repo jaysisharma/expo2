@@ -41,10 +41,10 @@ const sponsorshipTiers: SponsorshipTierItem[] = [
     priceNPR: "NPR 50,00,000",
     priceUSD: "USD $35,000",
     space: "6M × 6M × 2 (2 Bare Space Stalls · 72m²)",
-    description: "Exclusive highest-tier summit naming & plenary stage presence across all official backdrops, lanyards, and VIP gala.",
+    description: "Exclusive highest-tier summit naming & plenary stage presence across all official backdrops, lanyards, and VIP networking dinner.",
     features: [
       "2 Bare Space Stalls (72m² prime central positioning)",
-      "25 VIP Gala Dinner passes at Royal Tulip Kathmandu",
+      "25 VIP Networking Dinner passes at Royal Tulip Kathmandu",
       "50 Inauguration VIP passes & 500 entry passes",
       "20 Official Exhibitor badges & VIP lounge access",
       "6FT × 4FT × 5 Promotional display branding areas",
@@ -60,7 +60,7 @@ const sponsorshipTiers: SponsorshipTierItem[] = [
     description: "Principal summit partner co-branding on keynotes, summit literature, delegate badges, and official press releases.",
     features: [
       "1 Bare Space Stall (36m² prime corner pavilion)",
-      "20 VIP Gala Dinner passes",
+      "20 VIP Networking Dinner passes",
       "50 Inauguration VIP passes & 300 entry passes",
       "20 Official Exhibitor badges",
       "6FT × 4FT × 4 Promotional display branding areas",
@@ -76,7 +76,7 @@ const sponsorshipTiers: SponsorshipTierItem[] = [
     description: "Major partner positioning as a clean energy innovation champion with prominent exhibition presence.",
     features: [
       "1 Bare Space Stall (36m² prime stall)",
-      "15 VIP Gala Dinner passes",
+      "15 VIP Networking Dinner passes",
       "40 Inauguration VIP passes & 200 entry passes",
       "20 Official Exhibitor badges",
       "6FT × 4FT × 3 Promotional display branding areas",
@@ -92,7 +92,7 @@ const sponsorshipTiers: SponsorshipTierItem[] = [
     description: "Strategic commercial exposure, B2B procurement visibility, and executive networking privileges.",
     features: [
       "1 Bare Space Stall (36m²)",
-      "8 VIP Gala Dinner passes",
+      "8 VIP Networking Dinner passes",
       "20 Inauguration VIP passes & 150 entry passes",
       "20 Official Exhibitor badges",
       "6FT × 4FT × 3 Promotional display branding areas",
@@ -108,7 +108,7 @@ const sponsorshipTiers: SponsorshipTierItem[] = [
     description: "Sector-focused partnership aligning your organization with Nepal's clean energy leadership.",
     features: [
       "1 Bare Space Stall (36m²)",
-      "5 VIP Gala Dinner passes",
+      "5 VIP Networking Dinner passes",
       "20 Inauguration VIP passes & 120 entry passes",
       "20 Official Exhibitor badges",
       "6FT × 4FT × 2 Promotional display branding areas",
@@ -124,7 +124,7 @@ const sponsorshipTiers: SponsorshipTierItem[] = [
     description: "High-yield commercial exposure for technology manufacturers, suppliers, and engineering consultancies.",
     features: [
       "1 Bare Space Stall (36m²)",
-      "5 VIP Gala Dinner passes",
+      "5 VIP Networking Dinner passes",
       "20 Inauguration VIP passes & 100 entry passes",
       "20 Official Exhibitor badges",
       "6FT × 4FT × 2 Promotional display branding areas",
@@ -140,7 +140,7 @@ const sponsorshipTiers: SponsorshipTierItem[] = [
     description: "Entry-level summit participation with exhibition stall and directory listing for growing enterprises.",
     features: [
       "1 Bare Space Stall (36m²)",
-      "3 VIP Gala Dinner passes",
+      "3 VIP Networking Dinner passes",
       "20 Inauguration VIP passes & 50 entry passes",
       "20 Official Exhibitor badges",
       "6FT × 4FT × 1 Promotional display branding area",
@@ -513,7 +513,7 @@ export default function SponsorsPage() {
                 Custom Sponsorship & Branding Packages
               </h3>
               <p className="text-xs text-slate-300 mt-1 max-w-xl">
-                Looking for tailored branding options such as badge sponsorship, VIP gala dinner hosting, or technical stage naming rights? Contact our partnership team.
+                Looking for tailored branding options such as badge sponsorship, VIP networking dinner hosting, or technical stage naming rights? Contact our partnership team.
               </p>
             </div>
 

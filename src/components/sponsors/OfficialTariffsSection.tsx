@@ -91,8 +91,8 @@ export default function OfficialTariffsSection() {
                 <th className="py-3.5 px-3 font-bold text-center whitespace-nowrap" title="Inauguration Invitation Pass">
                   Inauguration Pass
                 </th>
-                <th className="py-3.5 px-3 font-bold text-center whitespace-nowrap" title="Gala Dinner Pass">
-                  Gala Dinner Pass
+                <th className="py-3.5 px-3 font-bold text-center whitespace-nowrap" title="Networking Dinner Pass">
+                  Networking Dinner Pass
                 </th>
                 <th className="py-3.5 px-3 font-bold text-center whitespace-nowrap" title="Exhibitor Pass">
                   Exhibitor Pass

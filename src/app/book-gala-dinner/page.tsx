@@ -163,7 +163,7 @@ function BookGalaDinnerForm() {
         <div className="flex items-center gap-2 text-xs text-slate-500 mb-10">
           <Link href="/" className="hover:text-slate-300 transition-colors">Home</Link>
           <span>/</span>
-          <span className="text-slate-300">Gala Dinner Booking</span>
+          <span className="text-slate-300">Networking Dinner Booking</span>
         </div>
 
         {/* ── Header ─────────────────────────────────────────────────── */}
@@ -172,7 +172,7 @@ function BookGalaDinnerForm() {
             Himalayan Green Energy Expo 2027
           </p>
           <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight mb-5">
-            Gala Dinner Pass Booking
+            Networking Dinner Pass Booking
           </h1>
           <div className="flex flex-wrap gap-5 text-sm text-slate-400">
             <span className="flex items-center gap-1.5">

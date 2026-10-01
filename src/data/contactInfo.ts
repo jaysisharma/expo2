@@ -49,7 +49,17 @@ export const CONTACT_DETAILS = {
     googleMapsUrl: 'https://maps.google.com/?q=Bhrikutimandap+Exhibition+Hall+Kathmandu',
   },
 
-  // VIP Gala Dinner
+  // VIP Networking Dinner
+  networkingDinner: {
+    venue: 'Royal Tulip Kathmandu (Gwarko)',
+    date: 'Monday, 18 January 2027',
+    time: '6:00 PM onwards',
+    nationalPrice: 'NPR 6,000',
+    nationalPriceNum: 6000,
+    internationalPrice: 'USD 50',
+    internationalPriceNum: 50,
+  },
+  // Alias for backward compatibility
   galaDinner: {
     venue: 'Royal Tulip Kathmandu (Gwarko)',
     date: 'Monday, 18 January 2027',
@@ -92,6 +102,9 @@ export const CONTACT_DETAILS = {
 } as const;
 
 export const EVENT_VENUE = CONTACT_DETAILS.venue.name;
-export const GALA_VENUE = CONTACT_DETAILS.galaDinner.venue;
-export const GALA_NATIONAL_PRICE = CONTACT_DETAILS.galaDinner.nationalPrice;
-export const GALA_INTERNATIONAL_PRICE = CONTACT_DETAILS.galaDinner.internationalPrice;
+export const NETWORKING_VENUE = CONTACT_DETAILS.networkingDinner.venue;
+export const NETWORKING_NATIONAL_PRICE = CONTACT_DETAILS.networkingDinner.nationalPrice;
+export const NETWORKING_INTERNATIONAL_PRICE = CONTACT_DETAILS.networkingDinner.internationalPrice;
+export const GALA_VENUE = NETWORKING_VENUE;
+export const GALA_NATIONAL_PRICE = NETWORKING_NATIONAL_PRICE;
+export const GALA_INTERNATIONAL_PRICE = NETWORKING_INTERNATIONAL_PRICE;

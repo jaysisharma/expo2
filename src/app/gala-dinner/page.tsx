@@ -60,7 +60,7 @@ export default function GalaDinnerPage() {
         <div className="absolute inset-0 pointer-events-none select-none z-0">
           <Image
             src="/images/nepal_machhapuchhre.webp"
-            alt="Royal Tulip Kathmandu (Gwarko) Gala Evening"
+            alt="Royal Tulip Kathmandu (Gwarko) Networking Evening"
             fill
             className="object-cover object-center opacity-20 mix-blend-luminosity scale-105"
             priority
@@ -75,12 +75,12 @@ export default function GalaDinnerPage() {
               Home
             </Link>
             <span>/</span>
-            <span className="text-emerald-300">Gala Dinner</span>
+            <span className="text-emerald-300">Networking Dinner</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight">
-            VIP Gala Dinner &amp;{' '}
-            <span className="text-[#00E599]">Networking Banquet</span>
+            VIP Networking Dinner &amp;{' '}
+            <span className="text-[#00E599]">Banquet</span>
           </h1>
 
           <p className="text-base sm:text-lg text-emerald-100/80 max-w-2xl leading-relaxed">
@@ -101,16 +101,16 @@ export default function GalaDinnerPage() {
             <span className="text-white/20 hidden sm:inline">|</span>
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-[#00E599]" />
-              <span className="font-bold text-white">Gala Venue: Royal Tulip Kathmandu (Gwarko)</span>
+              <span className="font-bold text-white">Venue: Royal Tulip Kathmandu (Gwarko)</span>
             </div>
           </div>
 
           <div className="pt-2 flex flex-wrap items-center gap-4">
             <Link
-              href="/book-gala-dinner"
+              href="/book-networking-dinner"
               className="px-6 py-3.5 rounded-full bg-gradient-to-r from-[#007A5E] to-[#218A59] hover:brightness-110 text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-emerald-950/40 transition-all"
             >
-              <span>Book Gala Pass Online</span>
+              <span>Book Networking Pass Online</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -124,10 +124,10 @@ export default function GalaDinnerPage() {
             OFFICIAL TARIFFS
           </span>
           <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white">
-            Gala Dinner Delegate Passes
+            Networking Dinner Delegate Passes
           </h2>
           <p className="text-xs sm:text-sm text-slate-300">
-            Main summit and trade exhibition is hosted at <strong className="text-white">Bhrikuti Mandap</strong>. Gala Dinner takes place at <strong className="text-white">Royal Tulip Kathmandu (Gwarko)</strong> on Monday, 18 January.
+            Main summit and trade exhibition is hosted at <strong className="text-white">Bhrikuti Mandap</strong>. Networking Dinner takes place at <strong className="text-white">Royal Tulip Kathmandu (Gwarko)</strong> on Monday, 18 January.
           </p>
         </div>
 
@@ -143,7 +143,7 @@ export default function GalaDinnerPage() {
               </div>
 
               <div>
-                <h3 className="text-xl font-bold text-white">National Gala Pass</h3>
+                <h3 className="text-xl font-bold text-white">National Networking Pass</h3>
                 <p className="text-xs text-slate-400 mt-1">
                   For Nepali developers, energy professionals, engineers &amp; delegates.
                 </p>
@@ -179,7 +179,7 @@ export default function GalaDinnerPage() {
 
             <div className="pt-8">
               <Link
-                href="/book-gala-dinner?tier=national"
+                href="/book-networking-dinner?tier=national"
                 className="w-full text-center py-3.5 rounded-full bg-[#007A5E] hover:bg-[#005C42] active:scale-[0.99] text-white font-bold text-xs uppercase tracking-wider transition-all block shadow-md shadow-emerald-950/20"
               >
                 Book National Pass (NPR 6,000)
@@ -198,7 +198,7 @@ export default function GalaDinnerPage() {
               </div>
 
               <div>
-                <h3 className="text-xl font-bold text-white">International Gala Pass</h3>
+                <h3 className="text-xl font-bold text-white">International Networking Pass</h3>
                 <p className="text-xs text-slate-400 mt-1">
                   For international delegations, foreign investors, OEMs &amp; diplomats.
                 </p>
@@ -234,7 +234,7 @@ export default function GalaDinnerPage() {
 
             <div className="pt-8">
               <Link
-                href="/book-gala-dinner?tier=international"
+                href="/book-networking-dinner?tier=international"
                 className="w-full text-center py-3.5 rounded-full bg-sky-600 hover:bg-sky-500 active:scale-[0.99] text-white font-bold text-xs uppercase tracking-wider transition-all block shadow-md shadow-sky-950/20"
               >
                 Book International Pass (USD 50)

@@ -202,9 +202,9 @@ function VerifyContent() {
 
   // Save Calendar Event (.ics)
   const handleSaveCalendar = () => {
-    const isGala = attendee?.role === "gala" || attendee?.passType?.toLowerCase().includes("gala");
+    const isGala = attendee?.role === "gala" || attendee?.passType?.toLowerCase().includes("gala") || attendee?.passType?.toLowerCase().includes("networking");
     const summary = isGala
-      ? "Himalayan Green Energy Expo - Gala Dinner"
+      ? "Himalayan Green Energy Expo - Networking Dinner"
       : "Himalayan Green Energy Expo 2027";
     const location = isGala
       ? "Royal Tulip, Kathmandu, Nepal"
@@ -270,8 +270,8 @@ function VerifyContent() {
 
     // Pass Type Pill
     const isExhibitor = attendee.role === "exhibitor" || Boolean(attendee.stallNumber);
-    const isGala = attendee.role === "gala" || attendee.passType?.toLowerCase().includes("gala");
-    const rolePill = isExhibitor ? "EXHIBITOR PASS" : isGala ? "GALA DINNER PASS" : "ENTRY PASS";
+    const isGala = attendee.role === "gala" || attendee.passType?.toLowerCase().includes("gala") || attendee.passType?.toLowerCase().includes("networking");
+    const rolePill = isExhibitor ? "EXHIBITOR PASS" : isGala ? "NETWORKING DINNER PASS" : "ENTRY PASS";
 
     ctx.fillStyle = "#ECFDF5";
     ctx.beginPath();
@@ -298,7 +298,7 @@ function VerifyContent() {
     const tierText = isExhibitor
       ? (attendee.stallNumber ? `Exhibitor · Stall ${attendee.stallNumber}` : "Official Exhibitor")
       : isGala
-      ? "Gala VIP Guest"
+      ? "Networking Dinner VIP Guest"
       : "Trade Visitor · Free";
     ctx.fillText(tierText, width / 2, 180 * scale);
 
@@ -442,7 +442,7 @@ function VerifyContent() {
   }
 
   const isExhibitor = attendee.role === "exhibitor" || Boolean(attendee.stallNumber);
-  const isGala = attendee.role === "gala" || attendee.passType?.toLowerCase().includes("gala");
+  const isGala = attendee.role === "gala" || attendee.passType?.toLowerCase().includes("gala") || attendee.passType?.toLowerCase().includes("networking");
 
   let displayRole = "Trade Visitor · Free";
   if (isExhibitor) {
@@ -450,7 +450,7 @@ function VerifyContent() {
       ? `Official Exhibitor · Stall ${attendee.stallNumber}`
       : "Official Exhibitor Delegate";
   } else if (isGala) {
-    displayRole = "Gala Dinner Pass (Royal Tulip)";
+    displayRole = "Networking Dinner Pass (Royal Tulip)";
   } else if (attendee.passType) {
     if (attendee.passType.toLowerCase().includes("visitor")) {
       displayRole = "Trade Visitor · Free";
@@ -486,7 +486,7 @@ function VerifyContent() {
           {/* Badge Tag */}
           <div className="mb-3.5">
             <span className="inline-block px-3.5 py-1 rounded-full bg-emerald-50 border border-emerald-200/80 text-[11px] font-bold tracking-[0.16em] uppercase text-[#007A5E]">
-              {isExhibitor ? "EXHIBITOR PASS" : isGala ? "GALA DINNER PASS" : "ENTRY PASS"}
+              {isExhibitor ? "EXHIBITOR PASS" : isGala ? "NETWORKING DINNER PASS" : "ENTRY PASS"}
             </span>
           </div>
 

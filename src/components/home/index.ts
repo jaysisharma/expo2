@@ -1,4 +1,5 @@
 export { GalaDinnerSection } from './GalaDinnerSection';
+export { GalaDinnerSection as NetworkingDinnerSection } from './GalaDinnerSection';
 export { AboutExpoPlatform } from './AboutExpoPlatform';
 export { WhyExpoSection } from './WhyExpoSection';
 export { WhyParticipateSection } from './WhyParticipateSection';

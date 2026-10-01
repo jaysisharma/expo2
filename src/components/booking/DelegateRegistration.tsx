@@ -19,7 +19,7 @@ export default function DelegateRegistration() {
   const [registrationRole, setRegistrationRole] = useState<"visitor" | "exhibitor" | "gala">(
     initialRole === "exhibitor"
       ? "exhibitor"
-      : initialPass === "gala-dinner"
+      : initialPass === "gala-dinner" || initialPass === "networking-dinner"
         ? "gala"
         : "visitor"
   );
@@ -35,8 +35,8 @@ export default function DelegateRegistration() {
     passType:
       initialRole === "exhibitor"
         ? "Exhibitor Pass (All Access)"
-        : initialPass === "gala-dinner"
-          ? "Gala Dinner Pass (Royal Tulip)"
+        : initialPass === "gala-dinner" || initialPass === "networking-dinner"
+          ? "Networking Dinner Pass (Royal Tulip)"
           : "Trade Visitor (Free)",
     interests: ["Hydropower & Turbines", "Cross-Border Energy Trade"],
   });
@@ -202,7 +202,7 @@ export default function DelegateRegistration() {
 
       const resolvedPassType =
         registrationRole === "gala"
-          ? `Gala Pass - Royal Tulip (${formData.delegateTier === "international" ? "USD 50" : "NPR 6,000"})`
+          ? `Networking Dinner Pass - Royal Tulip (${formData.delegateTier === "international" ? "USD 50" : "NPR 6,000"})`
           : registrationRole === "visitor"
             ? formData.passType
             : `Exhibitor Delegate (${formData.stallNumber})`;
@@ -406,7 +406,7 @@ export default function DelegateRegistration() {
               type="button"
               onClick={() => {
                 setRegistrationRole("gala");
-                setFormData({ ...formData, passType: "Gala Dinner Pass" });
+                setFormData({ ...formData, passType: "Networking Dinner Pass" });
               }}
               className={`py-2 px-2.5 rounded-lg text-xs font-semibold transition-all ${
                 registrationRole === "gala"
@@ -414,12 +414,12 @@ export default function DelegateRegistration() {
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              Gala Dinner
+              Networking Dinner
             </button>
           </div>
         </div>
 
-        {/* Gala Dinner Pricing Toggle */}
+        {/* Networking Dinner Pricing Toggle */}
         {registrationRole === "gala" && (
           <div className="p-3 bg-amber-50/70 border border-amber-200/80 rounded-xl space-y-2">
             <div className="flex items-center justify-between text-[11px] text-amber-900">
@@ -477,7 +477,7 @@ export default function DelegateRegistration() {
             {selectedSponsorTier && (
               <p className="text-[11px] text-slate-500 bg-slate-50 p-2.5 rounded-lg border border-slate-200 leading-relaxed">
                 <span className="font-semibold text-slate-800">{selectedSponsorTier.tier}: </span>
-                {selectedSponsorTier.bareSpace} Space · {selectedSponsorTier.inaugurationPass} Inauguration · {selectedSponsorTier.galaDinnerPass} Gala Dinner · {selectedSponsorTier.exhibitorPass} Exhibitor passes
+                {selectedSponsorTier.bareSpace} Space · {selectedSponsorTier.inaugurationPass} Inauguration · {selectedSponsorTier.galaDinnerPass} Networking Dinner · {selectedSponsorTier.exhibitorPass} Exhibitor passes
               </p>
             )}
           </div>
@@ -619,7 +619,7 @@ export default function DelegateRegistration() {
 
         <p className="text-[11px] text-slate-400 text-center">
           {registrationRole === "gala"
-            ? "Secure 256-bit SSL encrypted Khalti ePayment gateway for Royal Tulip Gala Banquet"
+            ? "Secure 256-bit SSL encrypted Khalti ePayment gateway for Royal Tulip Networking Banquet"
             : "Instant digital QR pass · Complimentary access to Bhrikutimandap Exhibition Hall"}
         </p>
       </form>

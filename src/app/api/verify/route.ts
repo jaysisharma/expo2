@@ -179,7 +179,7 @@ export async function GET(req: NextRequest) {
         email: emailParam || "",
         phone: phoneParam || "",
         role: roleParam || (stallParam ? "exhibitor" : "visitor"),
-        passType: passTypeParam || (roleParam === "exhibitor" ? "Official Exhibitor Pass" : roleParam === "gala" ? "Gala Dinner Pass" : "Trade Visitor Pass"),
+        passType: passTypeParam || (roleParam === "exhibitor" ? "Official Exhibitor Pass" : roleParam === "gala" ? "Networking Dinner Pass" : "Trade Visitor Pass"),
         country: "Nepal",
         checkedIn: false,
         registeredAt: tokenIssuedAt ? new Date(tokenIssuedAt).toISOString() : new Date().toISOString(),

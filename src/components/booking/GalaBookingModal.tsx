@@ -135,7 +135,7 @@ export function GalaBookingModal({
               <span>Royal Tulip Kathmandu (Gwarko)</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white flex items-center gap-2.5">
-              <span>Gala Dinner Pass Booking</span>
+              <span>Networking Dinner Pass Booking</span>
               <Wine className="w-6 h-6 text-amber-300 hidden sm:inline" />
             </h2>
             <p className="text-xs text-emerald-100/70 font-normal">
@@ -403,7 +403,7 @@ export function GalaBookingModal({
           <div className="p-4 rounded-2xl bg-white/[0.05] border border-white/10 space-y-2 text-xs">
             <div className="flex items-center justify-between text-slate-300 font-mono">
               <span>
-                {passTier === 'international' ? 'International VIP Pass' : 'National Gala Pass'} × {quantity}
+                {passTier === 'international' ? 'International VIP Pass' : 'National Networking Pass'} × {quantity}
               </span>
               <span className="text-white font-bold">
                 NPR {totalPriceNPR.toLocaleString()}

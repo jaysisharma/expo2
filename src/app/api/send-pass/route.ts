@@ -215,7 +215,7 @@ async function generateBadgePng(opts: {
 
   // Role Banner
   const banner = template?.roleBannerPlacement || {};
-  let defaultBannerText = role === "exhibitor" ? "OFFICIAL EXHIBITOR" : role === "gala" ? "GALA DINNER PASS" : role === "delegate" ? "OFFICIAL DELEGATE" : "TRADE VISITOR";
+  let defaultBannerText = role === "exhibitor" ? "OFFICIAL EXHIBITOR" : role === "gala" ? "NETWORKING DINNER PASS" : role === "delegate" ? "OFFICIAL DELEGATE" : "TRADE VISITOR";
   let bannerText = banner.text || defaultBannerText;
   if (bannerText.toLowerCase() === "visitor") {
     bannerText = "TRADE VISITOR";

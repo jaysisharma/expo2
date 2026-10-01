@@ -54,14 +54,14 @@ function PaymentSuccessContent() {
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/30 text-xs font-mono font-bold text-[#34D399] uppercase shadow-xs">
             <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
             <span>
-              {isGala ? "OFFICIAL GALA DINNER VIP PASS CONFIRMATION" : "OFFICIAL STALL ALLOCATION CONFIRMATION"}
+              {isGala ? "OFFICIAL NETWORKING DINNER VIP PASS CONFIRMATION" : "OFFICIAL STALL ALLOCATION CONFIRMATION"}
             </span>
           </div>
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white">
             {isGala
               ? isBank
-                ? "Gala VIP Pass Reservation Received!"
-                : "Payment & Gala VIP Pass Confirmed!"
+                ? "Networking Dinner VIP Pass Reservation Received!"
+                : "Payment & Networking Dinner VIP Pass Confirmed!"
               : isBank
                 ? "Stall Reservation Received!"
                 : "Payment & Stall Booking Confirmed!"}
@@ -69,8 +69,8 @@ function PaymentSuccessContent() {
           <p className="text-sm sm:text-base text-emerald-100/80 max-w-xl mx-auto leading-relaxed">
             {isGala
               ? isBank
-                ? "Your Gala Dinner seats at Royal Tulip Kathmandu (Gwarko) have been provisionally held. Please complete the bank wire remittance within 48 hours to finalize guest seating."
-                : "Your Khalti payment has been successfully verified. Your VIP delegate credential for the Royal Tulip Kathmandu (Gwarko) Gala Dinner is officially locked in."
+                ? "Your Networking Dinner seats at Royal Tulip Kathmandu (Gwarko) have been provisionally held. Please complete the bank wire remittance within 48 hours to finalize guest seating."
+                : "Your Khalti payment has been successfully verified. Your VIP delegate credential for the Royal Tulip Kathmandu (Gwarko) Networking Dinner is officially locked in."
               : isBank
                 ? "Your booth allocation has been provisionally reserved. Please complete the bank wire remittance within 48 hours to finalize badge and pro-forma issuance."
                 : "Your payment has been successfully verified. Your exhibition booth is now officially locked in for the Himalayan Green Energy Expo 2027."}
@@ -129,7 +129,7 @@ function PaymentSuccessContent() {
                 </span>
                 <div className="font-sans font-bold text-lg text-[#218A59] mt-0.5">
                   {isGala
-                    ? `${qty}x Gala VIP Pass (${passTier === "international" ? "International" : "National"})`
+                    ? `${qty}x Networking Dinner VIP Pass (${passTier === "international" ? "International" : "National"})`
                     : `STALL ${stalls}`}
                 </div>
               </div>
@@ -156,7 +156,7 @@ function PaymentSuccessContent() {
 
               <div>
                 <span className="text-slate-500 text-[10px] uppercase font-bold">
-                  {isGala ? "GALA DINNER DATE & TIME" : "EXPO DATES"}
+                  {isGala ? "NETWORKING DINNER DATE & TIME" : "EXPO DATES"}
                 </span>
                 <div className="font-sans font-bold text-slate-800 mt-0.5">
                   {isGala ? "Monday, 18 Jan 2027 · 6:00 PM onwards" : "Magh 3–5, 2083 · Jan 17–19, 2027"}
@@ -193,7 +193,7 @@ function PaymentSuccessContent() {
             {/* Next Steps */}
             <div className="space-y-3 pt-2">
               <h3 className="font-sans font-bold text-sm text-slate-900 uppercase tracking-wide">
-                {isGala ? "Gala Dinner Delegate Entry Protocol" : "Exhibitor Onboarding & Next Steps"}
+                {isGala ? "Networking Dinner Delegate Entry Protocol" : "Exhibitor Onboarding & Next Steps"}
               </h3>
               <ul className="text-xs text-slate-600 space-y-2 pl-1 font-normal">
                 <li className="flex items-start gap-2.5">
@@ -202,7 +202,7 @@ function PaymentSuccessContent() {
                   </span>
                   <span>
                     {isGala
-                      ? "Your digital VIP Gala e-ticket with registered QR code is issued under your reference ID."
+                      ? "Your digital VIP Networking Dinner e-ticket with registered QR code is issued under your reference ID."
                       : "Our organizing team will issue your formal tax receipt and exhibitor manual via email within 24 hours."}
                   </span>
                 </li>
@@ -222,7 +222,7 @@ function PaymentSuccessContent() {
                   </span>
                   <span>
                     {isGala
-                      ? "Your Gala Pass includes complimentary 3-day full access badge to the main exhibition at Bhrikutimandap."
+                      ? "Your Networking Dinner Pass includes complimentary 3-day full access badge to the main exhibition at Bhrikuti Mandap."
                       : "Stall setup and shell-scheme decoration begins on Magh 1, 2083 (Jan 15, 2027) at Bhrikutimandap."}
                   </span>
                 </li>

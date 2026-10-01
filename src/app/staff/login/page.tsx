@@ -151,7 +151,7 @@ function StaffLoginForm() {
                   <option value="Main Entrance (Hall A)">Main Entrance (Hall A)</option>
                   <option value="Hall B Gate">Hall B Gate</option>
                   <option value="VIP & Plenary Desk">VIP &amp; Plenary Desk</option>
-                  <option value="Gala Dinner Royal Tulip">Gala Dinner (Royal Tulip)</option>
+                  <option value="Gala Dinner Royal Tulip">Networking Dinner (Royal Tulip)</option>
                   <option value="Exhibitor Loading Gate">Exhibitor Loading Gate</option>
                 </select>
               </div>
