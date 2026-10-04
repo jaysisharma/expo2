@@ -312,7 +312,7 @@ export function HimalayanEcosystemGraphic() {
               </div>
               <div className="absolute top-3 right-3 z-30 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/70 backdrop-blur-md border border-emerald-500/30 text-[10px] font-mono text-emerald-400">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#00E599] animate-pulse" />
-                <span>LIVE DISPATCH</span>
+                <span>LIVE GRID</span>
               </div>
 
               {/* ═══════ VECTOR SCENE WITH ANIMATIONS ═══════ */}
@@ -515,7 +515,7 @@ export function HimalayanEcosystemGraphic() {
                 <div className="absolute top-2.5 left-2.5">
                   <span className="px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-md text-[9px] font-mono font-bold text-emerald-300 flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    ONLINE DISPATCH
+                    OPERATIONAL
                   </span>
                 </div>
 
@@ -532,7 +532,7 @@ export function HimalayanEcosystemGraphic() {
               {/* Output Meter */}
               <div className="p-3.5 rounded-xl bg-emerald-950/30 border border-emerald-500/20 space-y-2">
                 <div className="flex items-center justify-between text-[11px] font-mono text-slate-300">
-                  <span>DISPATCH CAPACITY</span>
+                  <span>GENERATION CAPACITY</span>
                   <span className="text-[#00E599] font-bold">{loadPct}% LOAD</span>
                 </div>
                 <div className="text-xl font-bold text-white font-mono">

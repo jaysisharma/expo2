@@ -208,7 +208,7 @@ function VerifyContent() {
       : "Himalayan Green Energy Expo 2027";
     const location = isGala
       ? "Royal Tulip, Kathmandu, Nepal"
-      : "Bhrikutimandap Exhibition Hall, Kathmandu, Nepal";
+      : "BHRIKUTIMANDAP · KATHMANDU, NEPAL";
     const dtStart = isGala ? "20270117T121500Z" : "20270117T041500Z";
     const dtEnd = isGala ? "20270117T161500Z" : "20270119T121500Z";
 
@@ -434,7 +434,7 @@ function VerifyContent() {
             href="/register"
             className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-[#007A5E] hover:bg-[#00664e] text-white font-semibold text-xs transition-colors"
           >
-            <span>Register for Free Pass</span>
+            <span>Register</span>
           </Link>
         </div>
       </div>
@@ -471,8 +471,8 @@ function VerifyContent() {
           <p className="text-xs sm:text-sm font-medium text-slate-600">
             17–19 January 2027 · Magh 3–5, 2083
           </p>
-          <p className="text-xs sm:text-sm text-slate-500">
-            Bhrikutimandap Exhibition Hall, Kathmandu
+          <p className="text-xs sm:text-sm text-slate-500 font-medium">
+            BHRIKUTIMANDAP · KATHMANDU, NEPAL
           </p>
         </div>
 

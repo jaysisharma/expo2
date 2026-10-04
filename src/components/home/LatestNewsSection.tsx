@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, ChevronLeft, ChevronRight, Newspaper, ArrowUpRight } from 'lucide-react';
 import { ScrollReveal } from '@/components/ui';
+import { NewsImage } from '@/components/news/NewsImage';
 
 interface NewsCardItem {
   id: string;
@@ -52,7 +53,7 @@ export function LatestNewsSection() {
 
           formatted.push({
             id: item.id || item.slug || String(Math.random()),
-            tag: item.category || item.sourceName || 'PRESS DISPATCH',
+            tag: item.category || item.sourceName || 'PRESS RELEASE',
             date: item.date || 'RECENT',
             title: item.title,
             description:
@@ -177,19 +178,12 @@ export function LatestNewsSection() {
                     <article className="h-full bg-white rounded-2xl border border-slate-200/90 overflow-hidden shadow-2xs hover:shadow-md transition-all duration-300 flex flex-col group">
                       {/* Card Top Image */}
                       <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-slate-900">
-                        {item.image ? (
-                          <Image
-                            src={item.image}
-                            alt={item.title}
-                            fill
-                            unoptimized
-                            className="object-cover transition-transform duration-500 group-hover:scale-105"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-slate-500 bg-slate-800">
-                            <Newspaper className="w-10 h-10 opacity-40" />
-                          </div>
-                        )}
+                        <NewsImage
+                          src={item.image}
+                          alt={item.title}
+                          className="object-cover transition-transform duration-500 group-hover:scale-105"
+                          fallbackIconSize={40}
+                        />
                         {item.isExternal && (
                           <div className="absolute top-3 right-3 w-7 h-7 rounded-full bg-black/40 backdrop-blur-md text-white flex items-center justify-center border border-white/20 group-hover:bg-[#16A34A] transition-all">
                             <ArrowUpRight className="w-3.5 h-3.5" />

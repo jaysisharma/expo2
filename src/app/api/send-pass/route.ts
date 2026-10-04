@@ -368,7 +368,7 @@ function buildEmailHtml(opts: {
                 Official Entry Accreditation
               </h1>
               <div style="margin-top:6px;font-size:13px;color:#94a3b8;">
-                17–19 January 2027 &bull; Bhrikutimandap Exhibition Hall, Kathmandu
+                17–19 January 2027 &bull; BHRIKUTIMANDAP · KATHMANDU, NEPAL
               </div>
             </td>
           </tr>
@@ -460,7 +460,7 @@ function buildEmailHtml(opts: {
                 </tr>
                 <tr>
                   <td style="padding:10px 16px;color:#64748b;">Venue</td>
-                  <td style="padding:10px 16px;color:#0f172a;">Bhrikutimandap Exhibition Hall, Kathmandu</td>
+                  <td style="padding:10px 16px;color:#0f172a;">BHRIKUTIMANDAP · KATHMANDU, NEPAL</td>
                 </tr>
               </table>
             </td>
@@ -603,7 +603,7 @@ export async function POST(req: NextRequest) {
 
     const textFallback = `
 Official Entry Pass — Himalayan Green Energy Expo 2027
-17–19 January 2027 · Bhrikutimandap Exhibition Hall, Kathmandu, Nepal
+17–19 January 2027 · BHRIKUTIMANDAP · KATHMANDU, NEPAL
 
 Dear ${name},
 
@@ -614,7 +614,7 @@ Your registration has been confirmed. Below are your accreditation details:
 • Pass Category: ${passType || "Trade Visitor Pass"}
 • Pass ID: ${passId}
 • Security Code: ${securityChecksum}
-${stallNumber ? `• Stall / Booth: ${stallNumber}\n` : ""}• Venue: Bhrikutimandap Exhibition Hall, Kathmandu
+${stallNumber ? `• Stall / Booth: ${stallNumber}\n` : ""}• Venue: BHRIKUTIMANDAP · KATHMANDU, NEPAL
 • Dates: 17–19 January 2027 (10:00 AM – 6:00 PM)
 
 Digital Pass Link: ${qrTargetUrl}

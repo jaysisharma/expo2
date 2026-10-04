@@ -109,10 +109,10 @@ export default function ContactPage() {
                       Expo Inquiries &amp; Stalls
                     </span>
                     <a
-                      href="mailto:info@nepalenergyexpo.com"
+                      href="mailto:info@himalayanenergyexpo.com"
                       className="text-sm font-bold text-slate-900 hover:text-emerald-600 transition-colors block mt-0.5"
                     >
-                      info@nepalenergyexpo.com
+                      info@himalayanenergyexpo.com
                     </a>
                     <div className="text-xs text-slate-500 mt-1">
                       <span className="font-medium text-slate-700">Event Solution:</span>{" "}
@@ -218,7 +218,7 @@ export default function ContactPage() {
                       </span>
                     </div>
                     <p className="text-sm font-bold text-slate-900 mt-0.5">
-                      Bhrikutimandap Exhibition Hall
+                      BHRIKUTIMANDAP &bull; KATHMANDU, NEPAL
                     </p>
                     <p className="text-xs text-slate-600 mt-0.5">
                       Exhibition Road, Kathmandu, Nepal • 17–19 January 2027
@@ -240,7 +240,7 @@ export default function ContactPage() {
                       Message Sent!
                     </h3>
                     <p className="text-sm text-slate-600 max-w-md mx-auto">
-                      Thank you for contacting us. Your inquiry has been sent to <strong className="text-emerald-700">info@nepalenergyexpo.com</strong> and our team will respond to your email shortly.
+                      Thank you for contacting us. Your inquiry has been sent to <strong className="text-emerald-700">info@himalayanenergyexpo.com</strong> and our team will respond to your email shortly.
                     </p>
                     <div className="pt-2">
                       <button
@@ -369,7 +369,7 @@ export default function ContactPage() {
                         {isSubmitting ? (
                           <div className="flex items-center gap-2">
                             <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                            <span>Sending to info@nepalenergyexpo.com...</span>
+                            <span>Submitting...</span>
                           </div>
                         ) : (
                           <>
@@ -378,9 +378,6 @@ export default function ContactPage() {
                           </>
                         )}
                       </button>
-                      <p className="text-[11px] text-slate-500 text-center mt-2 font-mono">
-                        Direct delivery to <span className="font-semibold text-slate-700">info@nepalenergyexpo.com</span>
-                      </p>
                     </div>
                   </form>
                 )}
@@ -444,7 +441,7 @@ export default function ContactPage() {
                     ? {
                         tag: "Primary Exhibition Venue",
                         tagClass: "bg-emerald-50 text-emerald-700 border-emerald-200",
-                        name: "Bhrikutimandap Exhibition Hall",
+                        name: "BHRIKUTIMANDAP · KATHMANDU, NEPAL",
                         subtitle: "Exhibition Road, Pradarshani Marg, Kathmandu 44600, Nepal",
                         dates: "17–19 January 2027 · Magh 3–5, 2083",
                         hours: "9:00 AM – 6:00 PM Daily",

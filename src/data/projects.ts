@@ -53,7 +53,7 @@ export const hydroProjectsData: HydroProject[] = [
     details: "Largest private Foreign Direct Investment (FDI) project by South Korean consortium & IFC/ADB, featuring advanced seismic engineering in deep Himalayan valleys.",
     turbineType: "3 x 72 MW Francis Turbines",
     headMeters: 343,
-    exportDestination: "Kathmandu Valley Central Load Dispatch Hub (220kV)",
+    exportDestination: "Kathmandu Valley Central Grid Control Hub (220kV)",
   },
   {
     id: "kali-gandaki-a",
@@ -89,7 +89,7 @@ export const hydroProjectsData: HydroProject[] = [
     details: "Strategic reservoir/storage plant on Seti River providing 6 hours of continuous peak power during high-demand winter dry months with 140m concrete gravity dam.",
     turbineType: "2 x 70 MW Francis Turbines",
     headMeters: 140,
-    exportDestination: "National Peaking Reserve Dispatch",
+    exportDestination: "National Peaking Reserve Grid",
   },
   {
     id: "budhi-gandaki",

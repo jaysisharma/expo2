@@ -10,28 +10,41 @@ import {
   Clock,
   ExternalLink,
 } from "lucide-react";
+import { NewsImage } from "@/components/news/NewsImage";
+import { getFirebaseNews } from "@/lib/firebaseDb";
 
 export const dynamic = "force-dynamic";
 
 async function getArticleBySlug(slug: string) {
-  // Check root data/adminData.json
+  // 1. Try Firebase Firestore first (Database)
+  try {
+    const fbNews = await getFirebaseNews();
+    if (Array.isArray(fbNews)) {
+      const found = fbNews.find((n: any) => n.slug === slug || n.id === slug);
+      if (found) return found;
+    }
+  } catch (err) {
+    console.warn("Firestore getArticleBySlug error:", err);
+  }
+
+  // 2. Check root data/adminData.json fallback
   try {
     const rootPath = path.join(process.cwd(), "data", "adminData.json");
     const raw = await fs.readFile(rootPath, "utf-8");
     const adminData = JSON.parse(raw);
     if (Array.isArray(adminData.news)) {
-      const found = adminData.news.find((n: any) => n.slug === slug);
+      const found = adminData.news.find((n: any) => n.slug === slug || n.id === slug);
       if (found) return found;
     }
   } catch {}
 
-  // Check src/data/adminData.json
+  // 3. Check src/data/adminData.json fallback
   try {
     const srcPath = path.join(process.cwd(), "src", "data", "adminData.json");
     const raw = await fs.readFile(srcPath, "utf-8");
     const adminData = JSON.parse(raw);
     if (Array.isArray(adminData.news)) {
-      const found = adminData.news.find((n: any) => n.slug === slug);
+      const found = adminData.news.find((n: any) => n.slug === slug || n.id === slug);
       if (found) return found;
     }
   } catch {}
@@ -41,6 +54,16 @@ async function getArticleBySlug(slug: string) {
 
 export async function generateStaticParams() {
   const slugs: { slug: string }[] = [];
+  try {
+    const fbNews = await getFirebaseNews();
+    if (Array.isArray(fbNews) && fbNews.length > 0) {
+      fbNews.forEach((n: any) => {
+        if (n.slug) slugs.push({ slug: n.slug });
+      });
+      return slugs;
+    }
+  } catch {}
+
   try {
     const rootPath = path.join(process.cwd(), "data", "adminData.json");
     const raw = await fs.readFile(rootPath, "utf-8");
@@ -138,12 +161,12 @@ export default async function SingleNewsPage({ params }: { params: Promise<{ slu
           {/* Featured Image */}
           {article.image && (
             <div className="relative h-72 sm:h-96 w-full rounded-2xl overflow-hidden shadow-xs border border-slate-200 bg-slate-100">
-              <Image
+              <NewsImage
                 src={article.image}
                 alt={article.title}
-                fill
                 className="object-cover"
                 priority
+                fallbackIconSize={48}
               />
             </div>
           )}

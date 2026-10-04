@@ -32,7 +32,7 @@ export default function VenuePage() {
             Exhibition Venue
           </h1>
           <p className="mt-3 text-sm sm:text-base text-emerald-100/75 max-w-xl">
-            Bhrikutimandap Exhibition Hall, Exhibition Road, Kathmandu, Nepal.
+            BHRIKUTIMANDAP · KATHMANDU, NEPAL
           </p>
         </div>
       </div>
@@ -66,7 +66,7 @@ export default function VenuePage() {
                   Official Expo Grounds
                 </span>
                 <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
-                  Bhrikutimandap Exhibition Hall
+                  BHRIKUTIMANDAP · KATHMANDU, NEPAL
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
                   Nepal&apos;s premier purpose-built exhibition arena located in central Kathmandu. Hosting 150+ international exhibitors, heavy hydropower machinery displays, and technical conference delegates.

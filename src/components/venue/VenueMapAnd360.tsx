@@ -33,7 +33,7 @@ export default function VenueMapAnd360() {
             </span>
           </h3>
           <p className="text-xs text-slate-500 mt-0.5">
-            Explore Bhrikutimandap Exhibition Hall in interactive 360° view or pinned 2D map.
+            Explore BHRIKUTIMANDAP · KATHMANDU, NEPAL in interactive 360° view or pinned 2D map.
           </p>
         </div>
 

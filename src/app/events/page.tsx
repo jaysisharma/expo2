@@ -114,7 +114,7 @@ export default function EventsPage() {
                 Expo Highlights & Experience
               </h1>
               <p className="mt-3 text-sm sm:text-base text-emerald-100/75 max-w-xl">
-                Bhrikutimandap Exhibition Hall, Kathmandu · 17–19 January 2027
+                BHRIKUTIMANDAP · KATHMANDU, NEPAL · 17–19 January 2027
               </p>
 
               {/* Quick Metrics */}
@@ -139,7 +139,7 @@ export default function EventsPage() {
                 href="/register"
                 className="px-5 py-2.5 rounded-lg bg-[#007A5E] hover:bg-[#005C42] text-white text-xs font-bold flex items-center gap-2 transition-colors shadow-md"
               >
-                <span>Register Free Pass</span>
+                <span>Register</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
               <Link

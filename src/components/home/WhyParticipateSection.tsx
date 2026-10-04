@@ -139,7 +139,7 @@ export function WhyParticipateSection({ className = '' }: { className?: string }
                   href="/register"
                   className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#0F5A50] hover:bg-[#0B443C] text-white text-xs sm:text-sm font-semibold tracking-wide transition-all shadow-sm group"
                 >
-                  <span>REGISTER FOR FREE PASS</span>
+                  <span>REGISTER</span>
                   <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
                 </Link>
 

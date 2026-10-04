@@ -1051,7 +1051,7 @@ export default function StallBookingWizard() {
                   </div>
                   <div className="flex items-center gap-1 text-emerald-800 font-mono">
                     <Mail className="w-3 h-3 text-emerald-600 shrink-0" />
-                    <span>info@nepalenergyexpo.com</span>
+                    <span>info@himalayanenergyexpo.com</span>
                   </div>
                 </div>
               </div>

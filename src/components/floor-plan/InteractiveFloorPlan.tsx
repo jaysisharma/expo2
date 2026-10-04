@@ -77,12 +77,16 @@ export default function InteractiveFloorPlan({
   const [hoveredStall, setHoveredStall] = useState<any | null>(null);
   const [zoomLevel, setZoomLevel] = useState<number>(initialZoom);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [boothOverrides, setBoothOverrides] = useState<Record<string, any>>({});
 
-  // Fetch latest saved custom floor plan from API
+  // Fetch latest saved custom floor plan and overrides from API
   useEffect(() => {
     async function loadFloorPlan() {
       try {
-        const res = await fetch("/api/floor-plan/save");
+        const [res, adminRes] = await Promise.all([
+          fetch("/api/floor-plan/save"),
+          fetch("/api/admin/data").catch(() => null),
+        ]);
         const json = await res.json();
         if (json.success && json.data) {
           if (Array.isArray(json.data.elements) && json.data.elements.length > 0) {
@@ -95,6 +99,12 @@ export default function InteractiveFloorPlan({
           if (json.data.showBgImage !== undefined) setShowBgImage(json.data.showBgImage);
           if (json.data.canvasWidth) setCanvasWidth(Number(json.data.canvasWidth) || 1200);
           if (json.data.canvasHeight) setCanvasHeight(Number(json.data.canvasHeight) || 850);
+        }
+        if (adminRes && adminRes.ok) {
+          const adminJson = await adminRes.json();
+          if (adminJson?.data?.boothOverrides) {
+            setBoothOverrides(adminJson.data.boothOverrides);
+          }
         }
       } catch (err) {
         console.warn("Using local fallback custom floor plan:", err);
@@ -141,7 +151,10 @@ export default function InteractiveFloorPlan({
   };
 
   const toggleStall = (stall: any) => {
-    if (stall.status === "Booked" || stall.category === "SEMINAR HALL") return;
+    const stallNumber = stall.number || stall.id;
+    const override = boothOverrides[stallNumber] || (stall.id && boothOverrides[stall.id]);
+    const effectiveStatus = override?.status || stall.status;
+    if (effectiveStatus === "Booked" || stall.category === "SEMINAR HALL") return;
 
     if (onSelectStall) {
       onSelectStall(stall);
@@ -550,10 +563,12 @@ export default function InteractiveFloorPlan({
             {/* Render All Custom Drawn Stalls */}
             {stallElements.map((el) => {
               const stallNumber = el.number || el.id;
+              const override = boothOverrides[stallNumber] || (el.id && boothOverrides[el.id]);
+              const effectiveStatus = override?.status || el.status;
               const isSelected = selectedStalls.some((s) => s.toLowerCase() === stallNumber.toLowerCase() || (el.id && s.toLowerCase() === el.id.toLowerCase()));
               const isHovered = hoveredStall?.id === el.id;
-              const isBooked = el.status === "Booked";
-              const isReserved = el.status === "Reserved";
+              const isBooked = effectiveStatus === "Booked";
+              const isReserved = effectiveStatus === "Reserved";
 
               const q = searchQuery.toLowerCase().trim();
               const isMatchSearch =

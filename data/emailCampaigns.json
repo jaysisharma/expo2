@@ -1,0 +1,63 @@
+[
+  {
+    "id": "CMP-1790932712602",
+    "title": "Welcome to Himalayan Green Energy Expo 2027",
+    "subject": "Welcome to Himalayan Green Energy Expo 2027",
+    "templateType": "announcement",
+    "totalRecipients": 2,
+    "successful": 2,
+    "failed": 0,
+    "engine": "resend",
+    "sentAt": "2026-10-02T09:18:32.602Z",
+    "sender": "info@himalayanenergyexpo.com"
+  },
+  {
+    "id": "CMP-1790842910731",
+    "title": "Important Announcement: Himalayan Green Energy Expo 2027",
+    "subject": "Important Announcement: Himalayan Green Energy Expo 2027",
+    "templateType": "announcement",
+    "totalRecipients": 2,
+    "successful": 2,
+    "failed": 0,
+    "engine": "resend",
+    "sentAt": "2026-10-01T08:21:50.731Z",
+    "sender": "info@himalayanenergyexpo.com"
+  },
+  {
+    "id": "CMP-1790842692399",
+    "title": "Safeguard Test",
+    "subject": "Safeguard Test",
+    "templateType": "announcement",
+    "totalRecipients": 1,
+    "successful": 1,
+    "failed": 1,
+    "engine": "resend",
+    "sentAt": "2026-10-01T08:18:12.399Z",
+    "sender": "info@himalayanenergyexpo.com"
+  },
+  {
+    "id": "CMP-1790841573358",
+    "title": "System Verification Test",
+    "subject": "System Verification Test",
+    "templateType": "announcement",
+    "totalRecipients": 1,
+    "successful": 1,
+    "failed": 0,
+    "engine": "resend",
+    "notice": "",
+    "sentAt": "2026-10-01T07:59:33.358Z",
+    "sender": "onboarding@resend.dev"
+  },
+  {
+    "id": "CMP-1790841166896",
+    "title": "Important Announcement: Himalayan Green Energy Expo 2027",
+    "subject": "Important Announcement: Himalayan Green Energy Expo 2027",
+    "templateType": "announcement",
+    "totalRecipients": 2,
+    "successful": 0,
+    "failed": 2,
+    "engine": "resend",
+    "sentAt": "2026-10-01T07:52:46.896Z",
+    "sender": "onboarding@resend.dev"
+  }
+]

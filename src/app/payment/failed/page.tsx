@@ -103,7 +103,7 @@ function PaymentFailedContent() {
               </span>
               <span className="flex items-center gap-1.5">
                 <Mail className="w-3.5 h-3.5 text-[#10B981]" />
-                <span>info@nepalenergyexpo.com</span>
+                <span>info@himalayanenergyexpo.com</span>
               </span>
             </div>
           </div>

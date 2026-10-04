@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { NewsArticle } from "@/lib/types";
 import { ImageUploadField } from "@/components/admin/ImageUploadField";
+import { NewsImage } from "@/components/news/NewsImage";
 
 export default function AdminNewsPage() {
   const [articles, setArticles] = useState<NewsArticle[]>([]);
@@ -574,19 +575,12 @@ export default function AdminNewsPage() {
                       <td className="py-3 px-3">
                         <div className="flex items-start gap-3">
                           <div className="relative w-12 h-12 rounded-lg bg-slate-100 overflow-hidden shrink-0 border border-slate-200">
-                            {article.image ? (
-                              <Image
-                                src={article.image}
-                                alt={article.title}
-                                fill
-                                className="object-cover"
-                                sizes="48px"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-slate-400">
-                                <Newspaper className="w-5 h-5" />
-                              </div>
-                            )}
+                            <NewsImage
+                              src={article.image}
+                              alt={article.title}
+                              sizes="48px"
+                              fallbackIconSize={20}
+                            />
                           </div>
                           <div className="min-w-0 flex-1">
                             <h4 className="font-semibold text-slate-900 leading-snug line-clamp-1 hover:text-[#218A59] transition-colors">
@@ -619,7 +613,7 @@ export default function AdminNewsPage() {
                       {/* Source Outlet */}
                       <td className="py-3 px-3 whitespace-nowrap">
                         <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200/60 font-medium text-[11px]">
-                          {article.sourceName || "Official Dispatch"}
+                          {article.sourceName || "Official Press"}
                         </span>
                       </td>
 
@@ -719,7 +713,7 @@ export default function AdminNewsPage() {
 
                     <div className="flex items-center gap-1.5">
                       <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200/60 text-[10px] font-medium">
-                        {article.sourceName || "Official Dispatch"}
+                        {article.sourceName || "Official Press"}
                       </span>
                       <button
                         onClick={() => handleToggleFeatured(article.id)}
@@ -736,19 +730,12 @@ export default function AdminNewsPage() {
                   {/* Thumbnail & Headline */}
                   <div className="flex gap-3 items-start">
                     <div className="relative w-16 h-16 rounded-lg bg-slate-100 overflow-hidden shrink-0 border border-slate-200">
-                      {article.image ? (
-                        <Image
-                          src={article.image}
-                          alt={article.title}
-                          fill
-                          className="object-cover"
-                          sizes="64px"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-slate-400">
-                          <Newspaper className="w-6 h-6" />
-                        </div>
-                      )}
+                      <NewsImage
+                        src={article.image}
+                        alt={article.title}
+                        sizes="64px"
+                        fallbackIconSize={24}
+                      />
                     </div>
                     <div className="min-w-0 flex-1">
                       <h4 className="font-semibold text-slate-900 text-xs leading-snug line-clamp-2">

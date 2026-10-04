@@ -283,10 +283,10 @@ export default function GalaDinnerPage() {
               +977-9703606348
             </a>
             <a
-              href="mailto:info@nepalenergyexpo.com"
+              href="mailto:info@himalayanenergyexpo.com"
               className="px-4 py-2 rounded-xl bg-[#007A5E] hover:bg-[#005C42] text-white font-bold text-xs transition-colors"
             >
-              info@nepalenergyexpo.com
+              info@himalayanenergyexpo.com
             </a>
           </div>
         </div>

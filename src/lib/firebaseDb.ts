@@ -19,6 +19,9 @@ export const COLLECTIONS = {
   INQUIRIES: "inquiries",
   SETTINGS: "settings",
   BADGE_TEMPLATES: "badge_templates",
+  EMAIL_CAMPAIGNS: "email_campaigns",
+  NEWS: "news",
+  PARTNERS: "current_partners",
 };
 
 // ----------------- REGISTRATIONS -----------------
@@ -291,3 +294,97 @@ export async function saveFirebaseMembers(members: any[]): Promise<boolean> {
     return false;
   }
 }
+
+// ----------------- EMAIL CAMPAIGNS -----------------
+export async function getFirebaseEmailCampaigns(): Promise<any[] | null> {
+  try {
+    const q = query(
+      collection(db, COLLECTIONS.EMAIL_CAMPAIGNS),
+      orderBy("sentAt", "desc"),
+      limit(50)
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  } catch (error) {
+    console.warn("Firestore getFirebaseEmailCampaigns error:", error);
+    return null;
+  }
+}
+
+export async function addFirebaseEmailCampaign(campaign: any): Promise<boolean> {
+  try {
+    const id = campaign.id || `CMP-${Date.now()}`;
+    const ref = doc(db, COLLECTIONS.EMAIL_CAMPAIGNS, id);
+    await setDoc(ref, {
+      ...campaign,
+      id,
+      sentAt: campaign.sentAt || new Date().toISOString(),
+    });
+    return true;
+  } catch (error) {
+    console.warn("Firestore addFirebaseEmailCampaign error:", error);
+    return false;
+  }
+}
+
+// ----------------- NEWS -----------------
+export async function getFirebaseNews(): Promise<any[] | null> {
+  try {
+    const ref = doc(db, COLLECTIONS.NEWS, "articles_config");
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+      const data = snap.data();
+      return Array.isArray(data.articles) ? data.articles : [];
+    }
+    return null;
+  } catch (error) {
+    console.warn("Firestore getFirebaseNews error:", error);
+    return null;
+  }
+}
+
+export async function saveFirebaseNews(articles: any[]): Promise<boolean> {
+  try {
+    const ref = doc(db, COLLECTIONS.NEWS, "articles_config");
+    await setDoc(ref, {
+      articles,
+      updatedAt: new Date().toISOString(),
+    });
+    return true;
+  } catch (error) {
+    console.warn("Firestore saveFirebaseNews error:", error);
+    return false;
+  }
+}
+
+// ----------------- CURRENT PARTNERS (2027 Edition) -----------------
+export async function getFirebaseCurrentPartners(): Promise<any[] | null> {
+  try {
+    const ref = doc(db, COLLECTIONS.PARTNERS, "current_config");
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+      const data = snap.data();
+      return Array.isArray(data.partners) ? data.partners : [];
+    }
+    return null;
+  } catch (error) {
+    console.warn("Firestore getFirebaseCurrentPartners error:", error);
+    return null;
+  }
+}
+
+export async function saveFirebaseCurrentPartners(partners: any[]): Promise<boolean> {
+  try {
+    const ref = doc(db, COLLECTIONS.PARTNERS, "current_config");
+    await setDoc(ref, {
+      partners,
+      updatedAt: new Date().toISOString(),
+    });
+    return true;
+  } catch (error) {
+    console.warn("Firestore saveFirebaseCurrentPartners error:", error);
+    return false;
+  }
+}
+
+

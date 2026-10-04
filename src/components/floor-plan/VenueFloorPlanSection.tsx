@@ -51,7 +51,7 @@ export default function VenueFloorPlanSection() {
             <div className="flex items-center gap-4 text-xs font-mono font-bold text-slate-700">
               <span className="flex items-center gap-1.5">
                 <MapPin className="w-4 h-4 text-[#10B981]" />
-                Bhrikutimandap Exhibition Hall
+                BHRIKUTIMANDAP &bull; KATHMANDU, NEPAL
               </span>
               <span className="text-slate-300">|</span>
               <span className="flex items-center gap-1.5">

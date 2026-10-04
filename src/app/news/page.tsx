@@ -15,6 +15,7 @@ import {
   Loader2,
   X,
 } from "lucide-react";
+import { NewsImage } from "@/components/news/NewsImage";
 
 function cleanHeadline(title: string, sourceName?: string): string {
   if (!title) return "";
@@ -128,13 +129,13 @@ export default function NewsPage() {
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-900/60 border border-emerald-500/30 text-emerald-300 text-[11px] font-mono uppercase tracking-wider mb-3">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              Official Media Hub &amp; Press Dispatches
+              Official Media Hub &amp; Press Releases
             </div>
             <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-white font-inter-tight">
               News &amp; Press Coverage
             </h1>
             <p className="mt-3 text-sm sm:text-base text-emerald-100/75 max-w-2xl font-normal leading-relaxed">
-              National and international media dispatches, ministerial announcements, and editorial coverage of the Himalayan Green Energy Expo 2027.
+              National and international media coverage, ministerial announcements, and editorial reporting on the Himalayan Green Energy Expo 2027.
             </p>
           </div>
         </div>
@@ -179,7 +180,7 @@ export default function NewsPage() {
           {isLoading ? (
             <div className="py-24 text-center space-y-3">
               <Loader2 className="w-8 h-8 animate-spin text-[#007A5E] mx-auto" />
-              <p className="text-xs text-slate-500 font-mono">Loading published dispatches...</p>
+              <p className="text-xs text-slate-500 font-mono">Loading published articles...</p>
             </div>
           ) : filteredNews.length === 0 ? (
             /* Empty State */
@@ -224,26 +225,20 @@ export default function NewsPage() {
 
                   {/* Image Column */}
                   <div className="lg:col-span-7 relative min-h-[260px] sm:min-h-[340px] lg:h-full w-full overflow-hidden bg-slate-900">
-                    {leadArticle.image ? (
-                      <Image
-                        src={leadArticle.image}
-                        alt={leadArticle.title}
-                        fill
-                        unoptimized
-                        className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-slate-500 bg-slate-800">
-                        <Newspaper className="w-12 h-12 opacity-40" />
-                      </div>
-                    )}
+                    <NewsImage
+                      src={leadArticle.image}
+                      alt={leadArticle.title}
+                      priority
+                      className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                      fallbackIconSize={48}
+                    />
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
 
                     {/* Top Floating Badge */}
                     <div className="absolute top-4 left-4 flex items-center gap-2">
                       <span className="px-3.5 py-1.5 rounded-full bg-[#005C42] text-white text-[10.5px] font-mono font-bold tracking-wider uppercase shadow-md flex items-center gap-1.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                        <span>FEATURED DISPATCH</span>
+                        <span>FEATURED ARTICLE</span>
                       </span>
                     </div>
                   </div>
@@ -311,19 +306,12 @@ export default function NewsPage() {
                       <div>
                         {/* Thumbnail Image Container */}
                         <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-900">
-                          {article.image ? (
-                            <Image
-                              src={article.image}
-                              alt={article.title}
-                              fill
-                              unoptimized
-                              className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-slate-500 bg-slate-800">
-                              <Newspaper className="w-10 h-10 opacity-40" />
-                            </div>
-                          )}
+                          <NewsImage
+                            src={article.image}
+                            alt={article.title}
+                            className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                            fallbackIconSize={40}
+                          />
                           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/50 to-transparent" />
 
                           {/* Top Right External Arrow Indicator */}
@@ -338,7 +326,7 @@ export default function NewsPage() {
                           <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-800 mb-1">
                             <Globe className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                             <span className="truncate max-w-[200px]">
-                              {article.sourceName || "Official Dispatch"}
+                              {article.sourceName || "Official Press"}
                             </span>
                           </div>
 

@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import fs from "fs/promises";
 import path from "path";
+import {
+  getFirebaseCurrentPartners,
+  saveFirebaseCurrentPartners,
+} from "@/lib/firebaseDb";
 
 export const dynamic = "force-dynamic";
 
@@ -18,39 +22,61 @@ export interface CurrentPartner {
 const ROOT_ADMIN_DATA_PATH = path.join(process.cwd(), "data", "adminData.json");
 const SRC_ADMIN_DATA_PATH = path.join(process.cwd(), "src", "data", "adminData.json");
 
-async function readAdminData(): Promise<any> {
+async function readAdminDataFallback(): Promise<CurrentPartner[]> {
   try {
     const raw = await fs.readFile(ROOT_ADMIN_DATA_PATH, "utf-8");
-    return JSON.parse(raw);
+    const json = JSON.parse(raw);
+    return Array.isArray(json.currentPartners) ? json.currentPartners : [];
   } catch {
     try {
       const raw = await fs.readFile(SRC_ADMIN_DATA_PATH, "utf-8");
-      return JSON.parse(raw);
+      const json = JSON.parse(raw);
+      return Array.isArray(json.currentPartners) ? json.currentPartners : [];
     } catch {
-      return { currentPartners: [] };
+      return [];
     }
   }
 }
 
-async function writeAdminData(data: any): Promise<void> {
-  const content = JSON.stringify(data, null, 2);
+async function writeAdminDataFallback(partners: CurrentPartner[]): Promise<void> {
+  const syncFile = async (filePath: string) => {
+    try {
+      const raw = await fs.readFile(filePath, "utf-8");
+      const json = JSON.parse(raw);
+      json.currentPartners = partners;
+      await fs.writeFile(filePath, JSON.stringify(json, null, 2), "utf-8");
+    } catch {}
+  };
+  await Promise.all([syncFile(ROOT_ADMIN_DATA_PATH), syncFile(SRC_ADMIN_DATA_PATH)]);
+}
+
+async function getPartnersList(): Promise<CurrentPartner[]> {
   try {
-    await fs.mkdir(path.dirname(ROOT_ADMIN_DATA_PATH), { recursive: true });
-    await fs.writeFile(ROOT_ADMIN_DATA_PATH, content, "utf-8");
-  } catch {}
-  try {
-    await fs.mkdir(path.dirname(SRC_ADMIN_DATA_PATH), { recursive: true });
-    await fs.writeFile(SRC_ADMIN_DATA_PATH, content, "utf-8");
-  } catch {}
+    const fb = await getFirebaseCurrentPartners();
+    if (fb !== null) {
+      return fb;
+    }
+  } catch (err) {
+    console.warn("Firestore getPartnersList error:", err);
+  }
+  return await readAdminDataFallback();
+}
+
+async function persistPartners(partners: CurrentPartner[]): Promise<void> {
+  await Promise.all([
+    saveFirebaseCurrentPartners(partners).catch((e) =>
+      console.warn("Firestore saveFirebaseCurrentPartners error:", e)
+    ),
+    writeAdminDataFallback(partners),
+  ]);
 }
 
 export async function GET(req: Request) {
   try {
     const url = new URL(req.url);
     const includeInactive = url.searchParams.get("all") === "true";
-    const data = await readAdminData();
-    const allPartners: CurrentPartner[] = Array.isArray(data.currentPartners) ? data.currentPartners : [];
-    
+    const allPartners = await getPartnersList();
+
     // For admin (?all=true), return all partners. For public, only return active partners.
     const partners = includeInactive
       ? allPartners.sort((a, b) => (a.order || 0) - (b.order || 0))
@@ -64,6 +90,7 @@ export async function GET(req: Request) {
         partners,
         totalActive: allPartners.filter((p) => p.active !== false).length,
         totalAll: allPartners.length,
+        source: "firestore",
       },
       {
         headers: {
@@ -83,17 +110,16 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { action, payload } = body;
-    const data = await readAdminData();
-    data.currentPartners = Array.isArray(data.currentPartners) ? data.currentPartners : [];
+    let partners = await getPartnersList();
 
     switch (action) {
       case "save_all": {
-        data.currentPartners = Array.isArray(payload?.partners) ? payload.partners : [];
-        await writeAdminData(data);
+        partners = Array.isArray(payload?.partners) ? payload.partners : [];
+        await persistPartners(partners);
         return NextResponse.json({
           success: true,
-          message: "All 2027 partners saved successfully",
-          partners: data.currentPartners,
+          message: "All 2027 partners saved successfully to database",
+          partners,
         });
       }
 
@@ -104,25 +130,25 @@ export async function POST(req: Request) {
           category: payload.category?.trim() || "Official Partner",
           logo: payload.logo || "/images/logo.webp",
           url: payload.url?.trim() || "",
-          order: typeof payload.order === "number" ? payload.order : data.currentPartners.length + 1,
+          order: typeof payload.order === "number" ? payload.order : partners.length + 1,
           active: payload.active !== undefined ? Boolean(payload.active) : true,
           addedAt: new Date().toISOString(),
         };
 
-        data.currentPartners.push(newPartner);
-        await writeAdminData(data);
+        partners.push(newPartner);
+        await persistPartners(partners);
         return NextResponse.json({
           success: true,
-          message: `Added partner "${newPartner.name}"`,
+          message: `Added partner "${newPartner.name}" to database`,
           partner: newPartner,
-          partners: data.currentPartners,
+          partners,
         });
       }
 
       case "update": {
         const { id, ...updates } = payload;
         let found = false;
-        data.currentPartners = data.currentPartners.map((p: CurrentPartner) => {
+        partners = partners.map((p: CurrentPartner) => {
           if (p.id === id) {
             found = true;
             return { ...p, ...updates };
@@ -134,35 +160,35 @@ export async function POST(req: Request) {
           return NextResponse.json({ success: false, message: "Partner not found" }, { status: 404 });
         }
 
-        await writeAdminData(data);
+        await persistPartners(partners);
         return NextResponse.json({
           success: true,
-          message: "Partner updated",
-          partners: data.currentPartners,
+          message: "Partner updated in database",
+          partners,
         });
       }
 
       case "delete": {
         const { id } = payload;
-        const initialLen = data.currentPartners.length;
-        data.currentPartners = data.currentPartners.filter((p: CurrentPartner) => p.id !== id);
+        const initialLen = partners.length;
+        partners = partners.filter((p: CurrentPartner) => p.id !== id);
 
-        if (data.currentPartners.length === initialLen) {
+        if (partners.length === initialLen) {
           return NextResponse.json({ success: false, message: "Partner not found" }, { status: 404 });
         }
 
-        await writeAdminData(data);
+        await persistPartners(partners);
         return NextResponse.json({
           success: true,
-          message: "Partner removed successfully",
-          partners: data.currentPartners,
+          message: "Partner removed successfully from database",
+          partners,
         });
       }
 
       case "toggle_active": {
         const { id } = payload;
         let updatedState = true;
-        data.currentPartners = data.currentPartners.map((p: CurrentPartner) => {
+        partners = partners.map((p: CurrentPartner) => {
           if (p.id === id) {
             updatedState = !p.active;
             return { ...p, active: updatedState };
@@ -170,12 +196,12 @@ export async function POST(req: Request) {
           return p;
         });
 
-        await writeAdminData(data);
+        await persistPartners(partners);
         return NextResponse.json({
           success: true,
           message: `Partner is now ${updatedState ? "visible" : "hidden"} on the landing page`,
           active: updatedState,
-          partners: data.currentPartners,
+          partners,
         });
       }
 
@@ -184,7 +210,7 @@ export async function POST(req: Request) {
     }
   } catch (error: any) {
     return NextResponse.json(
-      { success: false, error: error.message || "Failed to update partners" },
+      { success: false, error: error.message || "Failed to update partners in database" },
       { status: 500 }
     );
   }

@@ -162,7 +162,7 @@ export function ConversionCTASection() {
                     href="/register"
                     className="w-full py-3.5 px-6 rounded-full bg-white hover:bg-slate-100 text-slate-900 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-md active:scale-98"
                   >
-                    <span>REGISTER FOR FREE PASS</span>
+                    <span>REGISTER</span>
                     <ArrowRight className="w-4 h-4" />
                   </Link>
                 </div>

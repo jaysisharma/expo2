@@ -31,7 +31,7 @@ export const CONTACT_DETAILS = {
 
   // Official Email Contacts
   emails: {
-    expo: 'info@nepalenergyexpo.com',
+    expo: 'info@himalayanenergyexpo.com',
     eventSolution: 'info@eventsolutionnepal.com.np',
     ippanPrimary: 'info@ippan.org.np',
     ippanSecondary: 'ippan2001@gmail.com',
@@ -40,8 +40,8 @@ export const CONTACT_DETAILS = {
 
   // Venue & Dates
   venue: {
-    name: 'Bhrikuti Mandap (Bhrikutimandap Exhibition Hall)',
-    shortName: 'Bhrikuti Mandap',
+    name: 'BHRIKUTIMANDAP · KATHMANDU, NEPAL',
+    shortName: 'Bhrikutimandap',
     address: 'Exhibition Road, Kathmandu, Nepal',
     city: 'Kathmandu, Nepal',
     dates: '17–19 January 2027',

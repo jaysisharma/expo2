@@ -1,231 +1,193 @@
 {
   "registrations": [
     {
-      "id": "GALA-2027-817220",
-      "name": "Jaysi Sharma",
-      "email": "jaisysharma9817@gmail.com",
-      "phone": "+9779814817571",
-      "organization": "Awaso",
-      "jobTitle": "Delegate",
-      "stallNumber": "",
+      "id": "HHE27-819649",
+      "passType": "Trade Visitor (Free)",
+      "email": "sonitmagar30@gmail.com",
+      "phone": "9819579745",
+      "registeredAt": "2026-10-01T12:11:59.596Z",
       "country": "Nepal",
-      "passType": "Networking Dinner Pass (Royal Tulip) - National [1 Pax]",
-      "ticketDetails": {
-        "category": "Networking Dinner",
-        "venue": "Royal Tulip, Kathmandu",
-        "date": "Saturday, 17 January 2027",
-        "time": "6:00 PM NPT onwards",
-        "passTier": "national",
-        "quantity": 1,
-        "unitPriceNPR": 6000,
-        "totalAmountNPR": 6000,
-        "unitPriceUSD": 45,
-        "totalAmountUSD": 45,
-        "dietary": "Standard",
-        "specialRequests": ""
-      },
-      "paymentMethod": "khalti",
-      "paymentStatus": "PAID",
       "checkedIn": false,
-      "registeredAt": "2026-09-28T07:32:15.744Z",
-      "status": "Confirmed",
-      "pidx": "KHALTI_DEV_1790580735747_05ncge",
-      "transactionId": "TXN_1790580735747",
-      "paidAt": "2026-09-28T07:32:16.364Z"
+      "organization": "event solutioN ",
+      "name": "Soni thapa magar ",
+      "jobTitle": "Marketting ",
+      "interests": [
+        "Hydropower & Turbines",
+        "Cross-Border Energy Trade"
+      ],
+      "stallNumber": ""
     },
     {
-      "id": "HHE27-236435",
-      "name": "Jaysi Sharma",
-      "email": "jaisysharma9817@gmail.com",
-      "phone": "+9779814817571",
-      "organization": "Awaso",
-      "jobTitle": "",
-      "stallNumber": "",
-      "country": "Nepal",
+      "id": "HHE27-932110",
       "passType": "Trade Visitor (Free)",
       "interests": [
         "Hydropower & Turbines",
         "Cross-Border Energy Trade"
       ],
+      "organization": "event ",
+      "phone": "9808326225",
+      "name": "Luniva ",
+      "email": "lunivaj4@gmail.com",
+      "stallNumber": "",
+      "country": "Nepal",
       "checkedIn": false,
-      "registeredAt": "2026-09-28T04:15:51.918Z"
+      "jobTitle": "ceo",
+      "registeredAt": "2026-10-01T12:09:51.709Z"
+    },
+    {
+      "id": "HHE27-256180",
+      "stallNumber": "",
+      "passType": "Trade Visitor (Free)",
+      "registeredAt": "2026-09-30T04:17:34.450Z",
+      "interests": [
+        "Hydropower & Turbines",
+        "Cross-Border Energy Trade"
+      ],
+      "name": "bishal Prajapati",
+      "country": "Nepal",
+      "email": "eventsolutionnepal@gmail.com",
+      "phone": "9861713459",
+      "checkedIn": false,
+      "organization": "Event Solution",
+      "jobTitle": "Chief Event officer"
+    },
+    {
+      "id": "HHE27-575002",
+      "passType": "Trade Visitor (Free)",
+      "phone": "9851119455",
+      "country": "Nepal",
+      "stallNumber": "",
+      "checkedIn": true,
+      "name": "Nabin Bhatta",
+      "jobTitle": "md",
+      "interests": [
+        "Hydropower & Turbines",
+        "Cross-Border Energy Trade"
+      ],
+      "organization": "EVENT SOLUTION PVT.LTD",
+      "email": "nabin.eventsolution@gmail.com",
+      "registeredAt": "2026-09-29T10:20:42.591Z",
+      "updatedAt": "2026-09-29T10:23:40.317Z"
+    },
+    {
+      "id": "HHE27-560985",
+      "interests": [
+        "Hydropower & Turbines",
+        "Cross-Border Energy Trade"
+      ],
+      "passType": "Trade Visitor (Free)",
+      "organization": "EVENT ",
+      "phone": "9708770259",
+      "country": "Nepal",
+      "name": "prashaya shrestha",
+      "jobTitle": "ceo",
+      "checkedIn": true,
+      "email": "prashaya774@gmail.com",
+      "stallNumber": "",
+      "updatedAt": "2026-09-29T09:32:37.092Z",
+      "registeredAt": "2026-09-29T09:30:30.280Z"
+    },
+    {
+      "id": "HHE27-424091",
+      "country": "Nepal",
+      "checkedIn": true,
+      "stallNumber": "",
+      "phone": "+9779814817571",
+      "interests": [
+        "Hydropower & Turbines",
+        "Cross-Border Energy Trade"
+      ],
+      "registeredAt": "2026-09-29T09:24:31.479Z",
+      "passType": "Trade Visitor (Free)",
+      "organization": "Awaso",
+      "updatedAt": "2026-09-29T09:24:51.746Z",
+      "email": "jaisysharma9817@gmail.com",
+      "jobTitle": "CEO",
+      "name": "Jaysi Sharma"
+    },
+    {
+      "id": "HHE27-918019",
+      "country": "Nepal",
+      "stallNumber": "",
+      "organization": "TradePact",
+      "interests": [
+        "Hydropower & Turbines",
+        "Cross-Border Energy Trade"
+      ],
+      "jobTitle": "App developer",
+      "phone": "+9779814817571",
+      "email": "jaysisharma@gmail.com",
+      "checkedIn": false,
+      "registeredAt": "2026-09-29T09:18:44.882Z",
+      "passType": "Trade Visitor (Free)",
+      "name": "Jaysi Sharma"
     }
   ],
   "inquiries": [
     {
-      "id": "INQ-GALA-GALA-2027-817220",
+      "id": "INQ-MUQQYBHC-RG7I",
       "name": "Jaysi Sharma",
       "email": "jaisysharma9817@gmail.com",
       "phone": "+9779814817571",
-      "company": "Awaso",
-      "subject": "Networking Dinner Reservation [1x NATIONAL] - KHALTI",
-      "message": "Order: GALA-2027-817220. Pass: Networking Dinner Pass (Royal Tulip) - National [1 Pax]. Quantity: 1. Total: NPR 6,000 (USD 45). Dietary: Standard. Payment: KHALTI.",
-      "stallInterest": "Networking Dinner (Royal Tulip)",
+      "company": "",
+      "subject": "dsfgh",
+      "message": "asdfghjkl;",
+      "stallInterest": "",
       "status": "New",
-      "submittedAt": "2026-09-28T07:32:15.744Z"
+      "submittedAt": "2026-10-02T09:14:31.968Z"
+    },
+    {
+      "id": "INQ-MUQQ6GZU-T1CO",
+      "name": "Jaysi Sharma",
+      "email": "jaisysharma9817@gmail.com",
+      "phone": "+9779814817571",
+      "company": "",
+      "subject": "General Inquiry",
+      "message": "asdfgh",
+      "stallInterest": "",
+      "status": "New",
+      "submittedAt": "2026-10-02T08:52:52.746Z"
+    },
+    {
+      "id": "INQ-MUQPN12B-N9FV",
+      "name": "Jaysi Sharma",
+      "email": "jaisysharma9817@gmail.com",
+      "phone": "+9779814817571",
+      "company": "",
+      "subject": "dfsdgfh",
+      "message": "dfsdgfh",
+      "stallInterest": "",
+      "status": "New",
+      "submittedAt": "2026-10-02T08:37:45.635Z"
     }
   ],
-  "boothOverrides": {
-    "C1": {
-      "status": "Booked",
-      "exhibitorName": "Voith Hydro International",
-      "bookingRef": "HHE26-STALL-TEST99",
-      "updatedAt": "2026-09-17T00:36:46.742Z"
-    },
-    "C2": {
-      "status": "Booked",
-      "exhibitorName": "Andritz Hydro GmbH",
-      "bookingRef": "HHE26-STALL-FONE88",
-      "updatedAt": "2026-09-17T00:37:12.862Z"
-    }
-  },
+  "boothOverrides": {},
   "settings": {
     "eventName": "Himalayan Green Energy Expo Nepal 2027",
-    "eventDates": "Magh 3 – 5 · 17–19 Jan 2027",
-    "venue": "Bhrikutimandap Exhibition Hall, Kathmandu",
+    "updatedAt": "2026-10-02T08:22:31.826Z",
     "registrationsOpen": true,
     "stallBookingsOpen": true,
-    "contactEmail": "expo@ippan.org.np",
-    "contactPhone": "+977-1-4412345",
-    "currencyRateUSD_NPR": 153,
-    "updatedAt": "2026-09-28T04:18:10.636Z"
+    "currencyRateUSD_NPR": 154,
+    "venue": "BHRIKUTIMANDAP · KATHMANDU, NEPAL",
+    "eventDates": "Magh 3 – 5 · 17–19 Jan 2027"
   },
-  "stallBookings": [
-    {
-      "id": "HHE26-STALL-FONE88",
-      "stalls": [
-        "C2"
-      ],
-      "amountNPR": 875000,
-      "amountUSD": 6500,
-      "company": "Andritz Hydro GmbH",
-      "contactPerson": "Johann Meyer",
-      "email": "johann@andritz.com",
-      "phone": "+977 9801234568",
-      "country": "Austria",
-      "fasciaName": "Andritz Hydro GmbH",
-      "boothType": "Shell Scheme",
-      "powerOption": "Standard 15A Included",
-      "industryCategory": "Turbines & Electro-Mechanical",
-      "specialRequirements": "",
-      "paymentMethod": "fonepay",
-      "paymentStatus": "PAID",
-      "bookingStatus": "Confirmed",
-      "createdAt": "2026-09-17T00:37:12.551Z",
-      "transactionId": "FONE_1789605432552",
-      "paidAt": "2026-09-17T00:37:12.862Z"
-    },
-    {
-      "id": "HHE26-STALL-TEST99",
-      "stalls": [
-        "C1"
-      ],
-      "amountNPR": 875000,
-      "amountUSD": 6500,
-      "company": "Voith Hydro International",
-      "contactPerson": "Dr. Markus Weber",
-      "email": "markus.weber@voith.com",
-      "phone": "+977 9801234567",
-      "country": "Germany",
-      "fasciaName": "VOITH HYDRO GERMANY",
-      "boothType": "Shell Scheme",
-      "powerOption": "Standard 15A Included",
-      "industryCategory": "Turbines & Electro-Mechanical",
-      "specialRequirements": "",
-      "paymentMethod": "khalti",
-      "paymentStatus": "PAID",
-      "bookingStatus": "Confirmed",
-      "createdAt": "2026-09-17T00:36:46.271Z",
-      "pidx": "KHALTI_DEV_1789605406272_cw22xx",
-      "transactionId": "TXN_1789605406272",
-      "paidAt": "2026-09-17T00:36:46.742Z"
-    },
-    {
-      "id": "TEST-STALL-123",
-      "stalls": [
-        "C1"
-      ],
-      "amountNPR": 875000,
-      "amountUSD": 6500,
-      "company": "Voith Hydro",
-      "contactPerson": "Markus Weber",
-      "email": "markus@voith.com",
-      "phone": "9801234567",
-      "country": "Nepal",
-      "fasciaName": "Voith Hydro",
-      "boothType": "Shell Scheme",
-      "powerOption": "Standard 15A Included",
-      "industryCategory": "Turbines & Electro-Mechanical",
-      "specialRequirements": "",
-      "paymentMethod": "khalti",
-      "paymentStatus": "INITIATED",
-      "bookingStatus": "Reserved",
-      "createdAt": "2026-09-17T00:35:16.008Z"
-    }
-  ],
   "news": [
     {
-      "id": "news-1790581304957",
-      "slug": "himalayan-green-energy-expo-to-be-held-from-january-17-19-targeting-30-000-visitors",
-      "title": "Himalayan Green Energy Expo to Be Held from January 17-19, Targeting 30,000 Visitors",
-      "summary": "Himalayan Green Energy Expo to Be Held from January 17-19, Targeting 30,000 Visitors",
-      "image": "https://www.spotlightnepal.com/media/images/IPPn_HImal.width-1024.jpg",
-      "sourceName": "SpotlightNepal",
-      "sourceUrl": "https://www.spotlightnepal.com/2026/09/18/himalayan-green-energy-expo-be-held-january-17-19-targeting-30000-visitors/",
-      "date": "Sep 28, 2026",
+      "id": "news-1790928744884",
+      "slug": "",
+      "title": "बालेनले मागेपछि इप्पानले दियो आधा दर्जन कानुन संशोधन गर्नुपर्ने सुझाव (पूर्णपाठ)",
+      "summary": "काठमाडौं । ऊर्जा क्षेत्रमा व्यापक सुधारका लागि निजी क्षेत्रका उर्जा उत्पादकहरूको सुझाव प्रधानमन्त्री वालेन्द्र शाह (बालेन) को टेबलमा पुगेको छ । बालेनले सुझाव मागेपछि स्वतन्त्र ऊर्जा उत्पादकहरूको संस्था, नेपाल (इप्पान) ले आधा दर्जन कानुन संशोधन गर्नुपर्नेसहित विभिन्न सुझाव पेश गरेको हो । प्रधानमन्त्री तथा मन्त्रिपरिषदको कार्यालयले निजी क्षेत्रका विभिन्न २१ वटा संस्थाहरुलाई पत्र पठाएर तोकिएको [&hellip;]",
+      "image": "https://clickmandu.com/wp-content/uploads/2026/09/ippan-balen.jpg",
+      "sourceName": "Clickmandu",
+      "sourceUrl": "https://clickmandu.com/2026/09/495622.html?fbclid=IwY2xjawUsQERleHRuA2FlbQIxMQBwZG9mAWJyaWQRMUQwZk9NSkZDaXl2ZzFSMlpzcnRjBmFwcF9pZBAyMjIwMzkxNzg4MjAwODkyAAEeH0LHvtIrbDBjQjlkeFG_6rbqyhAxOygyJL-M73kIZKPfc4WZgiLBxA6b6ac_aem_JBp9MO8T5CT2IkEuhq1B3A",
+      "date": "Oct 2, 2026",
       "category": "News Coverage",
-      "author": "SpotlightNepal",
+      "author": "Clickmandu",
       "readTime": "3 min read",
       "featured": false,
       "content": [
-        "Himalayan Green Energy Expo to Be Held from January 17-19, Targeting 30,000 Visitors"
+        "काठमाडौं । ऊर्जा क्षेत्रमा व्यापक सुधारका लागि निजी क्षेत्रका उर्जा उत्पादकहरूको सुझाव प्रधानमन्त्री वालेन्द्र शाह (बालेन) को टेबलमा पुगेको छ । बालेनले सुझाव मागेपछि स्वतन्त्र ऊर्जा उत्पादकहरूको संस्था, नेपाल (इप्पान) ले आधा दर्जन कानुन संशोधन गर्नुपर्नेसहित विभिन्न सुझाव पेश गरेको हो । प्रधानमन्त्री तथा मन्त्रिपरिषदको कार्यालयले निजी क्षेत्रका विभिन्न २१ वटा संस्थाहरुलाई पत्र पठाएर तोकिएको [&hellip;]"
       ]
-    },
-    {
-      "id": "news-1790574764244",
-      "slug": "himalayan-green-energy-expo-2027-in-kathmandu-news-detail-sharehub",
-      "title": "Himalayan Green Energy Expo 2027 in Kathmandu | News Detail | ShareHub",
-      "summary": "The Himalayan Green Energy Expo 2027 will be held in Kathmandu from Magh 3 to 5, focusing on clean energy development and investment.",
-      "image": "https://corporatesamachar.com/wp-content/uploads/2026/09/WhatsApp-Image-2026-09-17-at-15.19.06.jpeg",
-      "sourceName": "sharehubnepal.com",
-      "sourceUrl": "https://sharehubnepal.com/news/183772-corporatesamacharcom-himalayan-green-energy-expo-to-connect-technology-and-investment-from-magh-3-in-kathmandu",
-      "date": "Sep 28, 2026",
-      "category": "News Coverage",
-      "author": "sharehubnepal.com",
-      "readTime": "3 min read",
-      "featured": false,
-      "content": [
-        "The Himalayan Green Energy Expo 2027 will be held in Kathmandu from Magh 3 to 5, focusing on clean energy development and investment."
-      ]
-    },
-    {
-      "id": "news-1790569151394",
-      "slug": "energy-expo-to-broaden-focus-beyond-hydropower-new-business-age",
-      "title": "Energy Expo to Broaden Focus Beyond Hydropower | New Business Age",
-      "summary": "The Himalayan Green Energy Expo 2027 will broaden its focus beyond hydropower to solar, wind and green hydrogen as Ne",
-      "image": "https://newbusinessage.prixacdn.net/uploads/2026/09/himalaya_green.jpeg",
-      "sourceName": "New Business Age",
-      "sourceUrl": "https://www.newbusinessage.com/news/50167/energy-expo-to-broaden-focus-beyond-hydropower/",
-      "date": "Sep 28, 2026",
-      "category": "News Coverage",
-      "author": "New Business Age",
-      "readTime": "3 min read",
-      "featured": false,
-      "content": [
-        "The Himalayan Green Energy Expo 2027 will broaden its focus beyond hydropower to solar, wind and green hydrogen as Ne"
-      ]
-    }
-  ],
-  "currentPartners": [
-    {
-      "id": "partner-1790663262433-nyf7",
-      "name": "hfhfh",
-      "category": "Platinum Partner",
-      "logo": "/images/logo.webp",
-      "url": "",
-      "order": 1,
-      "active": true,
-      "addedAt": "2026-09-29T06:27:42.433Z"
     }
   ]
 }

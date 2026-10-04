@@ -23,6 +23,10 @@ import {
   deleteFirebaseInquiry,
   getFirebaseSettings,
   updateFirebaseSettings,
+  getFirebaseNews,
+  saveFirebaseNews,
+  getFirebaseCurrentPartners,
+  saveFirebaseCurrentPartners,
 } from "@/lib/firebaseDb";
 
 // In-memory store for serverless environments (Vercel)
@@ -31,11 +35,13 @@ let memoryAdminData: any = null;
 async function getAdminData() {
   // Always try Firebase Firestore first — it's the persistent source of truth on Vercel
   try {
-    const [fbRegs, fbBooths, fbInqs, fbSettings] = await Promise.all([
+    const [fbRegs, fbBooths, fbInqs, fbSettings, fbNews, fbPartners] = await Promise.all([
       getFirebaseRegistrations(),
       getFirebaseBoothOverrides(),
       getFirebaseInquiries(),
       getFirebaseSettings(),
+      getFirebaseNews(),
+      getFirebaseCurrentPartners(),
     ]);
 
     // Use Firebase data whenever the connection succeeds (even if arrays are empty)
@@ -43,7 +49,7 @@ async function getAdminData() {
       const defaultSettings = {
         eventName: "Himalayan Green Energy Expo Nepal 2027",
         eventDates: "Magh 3 – 5 · 17–19 Jan 2027",
-        venue: "Bhrikutimandap Exhibition Hall, Kathmandu",
+        venue: "BHRIKUTIMANDAP · KATHMANDU, NEPAL",
         registrationsOpen: true,
         stallBookingsOpen: true,
       };
@@ -53,7 +59,8 @@ async function getAdminData() {
         inquiries: fbInqs || [],
         boothOverrides: fbBooths || {},
         settings: fbSettings || defaultSettings,
-        news: [],
+        news: fbNews !== null ? fbNews : [],
+        currentPartners: fbPartners !== null ? fbPartners : [],
       };
       return memoryAdminData;
     }
@@ -86,7 +93,7 @@ async function getAdminData() {
     settings: {
       eventName: "Himalayan Green Energy Expo Nepal 2027",
       eventDates: "Magh 3 – 5 · 17–19 Jan 2027",
-      venue: "Bhrikutimandap Exhibition Hall, Kathmandu",
+      venue: "BHRIKUTIMANDAP · KATHMANDU, NEPAL",
       registrationsOpen: true,
       stallBookingsOpen: true,
     },
@@ -137,9 +144,10 @@ export async function GET(req: Request) {
       const totalStalls = mergedBooths.length || 1;
 
       // Hall breakdowns
-      const hallABooths = mergedBooths.filter((b) => b.hall?.includes("Hall A") || b.number.startsWith("A"));
-      const hallBBooths = mergedBooths.filter((b) => b.hall?.includes("Hall B") || b.number.startsWith("B"));
-      const outdoorBooths = mergedBooths.filter((b) => b.hall?.includes("Outdoor") || b.number.startsWith("OUT"));
+      const hallABooths = mergedBooths.filter((b) => b.hall?.includes("A") || b.number.startsWith("A"));
+      const hallBBooths = mergedBooths.filter((b) => b.hall?.includes("B") || b.number.startsWith("B"));
+      const hallCBooths = mergedBooths.filter((b) => b.hall?.includes("C") || b.number.startsWith("C"));
+      const outdoorBooths = mergedBooths.filter((b) => b.hall?.includes("Outdoor") || b.hall?.includes("Special") || b.number.startsWith("H") || b.number.startsWith("F") || b.number.startsWith("OUT"));
 
       const bookedRevenueUSD = mergedBooths
         .filter((b) => b.status === "Booked")
@@ -191,6 +199,12 @@ export async function GET(req: Request) {
             reserved: hallBBooths.filter((b) => b.status === "Reserved").length,
             available: hallBBooths.filter((b) => b.status === "Available").length,
           },
+          hallC: {
+            total: hallCBooths.length,
+            booked: hallCBooths.filter((b) => b.status === "Booked").length,
+            reserved: hallCBooths.filter((b) => b.status === "Reserved").length,
+            available: hallCBooths.filter((b) => b.status === "Available").length,
+          },
           outdoor: {
             total: outdoorBooths.length,
             booked: outdoorBooths.filter((b) => b.status === "Booked").length,
@@ -236,9 +250,10 @@ export async function GET(req: Request) {
       .filter((b) => b.status === "Booked")
       .reduce((sum, b) => sum + (b.priceUSD || 2500), 0);
 
-    const hallABooths = mergedBooths.filter((b) => b.hall?.includes("Hall A") || b.number.startsWith("A"));
-    const hallBBooths = mergedBooths.filter((b) => b.hall?.includes("Hall B") || b.number.startsWith("B"));
-    const outdoorBooths = mergedBooths.filter((b) => b.hall?.includes("Outdoor") || b.number.startsWith("OUT"));
+    const hallABooths = mergedBooths.filter((b) => b.hall?.includes("A") || b.number.startsWith("A"));
+    const hallBBooths = mergedBooths.filter((b) => b.hall?.includes("B") || b.number.startsWith("B"));
+    const hallCBooths = mergedBooths.filter((b) => b.hall?.includes("C") || b.number.startsWith("C"));
+    const outdoorBooths = mergedBooths.filter((b) => b.hall?.includes("Outdoor") || b.hall?.includes("Special") || b.number.startsWith("H") || b.number.startsWith("F") || b.number.startsWith("OUT"));
 
     return NextResponse.json(
       {
@@ -267,6 +282,12 @@ export async function GET(req: Request) {
               booked: hallBBooths.filter((b) => b.status === "Booked").length,
               reserved: hallBBooths.filter((b) => b.status === "Reserved").length,
               available: hallBBooths.filter((b) => b.status === "Available").length,
+            },
+            hallC: {
+              total: hallCBooths.length,
+              booked: hallCBooths.filter((b) => b.status === "Booked").length,
+              reserved: hallCBooths.filter((b) => b.status === "Reserved").length,
+              available: hallCBooths.filter((b) => b.status === "Available").length,
             },
             outdoor: {
               total: outdoorBooths.length,
@@ -456,29 +477,41 @@ export async function POST(req: Request) {
         const article = payload.article || payload;
         data.news = data.news || [];
         data.news.unshift(article);
-        await saveAdminData(data);
-        return NextResponse.json({ success: true, message: "Article created", data: article });
+        await Promise.all([
+          saveAdminData(data),
+          saveFirebaseNews(data.news).catch(() => {}),
+        ]);
+        return NextResponse.json({ success: true, message: "Article created in database", data: article });
       }
 
       case "update_news": {
         const article = payload.article || payload;
         data.news = (data.news || []).map((a: any) => (a.id === article.id ? article : a));
-        await saveAdminData(data);
-        return NextResponse.json({ success: true, message: "Article updated", data: article });
+        await Promise.all([
+          saveAdminData(data),
+          saveFirebaseNews(data.news).catch(() => {}),
+        ]);
+        return NextResponse.json({ success: true, message: "Article updated in database", data: article });
       }
 
       case "delete_news": {
         const { id } = payload;
         data.news = (data.news || []).filter((a: any) => a.id !== id);
-        await saveAdminData(data);
-        return NextResponse.json({ success: true, message: "Article deleted" });
+        await Promise.all([
+          saveAdminData(data),
+          saveFirebaseNews(data.news).catch(() => {}),
+        ]);
+        return NextResponse.json({ success: true, message: "Article deleted from database" });
       }
 
       case "delete_multiple_news": {
         const ids = new Set(payload.ids || []);
         data.news = (data.news || []).filter((a: any) => !ids.has(a.id));
-        await saveAdminData(data);
-        return NextResponse.json({ success: true, message: `${ids.size} articles deleted`, count: ids.size });
+        await Promise.all([
+          saveAdminData(data),
+          saveFirebaseNews(data.news).catch(() => {}),
+        ]);
+        return NextResponse.json({ success: true, message: `${ids.size} articles deleted from database`, count: ids.size });
       }
 
       case "toggle_news_featured": {
@@ -486,14 +519,20 @@ export async function POST(req: Request) {
         data.news = (data.news || []).map((a: any) =>
           a.id === id ? { ...a, featured: !a.featured } : a
         );
-        await saveAdminData(data);
-        return NextResponse.json({ success: true, message: "Featured status updated" });
+        await Promise.all([
+          saveAdminData(data),
+          saveFirebaseNews(data.news).catch(() => {}),
+        ]);
+        return NextResponse.json({ success: true, message: "Featured status updated in database" });
       }
 
       case "save_all_news": {
         data.news = payload.news || [];
-        await saveAdminData(data);
-        return NextResponse.json({ success: true, message: "News saved", count: data.news.length });
+        await Promise.all([
+          saveAdminData(data),
+          saveFirebaseNews(data.news).catch(() => {}),
+        ]);
+        return NextResponse.json({ success: true, message: "News saved to database", count: data.news.length });
       }
 
       case "save_sponsors": {
@@ -504,10 +543,13 @@ export async function POST(req: Request) {
 
       case "save_current_partners": {
         data.currentPartners = Array.isArray(payload.partners) ? payload.partners : [];
-        await saveAdminData(data);
+        await Promise.all([
+          saveAdminData(data),
+          saveFirebaseCurrentPartners(data.currentPartners).catch(() => {}),
+        ]);
         return NextResponse.json({
           success: true,
-          message: "2027 Edition partners saved successfully",
+          message: "2027 Edition partners saved successfully to database",
           count: data.currentPartners.length,
         });
       }

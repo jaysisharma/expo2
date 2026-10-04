@@ -564,10 +564,10 @@ function BookGalaDinnerForm() {
                       Expo Email
                     </div>
                     <a
-                      href="mailto:info@nepalenergyexpo.com"
+                      href="mailto:info@himalayanenergyexpo.com"
                       className="text-white font-mono text-xs hover:text-emerald-400 transition-colors block pt-0.5"
                     >
-                      info@nepalenergyexpo.com
+                      info@himalayanenergyexpo.com
                     </a>
                   </div>
                 </div>

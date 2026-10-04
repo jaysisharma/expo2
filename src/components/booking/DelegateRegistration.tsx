@@ -328,7 +328,7 @@ export default function DelegateRegistration() {
 
           {/* Instruction note */}
           <p className="text-xs text-slate-500 leading-relaxed max-w-md mx-auto">
-            Please check your inbox or spam folder for your official pass and entry QR code. Present the QR code on your phone at Bhrikutimandap Exhibition Hall for fast-track entry.
+            Please check your inbox or spam folder for your official pass and entry QR code. Present the QR code on your phone at BHRIKUTIMANDAP · KATHMANDU, NEPAL for fast-track entry.
           </p>
 
           {/* Register another */}
@@ -620,7 +620,7 @@ export default function DelegateRegistration() {
         <p className="text-[11px] text-slate-400 text-center">
           {registrationRole === "gala"
             ? "Secure 256-bit SSL encrypted Khalti ePayment gateway for Royal Tulip Networking Banquet"
-            : "Instant digital QR pass · Complimentary access to Bhrikutimandap Exhibition Hall"}
+            : "Instant digital QR pass · Complimentary access to BHRIKUTIMANDAP · KATHMANDU, NEPAL"}
         </p>
       </form>
     </div>

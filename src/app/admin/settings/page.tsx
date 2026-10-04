@@ -14,10 +14,10 @@ export default function AdminSettingsPage() {
   const [settings, setSettings] = useState({
     eventName: "Himalayan Green Energy Expo Nepal 2027",
     eventDates: "Magh 3 – 5 · 17–19 Jan 2027",
-    venue: "Bhrikutimandap Exhibition Hall, Kathmandu",
+    venue: "BHRIKUTIMANDAP · KATHMANDU, NEPAL",
     registrationsOpen: true,
     stallBookingsOpen: true,
-    contactEmail: "info@nepalenergyexpo.com",
+    contactEmail: "info@himalayanenergyexpo.com",
     contactPhone: "+977-9703606348",
     currencyRateUSD_NPR: 134.5,
   });

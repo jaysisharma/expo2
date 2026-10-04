@@ -119,8 +119,8 @@ export async function POST(req: NextRequest) {
       addFirebaseInquiry(newInquiry).catch(() => {}),
     ]);
 
-    // 2. Prepare & Send Email to info@nepalenergyexpo.com
-    const receiverEmail = process.env.CONTACT_RECEIVER_EMAIL || CONTACT_DETAILS.emails.expo || "info@nepalenergyexpo.com";
+    // 2. Prepare & Send Email to info@himalayanenergyexpo.com
+    const receiverEmail = process.env.CONTACT_RECEIVER_EMAIL || CONTACT_DETAILS.emails.expo || "info@himalayanenergyexpo.com";
     const fromName = process.env.SMTP_FROM_NAME || "Himalayan Green Energy Expo";
     const smtpUser = process.env.SMTP_USER;
 
@@ -269,42 +269,69 @@ ${trimmedMessage}
 Direct reply: mailto:${trimmedEmail}
       `.trim();
 
-      // Dispatch mail to info@nepalenergyexpo.com
-      await transporter.sendMail({
-        from: `"${fromName} (Website Contact)" <${smtpUser}>`,
-        to: receiverEmail,
-        replyTo: `"${trimmedName}" <${trimmedEmail}>`,
-        subject: `[Website Inquiry] ${resolvedSubject} - ${trimmedName}`,
-        text: textFallback,
-        html: adminEmailHtml,
-      });
+      const userTextFallback = `
+Thank you for contacting Himalayan Green Energy Expo 2027
+---------------------------------------------------------
+Dear ${trimmedName},
 
-      // Also send an automated acknowledgment confirmation to the user
-      try {
-        const userAckHtml = `
+Thank you for reaching out to the organizing secretariat of the Himalayan Green Energy Expo 2027.
+This is an automated confirmation that we have received your inquiry. An expo representative will review your message and get in touch with you shortly.
+
+INQUIRY DETAILS:
+• Reference ID: ${inquiryId}
+• Date: ${formattedDate}
+• Subject / Topic: ${resolvedSubject}
+• Phone: ${trimmedPhone || "Not provided"}
+
+YOUR MESSAGE:
+${trimmedMessage}
+
+EVENT DETAILS:
+• Dates: 17–19 January 2027 (Magh 3–5, 2083)
+• Venue: BHRIKUTIMANDAP · KATHMANDU, NEPAL
+• Direct Hotlines: +977-9703606348 / 9703606345
+• Landline: 01-5268535, 4169175
+• Official Expo Email: info@himalayanenergyexpo.com | info@eventsolutionnepal.com.np
+• Secretariat Location: IPPAN Secretariat, Jwagal, Lalitpur, Nepal
+• Website: https://www.higex.org
+
+Warm regards,
+Organizing Secretariat
+Himalayan Green Energy Expo 2027
+Independent Power Producers' Association, Nepal (IPPAN) & Event Solution Pvt. Ltd.
+      `.trim();
+
+      const userAckHtml = `
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Thank you for contacting Himalayan Green Energy Expo 2027</title>
+  <title>Inquiry Received — Himalayan Green Energy Expo 2027</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b;">
   <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f1f5f9; padding: 30px 15px;">
     <tr>
       <td align="center">
-        <table width="100%" max-width="600" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0;">
+        <table width="100%" max-width="600" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 14px rgba(0,0,0,0.06);">
+          
+          <!-- Header Banner -->
           <tr>
             <td style="background-color: #04281E; padding: 28px 32px; text-align: left; border-bottom: 3px solid #10b981;">
               <div style="font-size: 11px; font-weight: 700; color: #34d399; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px;">
-                Himalayan Green Energy Expo 2027
+                Himalayan Green Energy Expo 2027 &bull; 5th Edition
               </div>
               <h1 style="margin: 0; font-size: 22px; font-weight: 800; color: #ffffff;">
                 We Have Received Your Inquiry
               </h1>
+              <p style="margin: 6px 0 0 0; font-size: 13px; color: #a7f3d0;">
+                Reference ID: <code style="background-color: rgba(255,255,255,0.12); padding: 2px 6px; border-radius: 4px; font-family: monospace; color: #ffffff;">${escapeHtml(inquiryId)}</code>
+              </p>
             </td>
           </tr>
+
+          <!-- Body Content -->
           <tr>
-            <td style="padding: 28px 32px;">
+            <td style="padding: 28px 32px 20px 32px;">
               <p style="font-size: 15px; color: #0f172a; margin-top: 0; line-height: 1.6;">
                 Dear <strong>${escapeHtml(trimmedName)}</strong>,
               </p>
@@ -312,40 +339,134 @@ Direct reply: mailto:${trimmedEmail}
                 Thank you for reaching out to the organizing secretariat of the <strong>Himalayan Green Energy Expo 2027</strong>.
               </p>
               <p style="font-size: 14px; color: #334155; line-height: 1.6;">
-                Our team has received your message regarding <strong>${escapeHtml(resolvedSubject)}</strong> (Reference ID: <code style="background-color: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: monospace;">${escapeHtml(inquiryId)}</code>). An expo representative will review your inquiry and get in touch with you shortly.
+                This is an automated confirmation to let you know that our team has successfully logged your message. An official expo representative will review your inquiry and get back to you shortly.
               </p>
 
-              <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin: 20px 0; font-size: 13px; line-height: 1.6;">
-                <strong>Event Highlights:</strong><br/>
-                &bull; <strong>Dates:</strong> 17–19 January 2027 (Magh 3–5, 2083)<br/>
-                &bull; <strong>Venue:</strong> Bhrikutimandap Exhibition Hall, Kathmandu, Nepal<br/>
-                &bull; <strong>Direct Hotline:</strong> +977-9703606348 / 9703606345
+              <!-- Summary of Submitted Message -->
+              <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #10b981; border-radius: 8px; padding: 18px 20px; margin: 22px 0;">
+                <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px;">
+                  Summary of Your Message
+                </div>
+                <table width="100%" border="0" cellspacing="0" cellpadding="0" style="font-size: 13px; line-height: 1.6;">
+                  <tr>
+                    <td width="30%" style="color: #64748b; padding: 4px 0; font-weight: 600;">Subject:</td>
+                    <td width="70%" style="color: #0f172a; padding: 4px 0; font-weight: 700;">${escapeHtml(resolvedSubject)}</td>
+                  </tr>
+                  ${trimmedPhone ? `
+                  <tr>
+                    <td style="color: #64748b; padding: 4px 0; font-weight: 600;">Contact Phone:</td>
+                    <td style="color: #0f172a; padding: 4px 0;">${escapeHtml(trimmedPhone)}</td>
+                  </tr>
+                  ` : ''}
+                  <tr>
+                    <td style="color: #64748b; padding: 4px 0; font-weight: 600;">Submitted On:</td>
+                    <td style="color: #0f172a; padding: 4px 0;">${escapeHtml(formattedDate)}</td>
+                  </tr>
+                  <tr>
+                    <td colspan="2" style="padding-top: 10px;">
+                      <div style="font-weight: 600; color: #64748b; margin-bottom: 4px;">Your Message:</div>
+                      <div style="background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 12px; color: #334155; white-space: pre-wrap; font-size: 13px;">${escapeHtml(trimmedMessage)}</div>
+                    </td>
+                  </tr>
+                </table>
               </div>
 
-              <p style="font-size: 14px; color: #334155; line-height: 1.6; margin-bottom: 0;">
+              <!-- Event Overview Box -->
+              <div style="background-color: #04281E; border-radius: 10px; padding: 18px 20px; color: #ffffff; margin: 20px 0; font-size: 13px; line-height: 1.6;">
+                <div style="font-size: 11px; font-weight: 700; color: #34d399; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">
+                  Expo Fast Facts
+                </div>
+                <div style="color: #ffffff; font-size: 14px; font-weight: 700; margin-bottom: 4px;">
+                  17–19 January 2027 (Magh 3–5, 2083)
+                </div>
+                <div style="color: #cbd5e1; font-size: 13px;">
+                  BHRIKUTIMANDAP · KATHMANDU, NEPAL
+                </div>
+                <div style="color: #94a3b8; font-size: 12px; margin-top: 6px;">
+                  150+ Global Exhibitors &bull; Clean Energy Summit &bull; VIP Networking Dinner (Royal Tulip Gwarko)
+                </div>
+              </div>
+
+              <!-- Secretariat Contacts Box -->
+              <div style="border-top: 1px solid #e2e8f0; padding-top: 18px; margin-top: 18px; font-size: 13px; color: #475569; line-height: 1.6;">
+                <p style="margin: 0 0 8px 0; font-weight: 700; color: #0f172a;">
+                  Need urgent assistance? Contact us directly:
+                </p>
+                <p style="margin: 0 0 4px 0;">
+                  &bull; <strong>Hotlines:</strong> <a href="tel:+9779703606348" style="color: #007A5E; text-decoration: none;">+977-9703606348</a> | <a href="tel:+9779703606345" style="color: #007A5E; text-decoration: none;">9703606345</a>
+                </p>
+                <p style="margin: 0 0 4px 0;">
+                  &bull; <strong>Landline:</strong> 01-5268535, 4169175
+                </p>
+                <p style="margin: 0 0 4px 0;">
+                  &bull; <strong>Official Emails:</strong> <a href="mailto:info@himalayanenergyexpo.com" style="color: #007A5E; text-decoration: none;">info@himalayanenergyexpo.com</a> | <a href="mailto:info@eventsolutionnepal.com.np" style="color: #007A5E; text-decoration: none;">info@eventsolutionnepal.com.np</a>
+                </p>
+                <p style="margin: 0;">
+                  &bull; <strong>Secretariat:</strong> IPPAN Office, Jwagal, Lalitpur, Nepal
+                </p>
+              </div>
+
+              <div style="margin-top: 24px; padding-top: 18px; border-top: 1px solid #e2e8f0; font-size: 13px; color: #334155;">
                 Warm regards,<br/>
-                <strong>Secretariat &bull; Himalayan Green Energy Expo 2027</strong><br/>
-                <a href="mailto:${receiverEmail}" style="color: #10b981; text-decoration: none;">${receiverEmail}</a>
+                <strong>Organizing Secretariat</strong><br/>
+                <span style="font-size: 12px; color: #64748b;">Himalayan Green Energy Expo 2027</span><br/>
+                <a href="https://www.higex.org" style="color: #007A5E; font-size: 12px; text-decoration: none;">www.higex.org</a>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 18px 32px; text-align: center; font-size: 11px; color: #94a3b8; line-height: 1.5;">
+              <p style="margin: 0;">
+                Jointly Organized by <strong>Independent Power Producers&apos; Association, Nepal (IPPAN)</strong> &amp; <strong>Event Solution Pvt. Ltd.</strong>
+              </p>
+              <p style="margin: 4px 0 0 0;">
+                &copy; 2027 Himalayan Green Energy Expo. This is an automated email confirmation.
               </p>
             </td>
           </tr>
+
         </table>
       </td>
     </tr>
   </table>
 </body>
 </html>
-        `;
+      `;
 
-        await transporter.sendMail({
+      // Dispatch admin copy and user auto-reply concurrently
+      const sendPromises: Promise<any>[] = [];
+
+      // 1. Admin Notification
+      sendPromises.push(
+        transporter.sendMail({
+          from: `"${fromName} (Website Contact)" <${smtpUser}>`,
+          to: receiverEmail,
+          replyTo: `"${trimmedName}" <${trimmedEmail}>`,
+          subject: `[Website Inquiry] ${resolvedSubject} - ${trimmedName}`,
+          text: textFallback,
+          html: adminEmailHtml,
+        }).catch((err) => {
+          console.warn("[contact-api] Admin notification delivery issue:", err?.message || err);
+        })
+      );
+
+      // 2. User Auto-Reply Acknowledgment
+      sendPromises.push(
+        transporter.sendMail({
           from: `"${fromName}" <${smtpUser}>`,
           to: trimmedEmail,
-          subject: `Inquiry Received: ${resolvedSubject} | Himalayan Green Energy Expo 2027`,
+          replyTo: `"Expo Secretariat" <info@eventsolutionnepal.com.np>`,
+          subject: `Inquiry Received: ${resolvedSubject} [Ref: ${inquiryId}] | Himalayan Green Energy Expo 2027`,
+          text: userTextFallback,
           html: userAckHtml,
-        });
-      } catch (ackErr) {
-        console.warn("[contact-api] User acknowledgment email skipped:", ackErr);
-      }
+        }).catch((err) => {
+          console.warn("[contact-api] User auto-reply delivery issue:", err?.message || err);
+        })
+      );
+
+      await Promise.allSettled(sendPromises);
     } else {
       console.warn("[contact-api] SMTP credentials not fully configured; inquiry logged to database only.");
     }

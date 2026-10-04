@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { initializeKhaltiPayment } from "@/lib/khalti";
 import { generateFonepayUrl } from "@/lib/fonepay";
+import nodemailer from "nodemailer";
 import fs from "fs/promises";
 import path from "path";
 
@@ -21,6 +22,33 @@ async function getAdminData() {
       return { registrations: [], inquiries: [], boothOverrides: {}, stallBookings: [] };
     }
   }
+}
+
+function createTransporter() {
+  const host = process.env.SMTP_HOST || "smtp.gmail.com";
+  const port = Number(process.env.SMTP_PORT || 465);
+  const secure = process.env.SMTP_SECURE === "true" || port === 465;
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+
+  if (!user || !pass) return null;
+
+  return nodemailer.createTransport({
+    host,
+    port,
+    secure,
+    auth: { user, pass },
+  });
+}
+
+function escapeHtml(str: string): string {
+  if (!str) return "";
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 async function saveAdminData(data: any) {
@@ -133,6 +161,109 @@ export async function POST(req: Request) {
     });
 
     await saveAdminData(adminData);
+
+    // Send automated email confirmation to exhibitor (auto-reply)
+    try {
+      const transporter = createTransporter();
+      if (transporter) {
+        const fromName = process.env.SMTP_FROM_NAME || "Himalayan Green Energy Expo 2027";
+        const smtpUser = process.env.SMTP_USER;
+
+        const isBankTransfer = paymentMethod === "bank";
+        const formattedNPR = Number(amountNPR || 0).toLocaleString();
+        const formattedUSD = Number(amountUSD || 0).toLocaleString();
+
+        const emailHtml = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1e293b;">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="padding: 30px 15px;">
+    <tr>
+      <td align="center">
+        <table width="100%" max-width="600" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 14px rgba(0,0,0,0.06);">
+          <tr>
+            <td style="background-color: #04281E; padding: 26px 32px; text-align: left; border-bottom: 3px solid #10b981;">
+              <div style="font-size: 11px; font-weight: 700; color: #34d399; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px;">
+                Himalayan Green Energy Expo 2027 &bull; Exhibition Secretariat
+              </div>
+              <h1 style="margin: 0; font-size: 20px; font-weight: 800; color: #ffffff;">
+                Exhibition Stall Reservation Acknowledgment
+              </h1>
+              <p style="margin: 6px 0 0 0; font-size: 13px; color: #a7f3d0;">
+                Booking Reference: <code style="background-color: rgba(255,255,255,0.12); padding: 2px 6px; border-radius: 4px; font-family: monospace; color: #ffffff;">${escapeHtml(orderId)}</code>
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 26px 32px;">
+              <p style="font-size: 15px; color: #0f172a; margin-top: 0; line-height: 1.6;">
+                Dear <strong>${escapeHtml(primaryName)}</strong>,
+              </p>
+              <p style="font-size: 14px; color: #334155; line-height: 1.6;">
+                Thank you for reserving your exhibition space at the <strong>Himalayan Green Energy Expo 2027</strong>. Your provisional booth allocation has been received and registered.
+              </p>
+              
+              <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #10b981; border-radius: 8px; padding: 16px 20px; margin: 18px 0; font-size: 13px; line-height: 1.7;">
+                <strong>Reservation Summary:</strong><br/>
+                &bull; <strong>Allocated Stall(s):</strong> <span style="color: #047857; font-weight: 700;">${escapeHtml(stallListStr)}</span><br/>
+                &bull; <strong>Company / Exhibitor:</strong> ${escapeHtml(company || primaryName)}<br/>
+                &bull; <strong>Fascia Board Name:</strong> ${escapeHtml(fasciaName || company || primaryName)}<br/>
+                &bull; <strong>Booth Type:</strong> ${escapeHtml(boothType)}<br/>
+                &bull; <strong>Industry Category:</strong> ${escapeHtml(industryCategory)}<br/>
+                &bull; <strong>Total Fee:</strong> NPR ${formattedNPR} / USD ${formattedUSD}<br/>
+                &bull; <strong>Payment Method:</strong> ${escapeHtml(paymentMethod.toUpperCase())}<br/>
+                &bull; <strong>Expo Dates:</strong> 17–19 January 2027 (10:00 AM – 6:00 PM)<br/>
+                &bull; <strong>Venue:</strong> BHRIKUTIMANDAP · KATHMANDU, NEPAL
+              </div>
+
+              ${isBankTransfer ? `
+              <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 16px 20px; margin: 18px 0; font-size: 13px; line-height: 1.7;">
+                <strong style="color: #065f46;">Bank Wire Remittance Instructions:</strong><br/>
+                Please deposit / wire the stall fees to the official IPPAN account below:<br/><br/>
+                &bull; <strong>Account Name:</strong> IPPAN - GREEN ENERGY EXPO<br/>
+                &bull; <strong>Bank Name:</strong> Nepal Investment Mega Bank (NIMB)<br/>
+                &bull; <strong>Account Number:</strong> 001001201928471<br/>
+                &bull; <strong>Branch / SWIFT:</strong> Durbarmarg, Kathmandu / NIMBNPKA<br/>
+                &bull; <strong>Wire Remarks:</strong> Please quote booking ID <code>${escapeHtml(orderId)}</code> and email the bank swift advice/voucher to <a href="mailto:expo@ippan.org.np" style="color: #047857; font-weight: 600;">expo@ippan.org.np</a>.
+              </div>
+              ` : `
+              <p style="font-size: 13px; color: #475569; line-height: 1.6;">
+                Once your online payment verification is confirmed, your stall status will automatically lock as <strong>Confirmed &amp; Booked</strong> on the interactive floor plan.
+              </p>
+              `}
+
+              <div style="border-top: 1px solid #e2e8f0; padding-top: 16px; margin-top: 20px; font-size: 13px; color: #475569; line-height: 1.6;">
+                <strong>Secretariat Contact Details:</strong><br/>
+                &bull; Direct Hotlines: +977-9703606348 / 9703606345<br/>
+                &bull; Landline: 01-5268535, 4169175<br/>
+                &bull; Email: <a href="mailto:info@himalayanenergyexpo.com" style="color: #007A5E; text-decoration: none;">info@himalayanenergyexpo.com</a> | <a href="mailto:info@eventsolutionnepal.com.np" style="color: #007A5E; text-decoration: none;">info@eventsolutionnepal.com.np</a><br/>
+                &bull; Address: IPPAN Secretariat, Jwagal, Lalitpur, Nepal<br/>
+                &bull; Website: <a href="https://www.higex.org" style="color: #007A5E; text-decoration: none;">www.higex.org</a>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+        `;
+
+        transporter.sendMail({
+          from: `"${fromName}" <${smtpUser}>`,
+          to: email,
+          replyTo: `"Expo Secretariat" <info@eventsolutionnepal.com.np>`,
+          subject: `Stall Reservation Confirmed [Ref: ${orderId}] | Himalayan Green Energy Expo 2027`,
+          html: emailHtml,
+        }).catch((err) => {
+          console.warn("[stall-booking] Auto-reply send error:", err?.message || err);
+        });
+      }
+    } catch (e) {
+      console.warn("[stall-booking] Email setup skipped:", e);
+    }
 
     const baseUrl =
       process.env.NEXT_PUBLIC_APP_URL ||

@@ -76,7 +76,7 @@ export default function TechnologyViewer() {
     },
     {
       id: "scada",
-      name: "AI Autonomous Cascade Dispatch & SCADA",
+      name: "AI Autonomous Cascade Control & SCADA",
       category: "DIGITAL OT",
       xPercent: 65,
       yPercent: 72,
@@ -86,7 +86,7 @@ export default function TechnologyViewer() {
         "Protocol: IEC 61850 & Cyber-Hardened Zero Trust",
       ],
       description:
-        "Coordinates multi-plant river basin cascade dispatch in real-time, eliminating dry-season water spillage and maximizing PPA revenue.",
+        "Coordinates multi-plant river basin cascade generation in real-time, eliminating dry-season water spillage and maximizing PPA revenue.",
     },
   ];
 

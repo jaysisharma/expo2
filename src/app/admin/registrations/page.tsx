@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import {
   Users,
   Search,
@@ -11,6 +12,7 @@ import {
   Trash2,
   X,
   Printer,
+  Mail,
 } from "lucide-react";
 import IDCardBadgePreview from "@/components/booking/IDCardBadgePreview";
 import { BadgeConfig } from "@/components/booking/AdminBadgeDesigner";
@@ -284,6 +286,13 @@ export default function AdminRegistrationsPage() {
             <svg className="w-3.5 h-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
             <span>Refresh</span>
           </button>
+          <Link
+            href="/admin/bulk-email"
+            className="px-3.5 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold border border-emerald-200 shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+          >
+            <Mail className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Bulk Email</span>
+          </Link>
           <button
             onClick={exportCSV}
             className="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"

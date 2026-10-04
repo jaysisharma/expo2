@@ -115,7 +115,7 @@ export default function AdminDashboardPage() {
   // Hall specific calculations
   const hallA = useMemo(() => {
     const booths = mergedBooths.filter(
-      (b) => b.hall?.includes("Hall A") || b.number.startsWith("A")
+      (b) => b.hall?.includes("A") || b.number.startsWith("A")
     );
     const booked = booths.filter((b) => b.status === "Booked").length;
     const reserved = booths.filter((b) => b.status === "Reserved").length;
@@ -130,7 +130,22 @@ export default function AdminDashboardPage() {
 
   const hallB = useMemo(() => {
     const booths = mergedBooths.filter(
-      (b) => b.hall?.includes("Hall B") || b.number.startsWith("B")
+      (b) => b.hall?.includes("B") || b.number.startsWith("B")
+    );
+    const booked = booths.filter((b) => b.status === "Booked").length;
+    const reserved = booths.filter((b) => b.status === "Reserved").length;
+    return {
+      total: booths.length,
+      booked,
+      reserved,
+      available: booths.filter((b) => b.status === "Available").length,
+      pct: Math.round(((booked + reserved) / (booths.length || 1)) * 100),
+    };
+  }, [mergedBooths]);
+
+  const hallC = useMemo(() => {
+    const booths = mergedBooths.filter(
+      (b) => b.hall?.includes("C") || b.number.startsWith("C")
     );
     const booked = booths.filter((b) => b.status === "Booked").length;
     const reserved = booths.filter((b) => b.status === "Reserved").length;
@@ -145,7 +160,12 @@ export default function AdminDashboardPage() {
 
   const outdoor = useMemo(() => {
     const booths = mergedBooths.filter(
-      (b) => b.hall?.includes("Outdoor") || b.number.startsWith("OUT")
+      (b) =>
+        b.hall?.includes("Outdoor") ||
+        b.hall?.includes("Special") ||
+        b.number.startsWith("H") ||
+        b.number.startsWith("F") ||
+        b.number.startsWith("OUT")
     );
     const booked = booths.filter((b) => b.status === "Booked").length;
     const reserved = booths.filter((b) => b.status === "Reserved").length;
@@ -491,11 +511,30 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
 
+              {/* Hall C / Block C */}
+              <div className="p-3 rounded-lg bg-slate-50 border border-slate-100">
+                <div className="flex items-center justify-between text-xs mb-1.5">
+                  <span className="font-semibold text-slate-800">
+                    Block C · Bare Space Pavilion
+                  </span>
+                  <span className="font-mono text-[11px] font-semibold text-slate-600">
+                    {hallC.booked + hallC.reserved} / {hallC.total} stalls ({hallC.pct}%)
+                  </span>
+                </div>
+                <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                  <div style={{ width: `${hallC.pct}%` }} className="bg-cyan-600 h-full" />
+                </div>
+                <div className="mt-1.5 flex items-center justify-between text-[11px] text-slate-500">
+                  <span>{hallC.booked} booked · {hallC.reserved} reserved</span>
+                  <span className="text-cyan-600 font-medium">{hallC.available} open</span>
+                </div>
+              </div>
+
               {/* Outdoor */}
               <div className="p-3 rounded-lg bg-slate-50 border border-slate-100">
                 <div className="flex items-center justify-between text-xs mb-1.5">
                   <span className="font-semibold text-slate-800">
-                    Outdoor · Machinery & EV Pavilion
+                    Outdoor & Special · Hydro & Food Arena
                   </span>
                   <span className="font-mono text-[11px] font-semibold text-slate-600">
                     {outdoor.booked + outdoor.reserved} / {outdoor.total} stalls ({outdoor.pct}%)
@@ -863,7 +902,7 @@ export default function AdminDashboardPage() {
                 </span>
                 <span className="font-medium text-slate-800 flex items-center gap-1">
                   <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
-                  <span>{data?.settings?.venue || "Bhrikutimandap Exhibition Hall, Kathmandu"}</span>
+                  <span>{data?.settings?.venue || "BHRIKUTIMANDAP · KATHMANDU, NEPAL"}</span>
                 </span>
               </div>
 

@@ -131,7 +131,7 @@ export default function PressPage() {
                   </div>
                   <div className="flex items-center gap-2 text-xs text-slate-200">
                     <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                    <span>Bhrikutimandap Exhibition Hall, Kathmandu, Nepal</span>
+                    <span>BHRIKUTIMANDAP · KATHMANDU, NEPAL</span>
                   </div>
                 </div>
 
@@ -258,7 +258,7 @@ export default function PressPage() {
                 <Mail className="w-4 h-4 text-[#38BDF8] shrink-0 mt-0.5" />
                 <div className="space-y-0.5">
                   <div className="font-mono text-slate-400 text-[10px] uppercase">OFFICIAL EMAIL</div>
-                  <div className="text-white font-medium">info@nepalenergyexpo.com</div>
+                  <div className="text-white font-medium">info@himalayanenergyexpo.com</div>
                   <div className="text-slate-400 text-xs">info@ippan.org.np | ippan2001@gmail.com</div>
                 </div>
               </div>

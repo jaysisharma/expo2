@@ -18,12 +18,13 @@ import {
   AlertCircle,
   Loader2,
 } from "lucide-react";
-import { boothsData } from "@/data/booths";
+import { boothsData, extractBoothsFromElements } from "@/data/booths";
 import { Booth } from "@/lib/types";
 import { formatCurrencyUSD, formatCurrencyNPR } from "@/lib/utils";
 
 export default function AdminStallsPage() {
   const [data, setData] = useState<any>(null);
+  const [floorPlanElements, setFloorPlanElements] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedHall, setSelectedHall] = useState<string>("All");
   const [selectedStatus, setSelectedStatus] = useState<string>("All");
@@ -57,10 +58,19 @@ export default function AdminStallsPage() {
   const fetchBoothsData = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch("/api/admin/data?t=" + Date.now(), { cache: "no-store" });
-      const json = await res.json();
+      const [adminRes, floorRes] = await Promise.all([
+        fetch("/api/admin/data?t=" + Date.now(), { cache: "no-store" }),
+        fetch("/api/floor-plan/save?t=" + Date.now(), { cache: "no-store" }).catch(() => null),
+      ]);
+      const json = await adminRes.json();
       if (json.success) {
         setData(json.data);
+      }
+      if (floorRes && floorRes.ok) {
+        const floorJson = await floorRes.json();
+        if (floorJson?.success && Array.isArray(floorJson?.data?.elements) && floorJson.data.elements.length > 0) {
+          setFloorPlanElements(floorJson.data.elements);
+        }
       }
     } catch {
       notify("Failed to fetch stall data", "error");
@@ -75,8 +85,16 @@ export default function AdminStallsPage() {
 
   const exchangeRate = data?.settings?.currencyRateUSD_NPR || 134.5;
 
+  const baseBooths: Booth[] = useMemo(() => {
+    if (floorPlanElements && floorPlanElements.length > 0) {
+      const extracted = extractBoothsFromElements(floorPlanElements);
+      if (extracted.length > 0) return extracted;
+    }
+    return boothsData;
+  }, [floorPlanElements]);
+
   const mergedBooths: Booth[] = useMemo(() => {
-    return boothsData.map((b) => {
+    return baseBooths.map((b) => {
       const override = data?.boothOverrides?.[b.number];
       return override
         ? {
@@ -87,15 +105,21 @@ export default function AdminStallsPage() {
           }
         : b;
     });
-  }, [data?.boothOverrides]);
+  }, [baseBooths, data?.boothOverrides]);
 
   const filteredBooths = useMemo(() => {
     return mergedBooths.filter((b) => {
       const matchesHall =
         selectedHall === "All" ||
-        (selectedHall === "Hall A" && (b.hall?.includes("Hall A") || b.number.startsWith("A"))) ||
-        (selectedHall === "Hall B" && (b.hall?.includes("Hall B") || b.number.startsWith("B"))) ||
-        (selectedHall === "Outdoor" && (b.hall?.includes("Outdoor") || b.number.startsWith("OUT")));
+        (selectedHall === "Block A" && (b.hall?.includes("A") || b.number.startsWith("A"))) ||
+        (selectedHall === "Block B" && (b.hall?.includes("B") || b.number.startsWith("B"))) ||
+        (selectedHall === "Block C" && (b.hall?.includes("C") || b.number.startsWith("C"))) ||
+        (selectedHall === "Outdoor & Special" &&
+          (b.hall?.includes("Outdoor") ||
+            b.hall?.includes("Special") ||
+            b.number.startsWith("H") ||
+            b.number.startsWith("F") ||
+            b.number.startsWith("OUT")));
 
       const matchesStatus = selectedStatus === "All" || b.status === selectedStatus;
 
@@ -389,16 +413,25 @@ export default function AdminStallsPage() {
       <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200 shadow-xs">
         {/* Hall Selection Pills */}
         <div className="flex items-center gap-1 overflow-x-auto scrollbar-none pb-1 md:pb-0">
-          {["All", "Hall A", "Hall B", "Outdoor"].map((hall) => {
+          {["All", "Block A", "Block B", "Block C", "Outdoor & Special"].map((hall) => {
             const isActive = selectedHall === hall;
             const count =
               hall === "All"
                 ? mergedBooths.length
-                : hall === "Hall A"
-                ? mergedBooths.filter((b) => b.hall?.includes("Hall A") || b.number.startsWith("A")).length
-                : hall === "Hall B"
-                ? mergedBooths.filter((b) => b.hall?.includes("Hall B") || b.number.startsWith("B")).length
-                : mergedBooths.filter((b) => b.hall?.includes("Outdoor") || b.number.startsWith("OUT")).length;
+                : hall === "Block A"
+                ? mergedBooths.filter((b) => b.hall?.includes("A") || b.number.startsWith("A")).length
+                : hall === "Block B"
+                ? mergedBooths.filter((b) => b.hall?.includes("B") || b.number.startsWith("B")).length
+                : hall === "Block C"
+                ? mergedBooths.filter((b) => b.hall?.includes("C") || b.number.startsWith("C")).length
+                : mergedBooths.filter(
+                    (b) =>
+                      b.hall?.includes("Outdoor") ||
+                      b.hall?.includes("Special") ||
+                      b.number.startsWith("H") ||
+                      b.number.startsWith("F") ||
+                      b.number.startsWith("OUT")
+                  ).length;
 
             return (
               <button

@@ -85,27 +85,31 @@ export default function WelcomeExpoModal() {
                 <span>5TH EDITION</span>
               </div>
 
-              <h2 className="font-sans font-bold text-2xl sm:text-3xl text-white tracking-tight leading-tight drop-shadow-sm">
+              <h2 className="font-sans font-bold text-[17px] min-[400px]:text-xl sm:text-2xl md:text-[27px] text-white tracking-tight leading-tight drop-shadow-sm whitespace-nowrap">
                 Himalayan Green Energy Expo 2027
               </h2>
 
+              <div className="text-xs sm:text-sm font-extrabold tracking-[0.35em] text-[#34D399] uppercase" aria-label="Nepal">
+                NEPAL
+              </div>
+
               {/* Location well just below the title with location icon (no bg pill) */}
-              <div className="pt-1 flex items-center justify-center gap-1.5 text-xs font-mono text-emerald-100">
+              <div className="pt-1 flex items-center justify-center gap-1.5 text-xs sm:text-sm font-mono text-emerald-100">
                 <MapPin className="w-4 h-4 text-[#34D399] shrink-0" />
-                <span className="font-medium text-white">
-                  Bhrikutimandap Exhibition Hall, Kathmandu, Nepal
+                <span className="font-medium text-white uppercase">
+                  BHRIKUTIMANDAP, KATHMANDU, NEPAL
                 </span>
               </div>
 
-              <div className="flex items-center justify-center gap-1.5 text-xs font-mono text-[#34D399] font-bold">
-                <Calendar className="w-3.5 h-3.5" />
-                <span>17–19 January 2027 · Magh 3–5, 2083</span>
+              <div className="flex items-center justify-center gap-1.5 text-xs sm:text-sm font-mono text-[#34D399] font-bold">
+                <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+                <span>17–19 January 2027 | Magh 3–5, 2083</span>
               </div>
             </div>
 
             {/* Short & Sweet Inviting Description */}
             <p className="text-xs sm:text-sm text-emerald-50/95 font-normal leading-relaxed max-w-md mx-auto">
-              Join us at the biggest platform for the renewable &amp; hydro energy sector in Nepal. Register now to be a part of it.
+              Join us at the biggest platform for the green energy sector in Nepal. Register now to be a part of it.
             </p>
 
             {/* Action Buttons with rounded-full matching Navbar CTA */}
@@ -115,7 +119,7 @@ export default function WelcomeExpoModal() {
                 onClick={handleClose}
                 className="flex-1 flex items-center justify-center py-3 px-6 rounded-full bg-white hover:bg-emerald-50 text-slate-900 font-bold text-xs tracking-wider uppercase text-center transition-all shadow-lg hover:scale-[1.02] active:scale-[0.98]"
               >
-                <span className="text-slate-900 font-bold">Register as Visitor</span>
+                <span className="text-slate-900 font-bold">Register</span>
               </Link>
 
               <Link

@@ -38,7 +38,7 @@ export function Footer() {
             <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 pt-1">
               <span className="text-emerald-400 font-medium">17–19 January 2027 (Magh 3–5, 2083)</span>
               <span className="text-slate-600">•</span>
-              <span className="text-slate-300">Bhrikuti Mandap, Kathmandu</span>
+              <span className="text-slate-300">BHRIKUTIMANDAP · KATHMANDU, NEPAL</span>
             </div>
 
             <div className="pt-2">
@@ -205,10 +205,10 @@ export function Footer() {
                     Expo Email
                   </div>
                   <a
-                    href="mailto:info@nepalenergyexpo.com"
+                    href="mailto:info@himalayanenergyexpo.com"
                     className="text-white font-mono text-xs sm:text-sm hover:text-emerald-400 transition-colors block pt-0.5"
                   >
-                    info@nepalenergyexpo.com
+                    info@himalayanenergyexpo.com
                   </a>
                 </div>
               </div>

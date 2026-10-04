@@ -15,7 +15,7 @@ export default function KathmanduVenueGuide() {
         <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-10 gap-4">
           <div>
             <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
-              Bhrikutimandap Exhibition Hall
+              BHRIKUTIMANDAP &bull; KATHMANDU, NEPAL
             </h2>
             <p className="text-sm text-slate-600 mt-1">
               Exhibition Road, Kathmandu — Nepal&apos;s premier convention hub.

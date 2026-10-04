@@ -1,371 +1,133 @@
 import { Booth } from "@/lib/types";
+import savedFloorPlan from "./savedCustomFloorPlan.json";
 
-export const boothsData: Booth[] = [
-  // HALL A - Heavy Equipment & Turbines
-  {
-    id: "A-101",
-    hall: "Hall A - Heavy Equipment & Turbines",
-    number: "A-101",
-    sizeSqM: 72,
-    type: "Island Pavilion",
-    priceUSD: 14400,
-    priceNPR: 1950000,
-    status: "Available",
-    dimensions: "9m x 8m",
-    powerIncluded: "3-Phase 32A Industrial",
-    coordinates: { x: 80, y: 100, width: 140, height: 120 },
-  },
-  {
-    id: "A-102",
-    hall: "Hall A - Heavy Equipment & Turbines",
-    number: "A-102",
-    sizeSqM: 36,
-    type: "Premium Corner",
-    priceUSD: 7200,
-    priceNPR: 975000,
-    status: "Available",
-    dimensions: "6m x 6m",
-    powerIncluded: "3-Phase 16A",
-    coordinates: { x: 260, y: 100, width: 100, height: 100 },
-  },
-  {
-    id: "A-103",
-    hall: "Hall A - Heavy Equipment & Turbines",
-    number: "A-103",
-    sizeSqM: 24,
-    type: "Standard Shell",
-    priceUSD: 4800,
-    priceNPR: 650000,
-    status: "Available",
-    dimensions: "6m x 4m",
-    powerIncluded: "Single Phase 15A",
-    coordinates: { x: 380, y: 100, width: 80, height: 100 },
-  },
-  {
-    id: "A-104",
-    hall: "Hall A - Heavy Equipment & Turbines",
-    number: "A-104",
-    sizeSqM: 24,
-    type: "Standard Shell",
-    priceUSD: 4800,
-    priceNPR: 650000,
-    status: "Available",
-    dimensions: "6m x 4m",
-    powerIncluded: "Single Phase 15A",
-    coordinates: { x: 480, y: 100, width: 80, height: 100 },
-  },
-  {
-    id: "A-108",
-    hall: "Hall A - Heavy Equipment & Turbines",
-    number: "A-108",
-    sizeSqM: 72,
-    type: "Island Pavilion",
-    priceUSD: 14400,
-    priceNPR: 1950000,
-    status: "Available",
-    dimensions: "9m x 8m",
-    powerIncluded: "3-Phase 32A Industrial",
-    coordinates: { x: 600, y: 100, width: 140, height: 120 },
-  },
-  {
-    id: "A-110",
-    hall: "Hall A - Heavy Equipment & Turbines",
-    number: "A-110",
-    sizeSqM: 36,
-    type: "Premium Corner",
-    priceUSD: 7200,
-    priceNPR: 975000,
-    status: "Available",
-    dimensions: "6m x 6m",
-    powerIncluded: "3-Phase 16A",
-    coordinates: { x: 760, y: 100, width: 100, height: 100 },
-  },
-  {
-    id: "A-115",
-    hall: "Hall A - Heavy Equipment & Turbines",
-    number: "A-115",
-    sizeSqM: 54,
-    type: "Premium Corner",
-    priceUSD: 10800,
-    priceNPR: 1460000,
-    status: "Available",
-    dimensions: "9m x 6m",
-    powerIncluded: "3-Phase 32A",
-    coordinates: { x: 80, y: 260, width: 140, height: 100 },
-  },
-  {
-    id: "A-120",
-    hall: "Hall A - Heavy Equipment & Turbines",
-    number: "A-120",
-    sizeSqM: 18,
-    type: "Standard Shell",
-    priceUSD: 3600,
-    priceNPR: 490000,
-    status: "Available",
-    dimensions: "6m x 3m",
-    powerIncluded: "Single Phase 15A",
-    coordinates: { x: 260, y: 260, width: 80, height: 80 },
-  },
-  {
-    id: "A-122",
-    hall: "Hall A - Heavy Equipment & Turbines",
-    number: "A-122",
-    sizeSqM: 36,
-    type: "Standard Shell",
-    priceUSD: 7200,
-    priceNPR: 975000,
-    status: "Available",
-    dimensions: "6m x 6m",
-    powerIncluded: "3-Phase 16A",
-    coordinates: { x: 360, y: 260, width: 100, height: 90 },
-  },
-  {
-    id: "A-125",
-    hall: "Hall A - Heavy Equipment & Turbines",
-    number: "A-125",
-    sizeSqM: 18,
-    type: "Standard Shell",
-    priceUSD: 3600,
-    priceNPR: 490000,
-    status: "Available",
-    dimensions: "6m x 3m",
-    powerIncluded: "Single Phase 15A",
-    coordinates: { x: 480, y: 260, width: 80, height: 80 },
-  },
-  {
-    id: "A-130",
-    hall: "Hall A - Heavy Equipment & Turbines",
-    number: "A-130",
-    sizeSqM: 54,
-    type: "Premium Corner",
-    priceUSD: 10800,
-    priceNPR: 1460000,
-    status: "Available",
-    dimensions: "9m x 6m",
-    powerIncluded: "3-Phase 32A",
-    coordinates: { x: 600, y: 260, width: 130, height: 100 },
-  },
-  {
-    id: "A-140",
-    hall: "Hall A - Heavy Equipment & Turbines",
-    number: "A-140",
-    sizeSqM: 24,
-    type: "Standard Shell",
-    priceUSD: 4800,
-    priceNPR: 650000,
-    status: "Available",
-    dimensions: "6m x 4m",
-    powerIncluded: "Single Phase 15A",
-    coordinates: { x: 750, y: 260, width: 90, height: 80 },
-  },
-  {
-    id: "A-150",
-    hall: "Hall A - Heavy Equipment & Turbines",
-    number: "A-150",
-    sizeSqM: 54,
-    type: "Island Pavilion",
-    priceUSD: 10800,
-    priceNPR: 1460000,
-    status: "Available",
-    dimensions: "9m x 6m",
-    powerIncluded: "3-Phase 32A Industrial",
-    coordinates: { x: 80, y: 400, width: 140, height: 100 },
-  },
-  {
-    id: "A-155",
-    hall: "Hall A - Heavy Equipment & Turbines",
-    number: "A-155",
-    sizeSqM: 24,
-    type: "Standard Shell",
-    priceUSD: 4800,
-    priceNPR: 650000,
-    status: "Available",
-    dimensions: "6m x 4m",
-    powerIncluded: "Single Phase 15A",
-    coordinates: { x: 260, y: 400, width: 90, height: 80 },
-  },
-  {
-    id: "A-160",
-    hall: "Hall A - Heavy Equipment & Turbines",
-    number: "A-160",
-    sizeSqM: 24,
-    type: "Standard Shell",
-    priceUSD: 4800,
-    priceNPR: 650000,
-    status: "Available",
-    dimensions: "6m x 4m",
-    powerIncluded: "Single Phase 15A",
-    coordinates: { x: 370, y: 400, width: 90, height: 80 },
-  },
-  {
-    id: "A-165",
-    hall: "Hall A - Heavy Equipment & Turbines",
-    number: "A-165",
-    sizeSqM: 36,
-    type: "Premium Corner",
-    priceUSD: 7200,
-    priceNPR: 975000,
-    status: "Available",
-    dimensions: "6m x 6m",
-    powerIncluded: "3-Phase 16A",
-    coordinates: { x: 480, y: 400, width: 100, height: 90 },
-  },
+function getSortRank(num: string): number {
+  const prefix = num.replace(/[0-9]/g, "").toUpperCase();
+  const intVal = parseInt(num.replace(/[^0-9]/g, "")) || 0;
+  const pRank: Record<string, number> = { C: 1, B: 2, A: 3, H: 4, F: 5 };
+  return (pRank[prefix] || 6) * 1000 + intVal;
+}
 
-  // HALL B - Automation, Systems & Finance
-  {
-    id: "B-201",
-    hall: "Hall B - Automation & Power Systems",
-    number: "B-201",
-    sizeSqM: 54,
-    type: "Island Pavilion",
-    priceUSD: 10800,
-    priceNPR: 1460000,
-    status: "Available",
-    dimensions: "9m x 6m",
-    powerIncluded: "3-Phase 32A",
-    coordinates: { x: 80, y: 100, width: 140, height: 110 },
-  },
-  {
-    id: "B-205",
-    hall: "Hall B - Automation & Power Systems",
-    number: "B-205",
-    sizeSqM: 18,
-    type: "Standard Shell",
-    priceUSD: 3600,
-    priceNPR: 490000,
-    status: "Available",
-    dimensions: "6m x 3m",
-    powerIncluded: "Single Phase 15A",
-    coordinates: { x: 250, y: 100, width: 80, height: 75 },
-  },
-  {
-    id: "B-210",
-    hall: "Hall B - Automation & Power Systems",
-    number: "B-210",
-    sizeSqM: 36,
-    type: "Standard Shell",
-    priceUSD: 7200,
-    priceNPR: 975000,
-    status: "Available",
-    dimensions: "6m x 6m",
-    powerIncluded: "Single Phase 15A",
-    coordinates: { x: 350, y: 100, width: 100, height: 85 },
-  },
-  {
-    id: "B-215",
-    hall: "Hall B - Automation & Power Systems",
-    number: "B-215",
-    sizeSqM: 36,
-    type: "Standard Shell",
-    priceUSD: 7200,
-    priceNPR: 975000,
-    status: "Available",
-    dimensions: "6m x 6m",
-    powerIncluded: "Single Phase 15A",
-    coordinates: { x: 470, y: 100, width: 100, height: 85 },
-  },
-  {
-    id: "B-220",
-    hall: "Hall B - Automation & Power Systems",
-    number: "B-220",
-    sizeSqM: 24,
-    type: "Standard Shell",
-    priceUSD: 4800,
-    priceNPR: 650000,
-    status: "Available",
-    dimensions: "6m x 4m",
-    powerIncluded: "Single Phase 15A",
-    coordinates: { x: 590, y: 100, width: 90, height: 80 },
-  },
-  {
-    id: "B-225",
-    hall: "Hall B - Automation & Power Systems",
-    number: "B-225",
-    sizeSqM: 24,
-    type: "Standard Shell",
-    priceUSD: 4800,
-    priceNPR: 650000,
-    status: "Available",
-    dimensions: "6m x 4m",
-    powerIncluded: "Single Phase 15A",
-    coordinates: { x: 700, y: 100, width: 90, height: 80 },
-  },
-  {
-    id: "B-230",
-    hall: "Hall B - Automation & Power Systems",
-    number: "B-230",
-    sizeSqM: 36,
-    type: "Standard Shell",
-    priceUSD: 7200,
-    priceNPR: 975000,
-    status: "Available",
-    dimensions: "6m x 6m",
-    powerIncluded: "Single Phase 15A",
-    coordinates: { x: 810, y: 100, width: 100, height: 90 },
-  },
-  {
-    id: "B-235",
-    hall: "Hall B - Automation & Power Systems",
-    number: "B-235",
-    sizeSqM: 18,
-    type: "Standard Shell",
-    priceUSD: 3600,
-    priceNPR: 490000,
-    status: "Available",
-    dimensions: "6m x 3m",
-    powerIncluded: "Single Phase 15A",
-    coordinates: { x: 80, y: 260, width: 80, height: 80 },
-  },
-  {
-    id: "B-240",
-    hall: "Hall B - Automation & Power Systems",
-    number: "B-240",
-    sizeSqM: 24,
-    type: "Standard Shell",
-    priceUSD: 4800,
-    priceNPR: 650000,
-    status: "Available",
-    dimensions: "6m x 4m",
-    powerIncluded: "Single Phase 15A",
-    coordinates: { x: 180, y: 260, width: 90, height: 80 },
-  },
-  {
-    id: "B-245",
-    hall: "Hall B - Automation & Power Systems",
-    number: "B-245",
-    sizeSqM: 36,
-    type: "Premium Corner",
-    priceUSD: 7200,
-    priceNPR: 975000,
-    status: "Available",
-    dimensions: "6m x 6m",
-    powerIncluded: "3-Phase 16A",
-    coordinates: { x: 290, y: 260, width: 110, height: 90 },
-  },
-  {
-    id: "B-250",
-    hall: "Hall B - Automation & Power Systems",
-    number: "B-250",
-    sizeSqM: 18,
-    type: "Standard Shell",
-    priceUSD: 3600,
-    priceNPR: 490000,
-    status: "Available",
-    dimensions: "6m x 3m",
-    powerIncluded: "Single Phase 15A",
-    coordinates: { x: 420, y: 260, width: 80, height: 80 },
-  },
-  {
-    id: "B-255",
-    hall: "Hall B - Automation & Power Systems",
-    number: "B-255",
-    sizeSqM: 18,
-    type: "Standard Shell",
-    priceUSD: 3600,
-    priceNPR: 490000,
-    status: "Available",
-    dimensions: "6m x 3m",
-    powerIncluded: "Single Phase 15A",
-    coordinates: { x: 520, y: 260, width: 80, height: 80 },
-  },
-];
+export function extractBoothsFromElements(elements: any[]): Booth[] {
+  if (!Array.isArray(elements)) return [];
+
+  const rawStalls = elements.filter((el) => {
+    if (!el) return false;
+    if (
+      el.category === "Hollow Wall / Boundary" ||
+      el.category === "Zone / Functional Area" ||
+      el.type === "zone"
+    )
+      return false;
+    if (el.color === "transparent" || el.color === "none" || el.fillOpacity === 0)
+      return false;
+    if (
+      el.type === "line" ||
+      el.type === "pencil" ||
+      el.type === "arc" ||
+      el.type === "text" ||
+      el.type === "polygon"
+    )
+      return false;
+    if (el.points && el.points.length >= 3) return false;
+    if (!el.number || typeof el.number !== "string") return false;
+    const num = el.number.trim().toUpperCase();
+    if (
+      num.startsWith("BLOCK") ||
+      num.startsWith("WALL") ||
+      num.startsWith("OUTLINE") ||
+      num.startsWith("CURVE")
+    )
+      return false;
+    return true;
+  });
+
+  rawStalls.sort((a, b) => getSortRank(a.number) - getSortRank(b.number));
+
+  return rawStalls.map((el) => {
+    const num = el.number.trim();
+    const upper = num.toUpperCase();
+
+    let hall = "Block A";
+    let type = el.category || "Standard Exhibition Space";
+    let defaultDimensions = "6m x 6m";
+    let defaultSqM = 36;
+    let defaultPriceUSD = 4000;
+    let defaultPriceNPR = 540000;
+    let powerIncluded = "16A Single Phase";
+
+    if (upper.startsWith("C")) {
+      hall = "Block C";
+      type = "10m × 7m Bare Space";
+      defaultDimensions = "10m x 7m";
+      defaultSqM = 70;
+      defaultPriceUSD = 3500;
+      defaultPriceNPR = 450000;
+      powerIncluded = "3-Phase 32A";
+    } else if (upper.startsWith("B")) {
+      hall = "Block B";
+      type = "3m × 3m Stall";
+      defaultDimensions = "3m x 3m";
+      defaultSqM = 9;
+      defaultPriceUSD = 1350;
+      defaultPriceNPR = 180000;
+      powerIncluded = "Single Phase 15A";
+    } else if (["A5", "A6", "A7", "A8"].includes(upper)) {
+      hall = "Block A";
+      type = "5m × 6m Prime Space";
+      defaultDimensions = "5m x 6m";
+      defaultSqM = 30;
+      defaultPriceUSD = 3400;
+      defaultPriceNPR = 450000;
+      powerIncluded = "16A Single Phase";
+    } else if (upper.startsWith("A")) {
+      hall = "Block A";
+      type = "6m × 6m Space";
+      defaultDimensions = "6m x 6m";
+      defaultSqM = 36;
+      defaultPriceUSD = 4000;
+      defaultPriceNPR = 540000;
+      powerIncluded = "16A Single Phase";
+    } else if (upper.startsWith("H")) {
+      hall = "Special (Hydro)";
+      type = "Hydro Competition";
+      defaultDimensions = "2m x 2m";
+      defaultSqM = 4;
+      defaultPriceUSD = 380;
+      defaultPriceNPR = 50000;
+      powerIncluded = "5A Single Phase";
+    } else if (upper.startsWith("F")) {
+      hall = "Outdoor / Food";
+      type = "Food Court";
+      defaultDimensions = "6m x 6m";
+      defaultSqM = 36;
+      defaultPriceUSD = 2250;
+      defaultPriceNPR = 300000;
+      powerIncluded = "16A Single Phase";
+    }
+
+    return {
+      id: el.id || num,
+      hall,
+      number: num,
+      sizeSqM: el.sizeSqM && el.sizeSqM > 0 ? Number(el.sizeSqM) : defaultSqM,
+      type:
+        el.category && el.category !== "10m × 7m Bare Space" && el.category !== "Wall"
+          ? el.category
+          : type,
+      priceUSD: el.priceUSD && el.priceUSD > 0 ? Number(el.priceUSD) : defaultPriceUSD,
+      priceNPR: el.priceNPR && el.priceNPR > 0 ? Number(el.priceNPR) : defaultPriceNPR,
+      status: (el.status === "Booked" || el.status === "Reserved" ? el.status : "Available") as "Available" | "Reserved" | "Booked",
+      dimensions: el.dimensions && el.dimensions !== "Wall" ? el.dimensions : defaultDimensions,
+      powerIncluded: el.powerIncluded || powerIncluded,
+      coordinates: {
+        x: Number(el.x) || 0,
+        y: Number(el.y) || 0,
+        width: Number(el.width) || 40,
+        height: Number(el.height) || 40,
+      },
+    };
+  });
+}
+
+export const boothsData: Booth[] = extractBoothsFromElements(savedFloorPlan.elements || []);

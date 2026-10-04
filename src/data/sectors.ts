@@ -86,7 +86,7 @@ export const sectorsData: Sector[] = [
     description: "Digital plant control, cloud SCADA, AI predictive maintenance, satellite telemetry, and OT cybersecurity for national grids.",
     image: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1200&q=80",
     subsectors: ["Distributed Control Systems (DCS)", "IEC 61850 Substation Automation", "Vibration & Acoustic Health Monitoring", "Real-Time River Discharge Telemetry"],
-    highlights: "Autonomous cascade dispatch optimizing multi-plant river basin generation in real-time.",
+    highlights: "Autonomous cascade control optimizing multi-plant river basin generation in real-time.",
     iconName: "Monitor",
   },
   {

@@ -150,7 +150,7 @@ function PaymentSuccessContent() {
               <div>
                 <span className="text-slate-500 text-[10px] uppercase font-bold">VENUE & LOCATION</span>
                 <div className="font-sans font-bold text-slate-800 mt-0.5">
-                  {isGala ? "Royal Tulip Kathmandu (Gwarko)" : "Bhrikutimandap Exhibition Hall, Kathmandu"}
+                  {isGala ? "Royal Tulip Kathmandu (Gwarko)" : "BHRIKUTIMANDAP · KATHMANDU, NEPAL"}
                 </div>
               </div>
 
