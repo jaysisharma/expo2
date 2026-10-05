@@ -113,24 +113,8 @@ export default function EVRallyPage() {
             EV Rally
           </h1>
 
-          <p className="text-sm sm:text-base text-slate-200 max-w-2xl mx-auto leading-relaxed">
-            Join Nepal’s premier zero-emission roadshow advocating green mobility, renewable hydro integration, and urban air quality during the 5th Himalayan Green Energy Expo 2027.
-          </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 pt-2 text-xs font-mono text-emerald-100/80">
-            <div className="flex items-center gap-1.5 bg-black/30 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10">
-              <Calendar className="w-4 h-4 text-[#34D399]" />
-              <span>Friday, 9th January 2027</span>
-            </div>
-            <div className="flex items-center gap-1.5 bg-black/30 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10">
-              <Clock className="w-4 h-4 text-[#34D399]" />
-              <span>Assembly: 7:30 AM · Flag-Off: 8:30 AM</span>
-            </div>
-            <div className="flex items-center gap-1.5 bg-black/30 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10">
-              <MapPin className="w-4 h-4 text-[#34D399]" />
-              <span>Bhrikutimandap Grounds, Kathmandu</span>
-            </div>
-          </div>
+
         </div>
       </section >
 

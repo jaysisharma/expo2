@@ -13,8 +13,11 @@ import {
   Calendar,
   MapPin,
   Sparkles,
+  Images,
 } from 'lucide-react';
 import { ScrollReveal, TopographicContours, MountainCrestSvg } from '@/components/ui';
+import EditionGalleryModal from './EditionGalleryModal';
+import { EDITION_GALLERY_IMAGES } from '@/data/editionGalleryImages';
 
 interface StoryEdition {
   year: string;
@@ -31,6 +34,12 @@ import defaultJourneyData from '@/data/expoJourneyData.json';
 
 export function ExpoJourney() {
   const [journeyData, setJourneyData] = React.useState(defaultJourneyData);
+  const [activeGalleryEdition, setActiveGalleryEdition] = React.useState<{
+    year: string;
+    title: string;
+    edition: string;
+    images: string[];
+  } | null>(null);
 
   React.useEffect(() => {
     async function loadData() {
@@ -87,10 +96,23 @@ export function ExpoJourney() {
           </div>
         </ScrollReveal>
 
-        {/* ── 02: EDITORIAL DOCUMENTARY STORY TIMELINE (Clean, Uncluttered Cards) ── */}
+        {/* ── 02: EDITORIAL DOCUMENTARY STORY TIMELINE (Clickable Cards with Gallery Modal) ── */}
         <div className="space-y-6 sm:space-y-8 relative mb-14 sm:mb-16">
           {editions.map((item: any, index: number) => {
             const isEven = index % 2 === 0;
+            const editionPhotos = EDITION_GALLERY_IMAGES[item.year]?.images || [];
+            const hasPhotos = editionPhotos.length > 0;
+
+            const handleOpenGallery = () => {
+              if (hasPhotos) {
+                setActiveGalleryEdition({
+                  year: item.year,
+                  title: EDITION_GALLERY_IMAGES[item.year]?.title || item.title,
+                  edition: EDITION_GALLERY_IMAGES[item.year]?.edition || item.edition,
+                  images: editionPhotos,
+                });
+              }
+            };
 
             return (
               <ScrollReveal
@@ -99,7 +121,20 @@ export function ExpoJourney() {
                 distance={25}
                 duration={0.65}
               >
-                <div className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-7 border border-slate-100/90 shadow-[0_6px_24px_-6px_rgba(0,0,0,0.06),0_12px_28px_-8px_rgba(0,122,94,0.06)] hover:shadow-[0_20px_45px_-10px_rgba(0,122,94,0.18)] hover:border-emerald-200/80 transition-all duration-300 group">
+                <div
+                  onClick={handleOpenGallery}
+                  className={`bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-7 border border-slate-100/90 shadow-[0_6px_24px_-6px_rgba(0,0,0,0.06),0_12px_28px_-8px_rgba(0,122,94,0.06)] hover:shadow-[0_20px_45px_-10px_rgba(0,122,94,0.18)] hover:border-emerald-300 transition-all duration-300 group ${
+                    hasPhotos ? 'cursor-pointer' : ''
+                  }`}
+                  role={hasPhotos ? 'button' : undefined}
+                  tabIndex={hasPhotos ? 0 : undefined}
+                  onKeyDown={(e) => {
+                    if (hasPhotos && (e.key === 'Enter' || e.key === ' ')) {
+                      e.preventDefault();
+                      handleOpenGallery();
+                    }
+                  }}
+                >
                   <div
                     className={`grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center ${
                       isEven ? '' : 'lg:flex-row-reverse'
@@ -119,10 +154,17 @@ export function ExpoJourney() {
                           sizes="(max-width: 1024px) 100vw, 500px"
                           className="object-cover group-hover:scale-105 transition-transform duration-700"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                         <span className="absolute bottom-2.5 left-2.5 text-[10px] font-bold text-white bg-black/50 backdrop-blur-md px-2.5 py-0.5 rounded-full shadow-xs">
-                          {item.caption}
+                          {item.caption || `${item.year} Archive`}
                         </span>
+
+                        {hasPhotos && (
+                          <div className="absolute top-2.5 right-2.5 flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-950/70 backdrop-blur-md border border-white/20 text-white text-[10.5px] font-mono font-semibold shadow-md group-hover:bg-[#007A5E] group-hover:border-emerald-400 transition-colors">
+                            <Images className="w-3 h-3 text-emerald-400 group-hover:text-white" />
+                            <span>{editionPhotos.length} Photos</span>
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -144,7 +186,7 @@ export function ExpoJourney() {
                         </span>
                       </div>
 
-                      <h3 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight leading-snug">
+                      <h3 className="text-lg sm:text-xl font-bold text-slate-900 group-hover:text-[#007A5E] transition-colors tracking-tight leading-snug">
                         {item.title}
                       </h3>
 
@@ -152,9 +194,25 @@ export function ExpoJourney() {
                         {item.story}
                       </p>
 
-                      <div className="pt-1 flex items-center gap-2 text-xs text-[#007A5E] font-semibold">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#007A5E]" />
-                        <span>{item.meta}</span>
+                      <div className="pt-2 flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex items-center gap-2 text-xs text-[#007A5E] font-semibold">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#007A5E]" />
+                          <span>{item.meta}</span>
+                        </div>
+
+                        {hasPhotos && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenGallery();
+                            }}
+                            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-slate-100 hover:bg-[#007A5E] text-slate-800 hover:text-white text-xs font-semibold tracking-tight transition-all shadow-2xs group-hover:bg-[#007A5E] group-hover:text-white cursor-pointer active:scale-95"
+                          >
+                            <Images className="w-3.5 h-3.5" />
+                            <span>View All {item.year} Photos ({editionPhotos.length})</span>
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -164,6 +222,18 @@ export function ExpoJourney() {
           })}
         </div>
       </div>
+
+      {/* ── All Images Edition Gallery Modal Popup ── */}
+      {activeGalleryEdition && (
+        <EditionGalleryModal
+          isOpen={Boolean(activeGalleryEdition)}
+          onClose={() => setActiveGalleryEdition(null)}
+          year={activeGalleryEdition.year}
+          title={activeGalleryEdition.title}
+          edition={activeGalleryEdition.edition}
+          images={activeGalleryEdition.images}
+        />
+      )}
 
       {/* ── 03: 5TH EDITION MILESTONE SHOWCASE (Full Width Dark Teal Banner) ── */}
       <div className="relative w-full bg-[#051D2C] border-t border-[#0C3952] py-14 sm:py-20 lg:py-24 text-white overflow-hidden">

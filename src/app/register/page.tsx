@@ -28,7 +28,7 @@ export default function RegisterPage() {
             Visitor &amp; Delegate Registration
           </h1>
           <p className="mt-1 text-xs text-emerald-100/70">
-            17–19 Jan 2027 · BHRIKUTIMANDAP, KATHMANDU, NEPAL
+            17–19 Jan 2027 | BHRIKUTIMANDAP, KATHMANDU, NEPAL
           </p>
         </div>
       </div>
