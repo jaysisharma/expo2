@@ -283,39 +283,6 @@ export function Navbar() {
       className="sticky top-0 z-50 w-full bg-white border-b border-slate-200/90 shadow-xs"
       onMouseLeave={handleMouseLeave}
     >
-      {/* ── Top Announcement Strip: Clean Energy EV Rally 2027 (Minimalist Luxury Light) ── */}
-      <div className="w-full bg-[#FAFBF9] border-b border-slate-200/80 py-2 sm:py-2.5 px-3 sm:px-6 relative z-10 transition-colors">
-        <div className="max-w-[1440px] mx-auto flex items-center justify-between text-xs gap-3">
-          <div className="flex items-center gap-2.5 sm:gap-3.5 flex-1 min-w-0">
-            {/* Pill Tag */}
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-[#007A5E] border border-emerald-200/90 font-mono text-[10.5px] font-bold tracking-wider uppercase shrink-0 shadow-2xs">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#00A37A] animate-ping" />
-              <span>EV RALLY</span>
-            </span>
-
-            {/* Title & Details */}
-            <div className="flex items-center gap-2 truncate text-[11.5px] sm:text-[12.5px]">
-              <span className="font-semibold text-slate-800 tracking-tight truncate">
-                Kathmandu Valley Clean Energy EV Roadshow
-              </span>
-              <span className="text-slate-300 hidden md:inline">|</span>
-              <span className="hidden sm:inline-block text-slate-600 font-mono text-[11px]">
-                Friday, 9th Jan 2027 · Bhrikutimandap
-              </span>
-            </div>
-          </div>
-
-          {/* Action Link */}
-          <Link
-            href="/ev-rally"
-            className="group/rally shrink-0 inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-1 rounded-full bg-white hover:bg-[#007A5E] text-slate-800 hover:text-white text-[11px] font-semibold tracking-tight border border-slate-300 hover:border-[#007A5E] shadow-2xs hover:shadow-xs transition-all duration-200 active:scale-95 cursor-pointer"
-          >
-            <span>Register Vehicle</span>
-            <ArrowRight className="w-3 h-3 text-[#007A5E] group-hover/rally:text-white transition-transform duration-200 group-hover/rally:translate-x-0.5" />
-          </Link>
-        </div>
-      </div>
-
       <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 h-20 sm:h-[88px] lg:h-[96px] flex items-center justify-between gap-4">
         {/* ── Left: Official Expo Logo ───────────────────────────────── */}
         <Link
