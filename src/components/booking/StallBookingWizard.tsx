@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { boothsData } from "@/data/booths";
 import { officialStalls, OfficialStall } from "@/data/officialFloorPlanData";
@@ -504,10 +504,47 @@ export default function StallBookingWizard() {
   const totalWithVatNPR = finalPriceNPR + vatNPR;
   const totalWithVatUSD = finalPriceUSD + vatUSD;
 
+  // Reference & smooth auto-scroll helper to jump directly to stall selection
+  const stallSelectionRef = useRef<HTMLDivElement>(null);
+
+  const scrollToStallSelection = () => {
+    const performScroll = () => {
+      const el = stallSelectionRef.current || document.getElementById("select-stall-section");
+      if (el) {
+        // Method 1: native scrollIntoView with start block alignment
+        try {
+          el.scrollIntoView({ behavior: "smooth", block: "start" });
+        } catch {}
+
+        // Method 2: calculated window.scrollTo for precise pixel positioning below navbar
+        const navOffset = 95;
+        const rect = el.getBoundingClientRect();
+        const scrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
+        const targetTop = rect.top + scrollY - navOffset;
+
+        try {
+          window.scrollTo({
+            top: Math.max(0, targetTop),
+            behavior: "smooth",
+          });
+        } catch {}
+      }
+    };
+
+    // First attempt immediately on next tick
+    setTimeout(performScroll, 50);
+    // Second attempt after React state re-render has completed layout shifts
+    setTimeout(performScroll, 220);
+  };
+
   // Function to handle package selection and auto-allocation
-  const selectPackage = (pkgId: string) => {
+  const selectPackage = (pkgId: string, shouldScroll = true) => {
     setSelectedPackageId(pkgId);
     setIsCustomizedOnMap(false);
+
+    if (shouldScroll) {
+      scrollToStallSelection();
+    }
 
     const pkg = PARTICIPATION_PACKAGES.find((p) => p.id === pkgId);
     if (!pkg || pkg.id === "custom-selection") {
@@ -1378,35 +1415,38 @@ export default function StallBookingWizard() {
               );
             })()}
 
-            {/* Active notification indicator */}
-            {selectedPackage && (
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
-                <div className="flex items-center gap-2 text-slate-700">
-                  <div className={`w-2 h-2 rounded-full shrink-0 ${selectedPackage.id === "title-sponsor" ? "bg-amber-500" : "bg-[#007A5E]"}`} />
-                  <span>
-                    <strong className="text-slate-900">{selectedPackage.name}</strong> selected.
-                    {selectedPackage.id === "custom-selection" ? (
-                      <span className="text-slate-500 ml-1">Pick stalls on the interactive floor plan below.</span>
-                    ) : (
-                      <span className="ml-1">
-                        Assigned: <strong className="font-mono text-[#007A5E]">{selectedBoothNumbers.length > 0 ? `STALL ${selectedBoothNumbers.join(", ")}` : "None"}</strong>.
-                      </span>
-                    )}
-                  </span>
-                </div>
+            {/* ─── STALL ALLOCATION & FLOOR PLAN SCROLL ANCHOR ─── */}
+            <div id="select-stall-section" ref={stallSelectionRef} className="scroll-mt-24 pt-1">
+              {/* Active notification indicator */}
+              {selectedPackage && (
+                <div className="p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs shadow-2xs">
+                  <div className="flex items-center gap-2 text-slate-700">
+                    <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${selectedPackage.id === "title-sponsor" ? "bg-amber-500 animate-pulse" : "bg-[#007A5E]"}`} />
+                    <span>
+                      <strong className="text-slate-900">{selectedPackage.name}</strong> selected.
+                      {selectedPackage.id === "custom-selection" ? (
+                        <span className="text-slate-500 ml-1">Pick stalls on the interactive floor plan below.</span>
+                      ) : (
+                        <span className="ml-1">
+                          Assigned: <strong className="font-mono text-[#007A5E]">{selectedBoothNumbers.length > 0 ? `STALL ${selectedBoothNumbers.join(", ")}` : "None"}</strong>.
+                        </span>
+                      )}
+                    </span>
+                  </div>
 
-                {isCustomizedOnMap && selectedPackage.preferredStalls.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => selectPackage(selectedPackage.id)}
-                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600 hover:text-slate-900 cursor-pointer"
-                  >
-                    <RotateCcw className="w-3 h-3" />
-                    <span>Reset Stalls</span>
-                  </button>
-                )}
-              </div>
-            )}
+                  {isCustomizedOnMap && selectedPackage.preferredStalls.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => selectPackage(selectedPackage.id, false)}
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600 hover:text-slate-900 cursor-pointer"
+                    >
+                      <RotateCcw className="w-3 h-3" />
+                      <span>Reset Stalls</span>
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* 2-Column Grid: Big Floor Plan (Left) & Sleek Compact Sidebar (Right) */}
@@ -1414,7 +1454,7 @@ export default function StallBookingWizard() {
             {/* Left: Floor Plan or List View (Big side: 9 cols on xl, 8 on lg) */}
             <div className="lg:col-span-8 xl:col-span-9">
               {viewMode === "map" ? (
-                <div className="rounded-2xl border border-slate-200 overflow-hidden bg-slate-50 p-2 sm:p-4">
+                <div className="rounded-2xl border border-slate-200 overflow-hidden bg-slate-50 p-1.5 sm:p-4">
                   <InteractiveFloorPlan
                     selectedStalls={selectedBoothNumbers}
                     showSearch={false}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -21,6 +21,7 @@ import {
   ZoomIn,
   ZoomOut,
   RotateCcw,
+  Maximize2,
   Building2,
   Calendar,
   Layers,
@@ -75,10 +76,100 @@ export default function InteractiveFloorPlan({
   const selectedStalls = isControlled ? controlledSelectedStalls : internalSelectedStalls;
 
   const [hoveredStall, setHoveredStall] = useState<any | null>(null);
+  const [activeMobileStall, setActiveMobileStall] = useState<any | null>(null);
   const [zoomLevel, setZoomLevel] = useState<number>(initialZoom);
+  const [fitZoom, setFitZoom] = useState<number>(0.35);
+  const [hasInitializedMobileZoom, setHasInitializedMobileZoom] = useState(false);
+  const [isPinching, setIsPinching] = useState(false);
+  const touchStartRef = useRef<{ dist: number; zoom: number } | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [boothOverrides, setBoothOverrides] = useState<Record<string, any>>({});
   const [primeSurchargePercent, setPrimeSurchargePercent] = useState<number>(25);
+
+  // Dynamic Auto-Fit calculation based on container clientWidth
+  const updateFitZoom = useCallback(() => {
+    if (!containerRef.current) return 0.35;
+    const containerW = containerRef.current.clientWidth;
+    if (!containerW) return 0.35;
+    const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+    const padding = isMobile ? 16 : 32;
+    const availableW = Math.max(containerW - padding, 220);
+    const calculated = Number((availableW / canvasWidth).toFixed(2));
+    const clamped = Math.max(0.18, Math.min(calculated, 1.2));
+    setFitZoom(clamped);
+    return clamped;
+  }, [canvasWidth]);
+
+  useEffect(() => {
+    const calculated = updateFitZoom();
+    if (!hasInitializedMobileZoom && typeof window !== "undefined") {
+      if (window.innerWidth < 768) {
+        setZoomLevel(calculated);
+      }
+      setHasInitializedMobileZoom(true);
+    }
+
+    const handleResize = () => {
+      updateFitZoom();
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [updateFitZoom, hasInitializedMobileZoom]);
+
+  const minZoom = Math.min(0.2, Number((fitZoom * 0.8).toFixed(2)));
+  const maxZoom = 2.5;
+
+  const handleZoomIn = () => {
+    setZoomLevel((z) => Math.min(Number((z + 0.15).toFixed(2)), maxZoom));
+  };
+
+  const handleZoomOut = () => {
+    setZoomLevel((z) => Math.max(Number((z - 0.15).toFixed(2)), minZoom));
+  };
+
+  const handleFitToScreen = () => {
+    const fz = updateFitZoom();
+    setZoomLevel(fz);
+  };
+
+  const handleResetZoom = () => {
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      handleFitToScreen();
+    } else {
+      setZoomLevel(initialZoom);
+    }
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      touchStartRef.current = { dist, zoom: zoomLevel };
+      setIsPinching(true);
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 2 && touchStartRef.current) {
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      const factor = dist / touchStartRef.current.dist;
+      const nextZoom = Math.min(Math.max(touchStartRef.current.zoom * factor, minZoom), maxZoom);
+      setZoomLevel(Number(nextZoom.toFixed(2)));
+    }
+  };
+
+  const handleTouchEnd = () => {
+    touchStartRef.current = null;
+    setIsPinching(false);
+  };
 
   // Fetch latest saved custom floor plan and overrides from API
   useEffect(() => {
@@ -175,6 +266,12 @@ export default function InteractiveFloorPlan({
     const stallNumber = stall.number || stall.id;
     const override = boothOverrides[stallNumber] || (stall.id && boothOverrides[stall.id]);
     const effectiveStatus = override?.status || stall.status;
+
+    // Show mobile detail card when tapped on mobile screens (< 768px)
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      setActiveMobileStall(stall);
+    }
+
     if (effectiveStatus === "Booked" || stall.category === "SEMINAR HALL") return;
 
     if (onSelectStall) {
@@ -260,65 +357,92 @@ export default function InteractiveFloorPlan({
       {/* =========================================================================
           01: CONTROLS & SEARCH BAR
          ========================================================================= */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-4 rounded-2xl bg-white border border-slate-200 shadow-sm font-mono text-xs">
-        <div className="flex items-center gap-2 flex-wrap">
-          <Sparkles className="w-4 h-4 text-[#218A59]" />
-          <span className="font-bold text-slate-900 uppercase tracking-wider">
-            EXHIBITION FLOOR PLAN ({stallElements.length} STALLS)
-          </span>
-          <span className="text-[10px] font-mono bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-bold">
-            + 13% VAT APPLICABLE
-          </span>
-        </div>
+      <div className="flex flex-col gap-3 p-3 sm:p-4 rounded-2xl bg-white border border-slate-200 shadow-sm font-mono text-xs">
+        {/* Top Header Row */}
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Sparkles className="w-4 h-4 text-[#218A59]" />
+            <span className="font-bold text-slate-900 uppercase tracking-wider text-[11px] sm:text-xs">
+              EXHIBITION FLOOR PLAN ({stallElements.length} STALLS)
+            </span>
+            <span className="text-[10px] font-mono bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-bold">
+              + 13% VAT
+            </span>
+          </div>
 
-        {/* Zoom & Search Controls */}
-        <div className="flex flex-wrap items-center gap-3">
+          {/* Builder Link if enabled */}
           {showBuilderLink && (
             <Link
               href="/floor-plan/builder"
-              className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-[#218A59] text-emerald-400 hover:text-white font-bold flex items-center gap-1.5 transition-all shadow-sm"
+              className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-[#218A59] text-emerald-400 hover:text-white font-bold flex items-center gap-1.5 transition-all shadow-sm text-[11px]"
             >
               <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
               <span>EDIT STALLS STUDIO ↗</span>
             </Link>
           )}
+        </div>
 
+        {/* Bottom Controls Row: Search + Zoom Controls */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
           {showSearch && (
-            <div className="relative flex-1 sm:w-56">
+            <div className="relative flex-1">
               <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="Search Stall (e.g. C1, A12, B5)..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs font-mono text-slate-900 focus:outline-none focus:border-[#218A59]"
+                className="w-full pl-8 pr-3 py-2 sm:py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs font-mono text-slate-900 focus:outline-none focus:border-[#218A59]"
               />
             </div>
           )}
 
-          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200">
-            <button
-              onClick={() => setZoomLevel((z) => Math.min(z + 0.15, 1.6))}
-              className="p-1.5 rounded hover:bg-white text-slate-700 font-bold cursor-pointer"
-              title="Zoom In"
-            >
-              <ZoomIn className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => setZoomLevel((z) => Math.max(z - 0.15, 0.7))}
-              className="p-1.5 rounded hover:bg-white text-slate-700 font-bold cursor-pointer"
-              title="Zoom Out"
-            >
-              <ZoomOut className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => setZoomLevel(initialZoom)}
-              className="p-1.5 rounded hover:bg-white text-slate-700 font-bold cursor-pointer"
-              title="Reset Zoom"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-            </button>
+          <div className="flex items-center justify-between sm:justify-end gap-2">
+            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200">
+              <button
+                type="button"
+                onClick={handleZoomIn}
+                className="p-1.5 rounded hover:bg-white text-slate-700 font-bold cursor-pointer active:scale-95 transition-transform"
+                title="Zoom In"
+              >
+                <ZoomIn className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={handleZoomOut}
+                className="p-1.5 rounded hover:bg-white text-slate-700 font-bold cursor-pointer active:scale-95 transition-transform"
+                title="Zoom Out"
+              >
+                <ZoomOut className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={handleFitToScreen}
+                className="px-2.5 py-1.5 sm:py-1 rounded bg-white sm:bg-transparent hover:bg-white text-slate-800 text-[11px] font-bold cursor-pointer flex items-center gap-1 shadow-xs border sm:border-0 border-slate-200 active:scale-95 transition-transform"
+                title="Fit to Screen"
+              >
+                <Maximize2 className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Fit Screen</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleResetZoom}
+                className="p-1.5 rounded hover:bg-white text-slate-700 font-bold cursor-pointer active:scale-95 transition-transform"
+                title="Reset Zoom"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+              </button>
+              <span className="text-[10px] text-slate-500 font-mono px-1.5 font-bold border-l border-slate-300">
+                {Math.round(zoomLevel * 100)}%
+              </span>
+            </div>
           </div>
+        </div>
+
+        {/* Mobile Gesture Hint Bar */}
+        <div className="sm:hidden flex items-center gap-1.5 text-[10px] text-slate-500 font-sans bg-slate-50 px-2.5 py-1 rounded-md border border-slate-200">
+          <span className="text-emerald-600 font-bold">💡 Touch tip:</span>
+          <span>Pinch with 2 fingers to zoom · Drag to pan the floor plan</span>
         </div>
       </div>
 
@@ -326,23 +450,38 @@ export default function InteractiveFloorPlan({
           02: CUSTOM BUILT FLOOR PLAN CANVAS WITH INTERACTIVE STALLS & DRAWN LINES
          ========================================================================= */}
       <div className="relative w-full rounded-2xl overflow-hidden bg-slate-900 border-2 border-slate-200 shadow-md">
-        <div className="relative w-full overflow-auto bg-slate-950 p-2 sm:p-6 flex items-center justify-center min-h-[600px]">
+        <div
+          ref={containerRef}
+          className="relative w-full overflow-auto touch-pan-x touch-pan-y overscroll-contain bg-slate-950 p-2 sm:p-6 min-h-[380px] sm:min-h-[600px] flex items-start justify-start select-none"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          {/* Sizing wrapper for exact bounding box and natural scrolling without phantom margins */}
           <div
             style={{
-              width: `${canvasWidth}px`,
-              height: `${canvasHeight}px`,
-              transform: `scale(${zoomLevel})`,
-              transformOrigin: "center center",
-              transition: "transform 0.2s ease-out",
-              backgroundColor:
-                canvasBgMode === "clean-white"
-                  ? "#FFFFFF"
-                  : canvasBgMode === "cad-navy"
-                  ? "#0F172A"
-                  : "#0C121C",
+              width: `${Math.round(canvasWidth * zoomLevel)}px`,
+              height: `${Math.round(canvasHeight * zoomLevel)}px`,
+              margin: "auto",
             }}
-            className="relative max-w-none rounded-xl shadow-2xl border border-slate-300 dark:border-slate-700 overflow-hidden shrink-0"
+            className="relative shrink-0 transition-[width,height] duration-150 ease-out"
           >
+            <div
+              style={{
+                width: `${canvasWidth}px`,
+                height: `${canvasHeight}px`,
+                transform: `scale(${zoomLevel})`,
+                transformOrigin: "top left",
+                transition: isPinching ? "none" : "transform 0.15s ease-out",
+                backgroundColor:
+                  canvasBgMode === "clean-white"
+                    ? "#FFFFFF"
+                    : canvasBgMode === "cad-navy"
+                    ? "#0F172A"
+                    : "#0C121C",
+              }}
+              className="relative max-w-none rounded-xl shadow-2xl border border-slate-300 dark:border-slate-700 overflow-hidden"
+            >
             {/* Background Blueprint Image */}
             {showBgImage && bgImageSrc && (
               // eslint-disable-next-line @next/next/no-img-element
@@ -491,8 +630,16 @@ export default function InteractiveFloorPlan({
                       key={el.id}
                       className={isBookable ? "cursor-pointer pointer-events-auto" : ""}
                       onClick={() => isBookable && toggleStall(el)}
-                      onMouseEnter={() => isBookable && setHoveredStall(el)}
-                      onMouseLeave={() => isBookable && setHoveredStall(null)}
+                      onMouseEnter={() => {
+                        if (typeof window !== "undefined" && window.innerWidth >= 768) {
+                          isBookable && setHoveredStall(el);
+                        }
+                      }}
+                      onMouseLeave={() => {
+                        if (typeof window !== "undefined" && window.innerWidth >= 768) {
+                          isBookable && setHoveredStall(null);
+                        }
+                      }}
                     >
                       <polygon
                         points={pointsStr}
@@ -647,8 +794,16 @@ export default function InteractiveFloorPlan({
                 <div
                   key={el.id}
                   onClick={() => toggleStall(el)}
-                  onMouseEnter={() => setHoveredStall(el)}
-                  onMouseLeave={() => setHoveredStall(null)}
+                  onMouseEnter={() => {
+                    if (typeof window !== "undefined" && window.innerWidth >= 768) {
+                      setHoveredStall(el);
+                    }
+                  }}
+                  onMouseLeave={() => {
+                    if (typeof window !== "undefined" && window.innerWidth >= 768) {
+                      setHoveredStall(null);
+                    }
+                  }}
                   style={{
                     position: "absolute",
                     left: `${el.x}px`,
@@ -713,10 +868,11 @@ export default function InteractiveFloorPlan({
                 </div>
               );
             })}
+            </div>
           </div>
         </div>
 
-        {/* Live Hover Tooltip Floating Card */}
+        {/* Live Hover Tooltip Floating Card (Desktop only) */}
         {hoveredStall && (() => {
           const stallNum = hoveredStall.number || hoveredStall.id;
           const upper = (stallNum || "").trim().toUpperCase();
@@ -727,7 +883,7 @@ export default function InteractiveFloorPlan({
           const isBareSpace = !isB && !isH;
 
           return (
-            <div className="absolute top-4 left-4 z-40 pointer-events-none p-4 rounded-xl bg-slate-900/95 text-white backdrop-blur-md border border-white/20 shadow-2xl font-mono text-xs space-y-1">
+            <div className="hidden sm:block absolute top-4 left-4 z-40 pointer-events-none p-4 rounded-xl bg-slate-900/95 text-white backdrop-blur-md border border-white/20 shadow-2xl font-mono text-xs space-y-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-sans font-bold text-base text-white">
                   STALL {stallNum} {isBareSpace ? "(Bare Space)" : ""}
@@ -803,13 +959,120 @@ export default function InteractiveFloorPlan({
             </div>
           );
         })()}
+
+        {/* Mobile Stall Detail Bottom Floating Card (Phones & small screens) */}
+        {activeMobileStall && (() => {
+          const stallNum = activeMobileStall.number || activeMobileStall.id;
+          const upper = (stallNum || "").trim().toUpperCase();
+          const bMatch = upper.match(/^B(\d+)$/);
+          const isB = bMatch && parseInt(bMatch[1], 10) >= 1 && parseInt(bMatch[1], 10) <= 22;
+          const hMatch = upper.match(/^H(\d+)$/);
+          const isH = hMatch && parseInt(hMatch[1], 10) >= 1 && parseInt(hMatch[1], 10) <= 8;
+          const isBareSpace = !isB && !isH;
+
+          const ov = boothOverrides[stallNum] || (activeMobileStall.id && boothOverrides[activeMobileStall.id]);
+          const effectiveStatus = ov?.status || activeMobileStall.status || "Available";
+          const isStallPrime = Boolean(ov?.isPrime ?? activeMobileStall.isPrime);
+          const isBooked = effectiveStatus === "Booked";
+          const isSelected = selectedStalls.some((s) => s.toLowerCase() === stallNum.toLowerCase() || (activeMobileStall.id && s.toLowerCase() === activeMobileStall.id.toLowerCase()));
+
+          const baseNPR =
+            ov?.priceNPR !== undefined && ov?.priceNPR !== null
+              ? Number(ov.priceNPR)
+              : activeMobileStall.priceNPR !== undefined && activeMobileStall.priceNPR !== null
+              ? Number(activeMobileStall.priceNPR)
+              : 180000;
+          const baseUSD =
+            ov?.priceUSD !== undefined && ov?.priceUSD !== null
+              ? Number(ov.priceUSD)
+              : activeMobileStall.priceUSD !== undefined && activeMobileStall.priceUSD !== null
+              ? Number(activeMobileStall.priceUSD)
+              : 1350;
+
+          const effectiveNPR = isStallPrime ? Math.round(baseNPR * (1 + primeSurchargeRate)) : baseNPR;
+          const effectiveUSD = isStallPrime ? Math.round(baseUSD * (1 + primeSurchargeRate)) : baseUSD;
+
+          return (
+            <div className="sm:hidden absolute bottom-3 left-3 right-3 z-40 p-3.5 rounded-2xl bg-slate-900/95 text-white backdrop-blur-xl border border-white/20 shadow-2xl font-mono text-xs animate-in fade-in slide-in-from-bottom-3 duration-200">
+              <div className="flex items-start justify-between gap-2 pb-2 border-b border-slate-700/60">
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-sans font-bold text-base text-white">
+                      STALL {stallNum}
+                    </span>
+                    {isStallPrime && (
+                      <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-amber-400 text-slate-950">
+                        ★ PRIME (+{primeSurchargePercent}%)
+                      </span>
+                    )}
+                    <span
+                      className={`text-[9px] px-2 py-0.5 rounded font-bold uppercase ${
+                        effectiveStatus === "Available"
+                          ? "bg-[#10B981] text-white"
+                          : effectiveStatus === "Reserved"
+                          ? "bg-[#F59E0B] text-white"
+                          : "bg-slate-600 text-white"
+                      }`}
+                    >
+                      {effectiveStatus}
+                    </span>
+                  </div>
+                  <div className="text-emerald-400 font-bold text-[11px] mt-0.5">
+                    {activeMobileStall.dimensions || "3m × 3m"} · {isBareSpace ? "Bare Space" : "Shell Scheme"} · {activeMobileStall.sizeSqM ?? 9} m² ({activeMobileStall.sizeSqFt ?? Math.round((activeMobileStall.sizeSqM ?? 9) * 10.76)} sq.ft)
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveMobileStall(null)}
+                  className="p-1 rounded-full bg-slate-800 text-slate-400 hover:text-white cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="pt-2 flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-[10px] text-slate-400">Total (+13% VAT):</div>
+                  <div className="text-[#34D399] font-bold text-xs">
+                    NPR {effectiveNPR.toLocaleString()} / USD ${effectiveUSD.toLocaleString()}
+                  </div>
+                </div>
+                {!isBooked && activeMobileStall.category !== "SEMINAR HALL" && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      toggleStall(activeMobileStall);
+                    }}
+                    className={`px-3 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1 transition-all cursor-pointer ${
+                      isSelected
+                        ? "bg-red-500/20 text-red-300 border border-red-500/40"
+                        : "bg-[#218A59] text-white shadow-md"
+                    }`}
+                  >
+                    {isSelected ? (
+                      <>
+                        <X className="w-3.5 h-3.5" />
+                        <span>Deselect</span>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>Select Stall</span>
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* =========================================================================
           03: THEATER CART & BOOKING CHECKOUT BAR
          ========================================================================= */}
       {showCheckoutBar && (
-        <div className="p-6 rounded-2xl bg-slate-900 text-white border border-slate-700 shadow-2xl font-mono flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-6">
+        <div className="p-4 sm:p-6 rounded-2xl bg-slate-900 text-white border border-slate-700 shadow-2xl font-mono flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 sm:gap-6">
           {/* Left: Selected Stalls List */}
           <div className="space-y-2 flex-1">
             <div className="flex items-center gap-2">
@@ -858,9 +1121,9 @@ export default function InteractiveFloorPlan({
           </div>
 
           {/* Right: Price Aggregates & Instant Checkout CTA */}
-          <div className="flex flex-wrap items-center gap-6 border-t lg:border-t-0 lg:border-l border-slate-700 pt-4 lg:pt-0 lg:pl-6">
-            <div className="space-y-0.5 text-right">
-              <div className="text-[10px] text-slate-400 uppercase font-bold tracking-widest flex items-center justify-end gap-1.5 flex-wrap">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between lg:justify-end gap-4 sm:gap-6 border-t lg:border-t-0 lg:border-l border-slate-700 pt-4 lg:pt-0 lg:pl-6">
+            <div className="space-y-0.5 text-left sm:text-right">
+              <div className="text-[10px] text-slate-400 uppercase font-bold tracking-widest flex items-center sm:justify-end gap-1.5 flex-wrap">
                 {hasSelectedPrime && (
                   <span className="bg-amber-400 text-slate-950 text-[9px] px-1.5 py-0.5 rounded font-bold font-mono">
                     ★ PRIME (+{primeSurchargePercent}%)
@@ -871,7 +1134,7 @@ export default function InteractiveFloorPlan({
                   +13% VAT
                 </span>
               </div>
-              <div className="font-sans font-bold text-2xl text-white">
+              <div className="font-sans font-bold text-xl sm:text-2xl text-white">
                 NPR {totalWithVatNPR.toLocaleString()}
               </div>
               <div className="text-[11px] font-bold text-emerald-400">
@@ -886,7 +1149,7 @@ export default function InteractiveFloorPlan({
               <button
                 type="button"
                 onClick={() => onProceedToBooking(selectedStalls)}
-                className={`px-6 py-3.5 rounded-full font-mono text-xs font-bold flex items-center gap-2 transition-all shadow-lg cursor-pointer ${
+                className={`w-full sm:w-auto px-6 py-3.5 rounded-full font-mono text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-lg cursor-pointer ${
                   selectedStalls.length > 0
                     ? "bg-[#218A59] hover:bg-[#1a6e46] text-white hover:scale-105"
                     : "bg-slate-700 hover:bg-slate-600 text-white"
@@ -908,7 +1171,7 @@ export default function InteractiveFloorPlan({
                     ? `?stalls=${selectedStalls.join(",")}`
                     : ""
                 }`}
-                className={`px-6 py-3.5 rounded-full font-mono text-xs font-bold flex items-center gap-2 transition-all shadow-lg ${
+                className={`w-full sm:w-auto px-6 py-3.5 rounded-full font-mono text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-lg ${
                   selectedStalls.length > 0
                     ? "bg-[#218A59] hover:bg-[#1a6e46] text-white hover:scale-105"
                     : "bg-slate-700 hover:bg-slate-600 text-white"
