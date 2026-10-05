@@ -87,14 +87,41 @@ export function LatestNewsSection() {
   const totalSlides = Math.max(1, news.length);
   const maxIndex = Math.max(0, news.length - 3);
 
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+
   const handlePrev = () => {
     if (news.length <= 1) return;
-    setCurrentIndex((prev) => (prev > 0 ? prev - 1 : maxIndex));
+    const newIdx = currentIndex > 0 ? currentIndex - 1 : maxIndex;
+    setCurrentIndex(newIdx);
+    if (scrollContainerRef.current) {
+      const cardWidth = scrollContainerRef.current.firstElementChild?.clientWidth || 300;
+      scrollContainerRef.current.scrollTo({
+        left: newIdx * cardWidth,
+        behavior: 'smooth',
+      });
+    }
   };
 
   const handleNext = () => {
     if (news.length <= 1) return;
-    setCurrentIndex((prev) => (prev < maxIndex ? prev + 1 : 0));
+    const newIdx = currentIndex < maxIndex ? currentIndex + 1 : 0;
+    setCurrentIndex(newIdx);
+    if (scrollContainerRef.current) {
+      const cardWidth = scrollContainerRef.current.firstElementChild?.clientWidth || 300;
+      scrollContainerRef.current.scrollTo({
+        left: newIdx * cardWidth,
+        behavior: 'smooth',
+      });
+    }
+  };
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const el = e.currentTarget;
+    const cardWidth = el.firstElementChild?.clientWidth || 1;
+    const newIndex = Math.round(el.scrollLeft / cardWidth);
+    if (newIndex !== currentIndex && newIndex >= 0 && newIndex <= news.length - 1) {
+      setCurrentIndex(Math.min(newIndex, maxIndex));
+    }
   };
 
   // If loading and no items yet, don't flash empty state
@@ -154,14 +181,16 @@ export function LatestNewsSection() {
             </Link>
           </div>
 
-          {/* Cards Carousel Window */}
-          <div className="relative overflow-hidden">
+          {/* Cards Carousel Window - Touch swipe enabled on mobile with native snap scrolling */}
+          <div className="relative">
             <div
-              className={`flex transition-transform duration-500 ease-out ${
-                news.length <= 3 ? 'justify-start' : ''
-              }`}
+              ref={scrollContainerRef}
+              onScroll={handleScroll}
+              className="flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory scroll-smooth no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0 touch-pan-x"
               style={{
-                transform: news.length > 3 ? `translateX(-${currentIndex * (100 / 3)}%)` : undefined,
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+                WebkitOverflowScrolling: 'touch',
               }}
             >
               {news.map((item) => {
@@ -173,7 +202,7 @@ export function LatestNewsSection() {
                 return (
                   <div
                     key={item.id}
-                    className="w-full sm:w-1/2 lg:w-1/3 shrink-0 px-3 pb-2"
+                    className="w-[85vw] xs:w-[75vw] sm:w-1/2 lg:w-1/3 shrink-0 snap-start px-2 sm:px-3 pb-2"
                   >
                     <article className="h-full bg-white rounded-2xl border border-slate-200/90 overflow-hidden shadow-2xs hover:shadow-md transition-all duration-300 flex flex-col group">
                       {/* Card Top Image */}
@@ -239,26 +268,35 @@ export function LatestNewsSection() {
             </div>
           </div>
 
-          {/* Bottom Pagination & Navigation Controls (Only if > 3 items) */}
-          {news.length > 3 && (
+          {/* Bottom Pagination & Navigation Controls (Only if > 1 item on mobile, or > 3 on desktop) */}
+          {news.length > 1 && (
             <div className="flex items-center justify-center gap-4 mt-8 sm:mt-10">
               {/* Prev Arrow */}
               <button
                 type="button"
                 onClick={handlePrev}
                 aria-label="Previous news slide"
-                className="w-9 h-9 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-600 hover:border-slate-400 hover:text-slate-900 transition-all shadow-2xs cursor-pointer"
+                className="w-9 h-9 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-600 hover:border-slate-400 hover:text-slate-900 transition-all shadow-2xs cursor-pointer active:scale-95"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
 
               {/* Pagination Dots */}
               <div className="flex items-center gap-2">
-                {Array.from({ length: totalSlides }).map((_, idx) => (
+                {news.slice(0, Math.min(news.length, 6)).map((_, idx) => (
                   <button
                     key={idx}
                     type="button"
-                    onClick={() => setCurrentIndex(Math.min(idx, maxIndex))}
+                    onClick={() => {
+                      setCurrentIndex(idx);
+                      if (scrollContainerRef.current) {
+                        const cardWidth = scrollContainerRef.current.firstElementChild?.clientWidth || 300;
+                        scrollContainerRef.current.scrollTo({
+                          left: idx * cardWidth,
+                          behavior: 'smooth',
+                        });
+                      }
+                    }}
                     aria-label={`Go to slide ${idx + 1}`}
                     className={`h-2 transition-all rounded-full cursor-pointer ${
                       currentIndex === idx
@@ -274,7 +312,7 @@ export function LatestNewsSection() {
                 type="button"
                 onClick={handleNext}
                 aria-label="Next news slide"
-                className="w-9 h-9 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-600 hover:border-slate-400 hover:text-slate-900 transition-all shadow-2xs cursor-pointer"
+                className="w-9 h-9 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-600 hover:border-slate-400 hover:text-slate-900 transition-all shadow-2xs cursor-pointer active:scale-95"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>

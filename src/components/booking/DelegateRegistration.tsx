@@ -50,7 +50,12 @@ export default function DelegateRegistration() {
     exhibitor?: BadgeConfig;
   }>({});
 
-  const selectedSponsorTier = SPONSORSHIP_DETAILS.find((s) => s.tier === formData.stallNumber);
+  const selectedSponsorTier = SPONSORSHIP_DETAILS.find(
+    (s) =>
+      s.tier.toLowerCase() === formData.stallNumber.toLowerCase() ||
+      s.tier.toLowerCase().includes(formData.stallNumber.toLowerCase()) ||
+      formData.stallNumber.toLowerCase().includes(s.tier.toLowerCase())
+  );
 
   // Fetch admin badge configurations on mount & listen to real-time updates
   useEffect(() => {

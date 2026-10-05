@@ -144,7 +144,7 @@ export default function OfficialTariffsSection() {
 
             <div className="p-3 rounded-2xl bg-white/90 border border-amber-200 shadow-2xs space-y-1">
               <span className="text-[10px] font-mono font-bold text-emerald-800 uppercase block">
-                🍽️ Gala Dinner
+                🍽️ Networking Dinner
               </span>
               <div className="font-mono font-extrabold text-base text-emerald-700">
                 25 Passes
@@ -156,7 +156,7 @@ export default function OfficialTariffsSection() {
 
             <div className="p-3 rounded-2xl bg-white/90 border border-amber-200 shadow-2xs space-y-1">
               <span className="text-[10px] font-mono font-bold text-slate-800 uppercase block">
-                🏛️ Inauguration
+                🏛️ Inauguration Invitation Pass
               </span>
               <div className="font-mono font-extrabold text-base text-slate-900">
                 50 VIP Passes
@@ -168,7 +168,7 @@ export default function OfficialTariffsSection() {
 
             <div className="p-3 rounded-2xl bg-white/90 border border-amber-200 shadow-2xs space-y-1">
               <span className="text-[10px] font-mono font-bold text-slate-800 uppercase block">
-                🪪 Exhibitor
+                🪪 Exhibitor Pass
               </span>
               <div className="font-mono font-extrabold text-base text-slate-900">
                 20 Badges
@@ -180,7 +180,7 @@ export default function OfficialTariffsSection() {
 
             <div className="p-3 rounded-2xl bg-white/90 border border-amber-200 shadow-2xs space-y-1">
               <span className="text-[10px] font-mono font-bold text-slate-800 uppercase block">
-                🎟️ General Passes
+                🎟️ Normal Pass
               </span>
               <div className="font-mono font-extrabold text-base text-slate-900">
                 500 Passes
@@ -192,13 +192,13 @@ export default function OfficialTariffsSection() {
 
             <div className="p-3 rounded-2xl bg-white/90 border border-amber-200 shadow-2xs space-y-1">
               <span className="text-[10px] font-mono font-bold text-slate-800 uppercase block">
-                📢 Promo Displays
+                📢 Promotional Display Area
               </span>
               <div className="font-mono font-extrabold text-base text-slate-900">
                 5 Areas
               </div>
               <p className="text-[10px] text-slate-500 leading-tight">
-                6FT × 4FT × 5 High-Traffic Venue Signage Areas
+                6FT X 4FT X 5 High-Traffic Venue Signage Areas
               </p>
             </div>
           </div>
@@ -218,7 +218,7 @@ export default function OfficialTariffsSection() {
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
             <Award className="w-5 h-5 text-[#218A59]" />
-            <span>Sponsorship Packages & Privileges Comparison</span>
+            <span>Sponsorship Packages &amp; Privileges Comparison</span>
           </h3>
           <span className="text-xs font-mono text-slate-500">
             Swipe table horizontally on mobile →
@@ -229,25 +229,25 @@ export default function OfficialTariffsSection() {
           <table className="w-full text-left border-collapse text-xs">
             <thead>
               <tr className="bg-slate-900 text-white font-mono text-[11px] uppercase tracking-wider">
-                <th className="py-3.5 px-4 font-bold">Sponsorship Tier</th>
+                <th className="py-3.5 px-4 font-bold">SPONSORSHIP</th>
                 <th className="py-3.5 px-4 font-bold whitespace-nowrap">
-                  {currency === "NPR" ? "Amount in NRs" : "Amount in US $"}
+                  {currency === "NPR" ? "AMOUNT IN NRs" : "AMOUNT IN US $"}
                 </th>
-                <th className="py-3.5 px-4 font-bold whitespace-nowrap">Bare Space</th>
-                <th className="py-3.5 px-4 font-bold whitespace-nowrap">Promotional Display Area</th>
+                <th className="py-3.5 px-4 font-bold whitespace-nowrap">BARE SPACE</th>
+                <th className="py-3.5 px-4 font-bold whitespace-nowrap">PROMOTIONAL DISPLAY AREA</th>
                 <th className="py-3.5 px-3 font-bold text-center whitespace-nowrap" title="Inauguration Invitation Pass">
-                  Inauguration Pass
+                  INAUGURATION INVITATION PASS
                 </th>
                 <th className="py-3.5 px-3 font-bold text-center whitespace-nowrap" title="Networking Dinner Pass">
-                  Networking Dinner Pass
+                  NETWORKING DINNER PASS
                 </th>
                 <th className="py-3.5 px-3 font-bold text-center whitespace-nowrap" title="Exhibitor Pass">
-                  Exhibitor Pass
+                  EXHIBITOR PASS
                 </th>
                 <th className="py-3.5 px-3 font-bold text-center whitespace-nowrap" title="Normal Pass">
-                  Normal Pass
+                  NORMAL PASS
                 </th>
-                <th className="py-3.5 px-4 font-bold text-right">Action</th>
+                <th className="py-3.5 px-4 font-bold text-right">ACTION</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-sans">
@@ -302,12 +302,12 @@ export default function OfficialTariffsSection() {
                     {tier.promotionalDisplayArea}
                   </td>
                   <td className="py-3.5 px-3 text-center font-mono font-bold text-slate-900 bg-slate-50/50">
-                    {tier.inaugurationPass}
+                    {tier.inaugurationInvitationPass ?? tier.inaugurationPass}
                   </td>
                   <td className={`py-3.5 px-3 text-center font-mono font-bold ${
                     tier.featured ? "text-amber-900 bg-amber-100/50" : "text-emerald-700 bg-emerald-50/30"
                   }`}>
-                    {tier.galaDinnerPass}
+                    {tier.networkingDinnerPass ?? tier.galaDinnerPass}
                   </td>
                   <td className="py-3.5 px-3 text-center font-mono text-slate-800">
                     {tier.exhibitorPass}
