@@ -92,7 +92,7 @@ const NAV_STRUCTURE: NavItem[] = [
     data: {
       id: 'exhibit',
       label: 'Exhibit',
-      highlightNote: 'Early Bird Rates Active · 150+ Global Exhibitors',
+      highlightNote: 'Reserve Your Space · 150+ Global Exhibitors',
       actionCta: {
         label: 'Book a Stall Online',
         href: '/book-stall',
@@ -100,7 +100,6 @@ const NAV_STRUCTURE: NavItem[] = [
       items: [
         {
           title: 'Exhibit & Book Stall',
-          badge: 'Early Bird',
           description: 'Reserve 9m², 18m² or 36m² premium booths',
           href: '/book-stall',
           icon: LayoutGrid,
@@ -197,8 +196,6 @@ function getBadgeStyle(badge: string) {
     case 'Form':
       return 'bg-sky-50 text-sky-700 border-sky-200/70';
     case 'Tariffs':
-      return 'bg-amber-50 text-amber-800 border-amber-200/70';
-    case 'Early Bird':
       return 'bg-amber-50 text-amber-800 border-amber-200/70';
     case 'Studio':
       return 'bg-sky-50 text-sky-700 border-sky-200/70';

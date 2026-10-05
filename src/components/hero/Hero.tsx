@@ -16,6 +16,22 @@ import DroneCinemaModal from './DroneCinemaModal';
 
 export function Hero() {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
+  const [isPastHero, setIsPastHero] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const heroEl = document.getElementById('hero-section');
+      if (heroEl) {
+        const rect = heroEl.getBoundingClientRect();
+        // Hide on mobile when bottom of hero reaches near top of viewport (e.g. <= 120px)
+        setIsPastHero(rect.bottom <= 120);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -72,7 +88,11 @@ export function Hero() {
         />
 
         {/* ── STICKY TOP-RIGHT ORGANIZER CARD (Attached Fully to Right Edge) ── */}
-        <div className="fixed top-24 sm:top-28 right-0 z-40 select-none">
+        <div
+          className={`fixed top-24 sm:top-28 right-0 z-40 select-none transition-all duration-300 ${
+            isPastHero ? 'max-sm:opacity-0 max-sm:pointer-events-none max-sm:translate-x-full' : 'max-sm:opacity-100 max-sm:translate-x-0'
+          }`}
+        >
           <div className="w-[116px] sm:w-[132px] bg-white rounded-l-2xl rounded-r-none shadow-[-5px_10px_25px_rgba(0,0,0,0.25)] p-2.5 sm:p-3 flex flex-col items-center text-center border-y border-l border-slate-200/90">
             {/* Header: Jointly Organized */}
             <div className="text-[11.5px] sm:text-[13px] font-bold text-slate-800 leading-snug pb-1.5 mb-2 border-b border-slate-200/80 w-full text-center tracking-tight">
