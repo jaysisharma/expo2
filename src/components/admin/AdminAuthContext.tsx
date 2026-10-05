@@ -48,7 +48,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
 
   // Validate session with the backend API route & cookie
   const checkSession = useCallback(async () => {
-    // 1. Instant check from localStorage to prevent UI freeze
+    // 1. Instant check from localStorage to prevent UI lag
     if (typeof window !== "undefined") {
       try {
         const stored = localStorage.getItem("hhe_admin_session");

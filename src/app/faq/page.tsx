@@ -33,7 +33,7 @@ export default function FAQPage() {
                 Frequently Asked Questions
               </h1>
               <p className="mt-3 text-sm sm:text-base text-emerald-100/75 max-w-xl">
-                Quick answers on stall bookings, free visitor registration, delegate passes, hotel accommodations, and visa facilitation.
+                Quick answers on stall bookings, visitor registration, delegate passes, hotel accommodations, and visa facilitation.
               </p>
             </div>
 

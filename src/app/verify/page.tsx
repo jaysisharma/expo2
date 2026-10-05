@@ -299,7 +299,7 @@ function VerifyContent() {
       ? (attendee.stallNumber ? `Exhibitor · Stall ${attendee.stallNumber}` : "Official Exhibitor")
       : isGala
       ? "Networking Dinner VIP Guest"
-      : "Trade Visitor · Free";
+      : "Trade Visitor";
     ctx.fillText(tierText, width / 2, 180 * scale);
 
     // QR Code Frame
@@ -444,7 +444,7 @@ function VerifyContent() {
   const isExhibitor = attendee.role === "exhibitor" || Boolean(attendee.stallNumber);
   const isGala = attendee.role === "gala" || attendee.passType?.toLowerCase().includes("gala") || attendee.passType?.toLowerCase().includes("networking");
 
-  let displayRole = "Trade Visitor · Free";
+  let displayRole = "Trade Visitor";
   if (isExhibitor) {
     displayRole = attendee.stallNumber
       ? `Official Exhibitor · Stall ${attendee.stallNumber}`
@@ -453,9 +453,9 @@ function VerifyContent() {
     displayRole = "Networking Dinner Pass (Royal Tulip)";
   } else if (attendee.passType) {
     if (attendee.passType.toLowerCase().includes("visitor")) {
-      displayRole = "Trade Visitor · Free";
+      displayRole = "Trade Visitor";
     } else {
-      displayRole = `${attendee.passType} · Free`;
+      displayRole = attendee.passType.replace(/\s*·?\s*\(?Free\)?/i, "").trim();
     }
   }
 

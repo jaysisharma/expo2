@@ -40,7 +40,7 @@ export default function DelegateRegistration() {
         ? "Exhibitor Pass (All Access)"
         : initialPass === "gala-dinner" || initialPass === "networking-dinner"
           ? "Networking Dinner Pass (Royal Tulip)"
-          : "Trade Visitor (Free)",
+          : "Trade Visitor",
     interests: ["Hydropower & Turbines", "Cross-Border Energy Trade"],
   });
   const [delegateId, setDelegateId] = useState<string>("");
@@ -355,7 +355,7 @@ export default function DelegateRegistration() {
                   stallNumber: "Title Sponsor",
                   country: "Nepal",
                   delegateTier: "national",
-                  passType: "Trade Visitor (Free)",
+                  passType: "Trade Visitor",
                   interests: [],
                 });
               }}
@@ -382,7 +382,7 @@ export default function DelegateRegistration() {
               type="button"
               onClick={() => {
                 setRegistrationRole("visitor");
-                setFormData({ ...formData, passType: "Trade Visitor (Free)" });
+                setFormData({ ...formData, passType: "Trade Visitor" });
               }}
               className={`py-2 px-2.5 rounded-lg text-xs font-semibold transition-all ${
                 registrationRole === "visitor"
@@ -390,7 +390,7 @@ export default function DelegateRegistration() {
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              Trade Visitor (Free)
+              Trade Visitor
             </button>
             <button
               type="button"

@@ -256,7 +256,7 @@ export default function AdminSettingsPage() {
                   Public Visitor Registration
                 </span>
                 <span className="text-[11px] text-slate-500">
-                  Allow attendees to register and generate free digital entry badges
+                  Allow attendees to register and generate digital entry badges
                 </span>
               </div>
               <button

@@ -159,9 +159,9 @@ const NAV_STRUCTURE: NavItem[] = [
     data: {
       id: 'visit',
       label: 'Visit',
-      highlightNote: 'Free Admission · Digital Badge Registration Open',
+      highlightNote: 'Digital Badge Registration Open',
       actionCta: {
-        label: 'Register Free Badge',
+        label: 'Register Badge',
         href: '/register',
       },
       items: [
@@ -173,8 +173,8 @@ const NAV_STRUCTURE: NavItem[] = [
         },
         {
           title: 'Visitor Registration',
-          badge: 'Free Pass',
-          description: 'Get your free digital visitor badge',
+          badge: 'Pass',
+          description: 'Get your digital visitor badge',
           href: '/register',
           icon: Ticket,
         },
@@ -212,7 +212,7 @@ function getBadgeStyle(badge: string) {
       return 'bg-emerald-50 text-[#005C42] border-emerald-200/70';
     case 'Highlights':
       return 'bg-teal-50 text-teal-700 border-teal-200/70';
-    case 'Free Pass':
+    case 'Pass':
       return 'bg-emerald-50 text-[#005C42] border-emerald-200/70';
     case 'Rally':
       return 'bg-emerald-50 text-emerald-800 border-emerald-200/70 font-semibold';
@@ -627,7 +627,7 @@ export function Navbar() {
                   className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-[#00A370] text-[#00A370] font-bold text-xs hover:bg-emerald-50 transition-colors"
                 >
                   <Ticket className="w-3.5 h-3.5" />
-                  <span>Free Visitor Pass</span>
+                  <span>Visitor Pass</span>
                 </Link>
 
                 <Link

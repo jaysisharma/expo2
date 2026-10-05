@@ -10,8 +10,8 @@ export const faqsData: FAQItem[] = [
   {
     id: "faq-2",
     category: "General & Visiting",
-    question: "Is visitor registration free?",
-    answer: "Standard trade visitor registration is completely free when registered online in advance. Trade visitors receive a digital QR badge granting direct access to exhibition halls, technology showcases, and open demonstration areas. Full 3-day Conference Delegate Passes (including VIP networking lunches and plenary sessions) require an all-access pass.",
+    question: "How do I register as a trade visitor?",
+    answer: "Standard trade visitor registration is available online in advance. Trade visitors receive a digital QR badge granting direct access to exhibition halls, technology showcases, and open demonstration areas. Full 3-day Conference Delegate Passes (including VIP networking lunches and plenary sessions) require an all-access pass.",
   },
   {
     id: "faq-3",

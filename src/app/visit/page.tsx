@@ -5,7 +5,7 @@ import { UserPlus } from "lucide-react";
 export const metadata = {
   title: "Visit Green Energy Expo Nepal 2026 | Visitor & Delegate Guide",
   description:
-    "Everything you need to plan your visit to Himalayan Green Energy Expo 2026 in Kathmandu—free trade passes, conference delegate privileges, visa on arrival, and partner hotel discounts.",
+    "Everything you need to plan your visit to Himalayan Green Energy Expo 2026 in Kathmandu—trade visitor passes, conference delegate privileges, visa on arrival, and partner hotel discounts.",
 };
 
 export default function VisitPage() {
@@ -49,7 +49,7 @@ export default function VisitPage() {
             {
               num: "02",
               title: "VISA & TRAVEL",
-              desc: "Receive official IPPAN visa invitation letters for hassle-free Visa-on-Arrival at KTM.",
+              desc: "Receive official IPPAN visa invitation letters for seamless Visa-on-Arrival at KTM.",
             },
             {
               num: "03",
@@ -93,11 +93,11 @@ export default function VisitPage() {
           </div>
 
           <h3 className="font-display font-bold text-3xl sm:text-4xl text-slate-900">
-            Register for Free Trade Pass Now
+            Register for Trade Pass Now
           </h3>
 
           <p className="text-xs sm:text-sm text-slate-600 font-normal max-w-xl mx-auto">
-            Free online pre-registration grants instant entrance to exhibition halls, live technology demo arenas, and the official event directory.
+            Online pre-registration grants instant entrance to exhibition halls, live technology demo arenas, and the official event directory.
           </p>
 
           <div>

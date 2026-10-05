@@ -35,7 +35,7 @@ export default function AdminRegistrationsPage() {
     organization: "",
     jobTitle: "",
     country: "Nepal",
-    passType: "Trade Visitor (Free)",
+    passType: "Trade Visitor",
     stallNumber: "",
     interests: ["Hydropower & Turbines"],
   });
@@ -223,7 +223,7 @@ export default function AdminRegistrationsPage() {
           organization: "",
           jobTitle: "",
           country: "Nepal",
-          passType: "Trade Visitor (Free)",
+          passType: "Trade Visitor",
           stallNumber: "",
           interests: ["Hydropower & Turbines"],
         });
@@ -601,7 +601,7 @@ export default function AdminRegistrationsPage() {
                     onChange={(e) => setNewReg({ ...newReg, passType: e.target.value })}
                     className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#218A59] cursor-pointer"
                   >
-                    <option value="Trade Visitor (Free)">Trade Visitor</option>
+                    <option value="Trade Visitor">Trade Visitor</option>
                     <option value="Exhibitor Pass (All Access)">Exhibitor Pass</option>
                     <option value="VIP / Government Delegate">VIP Delegate</option>
                   </select>

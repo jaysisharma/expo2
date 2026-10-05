@@ -194,7 +194,7 @@ export function CanvasElementRenderer({
           );
         }
 
-        // 2. Freehand Pencil
+        // 2. Pencil Drawing
         if (el.type === "pencil" && el.points) {
           return (
             <path

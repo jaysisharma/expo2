@@ -2,7 +2,7 @@
   "registrations": [
     {
       "id": "HHE27-819649",
-      "passType": "Trade Visitor (Free)",
+      "passType": "Trade Visitor",
       "email": "sonitmagar30@gmail.com",
       "phone": "9819579745",
       "registeredAt": "2026-10-01T12:11:59.596Z",
@@ -19,7 +19,7 @@
     },
     {
       "id": "HHE27-932110",
-      "passType": "Trade Visitor (Free)",
+      "passType": "Trade Visitor",
       "interests": [
         "Hydropower & Turbines",
         "Cross-Border Energy Trade"
@@ -37,7 +37,7 @@
     {
       "id": "HHE27-256180",
       "stallNumber": "",
-      "passType": "Trade Visitor (Free)",
+      "passType": "Trade Visitor",
       "registeredAt": "2026-09-30T04:17:34.450Z",
       "interests": [
         "Hydropower & Turbines",
@@ -53,7 +53,7 @@
     },
     {
       "id": "HHE27-575002",
-      "passType": "Trade Visitor (Free)",
+      "passType": "Trade Visitor",
       "phone": "9851119455",
       "country": "Nepal",
       "stallNumber": "",
@@ -75,7 +75,7 @@
         "Hydropower & Turbines",
         "Cross-Border Energy Trade"
       ],
-      "passType": "Trade Visitor (Free)",
+      "passType": "Trade Visitor",
       "organization": "EVENT ",
       "phone": "9708770259",
       "country": "Nepal",
@@ -98,7 +98,7 @@
         "Cross-Border Energy Trade"
       ],
       "registeredAt": "2026-09-29T09:24:31.479Z",
-      "passType": "Trade Visitor (Free)",
+      "passType": "Trade Visitor",
       "organization": "Awaso",
       "updatedAt": "2026-09-29T09:24:51.746Z",
       "email": "jaisysharma9817@gmail.com",
@@ -119,7 +119,7 @@
       "email": "jaysisharma@gmail.com",
       "checkedIn": false,
       "registeredAt": "2026-09-29T09:18:44.882Z",
-      "passType": "Trade Visitor (Free)",
+      "passType": "Trade Visitor",
       "name": "Jaysi Sharma"
     }
   ],

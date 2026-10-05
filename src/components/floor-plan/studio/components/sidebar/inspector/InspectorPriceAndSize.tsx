@@ -95,7 +95,7 @@ export function InspectorPriceAndSize({
               { label: "NPR 600k (Prime 6×6)", npr: 600000, usd: 4500 },
               { label: "NPR 875k (10×7 Bare)", npr: 875000, usd: 6500 },
               { label: "NPR 1.2M (Pavilion)", npr: 1200000, usd: 9000 },
-              { label: "NPR 0 (Free / Wall)", npr: 0, usd: 0 },
+              { label: "NPR 0 (Wall / Outline)", npr: 0, usd: 0 },
             ].map((tier) => (
               <button
                 key={tier.label}

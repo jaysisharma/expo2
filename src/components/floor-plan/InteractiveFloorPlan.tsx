@@ -502,7 +502,7 @@ export default function InteractiveFloorPlan({
               } bg-[size:20px_20px]`}
             />
 
-            {/* SVG Drawing Layer for Lines, Arcs, Freehand Pencil, Text Labels & Shapes */}
+            {/* SVG Drawing Layer for Lines, Arcs, Pencil Strokes, Text Labels & Shapes */}
             <svg
               viewBox={`0 0 ${canvasWidth} ${canvasHeight}`}
               className="absolute inset-0 w-full h-full pointer-events-none z-10"
@@ -524,7 +524,7 @@ export default function InteractiveFloorPlan({
                   );
                 }
 
-                // 2. Freehand Pencil Path
+                // 2. Pencil Path
                 if (el.type === "pencil" && el.points && el.points.length > 0) {
                   return (
                     <path

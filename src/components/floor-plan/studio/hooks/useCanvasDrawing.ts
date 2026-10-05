@@ -272,7 +272,7 @@ export function useCanvasDrawing({
           id: `PATH_${Date.now()}`,
           type: "pencil",
           number: "PATH",
-          category: "Freehand Path",
+          category: "Pencil Path",
           dimensions: "",
           sizeSqM: 0,
           sizeSqFt: 0,
@@ -293,7 +293,7 @@ export function useCanvasDrawing({
         recordHistory([...elements, newPencilEl]);
         setSelectedIds([newPencilEl.id]);
         setCurrentPencilPoints([]);
-        notify("Drew freehand path");
+        notify("Drew pencil path");
       } else if (activeTool === "line" && drawingArc) {
         const dist = Math.hypot(drawingArc.x2 - drawingArc.x1, drawingArc.y2 - drawingArc.y1);
         if (dist > 10) {

@@ -172,7 +172,8 @@ export async function GET(req: Request) {
       // Pass type breakdown
       const passTypeCounts: Record<string, number> = {};
       (data.registrations || []).forEach((r: any) => {
-        const type = r.passType || "Trade Visitor (Free)";
+        const rawType = r.passType || "Trade Visitor";
+        const type = rawType.replace(/\s*\(Free\)/i, "").trim();
         passTypeCounts[type] = (passTypeCounts[type] || 0) + 1;
       });
 
@@ -329,7 +330,7 @@ export async function POST(req: Request) {
           jobTitle: payload.jobTitle || "",
           stallNumber: payload.stallNumber || "",
           country: payload.country || "Nepal",
-          passType: payload.passType || "Trade Visitor (Free)",
+          passType: payload.passType ? payload.passType.replace(/\s*\(Free\)/i, "").trim() : "Trade Visitor",
           interests: payload.interests || [],
           checkedIn: false,
           registeredAt: new Date().toISOString(),

@@ -81,7 +81,7 @@ export default function EVRallyPage() {
             origin: { y: 0.6 },
             colors: ["#10B981", "#3B82F6", "#047857", "#34D399"],
           });
-        } catch {}
+        } catch { }
       } else {
         setErrorMsg(json.message || "Failed to submit registration. Please try again.");
       }
@@ -107,13 +107,10 @@ export default function EVRallyPage() {
         </div>
 
         <div className="relative max-w-4xl mx-auto text-center space-y-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-xs font-mono font-bold uppercase tracking-wider">
-            <Zap className="w-3.5 h-3.5 text-emerald-400 fill-current animate-pulse" />
-            <span>Official Event Attraction · Pillar 4: Engagement</span>
-          </div>
+
 
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight">
-            Kathmandu Valley <span className="text-[#34D399]">Clean Energy EV Rally</span>
+            EV Rally
           </h1>
 
           <p className="text-sm sm:text-base text-slate-200 max-w-2xl mx-auto leading-relaxed">
@@ -135,10 +132,10 @@ export default function EVRallyPage() {
             </div>
           </div>
         </div>
-      </section>
+      </section >
 
       {/* ── Main Form Area ── */}
-      <div className="py-10 sm:py-14 px-4 sm:px-6 lg:px-8 flex-grow flex items-start justify-center">
+      < div className="py-10 sm:py-14 px-4 sm:px-6 lg:px-8 flex-grow flex items-start justify-center" >
         <div className="w-full max-w-3xl">
           {registeredId ? (
             /* ── Success Screen ── */
@@ -259,18 +256,16 @@ export default function EVRallyPage() {
                         key={cat.id}
                         type="button"
                         onClick={() => setFormData({ ...formData, vehicleType: cat.id })}
-                        className={`text-left p-4 rounded-2xl border transition-all cursor-pointer flex items-start gap-3.5 ${
-                          isSelected
-                            ? "bg-emerald-50/70 border-emerald-600 ring-2 ring-emerald-500/20"
-                            : "bg-slate-50/50 border-slate-200/80 hover:bg-white hover:border-slate-300"
-                        }`}
+                        className={`text-left p-4 rounded-2xl border transition-all cursor-pointer flex items-start gap-3.5 ${isSelected
+                          ? "bg-emerald-50/70 border-emerald-600 ring-2 ring-emerald-500/20"
+                          : "bg-slate-50/50 border-slate-200/80 hover:bg-white hover:border-slate-300"
+                          }`}
                       >
                         <div
-                          className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
-                            isSelected
-                              ? "bg-[#007A5E] text-white"
-                              : "bg-white border border-slate-200 text-slate-600"
-                          }`}
+                          className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${isSelected
+                            ? "bg-[#007A5E] text-white"
+                            : "bg-white border border-slate-200 text-slate-600"
+                            }`}
                         >
                           <Icon className="w-4 h-4" />
                         </div>
@@ -436,7 +431,7 @@ export default function EVRallyPage() {
             </form>
           )}
         </div>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 }

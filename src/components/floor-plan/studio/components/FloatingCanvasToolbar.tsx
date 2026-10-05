@@ -75,7 +75,7 @@ export function FloatingCanvasToolbar({
     { id: "polygon", icon: Pentagon, label: "Draw Polygon / Multi-Point (P)" },
     { id: "line", icon: Minus, label: "Draw Straight Wall (L)" },
     { id: "arc", icon: Spline, label: "Draw Curved Wall (A)" },
-    { id: "pencil", icon: Pencil, label: "Freehand Pencil (B)" },
+    { id: "pencil", icon: Pencil, label: "Pencil Tool (B)" },
     { id: "text", icon: Type, label: "Text Label (T)" },
     { id: "eraser", icon: Eraser, label: "Eraser Tool (E)" },
   ] as const;

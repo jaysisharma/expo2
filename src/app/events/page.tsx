@@ -361,7 +361,7 @@ export default function EventsPage() {
           <div className="bg-[#061A2A] text-white p-8 rounded-2xl border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-6">
             <div>
               <h3 className="text-xl font-bold text-white">
-                Visit the Exhibition Free of Charge
+                Visit the Exhibition
               </h3>
               <p className="text-xs text-slate-300 mt-1 max-w-xl">
                 Pre-register online to receive your personalized digital visitor badge and skip the entry registration queues at the venue.
@@ -373,7 +373,7 @@ export default function EventsPage() {
                 href="/register"
                 className="px-6 py-3 rounded-lg bg-[#19A974] hover:bg-[#158f62] text-white text-xs font-semibold tracking-wide transition-colors flex items-center gap-2"
               >
-                <span>GET FREE VISITOR PASS</span>
+                <span>GET VISITOR PASS</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>

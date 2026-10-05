@@ -301,7 +301,7 @@ ${escapeHtml(messageBody)}
     ${ctaButtonHtml}
 
     <div style="margin-top:24px;padding-top:18px;border-top:1px solid #f1f5f9;font-size:13px;color:#64748b;line-height:1.6;">
-      For any inquiries, feel free to reply directly to this email or contact our support team.
+      For any inquiries, please reply directly to this email or contact our support team.
     </div>
   `;
 
