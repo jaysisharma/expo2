@@ -307,7 +307,7 @@ export default function OfficialTariffsSection() {
                   <td className={`py-3.5 px-3 text-center font-mono font-bold ${
                     tier.featured ? "text-amber-900 bg-amber-100/50" : "text-emerald-700 bg-emerald-50/30"
                   }`}>
-                    {tier.networkingDinnerPass ?? tier.galaDinnerPass}
+                    {(tier.networkingDinnerPass ?? tier.galaDinnerPass) ? (tier.networkingDinnerPass ?? tier.galaDinnerPass) : "—"}
                   </td>
                   <td className="py-3.5 px-3 text-center font-mono text-slate-800">
                     {tier.exhibitorPass}

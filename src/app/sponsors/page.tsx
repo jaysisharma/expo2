@@ -55,7 +55,7 @@ const sponsorshipTiers: SponsorshipTierItem[] = [
   {
     tier: "In Association With",
     badge: "PRINCIPAL",
-    priceNPR: "NPR 40,00,000",
+    priceNPR: "NPR 35,00,000",
     priceUSD: "USD $25,000",
     space: "6M X 6M X 1 (1 Bare Space Stall · 36m²)",
     description: "Principal summit partner co-branding on keynotes, summit literature, delegate badges, and official press releases.",
@@ -71,7 +71,7 @@ const sponsorshipTiers: SponsorshipTierItem[] = [
   {
     tier: "Powered By",
     badge: "MAJOR",
-    priceNPR: "NPR 30,00,000",
+    priceNPR: "NPR 27,00,000",
     priceUSD: "USD $20,000",
     space: "6M X 6M X 1 (1 Bare Space Stall · 36m²)",
     description: "Major partner positioning as a clean energy innovation champion with prominent exhibition presence.",
@@ -135,13 +135,12 @@ const sponsorshipTiers: SponsorshipTierItem[] = [
   {
     tier: "Supporter",
     badge: "ASSOCIATE",
-    priceNPR: "NPR 5,00,000",
+    priceNPR: "NPR 6,50,000",
     priceUSD: "USD $5,000",
     space: "6M X 6M X 1 (1 Bare Space Stall · 36m²)",
     description: "Entry-level summit participation with exhibition stall and directory listing for growing enterprises.",
     features: [
       "1 Bare Space Stall (6M X 6M X 1 · 36m²)",
-      "3 VIP Networking Dinner passes",
       "20 Inauguration Invitation passes & 50 normal passes",
       "20 Exhibitor passes",
       "6FT X 4FT X 1 Promotional display branding area",
