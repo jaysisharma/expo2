@@ -2,6 +2,8 @@
 
 import React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
 import { ScrollReveal } from '@/components/ui';
 
 export type AttractionPillar = 'all' | 'business' | 'knowledge' | 'technology' | 'engagement';
@@ -12,6 +14,8 @@ export interface EventAttractionItem {
   pillar: 'business' | 'knowledge' | 'technology' | 'engagement';
   desc: string;
   image: string;
+  ctaHref?: string;
+  ctaLabel?: string;
 }
 
 export const ALL_11_ATTRACTIONS: EventAttractionItem[] = [
@@ -36,6 +40,8 @@ export const ALL_11_ATTRACTIONS: EventAttractionItem[] = [
     pillar: 'business',
     desc: 'High-level diplomatic banquet and sovereign clean energy networking.',
     image: '/images/attractions/gala-dinner.webp',
+    ctaHref: '/book-networking-dinner',
+    ctaLabel: 'Book Dinner Pass',
   },
 
   // ── Pillar 2: Knowledge & Policy ───────────────────────────────
@@ -98,6 +104,8 @@ export const ALL_11_ATTRACTIONS: EventAttractionItem[] = [
     pillar: 'engagement',
     desc: 'Zero-emission electric vehicle roadshow through the Kathmandu Valley.',
     image: '/images/attractions/ev-rally.webp',
+    ctaHref: '/ev-rally',
+    ctaLabel: 'Register EV Vehicle',
   },
 ];
 
@@ -160,6 +168,17 @@ export function EventAttractionsSection({ className = '' }: { className?: string
                       <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal pt-1.5">
                         {item.desc}
                       </p>
+                      {item.ctaHref && (
+                        <div className="pt-3">
+                          <Link
+                            href={item.ctaHref}
+                            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#007A5E] hover:bg-[#009670] text-white text-[11px] font-bold uppercase tracking-wider transition-all shadow-md active:scale-95"
+                          >
+                            <span>{item.ctaLabel || 'Learn More'}</span>
+                            <ArrowRight className="w-3 h-3" />
+                          </Link>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

@@ -22,6 +22,7 @@ import {
   HelpCircle,
   ExternalLink,
   Calendar,
+  Zap,
 } from 'lucide-react';
 import { EVENT_VENUE, GALA_VENUE } from '@/data/contactInfo';
 
@@ -178,6 +179,13 @@ const NAV_STRUCTURE: NavItem[] = [
           icon: Ticket,
         },
         {
+          title: 'Clean Energy EV Rally',
+          badge: 'Rally',
+          description: 'Register electric vehicle for the roadshow',
+          href: '/ev-rally',
+          icon: Zap,
+        },
+        {
           title: 'Frequently Asked Questions',
           description: 'Visas, stalls, badges & logistics FAQs',
           href: '/faq',
@@ -206,6 +214,8 @@ function getBadgeStyle(badge: string) {
       return 'bg-teal-50 text-teal-700 border-teal-200/70';
     case 'Free Pass':
       return 'bg-emerald-50 text-[#005C42] border-emerald-200/70';
+    case 'Rally':
+      return 'bg-emerald-50 text-emerald-800 border-emerald-200/70 font-semibold';
     case 'Overview':
       return 'bg-slate-100 text-slate-700 border-slate-200/70';
     default:

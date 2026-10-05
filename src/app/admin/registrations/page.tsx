@@ -114,7 +114,8 @@ export default function AdminRegistrationsPage() {
       selectedPassType === "All" ||
       (selectedPassType === "Visitor" && reg.passType?.includes("Visitor")) ||
       (selectedPassType === "Exhibitor" && reg.passType?.includes("Exhibitor")) ||
-      (selectedPassType === "VIP" && reg.passType?.includes("VIP"));
+      (selectedPassType === "VIP" && reg.passType?.includes("VIP")) ||
+      (selectedPassType === "EV Rally" && (reg.passType?.includes("EV Rally") || reg.id?.startsWith("EVR-")));
 
     const matchesStatus =
       selectedStatus === "All" ||
@@ -324,16 +325,19 @@ export default function AdminRegistrationsPage() {
         <span className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-600 shadow-xs">
           Exhibitors: <strong className="text-slate-900">{exhibitorCount}</strong>
         </span>
+        <span className="px-3 py-1.5 rounded-xl bg-teal-50 border border-teal-200 text-teal-800 font-semibold shadow-xs">
+          EV Rally: <strong>{registrations.filter((r: any) => r.passType?.includes("EV Rally") || r.id?.startsWith("EVR-")).length}</strong>
+        </span>
       </div>
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-100 border border-slate-200 overflow-x-auto">
-          {["All", "Visitor", "Exhibitor", "VIP"].map((type) => (
+          {["All", "Visitor", "Exhibitor", "VIP", "EV Rally"].map((type) => (
             <button
               key={type}
               onClick={() => setSelectedPassType(type)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap ${
                 selectedPassType === type
                   ? "bg-white text-slate-900 shadow-xs border border-slate-200"
                   : "text-slate-600 hover:text-slate-900"
