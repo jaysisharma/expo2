@@ -40,7 +40,7 @@ export const CONTACT_DETAILS = {
 
   // Venue & Dates
   venue: {
-    name: 'BHRIKUTIMANDAP · KATHMANDU, NEPAL',
+    name: 'BHRIKUTIMANDAP, KATHMANDU, NEPAL',
     shortName: 'Bhrikutimandap',
     address: 'Exhibition Road, Kathmandu, Nepal',
     city: 'Kathmandu, Nepal',

@@ -25,6 +25,7 @@ import {
   FileText,
   QrCode,
   Mail,
+  Film,
 } from "lucide-react";
 import { useAdminAuth } from "./AdminAuthContext";
 
@@ -86,6 +87,7 @@ export default function AdminSidebar({
         { label: "About Page CMS", href: "/admin/about", icon: FileText },
         { label: "News & Articles", href: "/admin/news", icon: Newspaper },
         { label: "Photo Gallery", href: "/admin/gallery", icon: ImageIcon },
+        { label: "Drone & Edition Videos", href: "/admin/videos", icon: Film },
         { label: "Inquiries", href: "/admin/inquiries", icon: MessageSquareQuote },
         { label: "Badge Designer", href: "/admin/badge-designer", icon: Sliders },
       ],

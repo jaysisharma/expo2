@@ -47,6 +47,6 @@ export const faqsData: FAQItem[] = [
     id: "faq-8",
     category: "General & Visiting",
     question: "Where is the venue and how do I get there?",
-    answer: "The expo is hosted at BHRIKUTIMANDAP · KATHMANDU, NEPAL. It is located just 15-20 minutes (5.5 km) from Tribhuvan International Airport (KTM) and within 10 minutes of major 5-star international hotels in Durbar Marg, Lazimpat, and Thamel.",
+    answer: "The expo is hosted at BHRIKUTIMANDAP, KATHMANDU, NEPAL. It is located just 15-20 minutes (5.5 km) from Tribhuvan International Airport (KTM) and within 10 minutes of major 5-star international hotels in Durbar Marg, Lazimpat, and Thamel.",
   },
 ];

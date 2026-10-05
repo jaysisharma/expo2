@@ -152,7 +152,7 @@ export function ConversionCTASection() {
 
                   {/* Stat badge */}
                   <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-sky-500/10 border border-sky-500/25">
-                    <span className="text-lg font-black text-[#38BDF8] leading-none">50,000+</span>
+                    <span className="text-lg font-black text-[#38BDF8] leading-none">30,000+</span>
                     <span className="text-[11px] text-slate-300 font-semibold uppercase tracking-wide">Expected Visitors</span>
                   </div>
                 </div>

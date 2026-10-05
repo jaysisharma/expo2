@@ -33,6 +33,12 @@ import {
   Layers,
   AlertCircle,
   Globe,
+  MessageSquare,
+  ChevronDown,
+  ChevronUp,
+  ChevronRight,
+  Trash2,
+  Info,
 } from "lucide-react";
 
 export interface StallPackage {
@@ -72,9 +78,9 @@ export const PARTICIPATION_PACKAGES: StallPackage[] = [
     name: "In Association With",
     type: "sponsor",
     badge: "Principal",
-    priceNPR: 4000000,
+    priceNPR: 3500000,
     priceUSD: 25000,
-    priceDisplayNPR: "NPR 40,00,000",
+    priceDisplayNPR: "NPR 35,00,000",
     priceDisplayUSD: "USD $25,000",
     spaceDescription: "6M × 6M × 1 (1 Bare Space Stall · 36m²)",
     spaceCount: 1,
@@ -87,9 +93,9 @@ export const PARTICIPATION_PACKAGES: StallPackage[] = [
     name: "Powered By",
     type: "sponsor",
     badge: "Major",
-    priceNPR: 3000000,
+    priceNPR: 2700000,
     priceUSD: 20000,
-    priceDisplayNPR: "NPR 30,00,000",
+    priceDisplayNPR: "NPR 27,00,000",
     priceDisplayUSD: "USD $20,000",
     spaceDescription: "6M × 6M × 1 (1 Bare Space Stall · 36m²)",
     spaceCount: 1,
@@ -144,7 +150,7 @@ export const PARTICIPATION_PACKAGES: StallPackage[] = [
     id: "supporter",
     name: "Supporter",
     type: "sponsor",
-    priceNPR: 500000,
+    priceNPR: 650000,
     priceUSD: 5000,
     priceDisplayNPR: "NPR 5,00,000",
     priceDisplayUSD: "USD $5,000",
@@ -227,6 +233,13 @@ export default function StallBookingWizard() {
   const [formError, setFormError] = useState<string>("");
   const [exhibitorOrigin, setExhibitorOrigin] = useState<"domestic" | "international">("domestic");
 
+  // Automatically enforce SWIFT bank transfer for international exhibitors so they are never redirected to Khalti
+  useEffect(() => {
+    if (exhibitorOrigin === "international") {
+      setPaymentMethod("bank");
+    }
+  }, [exhibitorOrigin]);
+
   const [formData, setFormData] = useState({
     companyName: "",
     contactPerson: "",
@@ -239,6 +252,8 @@ export default function StallBookingWizard() {
     specialRequirements: "",
   });
   const [customIndustry, setCustomIndustry] = useState<string>("");
+  const [showAllSelectedStalls, setShowAllSelectedStalls] = useState<boolean>(false);
+  const [perksModalPackageId, setPerksModalPackageId] = useState<string | null>(null);
 
   const [bookingRef, setBookingRef] = useState<string>("");
 
@@ -388,6 +403,13 @@ export default function StallBookingWizard() {
   const finalPriceUSD = isSponsorPackage && selectedPackage
     ? selectedPackage.priceUSD
     : rawTotalPriceUSD;
+
+  // 13% Government VAT
+  const vatRate = 0.13;
+  const vatNPR = Math.round(finalPriceNPR * vatRate);
+  const vatUSD = Math.round(finalPriceUSD * vatRate);
+  const totalWithVatNPR = finalPriceNPR + vatNPR;
+  const totalWithVatUSD = finalPriceUSD + vatUSD;
 
   // Function to handle package selection and auto-allocation
   const selectPackage = (pkgId: string) => {
@@ -572,8 +594,12 @@ export default function StallBookingWizard() {
           body: JSON.stringify({
             bookingId: ref,
             stallNumbers: selectedBoothNumbers,
-            amountNPR: finalPriceNPR,
-            amountUSD: finalPriceUSD,
+            amountNPR: totalWithVatNPR,
+            amountUSD: totalWithVatUSD,
+            baseAmountNPR: finalPriceNPR,
+            baseAmountUSD: finalPriceUSD,
+            vatNPR,
+            vatUSD,
             customerName: formData.contactPerson || formData.companyName,
             contactPerson: formData.contactPerson,
             email: formData.email,
@@ -588,7 +614,7 @@ export default function StallBookingWizard() {
               selectedPackage && selectedPackage.id !== "custom-selection"
                 ? `[${exhibitorOrigin.toUpperCase()} EXHIBITOR] Package: ${selectedPackage.name} | Stalls: ${selectedBoothNumbers.join(", ")}`
                 : `[${exhibitorOrigin.toUpperCase()} EXHIBITOR] Stalls: ${selectedBoothNumbers.join(", ")}`,
-            paymentMethod,
+            paymentMethod: exhibitorOrigin === "international" ? "bank" : paymentMethod,
           }),
         });
 
@@ -598,7 +624,18 @@ export default function StallBookingWizard() {
           throw new Error(data.error || "Failed to initialize booking and payment.");
         }
 
-        // If redirect URL returned (Khalti or Fonepay gateway redirect)
+        // For international exhibitors, always route to official invoice success page, never external gateways
+        if (exhibitorOrigin === "international") {
+          if (data.redirectUrl) {
+            router.push(data.redirectUrl);
+            return;
+          }
+          confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+          setStep(4);
+          return;
+        }
+
+        // If redirect URL returned (Khalti or Fonepay gateway redirect for domestic)
         if (data.paymentUrl) {
           window.location.href = data.paymentUrl;
           return;
@@ -640,10 +677,12 @@ export default function StallBookingWizard() {
             {step === 1
               ? "SELECT STALL(S)"
               : step === 2
-              ? "ORGANIZATION DETAILS"
-              : step === 3
-              ? "PAYMENT & REVIEW"
-              : "CONFIRMED"}
+                ? "ORGANIZATION DETAILS"
+                : step === 3
+                  ? exhibitorOrigin === "international"
+                    ? "REVIEW & RESERVE"
+                    : "PAYMENT & REVIEW"
+                  : "CONFIRMED"}
           </span>
           <span>{Math.round((step / 4) * 100)}% COMPLETED</span>
         </div>
@@ -661,12 +700,12 @@ export default function StallBookingWizard() {
       {step === 1 && (
         <div className="space-y-6">
           {/* =========================================================================
-              PARTICIPATION PACKAGE & STALL SELECTOR (EDITORIAL DESIGN)
+              PARTICIPATION PACKAGE & STALL SELECTOR (COLOR ACCENTED DESIGN)
              ========================================================================= */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-slate-50/80 border border-slate-200/90 shadow-2xs space-y-4">
+          <div className="p-4 sm:p-6 rounded-2xl bg-gradient-to-b from-slate-50 via-emerald-50/20 to-slate-50/80 border border-emerald-100 shadow-xs space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <span className="text-[11px] font-mono font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">
+                <span className="text-[11px] font-mono font-bold text-emerald-800 uppercase tracking-wider block mb-0.5">
                   Step 1 · Stall Allocation & Sponsorship Tier
                 </span>
                 <h3 className="font-sans font-bold text-lg sm:text-xl text-slate-900 tracking-tight">
@@ -682,11 +721,10 @@ export default function StallBookingWizard() {
                 <button
                   type="button"
                   onClick={() => setViewMode("map")}
-                  className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-medium transition-colors cursor-pointer ${
-                    viewMode === "map"
-                      ? "bg-slate-900 text-white shadow-xs"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
+                  className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-medium transition-colors cursor-pointer ${viewMode === "map"
+                    ? "bg-slate-900 text-white shadow-xs"
+                    : "text-slate-600 hover:text-slate-900"
+                    }`}
                 >
                   <Map className="w-3.5 h-3.5" />
                   <span>Floor Plan</span>
@@ -694,11 +732,10 @@ export default function StallBookingWizard() {
                 <button
                   type="button"
                   onClick={() => setViewMode("list")}
-                  className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-medium transition-colors cursor-pointer ${
-                    viewMode === "list"
-                      ? "bg-slate-900 text-white shadow-xs"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
+                  className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-medium transition-colors cursor-pointer ${viewMode === "list"
+                    ? "bg-slate-900 text-white shadow-xs"
+                    : "text-slate-600 hover:text-slate-900"
+                    }`}
                 >
                   <ListFilter className="w-3.5 h-3.5" />
                   <span>List View</span>
@@ -720,19 +757,17 @@ export default function StallBookingWizard() {
                     key={tab.key}
                     type="button"
                     onClick={() => setPackageFilter(tab.key as any)}
-                    className={`px-3 py-1.5 rounded-lg text-xs transition-colors shrink-0 cursor-pointer flex items-center gap-1.5 ${
-                      isActive
-                        ? "bg-white text-slate-900 border border-slate-300 shadow-2xs font-semibold"
-                        : "text-slate-500 hover:text-slate-800 hover:bg-slate-100/70 font-medium"
-                    }`}
+                    className={`px-3 py-1.5 rounded-lg text-xs transition-colors shrink-0 cursor-pointer flex items-center gap-1.5 ${isActive
+                      ? "bg-white text-slate-900 border border-emerald-300 shadow-2xs font-semibold"
+                      : "text-slate-500 hover:text-slate-800 hover:bg-slate-100/70 font-medium"
+                      }`}
                   >
                     <span>{tab.label}</span>
                     <span
-                      className={`text-[10px] px-1.5 py-0.5 rounded-full ${
-                        isActive
-                          ? "bg-slate-100 text-slate-700 font-mono font-bold"
-                          : "bg-slate-200/60 text-slate-500"
-                      }`}
+                      className={`text-[10px] px-1.5 py-0.5 rounded-full ${isActive
+                        ? "bg-emerald-100 text-emerald-800 font-mono font-bold"
+                        : "bg-slate-200/60 text-slate-500"
+                        }`}
                     >
                       {tab.count}
                     </span>
@@ -741,115 +776,380 @@ export default function StallBookingWizard() {
               })}
             </div>
 
-            {/* Compact, Clean Package Cards Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-              {PARTICIPATION_PACKAGES.filter((pkg) => {
-                if (packageFilter === "sponsor") return pkg.type === "sponsor";
-                if (packageFilter === "stall") return pkg.type === "stall";
-                if (packageFilter === "custom") return pkg.type === "custom";
-                return true;
-              }).map((pkg) => {
-                const isSelected = selectedPackageId === pkg.id;
-                return (
-                  <button
-                    key={pkg.id}
-                    type="button"
-                    onClick={() => selectPackage(pkg.id)}
-                    className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-2.5 relative group ${
-                      isSelected
-                        ? "bg-white border-[#218A59] ring-2 ring-[#218A59]/20 shadow-xs"
-                        : "bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/70"
+            {/* ─── 1. PRIME FLAGSHIP: TITLE SPONSOR (Amber/Gold Rich BG) ─── */}
+            {(packageFilter === "all" || packageFilter === "sponsor") && (() => {
+              const pkg = PARTICIPATION_PACKAGES.find((p) => p.id === "title-sponsor")!;
+              const isSelected = selectedPackageId === pkg.id;
+              return (
+                <div
+                  onClick={() => selectPackage(pkg.id)}
+                  className={`p-4 sm:p-5 rounded-2xl border-2 transition-all cursor-pointer relative overflow-hidden ${isSelected
+                    ? "bg-gradient-to-r from-amber-100 via-amber-50 to-amber-100/70 border-amber-500 ring-2 ring-amber-400/40 shadow-md"
+                    : "bg-gradient-to-r from-amber-50 via-amber-50/50 to-yellow-50/40 border-amber-300 hover:border-amber-400 hover:shadow-xs"
                     }`}
-                  >
-                    {/* Top Row: Radio circle, Title, Badge */}
-                    <div className="flex items-start justify-between gap-2 w-full">
-                      <div className="flex items-start gap-2.5 min-w-0">
-                        <div
-                          className={`w-4 h-4 rounded-full border mt-0.5 flex items-center justify-center shrink-0 transition-colors ${
-                            isSelected
-                              ? "border-[#218A59] bg-[#218A59]"
-                              : "border-slate-300 bg-white group-hover:border-slate-400"
+                >
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-3.5">
+                    <div className="flex items-start gap-3">
+                      <div
+                        className={`w-4 h-4 mt-0.5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${isSelected ? "border-amber-700 bg-amber-500" : "border-amber-400 bg-white"
                           }`}
-                        >
-                          {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                      >
+                        {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className="font-sans font-bold text-base text-slate-900">
+                            {pkg.name}
+                          </h4>
+                          <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 shadow-2xs">
+                            <Sparkles className="w-2.5 h-2.5" />
+                            <span>PRIME FLAGSHIP</span>
+                          </span>
                         </div>
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="font-semibold text-slate-900 text-sm leading-snug">
-                              {pkg.name}
+
+                        <p className="text-xs text-amber-950/80 font-medium">
+                          {pkg.spaceDescription}
+                        </p>
+
+                        {/* Perks Inclusions */}
+                        <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                          {pkg.perks.slice(0, 3).map((perk, i) => (
+                            <span
+                              key={i}
+                              className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-md bg-white/80 text-amber-950 border border-amber-200/90 font-medium"
+                            >
+                              <Check className="w-2.5 h-2.5 text-amber-700 shrink-0" />
+                              <span>{perk}</span>
                             </span>
+                          ))}
+                          {pkg.perks.length > 3 && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setPerksModalPackageId(pkg.id);
+                              }}
+                              className="text-[10px] font-mono font-bold text-amber-900 hover:underline cursor-pointer ml-1"
+                            >
+                              +{pkg.perks.length - 3} more perks &rarr;
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="text-left md:text-right shrink-0 pl-7 md:pl-0 pt-2 md:pt-0 border-t md:border-t-0 border-amber-200/60">
+                      <div className="text-[10px] font-mono uppercase tracking-wider text-amber-800 font-bold mb-0.5">
+                        Flagship Investment
+                      </div>
+                      <div className="font-mono font-bold text-lg text-amber-950">
+                        {pkg.priceDisplayNPR}
+                      </div>
+                      <div className="font-mono text-xs text-amber-800/80">
+                        {pkg.priceDisplayUSD}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* ─── 2. SPONSORSHIP TIERS TABLE (With Distinct Colorful Row Backgrounds) ─── */}
+            {(packageFilter === "all" || packageFilter === "sponsor") && (
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between px-1">
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500">
+                    Sponsorship Partnerships
+                  </span>
+                  <span className="text-[10px] font-mono text-slate-400">
+                    6 Available Tiers
+                  </span>
+                </div>
+
+                <div className="rounded-xl border border-slate-200/90 overflow-hidden divide-y divide-slate-100 bg-white shadow-2xs">
+                  {PARTICIPATION_PACKAGES.filter(
+                    (p) => p.type === "sponsor" && p.id !== "title-sponsor"
+                  ).map((pkg) => {
+                    const isSelected = selectedPackageId === pkg.id;
+
+                    // Distinct theme color per sponsorship tier
+                    const tierStyles: Record<string, { bg: string; selectedBg: string; border: string; badge: string; text: string }> = {
+                      "in-association-with": {
+                        bg: "bg-emerald-50/40 hover:bg-emerald-50/70",
+                        selectedBg: "bg-emerald-100/70",
+                        border: "border-emerald-300",
+                        badge: "bg-emerald-100 text-emerald-900 border-emerald-300",
+                        text: "text-emerald-900",
+                      },
+                      "powered-by": {
+                        bg: "bg-teal-50/40 hover:bg-teal-50/70",
+                        selectedBg: "bg-teal-100/70",
+                        border: "border-teal-300",
+                        badge: "bg-teal-100 text-teal-900 border-teal-300",
+                        text: "text-teal-900",
+                      },
+                      "sponsor": {
+                        bg: "bg-sky-50/40 hover:bg-sky-50/70",
+                        selectedBg: "bg-sky-100/70",
+                        border: "border-sky-300",
+                        badge: "bg-sky-100 text-sky-900 border-sky-300",
+                        text: "text-sky-900",
+                      },
+                      "official-partner": {
+                        bg: "bg-blue-50/40 hover:bg-blue-50/70",
+                        selectedBg: "bg-blue-100/70",
+                        border: "border-blue-300",
+                        badge: "bg-blue-100 text-blue-900 border-blue-300",
+                        text: "text-blue-900",
+                      },
+                      "co-sponsor": {
+                        bg: "bg-indigo-50/40 hover:bg-indigo-50/70",
+                        selectedBg: "bg-indigo-100/70",
+                        border: "border-indigo-300",
+                        badge: "bg-indigo-100 text-indigo-900 border-indigo-300",
+                        text: "text-indigo-900",
+                      },
+                      "supporter": {
+                        bg: "bg-purple-50/40 hover:bg-purple-50/70",
+                        selectedBg: "bg-purple-100/70",
+                        border: "border-purple-300",
+                        badge: "bg-purple-100 text-purple-900 border-purple-300",
+                        text: "text-purple-900",
+                      },
+                    };
+
+                    const style = tierStyles[pkg.id] || {
+                      bg: "hover:bg-slate-50/80",
+                      selectedBg: "bg-emerald-50/70",
+                      border: "border-slate-200",
+                      badge: "bg-slate-100 text-slate-700 border-slate-200",
+                      text: "text-slate-900",
+                    };
+
+                    return (
+                      <div
+                        key={pkg.id}
+                        onClick={() => selectPackage(pkg.id)}
+                        className={`px-4 py-3 flex items-center justify-between gap-3 cursor-pointer transition-colors ${isSelected ? style.selectedBg : style.bg
+                          }`}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div
+                            className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-colors ${isSelected
+                              ? "border-[#218A59] bg-[#218A59]"
+                              : "border-slate-300 bg-white"
+                              }`}
+                          >
+                            {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                          </div>
+
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-bold text-slate-900 text-xs sm:text-sm">
+                                {pkg.name}
+                              </span>
+                              {pkg.badge && (
+                                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border hidden sm:inline ${style.badge}`}>
+                                  {pkg.badge}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[11px] text-slate-600 truncate">
+                              {pkg.spaceDescription}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-4 shrink-0">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setPerksModalPackageId(pkg.id);
+                            }}
+                            className="text-[11px] font-semibold text-emerald-800 hover:text-emerald-950 hover:underline cursor-pointer hidden md:flex items-center gap-1"
+                          >
+                            <span>{pkg.perks.length} Perks</span>
+                            <ChevronRight className="w-3 h-3" />
+                          </button>
+
+                          <div className="text-right">
+                            <div className="font-mono font-bold text-xs sm:text-sm text-slate-900">
+                              {pkg.priceDisplayNPR}
+                            </div>
+                            <div className="font-mono text-[10px] text-slate-500">
+                              {pkg.priceDisplayUSD}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* ─── 3. EXHIBITION STALL PACKAGES (Side by Side) ─── */}
+            {(packageFilter === "all" || packageFilter === "stall") && (
+              <div className="space-y-1.5">
+                <div className="px-1">
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500">
+                    Standard Exhibition Stalls
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {PARTICIPATION_PACKAGES.filter((p) => p.type === "stall").map((pkg) => {
+                    const isSelected = selectedPackageId === pkg.id;
+                    return (
+                      <div
+                        key={pkg.id}
+                        onClick={() => selectPackage(pkg.id)}
+                        className={`p-4 rounded-xl border cursor-pointer transition-all flex flex-col justify-between gap-3 ${isSelected
+                          ? "bg-white border-[#218A59] ring-2 ring-[#218A59]/20 shadow-xs"
+                          : "bg-white border-slate-200/90 hover:border-slate-300"
+                          }`}
+                      >
+                        <div>
+                          <div className="flex items-center justify-between gap-2 mb-1">
+                            <div className="flex items-center gap-2">
+                              <div
+                                className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${isSelected
+                                  ? "border-[#218A59] bg-[#218A59]"
+                                  : "border-slate-300 bg-white"
+                                  }`}
+                              >
+                                {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                              </div>
+                              <span className="font-bold text-slate-900 text-sm">
+                                {pkg.name}
+                              </span>
+                            </div>
                             {pkg.badge && (
-                              <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">
+                              <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
                                 {pkg.badge}
                               </span>
                             )}
                           </div>
-                          <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">
+
+                          <p className="text-xs text-slate-500 pl-6 mb-2">
                             {pkg.spaceDescription}
                           </p>
+
+                          <div className="pl-6 flex flex-wrap gap-1">
+                            {pkg.perks.map((perk, i) => (
+                              <span
+                                key={i}
+                                className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-slate-50 text-slate-700 border border-slate-200/70 font-medium"
+                              >
+                                <Check className="w-2.5 h-2.5 text-emerald-600 shrink-0" />
+                                <span>{perk}</span>
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="pt-2 border-t border-slate-100 pl-6 flex items-baseline justify-between font-mono text-xs">
+                          <span className="text-[10px] text-slate-400 uppercase">Tariff Range</span>
+                          <div className="text-right">
+                            <span className="font-bold text-slate-900">{pkg.priceDisplayNPR}</span>
+                            {pkg.priceDisplayUSD && pkg.priceNPR > 0 && (
+                              <span className="text-slate-400 text-[10px] ml-1">· {pkg.priceDisplayUSD}</span>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
-                    {/* Bottom Row: Tier Type & Pricing */}
-                    <div className="flex items-baseline justify-between pt-2 border-t border-slate-100 w-full text-xs pl-6.5">
-                      <span className="text-slate-400 text-[11px]">
-                        {pkg.type === "sponsor"
-                          ? "Sponsorship"
-                          : pkg.type === "custom"
-                          ? "Map Pick"
-                          : "Booth Allocation"}
-                      </span>
-                      <div className="text-right">
-                        <span className="font-semibold text-slate-900">
-                          {pkg.priceDisplayNPR}
+            {/* ─── 4. CUSTOM SELECTION ROW ─── */}
+            {(packageFilter === "all" || packageFilter === "custom") && (() => {
+              const pkg = PARTICIPATION_PACKAGES.find((p) => p.id === "custom-selection")!;
+              const isSelected = selectedPackageId === pkg.id;
+              return (
+                <div
+                  onClick={() => selectPackage(pkg.id)}
+                  className={`px-4 py-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between gap-3 ${isSelected
+                    ? "bg-white border-[#218A59] ring-2 ring-[#218A59]/20 shadow-xs"
+                    : "bg-white border-slate-200/90 hover:border-slate-300"
+                    }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <div
+                      className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${isSelected ? "border-[#218A59] bg-[#218A59]" : "border-slate-300 bg-white"
+                        }`}
+                    >
+                      {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-bold text-slate-900 text-sm">Custom Map Selection</span>
+                        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                          Interactive
                         </span>
-                        {pkg.priceDisplayUSD && pkg.priceNPR > 0 && (
-                          <span className="text-slate-400 text-[11px] ml-1.5">
-                            · {pkg.priceDisplayUSD}
-                          </span>
-                        )}
                       </div>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Choose any stall directly on the interactive floor plan below
+                      </p>
                     </div>
-                  </button>
-                );
-              })}
-            </div>
+                  </div>
 
-            {/* Clear Status & Modification Reassurance */}
+                  <div className="font-mono text-xs text-slate-500 shrink-0">
+                    Per Stall
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* ─── ACTIVE PACKAGE NOTIFICATION BAR ─── */}
             {selectedPackage && (
-              <div className="pt-2 border-t border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs">
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-[#218A59] shrink-0" />
+                  <div
+                    className={`w-2 h-2 rounded-full shrink-0 ${selectedPackage.id === "title-sponsor" ? "bg-amber-500" : "bg-[#218A59]"
+                      }`}
+                  />
                   <span className="text-slate-700">
-                    <strong className="text-slate-900 font-semibold">{selectedPackage.name}</strong> active.{" "}
+                    <strong className="text-slate-900">{selectedPackage.name}</strong> selected.
                     {selectedPackage.id === "custom-selection" ? (
-                      <span>Click any stall on the interactive floor plan below to select or deselect.</span>
+                      <span className="text-slate-500 ml-1">
+                        Pick stalls on the interactive floor plan below.
+                      </span>
                     ) : (
                       <span>
-                        Assigned:{" "}
-                        <strong className="font-mono text-slate-900">
-                          STALL {selectedBoothNumbers.length > 0 ? selectedBoothNumbers.join(", ") : "None"}
-                        </strong>{" "}
-                        <span className="text-slate-500">({selectedPackage.spaceDescription})</span>.
-                        {isCustomizedOnMap ? (
-                          <span className="text-emerald-700 font-medium ml-1">· Modified on map</span>
-                        ) : (
-                          <span className="text-slate-500 ml-1">· Click any stall on the floor plan below to modify.</span>
+                        {" "}Assigned:{" "}
+                        <strong className="font-mono text-[#15803D]">
+                          {selectedBoothNumbers.length > 0
+                            ? `STALL ${selectedBoothNumbers.join(", ")}`
+                            : "Assigning..."}
+                        </strong>
+                        {isCustomizedOnMap && (
+                          <button
+                            type="button"
+                            onClick={() => selectPackage(selectedPackage.id)}
+                            className="ml-2 text-slate-500 hover:text-slate-800 hover:underline font-medium cursor-pointer inline-flex items-center gap-1"
+                          >
+                            <RotateCcw className="w-3 h-3" />
+                            Reset recommended
+                          </button>
                         )}
                       </span>
                     )}
                   </span>
                 </div>
 
-                {isCustomizedOnMap && selectedPackage.preferredStalls.length > 0 && (
+                {selectedPackage.perks && selectedPackage.perks.length > 0 && (
                   <button
                     type="button"
-                    onClick={() => selectPackage(selectedPackage.id)}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium text-[11px] transition-colors cursor-pointer shrink-0 shadow-2xs"
+                    onClick={() => setPerksModalPackageId(selectedPackage.id)}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-emerald-300 text-slate-700 hover:text-emerald-800 font-medium text-[11px] transition-colors cursor-pointer shrink-0"
                   >
-                    <RotateCcw className="w-3 h-3 text-slate-500" />
-                    <span>Reset to recommended stalls</span>
+                    <Check className="w-3 h-3 text-emerald-600" />
+                    <span>View {selectedPackage.perks.length} Perks</span>
                   </button>
                 )}
               </div>
@@ -903,11 +1203,10 @@ export default function StallBookingWizard() {
                           key={s.number}
                           type="button"
                           onClick={() => toggleStallSelection(s.number)}
-                          className={`p-3 rounded-xl border text-left text-xs font-mono transition-all cursor-pointer ${
-                            isSelected
-                              ? "bg-[#F0FDF4] border-[#10B981] text-[#044E3B] font-bold shadow-xs"
-                              : "bg-white border-slate-200 text-slate-700 hover:border-slate-300"
-                          }`}
+                          className={`p-3 rounded-xl border text-left text-xs font-mono transition-all cursor-pointer ${isSelected
+                            ? "bg-[#F0FDF4] border-[#10B981] text-[#044E3B] font-bold shadow-xs"
+                            : "bg-white border-slate-200 text-slate-700 hover:border-slate-300"
+                            }`}
                         >
                           <div className="flex items-center justify-between">
                             <span className="font-sans font-bold text-sm">Stall {s.number}</span>
@@ -926,151 +1225,247 @@ export default function StallBookingWizard() {
               )}
             </div>
 
-            {/* Right: Sleek Compact Stall Summary & Price Sidebar (Small side: 3 cols on xl, 4 on lg) */}
-            <div className="lg:col-span-4 xl:col-span-3 lg:sticky lg:top-24 space-y-4">
-              <div className="p-4 sm:p-5 rounded-2xl bg-[#F0FDF4] border border-emerald-300 shadow-sm space-y-4">
+            {/* Right: Clean, Calm & Structured Booking Summary Sidebar */}
+            <div className="lg:col-span-4 xl:col-span-3 lg:sticky lg:top-24 space-y-3.5">
+              <div className="rounded-2xl bg-white border border-slate-200/90 shadow-sm overflow-hidden divide-y divide-slate-100">
                 {/* Header */}
-                <div className="flex items-center justify-between pb-3 border-b border-emerald-200">
+                <div className="px-5 py-4 bg-slate-50/80 flex items-center justify-between">
                   <div>
-                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-800 block">
-                      STALL ALLOCATION
+                    <span className="text-[10px] font-mono font-semibold uppercase tracking-wider text-slate-500 block">
+                      Booking Summary
                     </span>
                     <h4 className="font-sans font-bold text-sm text-slate-900 mt-0.5">
-                      Price &amp; Summary
+                      Allocation &amp; Tariff
                     </h4>
                   </div>
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 font-mono text-[11px] font-bold shrink-0">
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-[#15803D] font-mono text-xs font-semibold shrink-0">
                     {selectedBoothNumbers.length} {selectedBoothNumbers.length === 1 ? "Stall" : "Stalls"}
                   </span>
                 </div>
 
-                {/* Stalls List */}
-                <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-                  {selectedStallObjects.length > 0 ? (
-                    selectedStallObjects.map((s) => (
-                      <div
-                        key={s.number}
-                        className="p-2.5 rounded-xl bg-white border border-emerald-200 shadow-xs flex items-center justify-between gap-2 text-xs"
+                {/* Section 1: Selected Stalls List */}
+                <div className="p-4 sm:p-5 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-slate-400">
+                      Allocated Stalls ({selectedStallObjects.length})
+                    </span>
+                    {selectedStallObjects.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => setSelectedBoothNumbers([])}
+                        className="text-[11px] font-medium text-slate-400 hover:text-red-600 transition-colors cursor-pointer flex items-center gap-1"
                       >
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="font-mono font-bold text-slate-900 text-xs">
-                              {s.displayName}
+                        <Trash2 className="w-3 h-3" />
+                        <span>Clear All</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {selectedStallObjects.length > 0 ? (
+                    <div className="space-y-2">
+                      {/* Show first 2 stalls by default, collapse remaining if > 2 */}
+                      {(showAllSelectedStalls
+                        ? selectedStallObjects
+                        : selectedStallObjects.slice(0, 2)
+                      ).map((s) => (
+                        <div
+                          key={s.number}
+                          className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 hover:border-slate-300 transition-all text-xs"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <span className="font-mono font-bold text-slate-900">
+                                {s.displayName}
+                              </span>
+                              <span className="text-[10px] text-slate-500 font-mono">
+                                ({s.block})
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => toggleStallSelection(s.number)}
+                              className="w-5 h-5 rounded-md hover:bg-red-50 text-slate-400 hover:text-red-500 flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                              title="Remove stall"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+
+                          <div className="flex items-baseline justify-between mt-1 text-[11px] text-slate-500">
+                            <span>
+                              {s.dimensions} · {s.sizeSqM} m²
                             </span>
-                          </div>
-                          <div className="text-[11px] font-semibold text-emerald-800 mt-0.5">
-                            {s.isBareSpace ? `(${s.dimensions}) · Bare Space` : `(${s.dimensions})`}
-                          </div>
-                          <div className="text-[10px] text-slate-500">
-                            {s.sizeSqM} m² · {s.block}
-                          </div>
-                          <div className="text-xs font-mono font-bold text-[#15803D] mt-1">
-                            NPR {s.priceNPR.toLocaleString()}
-                            <span className="text-[10px] font-normal text-slate-500 ml-1">
-                              (${s.priceUSD.toLocaleString()})
+                            <span className="font-mono font-semibold text-slate-800">
+                              NPR {s.priceNPR.toLocaleString()}
                             </span>
                           </div>
                         </div>
+                      ))}
 
+                      {/* Expand / Collapse toggle when > 2 stalls */}
+                      {selectedStallObjects.length > 2 && (
                         <button
                           type="button"
-                          onClick={() => toggleStallSelection(s.number)}
-                          className="w-6 h-6 rounded-lg bg-slate-100 hover:bg-red-50 text-slate-400 hover:text-red-500 flex items-center justify-center transition-colors cursor-pointer shrink-0"
-                          title="Remove stall"
+                          onClick={() => setShowAllSelectedStalls(!showAllSelectedStalls)}
+                          className="w-full py-1.5 px-3 rounded-lg bg-slate-100/80 hover:bg-slate-200/70 text-slate-600 font-sans text-[11px] font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                         >
-                          <X className="w-3.5 h-3.5" />
+                          {showAllSelectedStalls ? (
+                            <>
+                              <span>Show Less</span>
+                              <ChevronUp className="w-3.5 h-3.5" />
+                            </>
+                          ) : (
+                            <>
+                              <span>+ {selectedStallObjects.length - 2} More Stalls</span>
+                              <ChevronDown className="w-3.5 h-3.5" />
+                            </>
+                          )}
                         </button>
-                      </div>
-                    ))
+                      )}
+                    </div>
                   ) : (
-                    <div className="p-4 rounded-xl bg-white/80 border border-dashed border-emerald-300 text-center space-y-1.5">
-                      <div className="w-7 h-7 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto">
-                        <MapPin className="w-3.5 h-3.5" />
-                      </div>
-                      <p className="text-xs font-semibold text-slate-700">No Stall Selected</p>
-                      <p className="text-[10px] text-slate-500 leading-relaxed">
-                        Click on any stall on the map to view its price &amp; select it.
+                    <div className="py-6 px-4 rounded-xl bg-slate-50 border border-dashed border-slate-200 text-center space-y-1">
+                      <p className="text-xs font-semibold text-slate-600">No Stall Selected</p>
+                      <p className="text-[11px] text-slate-400">
+                        Click any booth on the floor plan to select.
                       </p>
                     </div>
                   )}
                 </div>
 
-                {/* Subtotal & Area Metrics */}
+                {/* Section 2: Technical Specs (Only shown when stalls selected) */}
                 {selectedStallObjects.length > 0 && (
-                  <div className="pt-2.5 border-t border-emerald-200 space-y-1.5 text-[11px]">
-                    <div className="flex items-center justify-between text-slate-600">
-                      <span>Total Area:</span>
-                      <span className="font-mono font-bold text-slate-900">
-                        {totalAreaSqM} m² ({(totalAreaSqM * 10.76).toFixed(0)} sq.ft)
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-slate-600">
-                      <span>Power:</span>
-                      <span className="font-mono font-medium text-slate-900">
-                        {selectedStallObjects.some((s) => s.isBareSpace) ? "Direct Power Provision" : "15A Included"}
-                      </span>
-                    </div>
-                    {selectedStallObjects.some((s) => s.isBareSpace) && (
-                      <div className="flex items-center justify-between text-slate-600">
-                        <span>Space Type:</span>
-                        <span className="font-semibold text-slate-900">
-                          {selectedStallObjects.every((s) => s.isBareSpace)
-                            ? "Bare Space (Raw Area)"
-                            : "Includes Bare Space"}
+                  <div className="p-4 sm:p-5 space-y-2.5 bg-slate-50/40">
+                    <span className="text-[10px] font-mono font-semibold uppercase tracking-wider text-slate-400 block">
+                      Specifications Summary
+                    </span>
+                    <div className="grid grid-cols-2 gap-3 text-xs">
+                      <div>
+                        <span className="text-slate-400 text-[10px] block font-mono">TOTAL AREA</span>
+                        <span className="font-mono font-semibold text-slate-800 text-xs">
+                          {totalAreaSqM} m²{" "}
+                          <span className="text-[10px] text-slate-500">
+                            ({(totalAreaSqM * 10.76).toFixed(0)} sq.ft)
+                          </span>
                         </span>
                       </div>
-                    )}
+                      <div>
+                        <span className="text-slate-400 text-[10px] block font-mono">POWER PROVISION</span>
+                        <span className="font-sans font-medium text-slate-800 text-xs">
+                          {selectedStallObjects.some((s) => s.isBareSpace) ? "Direct Power" : "15A Socket"}
+                        </span>
+                      </div>
+                      <div className="col-span-2 pt-1 border-t border-slate-100 flex items-center justify-between text-xs">
+                        <span className="text-slate-400 font-mono text-[10px]">SPACE SCHEME:</span>
+                        <span className="font-medium text-slate-700 text-[11px]">
+                          {selectedStallObjects.every((s) => s.isBareSpace)
+                            ? "Bare Space (Raw Area)"
+                            : selectedStallObjects.some((s) => s.isBareSpace)
+                              ? "Mixed (Bare & Shell)"
+                              : "Shell Scheme (Octanorm)"}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 )}
 
-                {/* Total Tariff Box */}
-                <div className="p-3.5 rounded-xl bg-white border-2 border-emerald-400 shadow-xs space-y-1">
-                  <div className="text-[10px] font-mono text-emerald-800 uppercase font-bold tracking-wider">
-                    {isSponsorPackage ? "TOTAL SPONSORSHIP INVESTMENT" : "TOTAL INVESTMENT TARIFF"}
+                {/* Section 3: Financial Tariff Breakdown */}
+                <div className="p-4 sm:p-5 space-y-3.5 bg-white">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono font-semibold uppercase tracking-wider text-slate-400">
+                      Payment Ledger
+                    </span>
+                    <span className="text-[9px] font-mono font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                      13% VAT INCL.
+                    </span>
                   </div>
-                  <div className="flex items-baseline justify-between flex-wrap gap-1">
-                    <div className="text-xl font-bold font-mono text-[#15803D]">
-                      NPR {finalPriceNPR.toLocaleString()}
+
+                  <div className="space-y-2 text-xs font-mono">
+                    <div className="flex items-center justify-between text-slate-600">
+                      <span>Base Stall Tariff</span>
+                      <div className="text-right">
+                        <span className="font-semibold text-slate-800">
+                          NPR {finalPriceNPR.toLocaleString()}
+                        </span>
+                        <span className="text-[10px] text-slate-400 block">
+                          (${finalPriceUSD.toLocaleString()})
+                        </span>
+                      </div>
                     </div>
-                    <div className="text-xs font-mono font-bold text-slate-600">
-                      USD ${finalPriceUSD.toLocaleString()}
+
+                    <div className="flex items-center justify-between text-slate-600">
+                      <span>Govt. 13% VAT</span>
+                      <div className="text-right">
+                        <span className="font-semibold text-slate-800">
+                          + NPR {vatNPR.toLocaleString()}
+                        </span>
+                        <span className="text-[10px] text-slate-400 block">
+                          (+${vatUSD.toLocaleString()})
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Total Grand Row */}
+                    <div className="pt-3 border-t border-slate-200 flex items-baseline justify-between">
+                      <div>
+                        <span className="font-sans font-bold text-xs text-slate-900 block">
+                          Total Payable
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-sans block">
+                          All taxes included
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-lg font-bold font-mono text-[#15803D]">
+                          NPR {totalWithVatNPR.toLocaleString()}
+                        </div>
+                        <div className="text-xs font-mono text-slate-500">
+                          USD ${totalWithVatUSD.toLocaleString()}
+                        </div>
+                      </div>
                     </div>
                   </div>
+
                   {isSponsorPackage && (
-                    <p className="text-[10px] text-emerald-800 font-medium pt-0.5 leading-tight">
+                    <p className="text-[11px] text-emerald-800 font-medium pt-1.5 border-t border-slate-100">
                       Includes {selectedPackage?.spaceDescription}
                     </p>
                   )}
+
+                  {/* Primary Action Button */}
+                  <div className="pt-1">
+                    <button
+                      type="button"
+                      onClick={handleNext}
+                      disabled={selectedBoothNumbers.length === 0}
+                      className={`w-full py-3 px-4 rounded-xl font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-sm ${selectedBoothNumbers.length === 0
+                        ? "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none"
+                        : "bg-[#218A59] hover:bg-[#186a43] text-white hover:shadow-md cursor-pointer"
+                        }`}
+                    >
+                      <span>
+                        {selectedBoothNumbers.length === 0
+                          ? "SELECT STALL TO CONTINUE"
+                          : `CONTINUE (${selectedBoothNumbers.length} STALL${selectedBoothNumbers.length > 1 ? "S" : ""}) →`}
+                      </span>
+                    </button>
+                  </div>
                 </div>
 
-                {/* Primary Action Button */}
-                <button
-                  type="button"
-                  onClick={handleNext}
-                  disabled={selectedBoothNumbers.length === 0}
-                  className={`w-full py-3 px-4 rounded-xl font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-md ${
-                    selectedBoothNumbers.length === 0
-                      ? "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none"
-                      : "bg-[#218A59] hover:bg-[#186a43] text-white hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
-                  }`}
-                >
-                  <span>
-                    {selectedBoothNumbers.length === 0
-                      ? "SELECT STALL TO CONTINUE"
-                      : `CONTINUE (${selectedBoothNumbers.length} STALL${selectedBoothNumbers.length > 1 ? "S" : ""}) →`}
-                  </span>
-                </button>
-
-                {/* Assistance Note */}
-                <div className="pt-2 border-t border-emerald-200 text-[10px] text-slate-600 space-y-1">
-                  <div className="font-bold text-slate-800">Need Assistance?</div>
-                  <div className="flex items-center gap-1 text-emerald-800 font-mono">
-                    <Phone className="w-3 h-3 text-emerald-600 shrink-0" />
-                    <span>+977-9703606348 | 9703606345</span>
+                {/* Section 4: Assistance Footer */}
+                <div className="px-5 py-3.5 bg-slate-50/80 text-[11px] text-slate-500 space-y-1">
+                  <div className="font-semibold text-slate-700">Need Assistance?</div>
+                  <div className="flex items-center gap-1.5 text-slate-600 font-mono">
+                    <Phone className="w-3 h-3 text-slate-400 shrink-0" />
+                    <a href="tel:+9779703606348" className="hover:text-emerald-700 hover:underline">
+                      +977-9703606348 / 9703606345
+                    </a>
                   </div>
-                  <div className="flex items-center gap-1 text-emerald-800 font-mono">
-                    <Mail className="w-3 h-3 text-emerald-600 shrink-0" />
-                    <span>info@himalayanenergyexpo.com</span>
+                  <div className="flex items-center gap-1.5 text-slate-600 font-mono">
+                    <Mail className="w-3 h-3 text-slate-400 shrink-0" />
+                    <a href="mailto:info@himalayanenergyexpo.com" className="hover:text-emerald-700 hover:underline">
+                      info@himalayanenergyexpo.com
+                    </a>
                   </div>
                 </div>
               </div>
@@ -1115,11 +1510,10 @@ export default function StallBookingWizard() {
                     country: prev.country === "" || prev.country.toLowerCase() !== "nepal" ? "Nepal" : prev.country,
                   }));
                 }}
-                className={`p-4 rounded-xl border-2 text-left transition-all flex items-start gap-3 cursor-pointer ${
-                  exhibitorOrigin === "domestic"
-                    ? "border-[#10B981] bg-emerald-50/50 shadow-xs ring-2 ring-[#10B981]/20"
-                    : "border-slate-200 bg-white hover:border-slate-300"
-                }`}
+                className={`p-4 rounded-xl border-2 text-left transition-all flex items-start gap-3 cursor-pointer ${exhibitorOrigin === "domestic"
+                  ? "border-[#10B981] bg-emerald-50/50 shadow-xs ring-2 ring-[#10B981]/20"
+                  : "border-slate-200 bg-white hover:border-slate-300"
+                  }`}
               >
                 <div className="text-2xl shrink-0">🇳🇵</div>
                 <div className="space-y-1">
@@ -1146,11 +1540,10 @@ export default function StallBookingWizard() {
                     country: prev.country === "Nepal" ? "" : prev.country,
                   }));
                 }}
-                className={`p-4 rounded-xl border-2 text-left transition-all flex items-start gap-3 cursor-pointer ${
-                  exhibitorOrigin === "international"
-                    ? "border-sky-500 bg-sky-50/50 shadow-xs ring-2 ring-sky-500/20"
-                    : "border-slate-200 bg-white hover:border-slate-300"
-                }`}
+                className={`p-4 rounded-xl border-2 text-left transition-all flex items-start gap-3 cursor-pointer ${exhibitorOrigin === "international"
+                  ? "border-sky-500 bg-sky-50/50 shadow-xs ring-2 ring-sky-500/20"
+                  : "border-slate-200 bg-white hover:border-slate-300"
+                  }`}
               >
                 <div className="text-2xl shrink-0">🌐</div>
                 <div className="space-y-1">
@@ -1167,17 +1560,54 @@ export default function StallBookingWizard() {
               </button>
             </div>
 
-            {/* International Gateway Notice */}
+            {/* International Exhibitor Notice & Team Contact */}
             {exhibitorOrigin === "international" && (
-              <div className="mt-3 p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-                <div className="text-xs space-y-1">
-                  <span className="font-bold text-amber-950 block text-xs">
-                    Notice: International Online Payment Gateway Under Construction
+              <div className="mt-4 p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200 text-slate-800 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-bold text-sm text-slate-900">
+                        International Exhibitor Notice
+                      </span>
+                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-200">
+                        Card Gateway Under Construction
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-600 leading-relaxed font-normal">
+                      Online credit card payments are currently unavailable. You can reserve your stall below and pay by <strong>Bank Transfer (USD SWIFT Wire)</strong> using the official Pro-Forma Invoice we generate for you.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Direct Team Contacts */}
+                <div className="pt-2.5 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2.5 text-xs">
+                  <span className="text-slate-600 font-medium">
+                    Need help or want to speak with our team?
                   </span>
-                  <p className="text-[11px] text-amber-800 leading-relaxed font-normal">
-                    Our direct international online credit card payment gateway (Visa / Mastercard) is currently under scheduled development. International exhibitors will be issued an <strong>Official Pro-Forma Invoice</strong> with <strong>SWIFT wire transfer</strong> details upon booking to provisionally lock stalls immediately.
-                  </p>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <a
+                      href="https://wa.me/9779703606348?text=Hello%2C%20I%20am%20an%20international%20exhibitor%20inquiring%20about%20stall%20booking."
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#25D366] text-white text-xs font-semibold hover:bg-[#20ba59] transition-colors"
+                    >
+                      <MessageSquare className="w-3.5 h-3.5" />
+                      <span>WhatsApp (+977 9703606348)</span>
+                    </a>
+                    <a
+                      href="mailto:info@himalayanenergyexpo.com?subject=International%20Stall%20Booking%20Inquiry"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-100 transition-colors"
+                    >
+                      <Mail className="w-3.5 h-3.5" />
+                      <span>info@himalayanenergyexpo.com</span>
+                    </a>
+                    <a
+                      href="tel:+9779703606348"
+                      className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors"
+                    >
+                      Call: +977 9703606345
+                    </a>
+                  </div>
                 </div>
               </div>
             )}
@@ -1254,11 +1684,10 @@ export default function StallBookingWizard() {
                 }
                 value={formData.country}
                 onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                className={`w-full p-3 rounded-xl bg-white border text-slate-900 text-xs focus:outline-none focus:border-[#10B981] shadow-xs ${
-                  exhibitorOrigin === "international" && (!formData.country || formData.country.toLowerCase() === "nepal")
-                    ? "border-amber-300 bg-amber-50/20"
-                    : "border-slate-300"
-                }`}
+                className={`w-full p-3 rounded-xl bg-white border text-slate-900 text-xs focus:outline-none focus:border-[#10B981] shadow-xs ${exhibitorOrigin === "international" && (!formData.country || formData.country.toLowerCase() === "nepal")
+                  ? "border-amber-300 bg-amber-50/20"
+                  : "border-slate-300"
+                  }`}
               />
               {exhibitorOrigin === "international" && (!formData.country || formData.country.toLowerCase() === "nepal") && (
                 <span className="text-[10px] font-mono text-amber-700 mt-1 block">
@@ -1310,38 +1739,16 @@ export default function StallBookingWizard() {
         <div className="space-y-6">
           <div>
             <h3 className="font-sans font-bold text-2xl text-slate-900">
-              Step 3: Select Payment Method & Finalize Booking
+              {exhibitorOrigin === "international"
+                ? "Step 3: Review Details & Confirm Reservation"
+                : "Step 3: Select Payment Method & Finalize Booking"}
             </h3>
             <p className="text-xs text-slate-600 font-normal mt-1">
               {exhibitorOrigin === "international"
-                ? "Finalize your international stall reservation with an official SWIFT pro-forma invoice in USD."
+                ? "Review your booking details below. Confirming will place your stall on hold and generate your official USD SWIFT Pro-Forma Invoice."
                 : "Choose your preferred payment gateway from Nepal (Khalti, Fonepay) or request an official Bank Wire Invoice."}
             </p>
           </div>
-
-          {/* International Gateway Notice */}
-          {exhibitorOrigin === "international" && (
-            <div className="p-4 sm:p-5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-950 flex items-start gap-3.5 shadow-xs">
-              <div className="p-2.5 rounded-xl bg-amber-100 text-amber-800 shrink-0 mt-0.5">
-                <Globe className="w-5 h-5" />
-              </div>
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h4 className="font-bold text-sm text-amber-950 font-sans">
-                    International Online Payment Gateway Under Construction
-                  </h4>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 font-bold uppercase tracking-wider">
-                    Under Integration
-                  </span>
-                </div>
-                <p className="text-xs text-amber-900/90 leading-relaxed font-normal">
-                  Our automated international credit/debit card payment gateway (Visa / Mastercard) is currently under scheduled development.
-                  International bookings are confirmed with an <strong>Official Pro-Forma Invoice & SWIFT Wire Transfer</strong>.
-                  Selecting <strong>Bank Wire / SWIFT</strong> below will immediately lock your booth reservation in USD, and our secretariat will issue your stamp-sealed pro-forma invoice with banking coordinates.
-                </p>
-              </div>
-            </div>
-          )}
 
           {/* Booking Summary Box */}
           <div className="p-6 rounded-2xl bg-[#F8FAFC] border border-slate-200 space-y-4">
@@ -1360,11 +1767,10 @@ export default function StallBookingWizard() {
                 <span className="text-[10px] font-mono text-slate-400 font-bold uppercase">EXHIBITOR ENTITY</span>
                 <div className="font-sans font-bold text-base text-slate-900 flex items-center gap-1.5">
                   <span>{formData.companyName || "Organization"}</span>
-                  <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded font-bold ${
-                    exhibitorOrigin === "international"
-                      ? "bg-sky-100 text-sky-800"
-                      : "bg-emerald-100 text-emerald-800"
-                  }`}>
+                  <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded font-bold ${exhibitorOrigin === "international"
+                    ? "bg-sky-100 text-sky-800"
+                    : "bg-emerald-100 text-emerald-800"
+                    }`}>
                     {exhibitorOrigin === "international" ? "International" : "Domestic"}
                   </span>
                 </div>
@@ -1373,17 +1779,36 @@ export default function StallBookingWizard() {
                 </span>
               </div>
 
-              <div>
-                <span className="text-[10px] font-mono text-slate-400 font-bold uppercase">TOTAL INVESTMENT</span>
+              <div className="p-3.5 rounded-xl bg-white border border-slate-200 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono text-slate-500 font-bold uppercase">TOTAL INVESTMENT</span>
+                  <span className="text-[9px] font-mono bg-emerald-100 text-emerald-800 border border-emerald-300 px-1.5 py-0.5 rounded font-bold">
+                    + 13% VAT INCL.
+                  </span>
+                </div>
                 <div className="font-sans font-bold text-xl text-[#15803D]">
                   {exhibitorOrigin === "international"
-                    ? `USD $${finalPriceUSD.toLocaleString()}`
-                    : `NPR ${finalPriceNPR.toLocaleString()}`}
+                    ? `USD $${totalWithVatUSD.toLocaleString()}`
+                    : `NPR ${totalWithVatNPR.toLocaleString()}`}
                 </div>
-                <span className="text-[11px] text-slate-600 font-mono">
+                <div className="pt-1 border-t border-slate-100 text-[10px] text-slate-600 font-mono space-y-0.5">
+                  <div className="flex justify-between">
+                    <span>Base Tariff:</span>
+                    <span className="font-semibold text-slate-800">
+                      {exhibitorOrigin === "international" ? `USD $${finalPriceUSD.toLocaleString()}` : `NPR ${finalPriceNPR.toLocaleString()}`}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-emerald-700">
+                    <span>+ 13% VAT:</span>
+                    <span className="font-semibold">
+                      {exhibitorOrigin === "international" ? `USD $${vatUSD.toLocaleString()}` : `NPR ${vatNPR.toLocaleString()}`}
+                    </span>
+                  </div>
+                </div>
+                <span className="text-[10px] text-slate-400 font-mono block pt-0.5">
                   {exhibitorOrigin === "international"
-                    ? `(~ NPR ${finalPriceNPR.toLocaleString()})`
-                    : `USD $${finalPriceUSD.toLocaleString()}`}
+                    ? `Approx. NPR ${totalWithVatNPR.toLocaleString()}`
+                    : `Approx. USD $${totalWithVatUSD.toLocaleString()}`}
                 </span>
               </div>
             </div>
@@ -1409,11 +1834,11 @@ export default function StallBookingWizard() {
             </div>
           </div>
 
-          {/* Payment Gateway Cards */}
-          <div className="space-y-3">
+          {/* Payment Gateway Cards / Payment Method */}
+          <div className="space-y-4">
             <div className="flex items-center justify-between">
               <label className="block text-xs font-mono text-slate-700 font-bold uppercase">
-                SELECT PAYMENT GATEWAY
+                {exhibitorOrigin === "international" ? "PAYMENT METHOD" : "SELECT PAYMENT GATEWAY"}
               </label>
               <div className="flex items-center gap-1.5 text-[11px] font-mono">
                 <span className="text-slate-500">Exhibitor:</span>
@@ -1422,7 +1847,7 @@ export default function StallBookingWizard() {
                   onClick={() => {
                     const next = exhibitorOrigin === "international" ? "domestic" : "international";
                     setExhibitorOrigin(next);
-                    if (next === "international") setPaymentMethod("bank");
+                    setPaymentMethod(next === "international" ? "bank" : "khalti");
                   }}
                   className="font-bold text-sky-600 hover:text-sky-700 underline cursor-pointer"
                 >
@@ -1431,137 +1856,156 @@ export default function StallBookingWizard() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Option 1: Khalti */}
-              <div
-                onClick={() => setPaymentMethod("khalti")}
-                className={`p-5 rounded-2xl border-2 transition-all cursor-pointer relative flex flex-col justify-between ${
-                  paymentMethod === "khalti"
-                    ? "border-[#5D2E8E] bg-[#5D2E8E]/5 shadow-md ring-2 ring-[#5D2E8E]/20"
-                    : "border-slate-200 bg-white hover:border-slate-300"
-                } ${exhibitorOrigin === "international" ? "opacity-75" : ""}`}
-              >
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5">
-                      <div className="px-2.5 py-1 rounded-lg bg-[#5D2E8E] text-white font-mono text-[10px] font-bold">
-                        KHALTI
-                      </div>
-                      {exhibitorOrigin === "international" && (
-                        <span className="text-[10px] font-mono text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
-                          Nepal Only
-                        </span>
-                      )}
+            {exhibitorOrigin === "international" ? (
+              /* CLEAN INTERNATIONAL PAYMENT / PRO-FORMA INVOICE CARD */
+              <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <span className="px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold bg-sky-100 text-sky-800">
+                        SWIFT WIRE
+                      </span>
+                      <span className="text-sm font-bold text-slate-900 font-sans">
+                        Official USD Bank Transfer &amp; Pro-Forma Invoice
+                      </span>
                     </div>
-                    {paymentMethod === "khalti" && (
-                      <CheckCircle2 className="w-5 h-5 text-[#5D2E8E]" />
-                    )}
+                    <p className="text-xs text-slate-600 leading-relaxed font-normal max-w-xl">
+                      Your stall will be held immediately upon confirmation. Our secretariat will issue an official IPPAN USD Pro-Forma Invoice with complete SWIFT banking instructions to route your remittance.
+                    </p>
                   </div>
-                  <h4 className="font-sans font-bold text-base text-slate-900">
-                    Khalti ePayment API v2
-                  </h4>
-                  <p className="text-xs text-slate-600 leading-relaxed font-normal">
-                    {exhibitorOrigin === "international"
-                      ? "For Nepalese domestic entities. Requires Khalti Wallet, SCT cards, or Nepal eBanking (not foreign cards)."
-                      : "Instant checkout via Khalti Mobile Wallet, SCT Cards, eBanking & ConnectIPS."}
-                  </p>
+                  <div className="w-10 h-10 rounded-xl bg-sky-50 text-sky-700 flex items-center justify-center shrink-0">
+                    <Landmark className="w-5 h-5 text-sky-600" />
+                  </div>
                 </div>
-                <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-1 text-[11px] font-mono text-[#5D2E8E] font-bold">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>Instant Confirmation</span>
-                </div>
-              </div>
 
-              {/* Option 2: Fonepay */}
-              <div
-                onClick={() => setPaymentMethod("fonepay")}
-                className={`p-5 rounded-2xl border-2 transition-all cursor-pointer relative flex flex-col justify-between ${
-                  paymentMethod === "fonepay"
-                    ? "border-[#D92525] bg-[#D92525]/5 shadow-md ring-2 ring-[#D92525]/20"
-                    : "border-slate-200 bg-white hover:border-slate-300"
-                } ${exhibitorOrigin === "international" ? "opacity-75" : ""}`}
-              >
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5">
-                      <div className="px-2.5 py-1 rounded-lg bg-[#D92525] text-white font-mono text-[10px] font-bold">
-                        FONEPAY
-                      </div>
-                      {exhibitorOrigin === "international" && (
-                        <span className="text-[10px] font-mono text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
-                          Nepal Only
-                        </span>
-                      )}
-                    </div>
-                    {paymentMethod === "fonepay" && (
-                      <CheckCircle2 className="w-5 h-5 text-[#D92525]" />
-                    )}
+                {/* Direct Team Support */}
+                <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs">
+                  <span className="text-slate-500 font-medium">
+                    Questions about wire transfer or booking?
+                  </span>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <a
+                      href="https://wa.me/9779703606348?text=Hello%2C%20I%20am%20an%20international%20exhibitor%20inquiring%20about%20my%20stall%20booking."
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#25D366] text-white text-xs font-semibold hover:bg-[#20ba59] transition-colors"
+                    >
+                      <MessageSquare className="w-3.5 h-3.5" />
+                      <span>WhatsApp (+977 9703606348)</span>
+                    </a>
+                    <a
+                      href="mailto:info@himalayanenergyexpo.com?subject=International%20Stall%20Booking%20Inquiry"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors"
+                    >
+                      <Mail className="w-3.5 h-3.5" />
+                      <span>info@himalayanenergyexpo.com</span>
+                    </a>
                   </div>
-                  <h4 className="font-sans font-bold text-base text-slate-900">
-                    Fonepay Direct QR
-                  </h4>
-                  <p className="text-xs text-slate-600 leading-relaxed font-normal">
-                    {exhibitorOrigin === "international"
-                      ? "For Nepalese entities. Requires Nepalese commercial bank mobile banking QR (not foreign apps)."
-                      : "Scan dynamic QR or pay directly from 50+ Nepalese commercial bank mobile apps."}
-                  </p>
-                </div>
-                <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-1 text-[11px] font-mono text-[#D92525] font-bold">
-                  <QrCode className="w-3.5 h-3.5" />
-                  <span>50+ Partner Banks</span>
                 </div>
               </div>
+            ) : (
+              /* DOMESTIC GATEWAY OPTIONS */
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Option 1: Khalti */}
+                <div
+                  onClick={() => setPaymentMethod("khalti")}
+                  className={`p-5 rounded-2xl border-2 transition-all cursor-pointer relative flex flex-col justify-between ${
+                    paymentMethod === "khalti"
+                      ? "border-[#5D2E8E] bg-[#5D2E8E]/5 shadow-md ring-2 ring-[#5D2E8E]/20"
+                      : "border-slate-200 bg-white hover:border-slate-300"
+                  }`}
+                >
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <div className="px-2.5 py-1 rounded-lg bg-[#5D2E8E] text-white font-mono text-[10px] font-bold">
+                          KHALTI
+                        </div>
+                      </div>
+                      {paymentMethod === "khalti" && (
+                        <CheckCircle2 className="w-5 h-5 text-[#5D2E8E]" />
+                      )}
+                    </div>
+                    <h4 className="font-sans font-bold text-base text-slate-900">
+                      Khalti ePayment API v2
+                    </h4>
+                    <p className="text-xs text-slate-600 leading-relaxed font-normal">
+                      Instant checkout via Khalti Mobile Wallet, SCT Cards, eBanking &amp; ConnectIPS.
+                    </p>
+                  </div>
+                  <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-1 text-[11px] font-mono text-[#5D2E8E] font-bold">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Instant Confirmation</span>
+                  </div>
+                </div>
 
-              {/* Option 3: Bank Transfer / Pro-Forma Invoice */}
-              <div
-                onClick={() => setPaymentMethod("bank")}
-                className={`p-5 rounded-2xl border-2 transition-all cursor-pointer relative flex flex-col justify-between ${
-                  paymentMethod === "bank"
-                    ? exhibitorOrigin === "international"
-                      ? "border-sky-600 bg-sky-50/40 shadow-md ring-2 ring-sky-500/20"
-                      : "border-[#218A59] bg-[#218A59]/5 shadow-md ring-2 ring-[#218A59]/20"
-                    : "border-slate-200 bg-white hover:border-slate-300"
-                }`}
-              >
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5">
-                      <div className={`px-2.5 py-1 rounded-lg text-white font-mono text-[10px] font-bold ${
-                        exhibitorOrigin === "international" ? "bg-sky-600" : "bg-[#218A59]"
-                      }`}>
-                        {exhibitorOrigin === "international" ? "SWIFT WIRE" : "BANK WIRE"}
+                {/* Option 2: Fonepay */}
+                <div
+                  onClick={() => setPaymentMethod("fonepay")}
+                  className={`p-5 rounded-2xl border-2 transition-all cursor-pointer relative flex flex-col justify-between ${
+                    paymentMethod === "fonepay"
+                      ? "border-[#D92525] bg-[#D92525]/5 shadow-md ring-2 ring-[#D92525]/20"
+                      : "border-slate-200 bg-white hover:border-slate-300"
+                  }`}
+                >
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <div className="px-2.5 py-1 rounded-lg bg-[#D92525] text-white font-mono text-[10px] font-bold">
+                          FONEPAY
+                        </div>
                       </div>
-                      {exhibitorOrigin === "international" && (
-                        <span className="text-[10px] font-mono text-sky-800 bg-sky-100 font-bold px-1.5 py-0.5 rounded">
-                          Recommended
-                        </span>
+                      {paymentMethod === "fonepay" && (
+                        <CheckCircle2 className="w-5 h-5 text-[#D92525]" />
                       )}
                     </div>
-                    {paymentMethod === "bank" && (
-                      <CheckCircle2 className={`w-5 h-5 ${
-                        exhibitorOrigin === "international" ? "text-sky-600" : "text-[#218A59]"
-                      }`} />
-                    )}
+                    <h4 className="font-sans font-bold text-base text-slate-900">
+                      Fonepay Direct QR
+                    </h4>
+                    <p className="text-xs text-slate-600 leading-relaxed font-normal">
+                      Scan dynamic QR or pay directly from 50+ Nepalese commercial bank mobile apps.
+                    </p>
                   </div>
-                  <h4 className="font-sans font-bold text-base text-slate-900">
-                    {exhibitorOrigin === "international"
-                      ? "International SWIFT Remittance"
-                      : "Bank Remittance / Invoice"}
-                  </h4>
-                  <p className="text-xs text-slate-600 leading-relaxed font-normal">
-                    {exhibitorOrigin === "international"
-                      ? "Lock stall allocation instantly. Pay in USD via SWIFT wire remittance directly to IPPAN official foreign currency account."
-                      : "Lock stall provisionally and remit via SWIFT / RTGS directly to IPPAN account."}
-                  </p>
+                  <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-1 text-[11px] font-mono text-[#D92525] font-bold">
+                    <QrCode className="w-3.5 h-3.5" />
+                    <span>50+ Partner Banks</span>
+                  </div>
                 </div>
-                <div className={`mt-4 pt-3 border-t border-slate-100 flex items-center gap-1 text-[11px] font-mono font-bold ${
-                  exhibitorOrigin === "international" ? "text-sky-700" : "text-[#218A59]"
-                }`}>
-                  <Landmark className="w-3.5 h-3.5" />
-                  <span>{exhibitorOrigin === "international" ? "Official USD Pro-Forma Invoice" : "Official Pro-Forma Invoice"}</span>
+
+                {/* Option 3: Bank Transfer / Pro-Forma Invoice */}
+                <div
+                  onClick={() => setPaymentMethod("bank")}
+                  className={`p-5 rounded-2xl border-2 transition-all cursor-pointer relative flex flex-col justify-between ${
+                    paymentMethod === "bank"
+                      ? "border-[#218A59] bg-[#218A59]/5 shadow-md ring-2 ring-[#218A59]/20"
+                      : "border-slate-200 bg-white hover:border-slate-300"
+                  }`}
+                >
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <div className="px-2.5 py-1 rounded-lg text-white font-mono text-[10px] font-bold bg-[#218A59]">
+                          BANK WIRE
+                        </div>
+                      </div>
+                      {paymentMethod === "bank" && (
+                        <CheckCircle2 className="w-5 h-5 text-[#218A59]" />
+                      )}
+                    </div>
+                    <h4 className="font-sans font-bold text-base text-slate-900">
+                      Bank Remittance / Invoice
+                    </h4>
+                    <p className="text-xs text-slate-600 leading-relaxed font-normal">
+                      Lock stall provisionally and remit via SWIFT / RTGS directly to IPPAN account.
+                    </p>
+                  </div>
+                  <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-1 text-[11px] font-mono font-bold text-[#218A59]">
+                    <Landmark className="w-3.5 h-3.5" />
+                    <span>Official Pro-Forma Invoice</span>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Terms Agreement */}
@@ -1644,47 +2088,139 @@ export default function StallBookingWizard() {
               <div />
             )}
 
-            <button
-              type="button"
-              onClick={handleNext}
-              disabled={isSubmitting || (step === 1 && selectedBoothNumbers.length === 0)}
-              className={`px-8 py-3.5 rounded-full font-mono text-xs font-bold tracking-wider shadow-md transition-all flex items-center gap-2 text-white ${
-                isSubmitting || (step === 1 && selectedBoothNumbers.length === 0)
+            {step > 1 ? (
+              <button
+                type="button"
+                onClick={handleNext}
+                disabled={isSubmitting}
+                className={`px-8 py-3.5 rounded-full font-mono text-xs font-bold tracking-wider shadow-md transition-all flex items-center gap-2 text-white ${isSubmitting
                   ? "bg-slate-300 text-slate-500 cursor-not-allowed shadow-none"
-                  : paymentMethod === "khalti" && step === 3
-                  ? "bg-[#5D2E8E] hover:bg-[#482370] cursor-pointer"
-                  : paymentMethod === "fonepay" && step === 3
-                  ? "bg-[#D92525] hover:bg-[#b01c1c] cursor-pointer"
                   : exhibitorOrigin === "international" && step === 3
-                  ? "bg-sky-600 hover:bg-sky-700 cursor-pointer"
-                  : "bg-[#218A59] hover:bg-[#186a43] cursor-pointer"
-              }`}
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>PROCESSING RESERVATION...</span>
-                </>
-              ) : (
-                <>
-                  <span>
-                    {step === 1 && selectedBoothNumbers.length === 0
-                      ? "SELECT A STALL TO CONTINUE"
-                      : step === 3
-                      ? paymentMethod === "bank"
+                    ? "bg-sky-600 hover:bg-sky-700 cursor-pointer"
+                    : paymentMethod === "khalti" && step === 3
+                      ? "bg-[#5D2E8E] hover:bg-[#482370] cursor-pointer"
+                      : paymentMethod === "fonepay" && step === 3
+                        ? "bg-[#D92525] hover:bg-[#b01c1c] cursor-pointer"
+                        : "bg-[#218A59] hover:bg-[#186a43] cursor-pointer"
+                  }`}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>PROCESSING RESERVATION...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>
+                      {step === 3
                         ? exhibitorOrigin === "international"
-                          ? `LOCK STALL & GENERATE SWIFT INVOICE (USD $${finalPriceUSD.toLocaleString()})`
-                          : "CONFIRM RESERVATION & GENERATE INVOICE"
-                        : `PAY WITH ${paymentMethod.toUpperCase()} (NPR ${finalPriceNPR.toLocaleString()})`
-                      : "CONTINUE NEXT"}
-                  </span>
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
+                          ? `CONFIRM & HOLD STALL (USD $${totalWithVatUSD.toLocaleString()})`
+                          : paymentMethod === "bank"
+                            ? "CONFIRM RESERVATION & GENERATE INVOICE"
+                            : `PAY WITH ${paymentMethod.toUpperCase()} (NPR ${totalWithVatNPR.toLocaleString()})`
+                        : exhibitorOrigin === "international"
+                          ? "CONTINUE TO REVIEW & RESERVE"
+                          : "CONTINUE TO REVIEW & PAYMENT"}
+                    </span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            ) : null}
           </div>
         </div>
       )}
+
+      {/* =========================================================================
+          TIER PERKS DETAIL MODAL
+         ========================================================================= */}
+      {perksModalPackageId && (() => {
+        const pkg = PARTICIPATION_PACKAGES.find((p) => p.id === perksModalPackageId);
+        if (!pkg) return null;
+        const isTitle = pkg.id === "title-sponsor";
+
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-150">
+            <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden text-slate-900 my-auto">
+              {/* Modal Header */}
+              <div className={`p-6 border-b border-slate-100 flex items-start justify-between ${isTitle ? "bg-gradient-to-r from-amber-50 to-orange-50/30" : "bg-slate-50"
+                }`}>
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                      TIER ENTITLEMENTS &amp; BENEFITS
+                    </span>
+                    {isTitle && (
+                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-500 text-slate-950">
+                        FLAGSHIP
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="font-sans font-bold text-xl text-slate-900">
+                    {pkg.name}
+                  </h3>
+                  <p className="text-xs text-slate-600 mt-0.5">
+                    {pkg.spaceDescription} · <span className="font-mono font-bold text-slate-900">{pkg.priceDisplayNPR}</span>
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setPerksModalPackageId(null)}
+                  className="w-8 h-8 rounded-full bg-white hover:bg-slate-100 text-slate-500 hover:text-slate-800 border border-slate-200 flex items-center justify-center transition-colors cursor-pointer"
+                  aria-label="Close"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Modal Body */}
+              <div className="p-6 space-y-4">
+                <div className="text-xs font-mono font-bold text-slate-500 uppercase tracking-wider">
+                  Included Inclusions &amp; Privileges ({pkg.perks.length}):
+                </div>
+
+                <div className="space-y-2.5 max-h-[360px] overflow-y-auto pr-1">
+                  {pkg.perks.map((perk, i) => (
+                    <div
+                      key={i}
+                      className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 flex items-start gap-3 text-xs"
+                    >
+                      <div className="w-5 h-5 rounded-full bg-emerald-100 text-[#15803D] flex items-center justify-center shrink-0 mt-0.5">
+                        <Check className="w-3 h-3" />
+                      </div>
+                      <div className="font-medium text-slate-800 leading-relaxed">
+                        {perk}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={() => setPerksModalPackageId(null)}
+                  className="px-5 py-2.5 rounded-full border border-slate-300 text-slate-700 font-mono text-xs font-bold hover:bg-slate-100 transition-colors cursor-pointer"
+                >
+                  CLOSE
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    selectPackage(pkg.id);
+                    setPerksModalPackageId(null);
+                  }}
+                  className="px-6 py-2.5 rounded-full bg-[#218A59] hover:bg-[#186a43] text-white font-mono text-xs font-bold transition-all shadow-sm cursor-pointer flex items-center gap-1.5"
+                >
+                  <span>SELECT {pkg.name.toUpperCase()}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

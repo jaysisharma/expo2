@@ -27,11 +27,13 @@ import {
   Images,
   FolderPlus,
   Link as LinkIcon,
+  Film,
 } from "lucide-react";
 import { galleryData as initialGallery } from "@/data/gallery";
 import { saveFirebaseGallery, getFirebaseGallery } from "@/lib/firebaseDb";
 import { GalleryItem } from "@/lib/types";
 import { ImageUploadField } from "@/components/admin/ImageUploadField";
+import { compressImage } from "@/lib/imageCompression";
 
 interface Edition {
   name: string;
@@ -335,8 +337,27 @@ export default function AdminGalleryPage() {
 
       if (item.file) {
         try {
+          setBulkProgress({
+            current: i + 1,
+            total,
+            statusText: `Optimizing & compressing photo ${i + 1} of ${total}...`,
+          });
+
+          // Compress image client-side to prevent HTTP 413 (Payload Too Large) on raw camera photos
+          const fileToUpload = await compressImage(item.file, {
+            maxWidth: 2048,
+            maxHeight: 2048,
+            quality: 0.85,
+          });
+
+          setBulkProgress({
+            current: i + 1,
+            total,
+            statusText: `Uploading photo ${i + 1} of ${total}: ${fileToUpload.name}`,
+          });
+
           const formData = new FormData();
-          formData.append("file", item.file);
+          formData.append("file", fileToUpload);
           formData.append("folder", "gallery");
 
           const res = await fetch("/api/upload", {
@@ -357,7 +378,7 @@ export default function AdminGalleryPage() {
             const reader = new FileReader();
             reader.onloadend = () => resolve(reader.result as string);
             reader.onerror = () => resolve(item.preview);
-            reader.readAsDataURL(item.file!);
+            reader.readAsDataURL(fileToUpload);
           });
           uploadedUrls.push(fallbackDataUrl);
         } catch {
@@ -475,6 +496,14 @@ export default function AdminGalleryPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          <a
+            href="/admin/videos"
+            className="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium border border-slate-200 shadow-2xs flex items-center gap-1.5 transition-colors cursor-pointer"
+          >
+            <Film className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Drone &amp; Glimpse Videos</span>
+          </a>
+
           <button
             onClick={() => setShowEditionsModal(true)}
             className="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium border border-slate-200 shadow-2xs flex items-center gap-1.5 transition-colors cursor-pointer"

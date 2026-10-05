@@ -61,6 +61,7 @@ export function InspectorPriceAndSize({
           <span className="text-[10px] text-slate-500 dark:text-slate-400 block mb-1">Quick Price Tiers:</span>
           <div className="grid grid-cols-2 gap-1.5">
             {[
+              { label: "NPR 378k (6×6 Space)", npr: 378000, usd: 3000 },
               { label: "NPR 180k (Shell 3×3)", npr: 180000, usd: 1350 },
               { label: "NPR 450k (5×6 Space)", npr: 450000, usd: 3400 },
               { label: "NPR 600k (Prime 6×6)", npr: 600000, usd: 4500 },

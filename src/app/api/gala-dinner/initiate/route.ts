@@ -79,8 +79,15 @@ export async function POST(req: Request) {
     const qty = Math.max(1, parseInt(String(quantity), 10) || 1);
     const unitPriceNPR = passType === 'international' ? 6750 : 6000;
     const unitPriceUSD = passType === 'international' ? 50 : 45;
-    const totalAmountNPR = unitPriceNPR * qty;
-    const totalAmountUSD = unitPriceUSD * qty;
+    const vatRate = 0.13;
+
+    const subtotalNPR = unitPriceNPR * qty;
+    const vatNPR = Math.round(subtotalNPR * vatRate);
+    const totalAmountNPR = subtotalNPR + vatNPR;
+
+    const subtotalUSD = unitPriceUSD * qty;
+    const vatUSD = Math.round(subtotalUSD * vatRate);
+    const totalAmountUSD = subtotalUSD + vatUSD;
 
     const orderId = `GALA-2027-${Math.floor(100000 + Math.random() * 900000)}`;
 
@@ -110,9 +117,14 @@ export async function POST(req: Request) {
         passTier: passType,
         quantity: qty,
         unitPriceNPR,
+        subtotalNPR,
+        vatNPR,
         totalAmountNPR,
         unitPriceUSD,
+        subtotalUSD,
+        vatUSD,
         totalAmountUSD,
+        vatRate: '13%',
         dietary,
         specialRequests,
       },
@@ -184,7 +196,7 @@ export async function POST(req: Request) {
                 <strong>Reservation Summary:</strong><br/>
                 &bull; <strong>Pass Category:</strong> ${resolvedPassTitle}<br/>
                 &bull; <strong>Quantity:</strong> ${qty} Delegate Pass(es)<br/>
-                &bull; <strong>Total Amount:</strong> NPR ${totalAmountNPR.toLocaleString()} (USD ${totalAmountUSD})<br/>
+                &bull; <strong>Total Amount:</strong> NPR ${totalAmountNPR.toLocaleString()} (Includes 13% VAT: NPR ${vatNPR.toLocaleString()})<br/>
                 &bull; <strong>Payment Method:</strong> ${paymentMethod.toUpperCase()}<br/>
                 &bull; <strong>Date &amp; Time:</strong> Monday, 18 January 2027 &bull; 6:00 PM onwards<br/>
                 &bull; <strong>Venue:</strong> Royal Tulip Kathmandu (Gwarko)<br/>
@@ -193,8 +205,8 @@ export async function POST(req: Request) {
 
               <div style="border-top: 1px solid #e2e8f0; padding-top: 16px; margin-top: 16px; font-size: 13px; color: #475569; line-height: 1.6;">
                 <strong>Secretariat Inquiries:</strong><br/>
-                &bull; Hotlines: +977-9703606348 | 9703606345<br/>
-                &bull; Email: <a href="mailto:info@eventsolutionnepal.com.np" style="color: #007A5E; text-decoration: none;">info@eventsolutionnepal.com.np</a><br/>
+                &bull; Hotlines: +977-9703606348 | +977-9703606345<br/>
+                &bull; Email: <a href="mailto:info@himalayanenergyexpo.com" style="color: #007A5E; text-decoration: none;">info@himalayanenergyexpo.com</a> | <a href="mailto:info@ippan.org.np" style="color: #007A5E; text-decoration: none;">info@ippan.org.np</a><br/>
                 &bull; Website: <a href="https://www.higex.org" style="color: #007A5E; text-decoration: none;">www.higex.org</a>
               </div>
             </td>
@@ -227,6 +239,27 @@ export async function POST(req: Request) {
         ? 'http://localhost:3000'
         : 'https://himalayanenergyexpo.com');
 
+    const isInternational =
+      passType === 'international' ||
+      (country && country.trim().toLowerCase() !== 'nepal') ||
+      paymentMethod === 'intl_card';
+
+    // International delegates are strictly routed to bank wire / USD invoice
+    // Online card checkout is currently under construction.
+    if (isInternational || paymentMethod === 'bank') {
+      return NextResponse.json({
+        success: true,
+        orderId,
+        paymentMethod: 'bank',
+        totalAmountNPR,
+        totalAmountUSD,
+        message: 'VIP Networking Dinner pass reservation received. SWIFT Wire / USD Pro-Forma Invoice details provided.',
+        redirectUrl: `/payment/success?id=${encodeURIComponent(
+          orderId
+        )}&gateway=bank&type=gala&amount=${isInternational ? totalAmountUSD : totalAmountNPR}&currency=${isInternational ? 'USD' : 'NPR'}&qty=${qty}&pass=${passType}`,
+      });
+    }
+
     // 2. If Khalti payment method
     if (paymentMethod === 'khalti') {
       try {
@@ -248,10 +281,10 @@ export async function POST(req: Request) {
           product_details: [
             {
               identity: orderId,
-              name: `Networking Dinner VIP Pass (${passType.toUpperCase()})`,
+              name: `Networking Dinner Pass (${passType.toUpperCase()} incl. 13% VAT)`,
               total_price: Math.round(totalAmountNPR * 100),
               quantity: qty,
-              unit_price: Math.round(unitPriceNPR * 100),
+              unit_price: Math.round((totalAmountNPR / qty) * 100),
             },
           ],
         });

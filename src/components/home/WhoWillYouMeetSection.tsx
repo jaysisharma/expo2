@@ -140,7 +140,7 @@ export function WhoWillYouMeetSection() {
 
                   <div>
                     <div className="text-2xl sm:text-3xl font-extrabold text-[#0D2E37] font-mono leading-none">
-                      50,000+
+                      30,000+
                     </div>
                     <div className="text-[11px] text-slate-600 font-medium uppercase tracking-wider mt-1">
                       Expected Visitors

@@ -49,7 +49,7 @@ async function getAdminData() {
       const defaultSettings = {
         eventName: "Himalayan Green Energy Expo Nepal 2027",
         eventDates: "Magh 3 – 5 · 17–19 Jan 2027",
-        venue: "BHRIKUTIMANDAP · KATHMANDU, NEPAL",
+        venue: "BHRIKUTIMANDAP, KATHMANDU, NEPAL",
         registrationsOpen: true,
         stallBookingsOpen: true,
       };
@@ -93,7 +93,7 @@ async function getAdminData() {
     settings: {
       eventName: "Himalayan Green Energy Expo Nepal 2027",
       eventDates: "Magh 3 – 5 · 17–19 Jan 2027",
-      venue: "BHRIKUTIMANDAP · KATHMANDU, NEPAL",
+      venue: "BHRIKUTIMANDAP, KATHMANDU, NEPAL",
       registrationsOpen: true,
       stallBookingsOpen: true,
     },
@@ -367,9 +367,10 @@ export async function POST(req: Request) {
       }
 
       case "update_booth": {
-        const { boothNumber, status, exhibitorName, priceUSD, priceNPR } = payload;
+        const { boothNumber, status, exhibitorName, priceUSD, priceNPR, isPrime } = payload;
         const parsedUSD = priceUSD !== undefined && priceUSD !== null && !isNaN(Number(priceUSD)) ? Number(priceUSD) : undefined;
         const parsedNPR = priceNPR !== undefined && priceNPR !== null && !isNaN(Number(priceNPR)) ? Number(priceNPR) : undefined;
+        const parsedIsPrime = isPrime !== undefined ? Boolean(isPrime) : undefined;
 
         data.boothOverrides[boothNumber] = {
           ...(data.boothOverrides[boothNumber] || {}),
@@ -377,6 +378,7 @@ export async function POST(req: Request) {
           exhibitorName: exhibitorName || "",
           ...(parsedUSD !== undefined ? { priceUSD: parsedUSD } : {}),
           ...(parsedNPR !== undefined ? { priceNPR: parsedNPR } : {}),
+          ...(parsedIsPrime !== undefined ? { isPrime: parsedIsPrime } : {}),
           updatedAt: new Date().toISOString(),
         };
 
@@ -387,10 +389,11 @@ export async function POST(req: Request) {
             exhibitorName,
             ...(parsedUSD !== undefined ? { priceUSD: parsedUSD } : {}),
             ...(parsedNPR !== undefined ? { priceNPR: parsedNPR } : {}),
+            ...(parsedIsPrime !== undefined ? { isPrime: parsedIsPrime } : {}),
           }).catch(() => {}),
         ]);
 
-        // Also sync price and status to savedCustomFloorPlan.json
+        // Also sync price, status, and isPrime to savedCustomFloorPlan.json
         try {
           const ROOT_FLOOR = path.join(process.cwd(), "data", "savedCustomFloorPlan.json");
           const SRC_FLOOR = path.join(process.cwd(), "src", "data", "savedCustomFloorPlan.json");
@@ -410,6 +413,7 @@ export async function POST(req: Request) {
                   status: status || el.status,
                   ...(parsedUSD !== undefined ? { priceUSD: parsedUSD } : {}),
                   ...(parsedNPR !== undefined ? { priceNPR: parsedNPR } : {}),
+                  ...(parsedIsPrime !== undefined ? { isPrime: parsedIsPrime } : {}),
                 };
               }
               return el;
@@ -434,17 +438,19 @@ export async function POST(req: Request) {
       }
 
       case "batch_update_booths": {
-        const { boothNumbers, status, exhibitorName } = payload;
+        const { boothNumbers, status, exhibitorName, isPrime } = payload;
         for (const num of (boothNumbers || [])) {
           data.boothOverrides[num] = {
             ...(data.boothOverrides[num] || {}),
             status: status !== undefined ? status : data.boothOverrides[num]?.status,
             exhibitorName: exhibitorName !== undefined ? exhibitorName : data.boothOverrides[num]?.exhibitorName,
+            ...(isPrime !== undefined ? { isPrime: Boolean(isPrime) } : {}),
             updatedAt: new Date().toISOString(),
           };
           setFirebaseBoothOverride(num, {
             status: data.boothOverrides[num].status,
             exhibitorName: data.boothOverrides[num].exhibitorName,
+            ...(isPrime !== undefined ? { isPrime: Boolean(isPrime) } : {}),
           }).catch(() => {});
         }
         await saveAdminData(data);

@@ -105,12 +105,12 @@ const NAV_STRUCTURE: NavItem[] = [
           href: '/book-stall',
           icon: LayoutGrid,
         },
-        {
-          title: 'Exhibitors Directory',
-          description: '150+ international OEMs & developers',
-          href: '/exhibitors',
-          icon: Building2,
-        },
+        // {
+        //   title: 'Exhibitors Directory',
+        //   description: '150+ international OEMs & developers',
+        //   href: '/exhibitors',
+        //   icon: Building2,
+        // },
       ],
     },
   },
@@ -309,8 +309,8 @@ export function Navbar() {
                   href={item.href}
                   onMouseEnter={() => setActiveDropdown(null)}
                   className={`relative px-3.5 py-2 text-[14px] font-semibold font-inter-tight rounded-md transition-colors duration-150 ${isActive
-                      ? 'text-[#00A370]'
-                      : 'text-slate-700 hover:text-[#00A370] hover:bg-slate-50'
+                    ? 'text-[#00A370]'
+                    : 'text-slate-700 hover:text-[#00A370] hover:bg-slate-50'
                     }`}
                 >
                   <span>{item.label}</span>
@@ -341,8 +341,8 @@ export function Navbar() {
                     setActiveDropdown(isOpen ? null : dropdown.id)
                   }
                   className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[13.5px] font-semibold font-inter-tight rounded-lg transition-all duration-150 ${isOpen || isChildActive
-                      ? 'text-[#005C42] bg-emerald-50/70'
-                      : 'text-slate-700 hover:text-slate-950 hover:bg-slate-50 group-hover/nav:text-[#005C42] group-hover/nav:bg-emerald-50/70'
+                    ? 'text-[#005C42] bg-emerald-50/70'
+                    : 'text-slate-700 hover:text-slate-950 hover:bg-slate-50 group-hover/nav:text-[#005C42] group-hover/nav:bg-emerald-50/70'
                     }`}
                   aria-expanded={isOpen}
                   aria-haspopup="true"
@@ -350,8 +350,8 @@ export function Navbar() {
                   <span>{dropdown.label}</span>
                   <ChevronDown
                     className={`w-3.5 h-3.5 transition-transform duration-200 ${isOpen
-                        ? 'rotate-180 text-[#005C42]'
-                        : 'text-slate-400 group-hover/nav:rotate-180 group-hover/nav:text-[#005C42]'
+                      ? 'rotate-180 text-[#005C42]'
+                      : 'text-slate-400 group-hover/nav:rotate-180 group-hover/nav:text-[#005C42]'
                       }`}
                   />
                 </button>
@@ -359,8 +359,8 @@ export function Navbar() {
                 {/* ── Executive Dropdown Panel (Instant CSS hover + State toggle) ── */}
                 <div
                   className={`absolute top-full left-1/2 -translate-x-1/2 w-[380px] xl:w-[400px] pt-1.5 z-50 transition-all duration-200 ease-out ${isOpen
-                      ? 'opacity-100 visible translate-y-0 pointer-events-auto'
-                      : 'opacity-0 invisible -translate-y-2 pointer-events-none group-hover/nav:opacity-100 group-hover/nav:visible group-hover/nav:translate-y-0 group-hover/nav:pointer-events-auto'
+                    ? 'opacity-100 visible translate-y-0 pointer-events-auto'
+                    : 'opacity-0 invisible -translate-y-2 pointer-events-none group-hover/nav:opacity-100 group-hover/nav:visible group-hover/nav:translate-y-0 group-hover/nav:pointer-events-auto'
                     }`}
                   onMouseEnter={() => handleMouseEnter(dropdown.id)}
                   onMouseLeave={handleMouseLeave}
@@ -387,14 +387,14 @@ export function Navbar() {
                             rel={sub.external ? 'noopener noreferrer' : undefined}
                             onClick={() => setActiveDropdown(null)}
                             className={`group relative p-2.5 rounded-xl flex items-start gap-3 transition-all duration-150 ${isSubActive
-                                ? 'bg-emerald-50/80 text-[#005C42]'
-                                : 'hover:bg-slate-50 text-slate-800'
+                              ? 'bg-emerald-50/80 text-[#005C42]'
+                              : 'hover:bg-slate-50 text-slate-800'
                               }`}
                           >
                             <div
                               className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all duration-200 mt-0.5 border ${isSubActive
-                                  ? 'bg-[#005C42] text-white border-[#005C42] shadow-xs'
-                                  : 'bg-slate-100/80 text-slate-600 border-slate-200/60 group-hover:bg-emerald-50 group-hover:text-[#005C42] group-hover:border-emerald-200/60'
+                                ? 'bg-[#005C42] text-white border-[#005C42] shadow-xs'
+                                : 'bg-slate-100/80 text-slate-600 border-slate-200/60 group-hover:bg-emerald-50 group-hover:text-[#005C42] group-hover:border-emerald-200/60'
                                 }`}
                             >
                               <IconComponent className="w-4 h-4" />
@@ -404,8 +404,8 @@ export function Navbar() {
                               <div className="flex items-center gap-1.5 flex-wrap">
                                 <span
                                   className={`text-[13px] font-semibold leading-tight transition-colors ${isSubActive
-                                      ? 'text-[#005C42]'
-                                      : 'text-slate-900 group-hover:text-[#005C42]'
+                                    ? 'text-[#005C42]'
+                                    : 'text-slate-900 group-hover:text-[#005C42]'
                                     }`}
                                 >
                                   {sub.title}
@@ -509,8 +509,8 @@ export function Navbar() {
                       href={item.href}
                       onClick={() => setMobileOpen(false)}
                       className={`py-2.5 px-3 rounded-xl text-sm font-semibold transition-colors flex items-center justify-between ${isActive
-                          ? 'text-[#00A370] bg-emerald-50 font-bold'
-                          : 'text-slate-800 hover:bg-slate-50'
+                        ? 'text-[#00A370] bg-emerald-50 font-bold'
+                        : 'text-slate-800 hover:bg-slate-50'
                         }`}
                     >
                       <span>{item.label}</span>
@@ -531,8 +531,8 @@ export function Navbar() {
                       type="button"
                       onClick={() => toggleMobileAccordion(dropdown.id)}
                       className={`w-full py-2.5 px-3 text-sm font-semibold flex items-center justify-between transition-colors ${isChildActive
-                          ? 'bg-emerald-50/70 text-[#005C42]'
-                          : 'bg-slate-50/60 text-slate-800 hover:bg-slate-100/60'
+                        ? 'bg-emerald-50/70 text-[#005C42]'
+                        : 'bg-slate-50/60 text-slate-800 hover:bg-slate-100/60'
                         }`}
                     >
                       <span>{dropdown.label}</span>

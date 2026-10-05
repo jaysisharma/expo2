@@ -59,7 +59,7 @@ export function WhyParticipateSection({ className = '' }: { className?: string }
       <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16">
         <ScrollReveal direction="up" distance={25} duration={0.6}>
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
-            
+
             {/* Left Column: Heading, Proposal Narrative, Verified Metrics & CTAs */}
             <div className="lg:col-span-5 self-start pt-0">
               <div className="flex items-center gap-2.5 mb-2.5">
@@ -96,7 +96,7 @@ export function WhyParticipateSection({ className = '' }: { className?: string }
 
                 <div>
                   <div className="text-2xl sm:text-3xl font-extrabold text-[#147D72] font-mono leading-none">
-                    50,000+
+                    30,000+
                   </div>
                   <div className="text-[11px] sm:text-xs font-semibold text-slate-600 uppercase tracking-wider mt-1">
                     Expected Visitors

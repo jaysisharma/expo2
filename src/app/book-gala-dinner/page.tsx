@@ -23,6 +23,10 @@ import {
   Zap,
   Phone,
   Mail,
+  CreditCard,
+  CheckCircle2,
+  Landmark,
+  Lock,
 } from "lucide-react";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -42,7 +46,10 @@ function BookGalaDinnerForm() {
 
   const [passTier, setPassTier] = useState<"national" | "international">(initialTier);
   const [quantity, setQuantity] = useState(1);
-  const [paymentMethod, setPaymentMethod] = useState<"khalti" | "qr">("khalti");
+  const [paymentMethod, setPaymentMethod] = useState<"khalti" | "qr" | "bank">(
+    initialTier === "international" ? "bank" : "khalti"
+  );
+  const [showIntlModal, setShowIntlModal] = useState(false);
   const [screenshot, setScreenshot] = useState<File | null>(null);
   const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -61,11 +68,36 @@ function BookGalaDinnerForm() {
 
   useEffect(() => {
     const tier = searchParams.get("tier");
-    if (tier === "international" || tier === "national") setPassTier(tier);
+    if (tier === "international" || tier === "national") {
+      setPassTier(tier);
+      if (tier === "international") {
+        setPaymentMethod("bank");
+      }
+    }
   }, [searchParams]);
 
-  const unitPrice = passTier === "international" ? 6750 : 6000;
-  const total = unitPrice * quantity;
+  // When switching between national and international, ensure appropriate payment method is set
+  useEffect(() => {
+    if (passTier === "international") {
+      setPaymentMethod("bank");
+    } else if (paymentMethod === "bank") {
+      setPaymentMethod("khalti");
+    }
+  }, [passTier]);
+
+  const unitPriceNPR = passTier === "international" ? 6750 : 6000;
+  const unitPriceUSD = passTier === "international" ? 50 : 45;
+  const vatRate = 0.13;
+
+  const subtotalNPR = unitPriceNPR * quantity;
+  const vatNPR = Math.round(subtotalNPR * vatRate);
+  const totalNPR = subtotalNPR + vatNPR;
+
+  const subtotalUSD = unitPriceUSD * quantity;
+  const vatUSD = Math.round(subtotalUSD * vatRate);
+  const totalUSD = subtotalUSD + vatUSD;
+
+  const total = totalNPR;
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -88,6 +120,9 @@ function BookGalaDinnerForm() {
   };
 
   const validate = () => {
+    if (passTier === "international") {
+      return "Online booking for international passes is currently unavailable as the payment gateway is under construction. Please contact info@himalayanenergyexpo.com or +977-9703606348.";
+    }
     if (!formData.name.trim()) return "Full name is required.";
     if (!formData.email.includes("@")) return "Valid email is required.";
     if (formData.phone.length < 7) return "Valid phone number is required.";
@@ -98,21 +133,27 @@ function BookGalaDinnerForm() {
         ? "Please type your country name."
         : "Please select your country.";
     }
-    if (paymentMethod === "qr" && !screenshot)
+    if (passTier === "national" && paymentMethod === "qr" && !screenshot)
       return "Please upload your Khalti payment screenshot.";
     return "";
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (passTier === "international") {
+      setError("Online booking for international passes is currently unavailable as the payment gateway is under construction. Please contact info@himalayanenergyexpo.com or +977-9703606348.");
+      return;
+    }
     const err = validate();
     if (err) { setError(err); return; }
     setLoading(true);
 
     try {
-      // Upload screenshot to Cloudinary if QR method
+      const resolvedPaymentMethod = paymentMethod;
+
+      // Upload screenshot to Cloudinary if domestic QR method
       let screenshotUrl = "";
-      if (paymentMethod === "qr" && screenshot) {
+      if (resolvedPaymentMethod === "qr" && screenshot) {
         const fd = new FormData();
         fd.append("file", screenshot);
         fd.append("folder", "gala-screenshots");
@@ -132,7 +173,7 @@ function BookGalaDinnerForm() {
           country: resolvedCountry,
           passType: passTier,
           quantity,
-          paymentMethod,
+          paymentMethod: resolvedPaymentMethod,
           screenshotUrl,
           dietary: "Standard Gourmet (Chef's Selection)",
         }),
@@ -187,10 +228,6 @@ function BookGalaDinnerForm() {
               <Clock className="w-3.5 h-3.5 text-emerald-500" />
               6:00 PM onwards
             </span>
-            <span className="flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              Executive Banquet &amp; VIP Networking
-            </span>
           </div>
         </div>
 
@@ -227,7 +264,7 @@ function BookGalaDinnerForm() {
                     <div className="text-lg mb-2">🇳🇵</div>
                     <div className="font-semibold text-sm text-white">National</div>
                     <div className="text-xs text-slate-500 mt-0.5">For Nepali delegates</div>
-                    <div className="mt-3 font-bold text-white font-mono">NPR 6,000<span className="text-xs font-normal text-slate-500 ml-1">/seat</span></div>
+                    <div className="mt-3 font-bold text-white font-mono">NPR 6,000<span className="text-xs font-normal text-emerald-400 ml-1">(+ 13% VAT)</span></div>
                   </button>
 
                   {/* International */}
@@ -243,7 +280,7 @@ function BookGalaDinnerForm() {
                     <div className="text-lg mb-2">🌐</div>
                     <div className="font-semibold text-sm text-white">International</div>
                     <div className="text-xs text-slate-500 mt-0.5">Foreign delegates</div>
-                    <div className="mt-3 font-bold text-white font-mono">USD 50<span className="text-xs font-normal text-slate-500 ml-1">≈ NPR 6,750</span></div>
+                    <div className="mt-3 font-bold text-white font-mono">USD 50<span className="text-xs font-normal text-sky-400 ml-1">(+ 13% VAT)</span></div>
                   </button>
                 </div>
 
@@ -351,121 +388,203 @@ function BookGalaDinnerForm() {
 
               {/* STEP 3: Payment */}
               <div className={cardCls}>
-                <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-4">
-                  03 — Payment
-                </p>
-
-                <div className="grid grid-cols-2 gap-3 mb-5">
-                  {/* Khalti ePay */}
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod("khalti")}
-                    className={`p-4 rounded-xl border text-left transition-all ${
-                      paymentMethod === "khalti"
-                        ? "border-purple-500/60 bg-purple-950/30 ring-1 ring-purple-500/20"
-                        : "border-white/8 bg-white/[0.02] hover:border-white/15"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-6 h-6 rounded bg-[#5c2d91] flex items-center justify-center text-white font-bold text-xs">K</div>
-                      <span className="font-semibold text-sm text-white">Khalti Pay</span>
-                    </div>
-                    <p className="text-[11px] text-slate-500 leading-relaxed">Wallet, eBanking, SCT Card</p>
-                    <div className="mt-2 flex items-center gap-1 text-[10px] text-purple-400 font-mono">
-                      <Zap className="w-3 h-3" /> Instant confirmation
-                    </div>
-                  </button>
-
-                  {/* Pay via QR */}
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod("qr")}
-                    className={`p-4 rounded-xl border text-left transition-all ${
-                      paymentMethod === "qr"
-                        ? "border-purple-500/60 bg-purple-950/30 ring-1 ring-purple-500/20"
-                        : "border-white/8 bg-white/[0.02] hover:border-white/15"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-6 h-6 rounded bg-[#5c2d91] flex items-center justify-center">
-                        <Smartphone className="w-3.5 h-3.5 text-white" />
-                      </div>
-                      <span className="font-semibold text-sm text-white">Pay via QR</span>
-                    </div>
-                    <p className="text-[11px] text-slate-500 leading-relaxed">Scan Khalti QR & upload screenshot</p>
-                    <div className="mt-2 flex items-center gap-1 text-[10px] text-purple-400 font-mono">
-                      <Upload className="w-3 h-3" /> Upload receipt
-                    </div>
-                  </button>
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
+                    03 — Payment Gateway
+                  </p>
+                  <span className="text-[10px] font-mono text-slate-500">
+                    {passTier === "international" ? "International Foreign Checkout" : "Domestic Nepal Checkout"}
+                  </span>
                 </div>
 
-                {/* QR Panel */}
-                {paymentMethod === "qr" && (
-                  <div className="rounded-xl border border-purple-500/20 bg-purple-950/20 p-5 space-y-4">
-                    {/* QR Code */}
-                    <div className="flex flex-col sm:flex-row gap-5 items-start">
-                      <div className="shrink-0">
-                        <div className="w-40 h-40 rounded-xl overflow-hidden border border-white/10">
-                          <Image
-                            src="/images/khalti-qr.jpg"
-                            alt="Khalti QR Code"
-                            width={160}
-                            height={160}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <p className="text-[10px] text-slate-500 text-center mt-1.5">Scan with Khalti app</p>
+                {passTier === "international" ? (
+                  /* ── INTERNATIONAL NOTICE: ONLINE BOOKING CLOSED ── */
+                  <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5 sm:p-6 space-y-4">
+                    <div className="flex items-start gap-3.5">
+                      <div className="p-2.5 rounded-xl bg-amber-500/20 text-amber-300 shrink-0 mt-0.5">
+                        <Lock className="w-5 h-5 text-amber-400" />
                       </div>
-                      <div className="space-y-2.5 text-sm">
-                        <p className="text-slate-300 font-semibold">How to pay:</p>
-                        <ol className="text-[12px] text-slate-400 space-y-1.5 list-decimal list-inside leading-relaxed">
-                          <li>Open Khalti app on your phone</li>
-                          <li>Tap <span className="text-white font-medium">Scan QR</span> and scan the code</li>
-                          <li>Enter amount: <span className="text-white font-bold font-mono">NPR {total.toLocaleString()}</span></li>
-                          <li>Complete the payment</li>
-                          <li>Take a screenshot of the success screen</li>
-                          <li>Upload it below</li>
-                        </ol>
+                      <div className="space-y-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h4 className="text-sm font-bold text-white">Online Payment Gateway Unavailable</h4>
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 font-bold uppercase tracking-wider border border-amber-400/30">
+                            🚧 Under Construction · Coming Soon
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-300 leading-relaxed font-normal">
+                          Online payment for international cards is currently under construction and not active yet. Direct online booking for foreign delegates ($50/seat) cannot be processed on the website at this time.
+                        </p>
                       </div>
                     </div>
 
-                    {/* Screenshot Upload */}
-                    <div>
-                      <label className={labelCls}>Payment Screenshot *</label>
-                      {screenshotPreview ? (
-                        <div className="relative rounded-xl overflow-hidden border border-white/10">
-                          <img src={screenshotPreview} alt="Screenshot" className="w-full max-h-48 object-contain bg-black/40" />
-                          <button
-                            type="button"
-                            onClick={removeScreenshot}
-                            className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/70 hover:bg-rose-900/80 flex items-center justify-center transition-colors"
-                          >
-                            <X className="w-3.5 h-3.5 text-white" />
-                          </button>
-                          <div className="p-2 text-[11px] text-emerald-400 text-center border-t border-white/10">
-                            ✓ Screenshot uploaded — {screenshot?.name}
+                    <div className="p-4 rounded-xl bg-black/40 border border-white/10 space-y-3 text-xs">
+                      <p className="text-white font-semibold">How to reserve passes as an international delegate:</p>
+                      <p className="text-slate-300 leading-relaxed font-normal">
+                        Please contact the Expo Secretariat directly. Our registration team will assist you with pass reservation and invoice:
+                      </p>
+                      <div className="pt-1 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
+                        <div className="space-y-1.5">
+                          <span className="text-[10px] uppercase tracking-wider text-slate-400 block font-sans font-semibold">
+                            Email
+                          </span>
+                          <div className="flex flex-col gap-1.5">
+                            <a
+                              href="mailto:info@himalayanenergyexpo.com?subject=International%20Pass%20Reservation"
+                              className="text-emerald-400 hover:text-emerald-300 underline flex items-center gap-1.5"
+                            >
+                              <Mail className="w-3.5 h-3.5 shrink-0" />
+                              <span>info@himalayanenergyexpo.com</span>
+                            </a>
+                            <a
+                              href="mailto:info@ippan.org.np?subject=International%20Pass%20Reservation"
+                              className="text-emerald-400 hover:text-emerald-300 underline flex items-center gap-1.5"
+                            >
+                              <Mail className="w-3.5 h-3.5 shrink-0" />
+                              <span>info@ippan.org.np</span>
+                            </a>
                           </div>
                         </div>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => fileInputRef.current?.click()}
-                          className="w-full py-8 rounded-xl border border-dashed border-white/15 hover:border-purple-500/40 hover:bg-purple-950/10 transition-all flex flex-col items-center gap-2 text-slate-500 hover:text-slate-300"
-                        >
-                          <Upload className="w-5 h-5" />
-                          <span className="text-xs">Click to upload screenshot</span>
-                          <span className="text-[10px] text-slate-600">JPG, PNG, WEBP · Max 10MB</span>
-                        </button>
-                      )}
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFile}
-                        className="hidden"
-                      />
+
+                        <div className="space-y-1.5">
+                          <span className="text-[10px] uppercase tracking-wider text-slate-400 block font-sans font-semibold">
+                            Mobile / Hotlines
+                          </span>
+                          <div className="flex flex-col gap-1.5">
+                            <a
+                              href="tel:+9779703606348"
+                              className="text-emerald-400 hover:text-emerald-300 underline flex items-center gap-1.5"
+                            >
+                              <Phone className="w-3.5 h-3.5 shrink-0" />
+                              <span>+977-9703606348</span>
+                            </a>
+                            <a
+                              href="tel:+9779703606345"
+                              className="text-emerald-400 hover:text-emerald-300 underline flex items-center gap-1.5"
+                            >
+                              <Phone className="w-3.5 h-3.5 shrink-0" />
+                              <span>+977-9703606345</span>
+                            </a>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
+                ) : (
+                  /* ── NATIONAL GATEWAYS ── */
+                  <>
+                    <div className="grid grid-cols-2 gap-3 mb-5">
+                      {/* Khalti ePay */}
+                      <button
+                        type="button"
+                        onClick={() => setPaymentMethod("khalti")}
+                        className={`p-4 rounded-xl border text-left transition-all ${
+                          paymentMethod === "khalti"
+                            ? "border-purple-500/60 bg-purple-950/30 ring-1 ring-purple-500/20"
+                            : "border-white/8 bg-white/[0.02] hover:border-white/15"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-6 h-6 rounded bg-[#5c2d91] flex items-center justify-center text-white font-bold text-xs">K</div>
+                          <span className="font-semibold text-sm text-white">Khalti Pay</span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 leading-relaxed">Wallet, eBanking, SCT Card</p>
+                        <div className="mt-2 flex items-center gap-1 text-[10px] text-purple-400 font-mono">
+                          <Zap className="w-3 h-3" /> Instant confirmation
+                        </div>
+                      </button>
+
+                      {/* Pay via QR */}
+                      <button
+                        type="button"
+                        onClick={() => setPaymentMethod("qr")}
+                        className={`p-4 rounded-xl border text-left transition-all ${
+                          paymentMethod === "qr"
+                            ? "border-purple-500/60 bg-purple-950/30 ring-1 ring-purple-500/20"
+                            : "border-white/8 bg-white/[0.02] hover:border-white/15"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-6 h-6 rounded bg-[#5c2d91] flex items-center justify-center">
+                            <Smartphone className="w-3.5 h-3.5 text-white" />
+                          </div>
+                          <span className="font-semibold text-sm text-white">Pay via QR</span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 leading-relaxed">Scan Khalti QR & upload screenshot</p>
+                        <div className="mt-2 flex items-center gap-1 text-[10px] text-purple-400 font-mono">
+                          <Upload className="w-3 h-3" /> Upload receipt
+                        </div>
+                      </button>
+                    </div>
+
+                    {/* QR Panel */}
+                    {paymentMethod === "qr" && (
+                      <div className="rounded-xl border border-purple-500/20 bg-purple-950/20 p-5 space-y-4 mb-2">
+                        {/* QR Code */}
+                        <div className="flex flex-col sm:flex-row gap-5 items-start">
+                          <div className="shrink-0">
+                            <div className="w-40 h-40 rounded-xl overflow-hidden border border-white/10">
+                              <Image
+                                src="/images/khalti-qr.jpg"
+                                alt="Khalti QR Code"
+                                width={160}
+                                height={160}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            <p className="text-[10px] text-slate-500 text-center mt-1.5">Scan with Khalti app</p>
+                          </div>
+                          <div className="space-y-2.5 text-sm">
+                            <p className="text-slate-300 font-semibold">How to pay:</p>
+                            <ol className="text-[12px] text-slate-400 space-y-1.5 list-decimal list-inside leading-relaxed">
+                              <li>Open Khalti app on your phone</li>
+                              <li>Tap <span className="text-white font-medium">Scan QR</span> and scan the code</li>
+                              <li>Enter amount: <span className="text-white font-bold font-mono">NPR {total.toLocaleString()}</span></li>
+                              <li>Complete the payment</li>
+                              <li>Take a screenshot of the success screen</li>
+                              <li>Upload it below</li>
+                            </ol>
+                          </div>
+                        </div>
+
+                        {/* Screenshot Upload */}
+                        <div>
+                          <label className={labelCls}>Payment Screenshot *</label>
+                          {screenshotPreview ? (
+                            <div className="relative rounded-xl overflow-hidden border border-white/10">
+                              <img src={screenshotPreview} alt="Screenshot" className="w-full max-h-48 object-contain bg-black/40" />
+                              <button
+                                type="button"
+                                onClick={removeScreenshot}
+                                className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/70 hover:bg-rose-900/80 flex items-center justify-center transition-colors"
+                              >
+                                <X className="w-3.5 h-3.5 text-white" />
+                              </button>
+                              <div className="p-2 text-[11px] text-emerald-400 text-center border-t border-white/10">
+                                ✓ Screenshot uploaded — {screenshot?.name}
+                              </div>
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => fileInputRef.current?.click()}
+                              className="w-full py-8 rounded-xl border border-dashed border-white/15 hover:border-purple-500/40 hover:bg-purple-950/10 transition-all flex flex-col items-center gap-2 text-slate-500 hover:text-slate-300"
+                            >
+                              <Upload className="w-5 h-5" />
+                              <span className="text-xs">Click to upload screenshot</span>
+                              <span className="text-[10px] text-slate-600">JPG, PNG, WEBP · Max 10MB</span>
+                            </button>
+                          )}
+                          <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFile}
+                            className="hidden"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>
@@ -491,43 +610,104 @@ function BookGalaDinnerForm() {
                   <div className="flex justify-between text-slate-400">
                     <span>Unit price</span>
                     <span className="text-white font-mono">
-                      {passTier === "national" ? "NPR 6,000" : "USD 50"}
+                      {passTier === "national" ? "NPR 6,000 (+ 13% VAT)" : "USD 50 (+ 13% VAT)"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-slate-400">
+                    <span>Subtotal</span>
+                    <span className="text-white font-mono">
+                      {passTier === "national" ? `NPR ${subtotalNPR.toLocaleString()}` : `USD $${subtotalUSD}`}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-slate-400">
+                    <span>13% VAT</span>
+                    <span className="text-emerald-400 font-mono font-medium">
+                      {passTier === "national" ? `+ NPR ${vatNPR.toLocaleString()}` : `+ USD $${vatUSD}`}
                     </span>
                   </div>
                   <div className="flex justify-between text-slate-400">
                     <span>Payment</span>
                     <span className="text-white font-medium">
-                      {paymentMethod === "khalti" ? "Khalti ePay" : "QR Scan"}
+                      {passTier === "international"
+                        ? "Under Construction"
+                        : paymentMethod === "khalti"
+                          ? "Khalti ePay"
+                          : "QR Scan"}
                     </span>
                   </div>
                 </div>
 
                 <div className="py-4 border-b border-white/6 flex items-baseline justify-between">
-                  <span className="text-xs text-slate-500 uppercase tracking-wider">Total</span>
+                  <div>
+                    <span className="text-xs text-slate-400 uppercase tracking-wider block">Total (incl. 13% VAT)</span>
+                    <span className="text-[10px] text-slate-500 font-mono">
+                      {passTier === "national"
+                        ? `Base: NPR ${subtotalNPR.toLocaleString()} + 13% VAT`
+                        : `Base: USD $${subtotalUSD} + 13% VAT`}
+                    </span>
+                  </div>
                   <div className="text-right">
-                    <div className="text-2xl font-bold font-mono text-white">
-                      NPR {total.toLocaleString()}
-                    </div>
-                    {passTier === "international" && (
-                      <div className="text-[11px] text-slate-500 font-mono">≈ USD {50 * quantity}</div>
+                    {passTier === "international" ? (
+                      <div>
+                        <div className="text-2xl font-bold font-mono text-sky-400">
+                          USD ${totalUSD}
+                        </div>
+                        <div className="text-[11px] text-slate-500 font-mono">
+                          ≈ NPR {totalNPR.toLocaleString()}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-2xl font-bold font-mono text-white">
+                        NPR {totalNPR.toLocaleString()}
+                      </div>
                     )}
                   </div>
                 </div>
 
                 <div className="pt-4">
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-[0.99] text-white font-semibold text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {loading ? (
-                      <><Loader2 className="w-4 h-4 animate-spin" /><span>Processing...</span></>
-                    ) : paymentMethod === "khalti" ? (
-                      <><span>Pay NPR {total.toLocaleString()} via Khalti</span><ArrowRight className="w-4 h-4" /></>
-                    ) : (
-                      <><span>Submit Booking</span><ArrowRight className="w-4 h-4" /></>
-                    )}
-                  </button>
+                  {passTier === "international" ? (
+                    <div className="space-y-2.5">
+                      <button
+                        type="button"
+                        disabled
+                        className="w-full py-3.5 rounded-xl bg-slate-800 text-slate-400 font-semibold text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-not-allowed border border-white/10 shadow-none"
+                      >
+                        <Lock className="w-4 h-4 text-slate-500" />
+                        <span>Online Booking Coming Soon</span>
+                      </button>
+
+                      <a
+                        href={`mailto:info@himalayanenergyexpo.com,info@ippan.org.np?subject=International%20Pass%20Reservation%20(${quantity}%20Seats)&body=Dear%20Expo%20Team,%0A%0AI%20would%20like%20to%20reserve%20${quantity}%20International%20Pass(es)%20for%20the%20Himalayan%20Green%20Energy%20Expo%202027.%0A%0AName:%20${encodeURIComponent(formData.name)}%0AOrganization:%20${encodeURIComponent(formData.organization)}%0AEmail:%20${encodeURIComponent(formData.email)}%0APhone:%20${encodeURIComponent(formData.phone)}%0A%0APlease%20let%20me%20know%20how%20to%20confirm%20the%20reservation.%0A%0AThank%20you.`}
+                        className="w-full py-3 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs tracking-wide flex items-center justify-center gap-2 transition-all text-center cursor-pointer shadow-lg shadow-sky-950/40"
+                      >
+                        <Mail className="w-4 h-4" />
+                        <span>Contact Secretariat to Book ({quantity} {quantity === 1 ? "Seat" : "Seats"})</span>
+                      </a>
+                    </div>
+                  ) : (
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-[0.99] text-white font-semibold text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-lg shadow-emerald-950/40"
+                    >
+                      {loading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>Processing...</span>
+                        </>
+                      ) : paymentMethod === "khalti" ? (
+                        <>
+                          <span>Pay NPR {total.toLocaleString()} via Khalti</span>
+                          <ArrowRight className="w-4 h-4" />
+                        </>
+                      ) : (
+                        <>
+                          <span>Submit Booking</span>
+                          <ArrowRight className="w-4 h-4" />
+                        </>
+                      )}
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -576,6 +756,75 @@ function BookGalaDinnerForm() {
 
           </div>
         </form>
+
+        {/* International Card Notice Modal */}
+        {showIntlModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="relative w-full max-w-md bg-[#0f172a] border border-amber-500/30 rounded-3xl p-6 sm:p-7 text-white space-y-4 shadow-2xl">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+                    <CreditCard className="w-5 h-5 text-amber-400" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-mono uppercase font-bold text-amber-400 tracking-wider block">
+                      🚧 Under Construction
+                    </span>
+                    <h3 className="font-bold text-base text-white leading-tight">
+                      International Card Checkout
+                    </h3>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowIntlModal(false)}
+                  className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 text-white/80 hover:text-white flex items-center justify-center transition-colors text-xs"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="space-y-3 text-xs text-slate-300 leading-relaxed font-normal">
+                <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-200">
+                  <p className="font-semibold text-amber-100 mb-1">
+                    Direct online credit card payment (Visa, MasterCard, American Express) for foreign delegates is currently under active construction.
+                  </p>
+                  <p className="text-[11px] text-slate-400">
+                    Foreign currency online merchant acquiring is undergoing regulatory compliance certification with Nepal Rastra Bank (NRB).
+                  </p>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-200 space-y-1.5">
+                  <span className="font-bold text-sky-300 block">How to secure your seat now:</span>
+                  <p className="text-[11px] text-slate-300 leading-relaxed">
+                    Your VIP seating is immediately locked when you submit via <strong>Official USD SWIFT Wire Remittance</strong>. You will receive an official IPPAN pro-forma invoice with international banking details (SWIFT: NIMBNPKA) and a 48-hour reservation hold.
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-2 flex flex-col sm:flex-row justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowIntlModal(false)}
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-mono font-bold transition-colors cursor-pointer text-center"
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPaymentMethod("bank");
+                    setShowIntlModal(false);
+                  }}
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-mono font-bold transition-all cursor-pointer text-center flex items-center justify-center gap-1.5 shadow-md"
+                >
+                  <span>Proceed with USD SWIFT Invoice</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

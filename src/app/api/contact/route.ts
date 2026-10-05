@@ -288,7 +288,7 @@ ${trimmedMessage}
 
 EVENT DETAILS:
 • Dates: 17–19 January 2027 (Magh 3–5, 2083)
-• Venue: BHRIKUTIMANDAP · KATHMANDU, NEPAL
+• Venue: BHRIKUTIMANDAP, KATHMANDU, NEPAL
 • Direct Hotlines: +977-9703606348 / 9703606345
 • Landline: 01-5268535, 4169175
 • Official Expo Email: info@himalayanenergyexpo.com | info@eventsolutionnepal.com.np
@@ -380,7 +380,7 @@ Independent Power Producers' Association, Nepal (IPPAN) & Event Solution Pvt. Lt
                   17–19 January 2027 (Magh 3–5, 2083)
                 </div>
                 <div style="color: #cbd5e1; font-size: 13px;">
-                  BHRIKUTIMANDAP · KATHMANDU, NEPAL
+                  BHRIKUTIMANDAP, KATHMANDU, NEPAL
                 </div>
                 <div style="color: #94a3b8; font-size: 12px; margin-top: 6px;">
                   150+ Global Exhibitors &bull; Clean Energy Summit &bull; VIP Networking Dinner (Royal Tulip Gwarko)

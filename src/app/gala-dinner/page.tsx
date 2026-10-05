@@ -154,7 +154,7 @@ export default function GalaDinnerPage() {
                   6,000
                 </span>
                 <span className="text-base font-bold text-emerald-400 font-mono">NPR</span>
-                <span className="text-xs text-slate-400 ml-1">/ person</span>
+                <span className="text-xs text-emerald-300 font-sans ml-1">/ person (+ 13% VAT)</span>
               </div>
 
               <ul className="space-y-2.5 text-xs text-slate-300">
@@ -182,7 +182,7 @@ export default function GalaDinnerPage() {
                 href="/book-networking-dinner?tier=national"
                 className="w-full text-center py-3.5 rounded-full bg-[#007A5E] hover:bg-[#005C42] active:scale-[0.99] text-white font-bold text-xs uppercase tracking-wider transition-all block shadow-md shadow-emerald-950/20"
               >
-                Book National Pass (NPR 6,000)
+                Book National Pass (NPR 6,000 + 13% VAT)
               </Link>
             </div>
           </div>
@@ -209,13 +209,13 @@ export default function GalaDinnerPage() {
                   50
                 </span>
                 <span className="text-base font-bold text-sky-400 font-mono">USD</span>
-                <span className="text-xs text-slate-400 ml-1">/ person</span>
+                <span className="text-xs text-sky-300 font-sans ml-1">/ person (+ 13% VAT)</span>
               </div>
 
               <ul className="space-y-2.5 text-xs text-slate-300">
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-sky-400 shrink-0 mt-0.5" />
-                  <span>Executive Banquet &amp; premium drinks at Royal Tulip (Gwarko)</span>
+                  <span>Dinner &amp; premium drinks at Royal Tulip (Gwarko)</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-sky-400 shrink-0 mt-0.5" />
@@ -237,7 +237,7 @@ export default function GalaDinnerPage() {
                 href="/book-networking-dinner?tier=international"
                 className="w-full text-center py-3.5 rounded-full bg-sky-600 hover:bg-sky-500 active:scale-[0.99] text-white font-bold text-xs uppercase tracking-wider transition-all block shadow-md shadow-sky-950/20"
               >
-                Book International Pass (USD 50)
+                Book International Pass (USD $50 + 13% VAT)
               </Link>
             </div>
           </div>

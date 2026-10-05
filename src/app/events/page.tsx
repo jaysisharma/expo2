@@ -114,7 +114,7 @@ export default function EventsPage() {
                 Expo Highlights & Experience
               </h1>
               <p className="mt-3 text-sm sm:text-base text-emerald-100/75 max-w-xl">
-                BHRIKUTIMANDAP · KATHMANDU, NEPAL · 17–19 January 2027
+                BHRIKUTIMANDAP, KATHMANDU, NEPAL · 17–19 January 2027
               </p>
 
               {/* Quick Metrics */}

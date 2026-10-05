@@ -208,7 +208,7 @@ function VerifyContent() {
       : "Himalayan Green Energy Expo 2027";
     const location = isGala
       ? "Royal Tulip, Kathmandu, Nepal"
-      : "BHRIKUTIMANDAP · KATHMANDU, NEPAL";
+      : "BHRIKUTIMANDAP, KATHMANDU, NEPAL";
     const dtStart = isGala ? "20270117T121500Z" : "20270117T041500Z";
     const dtEnd = isGala ? "20270117T161500Z" : "20270119T121500Z";
 
@@ -472,7 +472,7 @@ function VerifyContent() {
             17–19 January 2027 · Magh 3–5, 2083
           </p>
           <p className="text-xs sm:text-sm text-slate-500 font-medium">
-            BHRIKUTIMANDAP · KATHMANDU, NEPAL
+            BHRIKUTIMANDAP, KATHMANDU, NEPAL
           </p>
         </div>
 

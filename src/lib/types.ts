@@ -71,6 +71,7 @@ export interface Booth {
   priceUSD: number;
   priceNPR: number;
   status: "Available" | "Reserved" | "Booked";
+  isPrime?: boolean;
   exhibitorId?: string;
   exhibitorName?: string;
   dimensions: string; // e.g. "3m x 3m" or "6m x 6m"
@@ -157,6 +158,8 @@ export interface VideoItem {
   duration?: string;
   description?: string;
   sourceType?: "youtube" | "vimeo" | "mp4" | "external";
+  featured?: boolean;
+  credits?: string;
 }
 
 export interface FAQItem {

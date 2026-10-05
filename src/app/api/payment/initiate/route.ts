@@ -211,10 +211,10 @@ export async function POST(req: Request) {
                 &bull; <strong>Fascia Board Name:</strong> ${escapeHtml(fasciaName || company || primaryName)}<br/>
                 &bull; <strong>Booth Type:</strong> ${escapeHtml(boothType)}<br/>
                 &bull; <strong>Industry Category:</strong> ${escapeHtml(industryCategory)}<br/>
-                &bull; <strong>Total Fee:</strong> NPR ${formattedNPR} / USD ${formattedUSD}<br/>
+                &bull; <strong>Total Fee (incl. 13% VAT):</strong> NPR ${formattedNPR} / USD ${formattedUSD}<br/>
                 &bull; <strong>Payment Method:</strong> ${escapeHtml(paymentMethod.toUpperCase())}<br/>
                 &bull; <strong>Expo Dates:</strong> 17–19 January 2027 (10:00 AM – 6:00 PM)<br/>
-                &bull; <strong>Venue:</strong> BHRIKUTIMANDAP · KATHMANDU, NEPAL
+                &bull; <strong>Venue:</strong> BHRIKUTIMANDAP, KATHMANDU, NEPAL
               </div>
 
               ${isBankTransfer ? `
@@ -271,8 +271,36 @@ export async function POST(req: Request) {
         ? "http://localhost:3000"
         : "https://himalayanenergyexpo.com");
 
+    const isInternational =
+      (country && country.trim().toLowerCase() !== "nepal") ||
+      (specialRequirements && specialRequirements.toLowerCase().includes("international")) ||
+      paymentMethod === "intl_card" ||
+      paymentMethod === "card";
+
+    // International exhibitors are strictly routed to SWIFT bank transfer / USD pro-forma invoice
+    // Online card checkout is currently under construction.
+    const effectivePaymentMethod = isInternational ? "bank" : paymentMethod;
+
     // 2. Handle Payment Method Routing
-    if (paymentMethod === "khalti") {
+    if (isInternational || effectivePaymentMethod === "bank") {
+      const finalAmount = isInternational ? (amountUSD || 1350) : (amountNPR || 875000);
+      const currency = isInternational ? "USD" : "NPR";
+      return NextResponse.json({
+        success: true,
+        bookingId: orderId,
+        paymentMethod: "bank",
+        message: isInternational
+          ? "International stall reservation registered. USD SWIFT pro-forma invoice issued."
+          : "Provisional booking confirmed with Bank Transfer / Invoice.",
+        redirectUrl: `/payment/success?id=${encodeURIComponent(
+          orderId
+        )}&gateway=bank&stalls=${encodeURIComponent(
+          stallListStr
+        )}&amount=${encodeURIComponent(String(finalAmount))}&currency=${currency}`,
+      });
+    }
+
+    if (effectivePaymentMethod === "khalti") {
       try {
         const returnUrl = `${baseUrl}/api/payment/callback?order_id=${encodeURIComponent(
           orderId
@@ -310,7 +338,7 @@ export async function POST(req: Request) {
       }
     }
 
-    if (paymentMethod === "fonepay") {
+    if (effectivePaymentMethod === "fonepay") {
       try {
         const returnUrl = `${baseUrl}/api/payment/fonepay-callback?order_id=${encodeURIComponent(
           orderId
@@ -341,7 +369,7 @@ export async function POST(req: Request) {
       }
     }
 
-    // Bank Transfer / Pro-Forma Invoice option
+    // Default Fallback
     return NextResponse.json({
       success: true,
       bookingId: orderId,

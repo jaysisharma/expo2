@@ -117,6 +117,7 @@ export default function InteractiveFloorPlan({
                   priceNPR: ov.priceNPR !== undefined && ov.priceNPR !== null ? Number(ov.priceNPR) : el.priceNPR,
                   priceUSD: ov.priceUSD !== undefined && ov.priceUSD !== null ? Number(ov.priceUSD) : el.priceUSD,
                   status: ov.status || el.status,
+                  isPrime: ov.isPrime !== undefined ? Boolean(ov.isPrime) : el.isPrime,
                 };
               })
             );
@@ -210,26 +211,43 @@ export default function InteractiveFloorPlan({
   const totalPriceNPR = selectedStallObjects.reduce((acc, curr) => {
     const sNum = curr.number || curr.id;
     const ov = boothOverrides[sNum] || (curr.id && boothOverrides[curr.id]);
-    const price =
+    const basePrice =
       ov?.priceNPR !== undefined && ov?.priceNPR !== null
         ? Number(ov.priceNPR)
         : curr.priceNPR !== undefined && curr.priceNPR !== null
         ? Number(curr.priceNPR)
         : 180000;
-    return acc + price;
+    const isPrime = ov?.isPrime !== undefined ? Boolean(ov.isPrime) : Boolean(curr.isPrime);
+    const surcharge = isPrime ? Math.round(basePrice * 0.25) : 0;
+    return acc + basePrice + surcharge;
   }, 0);
 
   const totalPriceUSD = selectedStallObjects.reduce((acc, curr) => {
     const sNum = curr.number || curr.id;
     const ov = boothOverrides[sNum] || (curr.id && boothOverrides[curr.id]);
-    const price =
+    const basePrice =
       ov?.priceUSD !== undefined && ov?.priceUSD !== null
         ? Number(ov.priceUSD)
         : curr.priceUSD !== undefined && curr.priceUSD !== null
         ? Number(curr.priceUSD)
         : 1350;
-    return acc + price;
+    const isPrime = ov?.isPrime !== undefined ? Boolean(ov.isPrime) : Boolean(curr.isPrime);
+    const surcharge = isPrime ? Math.round(basePrice * 0.25) : 0;
+    return acc + basePrice + surcharge;
   }, 0);
+
+  const hasSelectedPrime = selectedStallObjects.some((curr) => {
+    const sNum = curr.number || curr.id;
+    const ov = boothOverrides[sNum] || (curr.id && boothOverrides[curr.id]);
+    return ov?.isPrime !== undefined ? Boolean(ov.isPrime) : Boolean(curr.isPrime);
+  });
+
+  // 13% Government VAT
+  const vatRate = 0.13;
+  const vatNPR = Math.round(totalPriceNPR * vatRate);
+  const vatUSD = Math.round(totalPriceUSD * vatRate);
+  const totalWithVatNPR = totalPriceNPR + vatNPR;
+  const totalWithVatUSD = totalPriceUSD + vatUSD;
 
   return (
     <div className="w-full font-sans select-none space-y-6">
@@ -237,10 +255,13 @@ export default function InteractiveFloorPlan({
           01: CONTROLS & SEARCH BAR
          ========================================================================= */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-4 rounded-2xl bg-white border border-slate-200 shadow-sm font-mono text-xs">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Sparkles className="w-4 h-4 text-[#218A59]" />
           <span className="font-bold text-slate-900 uppercase tracking-wider">
             EXHIBITION FLOOR PLAN ({stallElements.length} STALLS)
+          </span>
+          <span className="text-[10px] font-mono bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-bold">
+            + 13% VAT APPLICABLE
           </span>
         </div>
 
@@ -596,6 +617,7 @@ export default function InteractiveFloorPlan({
               const stallNumber = el.number || el.id;
               const override = boothOverrides[stallNumber] || (el.id && boothOverrides[el.id]);
               const effectiveStatus = override?.status || el.status;
+              const isPrime = Boolean(override?.isPrime ?? el.isPrime);
               const isSelected = selectedStalls.some((s) => s.toLowerCase() === stallNumber.toLowerCase() || (el.id && s.toLowerCase() === el.id.toLowerCase()));
               const isHovered = hoveredStall?.id === el.id;
               const isBooked = effectiveStatus === "Booked";
@@ -641,14 +663,18 @@ export default function InteractiveFloorPlan({
                       ? "#34D399"
                       : isHovered
                       ? "#FFFFFF"
+                      : isPrime && !isBooked
+                      ? "#F59E0B"
                       : el.borderColor || "#38BDF8",
-                    borderWidth: isSelected ? "3px" : isHovered ? "2px" : `${el.strokeWidth || 2}px`,
+                    borderWidth: isSelected ? "3px" : isHovered ? "2px" : isPrime ? "2.5px" : `${el.strokeWidth || 2}px`,
                     borderStyle: "solid",
                     borderRadius: `${el.borderRadius || 4}px`,
                     boxShadow: isSelected
                       ? "0 0 20px rgba(16, 185, 129, 0.8)"
                       : isHovered
                       ? "0 0 15px rgba(255, 255, 255, 0.5)"
+                      : isPrime && !isBooked
+                      ? "0 0 8px rgba(245, 158, 11, 0.45)"
                       : "none",
                   }}
                   className={`flex flex-col items-center justify-center cursor-pointer transition-all duration-150 z-10 ${
@@ -665,7 +691,7 @@ export default function InteractiveFloorPlan({
                     }}
                     className="font-mono drop-shadow-md select-none pointer-events-none inline-block transition-transform text-center"
                   >
-                    {isSelected ? `✓ ${stallNumber}` : stallNumber}
+                    {isSelected ? `✓ ${stallNumber}` : isPrime ? `★ ${stallNumber}` : stallNumber}
                   </span>
                   {el.dimensions && el.width >= 50 && el.height >= 40 && (
                     <span
@@ -696,10 +722,22 @@ export default function InteractiveFloorPlan({
 
           return (
             <div className="absolute top-4 left-4 z-40 pointer-events-none p-4 rounded-xl bg-slate-900/95 text-white backdrop-blur-md border border-white/20 shadow-2xl font-mono text-xs space-y-1">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-sans font-bold text-base text-white">
                   STALL {stallNum} {isBareSpace ? "(Bare Space)" : ""}
                 </span>
+                {(() => {
+                  const ov = boothOverrides[stallNum] || (hoveredStall.id && boothOverrides[hoveredStall.id]);
+                  const isStallPrime = Boolean(ov?.isPrime ?? hoveredStall.isPrime);
+                  if (isStallPrime) {
+                    return (
+                      <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-amber-400 text-slate-950 flex items-center gap-0.5 shadow-xs">
+                        ★ PRIME (+25%)
+                      </span>
+                    );
+                  }
+                  return null;
+                })()}
                 <span
                   className={`text-[9px] px-2 py-0.5 rounded font-bold uppercase ${
                     hoveredStall.status === "Available" || !hoveredStall.status
@@ -721,6 +759,7 @@ export default function InteractiveFloorPlan({
               <div className="text-[#34D399] font-bold text-xs pt-0.5">
                 NPR {(() => {
                   const ov = boothOverrides[stallNum] || (hoveredStall.id && boothOverrides[hoveredStall.id]);
+                  const isStallPrime = Boolean(ov?.isPrime ?? hoveredStall.isPrime);
                   const npr =
                     ov?.priceNPR !== undefined && ov?.priceNPR !== null
                       ? Number(ov.priceNPR)
@@ -733,9 +772,28 @@ export default function InteractiveFloorPlan({
                       : hoveredStall.priceUSD !== undefined && hoveredStall.priceUSD !== null
                       ? Number(hoveredStall.priceUSD)
                       : 1350;
-                  return `${npr.toLocaleString()} / USD $${usd.toLocaleString()}`;
+                  const nprEffective = isStallPrime ? Math.round(npr * 1.25) : npr;
+                  const usdEffective = isStallPrime ? Math.round(usd * 1.25) : usd;
+                  return `${nprEffective.toLocaleString()} / USD $${usdEffective.toLocaleString()}`;
                 })()}
+                <span className="text-[10px] text-slate-300 font-normal ml-1 font-sans">(+ 13% VAT)</span>
               </div>
+              {(() => {
+                const ov = boothOverrides[stallNum] || (hoveredStall.id && boothOverrides[hoveredStall.id]);
+                const isStallPrime = Boolean(ov?.isPrime ?? hoveredStall.isPrime);
+                if (!isStallPrime) return null;
+                const npr =
+                  ov?.priceNPR !== undefined && ov?.priceNPR !== null
+                    ? Number(ov.priceNPR)
+                    : hoveredStall.priceNPR !== undefined && hoveredStall.priceNPR !== null
+                    ? Number(hoveredStall.priceNPR)
+                    : 180000;
+                return (
+                  <div className="text-[10px] text-amber-300 font-mono">
+                    Includes 25% Prime Surcharge (+NPR {Math.round(npr * 0.25).toLocaleString()})
+                  </div>
+                );
+              })()}
             </div>
           );
         })()}
@@ -796,14 +854,25 @@ export default function InteractiveFloorPlan({
           {/* Right: Price Aggregates & Instant Checkout CTA */}
           <div className="flex flex-wrap items-center gap-6 border-t lg:border-t-0 lg:border-l border-slate-700 pt-4 lg:pt-0 lg:pl-6">
             <div className="space-y-0.5 text-right">
-              <div className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">
-                ESTIMATED INVESTMENT
+              <div className="text-[10px] text-slate-400 uppercase font-bold tracking-widest flex items-center justify-end gap-1.5 flex-wrap">
+                {hasSelectedPrime && (
+                  <span className="bg-amber-400 text-slate-950 text-[9px] px-1.5 py-0.5 rounded font-bold font-mono">
+                    ★ PRIME (+25%)
+                  </span>
+                )}
+                <span>ESTIMATED TOTAL</span>
+                <span className="bg-emerald-500/20 text-emerald-400 text-[9px] px-1.5 py-0.5 rounded font-bold font-mono">
+                  +13% VAT
+                </span>
               </div>
               <div className="font-sans font-bold text-2xl text-white">
-                NPR {totalPriceNPR.toLocaleString()}
+                NPR {totalWithVatNPR.toLocaleString()}
               </div>
               <div className="text-[11px] font-bold text-emerald-400">
-                USD ${totalPriceUSD.toLocaleString()} · {totalAreaSqM} m² ({totalAreaSqFt} sq.ft)
+                USD ${totalWithVatUSD.toLocaleString()} · {totalAreaSqM} m² ({totalAreaSqFt} sq.ft)
+              </div>
+              <div className="text-[10px] text-slate-400 font-mono">
+                Base: NPR {totalPriceNPR.toLocaleString()} + 13% VAT: NPR {vatNPR.toLocaleString()}
               </div>
             </div>
 

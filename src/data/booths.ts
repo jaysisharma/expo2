@@ -52,8 +52,8 @@ export function extractBoothsFromElements(elements: any[]): Booth[] {
     let type = el.category || "Standard Exhibition Space";
     let defaultDimensions = "6m x 6m";
     let defaultSqM = 36;
-    let defaultPriceUSD = 4000;
-    let defaultPriceNPR = 540000;
+    let defaultPriceUSD = 3000;
+    let defaultPriceNPR = 378000;
     let powerIncluded = "16A Single Phase";
 
     if (upper.startsWith("C")) {
@@ -85,8 +85,8 @@ export function extractBoothsFromElements(elements: any[]): Booth[] {
       type = "6m × 6m Space";
       defaultDimensions = "6m x 6m";
       defaultSqM = 36;
-      defaultPriceUSD = 4000;
-      defaultPriceNPR = 540000;
+      defaultPriceUSD = 3000;
+      defaultPriceNPR = 378000;
       powerIncluded = "16A Single Phase";
     } else if (upper.startsWith("H")) {
       hall = "Special (Hydro)";

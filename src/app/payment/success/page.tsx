@@ -32,6 +32,7 @@ function PaymentSuccessContent() {
   const isGala = searchParams.get("type") === "gala" || id.startsWith("GALA-");
   const passTier = searchParams.get("pass") || "national";
   const qty = searchParams.get("qty") || "1";
+  const currency = searchParams.get("currency") || (passTier === "international" ? "USD" : "NPR");
 
   useEffect(() => {
     confetti({
@@ -115,7 +116,7 @@ function PaymentSuccessContent() {
                 {isBank && (
                   <>
                     <Landmark className="w-4 h-4 text-[#218A59]" />
-                    <span>Bank Wire / Invoice Requested</span>
+                    <span>{currency === "USD" ? "USD SWIFT Wire Invoice" : "Bank Wire / Invoice"}</span>
                   </>
                 )}
               </div>
@@ -138,10 +139,12 @@ function PaymentSuccessContent() {
                 <span className="text-slate-500 text-[10px] uppercase font-bold">TOTAL AMOUNT</span>
                 <div className="font-sans font-bold text-lg text-slate-900 mt-0.5">
                   {amount
-                    ? `NPR ${Number(amount).toLocaleString()}`
+                    ? currency === "USD"
+                      ? `USD $${Number(amount).toLocaleString()}`
+                      : `NPR ${Number(amount).toLocaleString()}`
                     : isGala
                       ? passTier === "international"
-                        ? `NPR ${(6750 * Number(qty)).toLocaleString()} (USD ${50 * Number(qty)})`
+                        ? `USD $${50 * Number(qty)} (≈ NPR ${(6750 * Number(qty)).toLocaleString()})`
                         : `NPR ${(6000 * Number(qty)).toLocaleString()}`
                       : "NPR 875,000"}
                 </div>
@@ -150,7 +153,7 @@ function PaymentSuccessContent() {
               <div>
                 <span className="text-slate-500 text-[10px] uppercase font-bold">VENUE & LOCATION</span>
                 <div className="font-sans font-bold text-slate-800 mt-0.5">
-                  {isGala ? "Royal Tulip Kathmandu (Gwarko)" : "BHRIKUTIMANDAP · KATHMANDU, NEPAL"}
+                  {isGala ? "Royal Tulip Kathmandu (Gwarko)" : "BHRIKUTIMANDAP, KATHMANDU, NEPAL"}
                 </div>
               </div>
 
@@ -179,13 +182,15 @@ function PaymentSuccessContent() {
                   <span>IPPAN OFFICIAL BANK ACCOUNT DETAILS FOR REMITTANCE</span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-slate-800 pt-1">
-                  <div><strong>Account Name:</strong> IPPAN - GREEN ENERGY EXPO</div>
+                  <div><strong>Beneficiary:</strong> IPPAN - GREEN ENERGY EXPO</div>
                   <div><strong>Bank Name:</strong> Nepal Investment Mega Bank (NIMB)</div>
-                  <div><strong>Account No:</strong> 001001201928471</div>
-                  <div><strong>Branch / SWIFT:</strong> Durbarmarg, Kathmandu / NIMBNPKA</div>
+                  <div><strong>NPR Account No:</strong> 001001201928471</div>
+                  <div><strong>USD Account No:</strong> 001001201928482</div>
+                  <div><strong>Branch / Location:</strong> Durbarmarg, Kathmandu, Nepal</div>
+                  <div><strong>SWIFT Code:</strong> NIMBNPKA</div>
                 </div>
                 <p className="text-[11px] text-slate-600 font-sans font-normal pt-1">
-                  Please mention Reference ID <strong>{id}</strong> in your wire remarks and email the swift advice/voucher to <strong>expo@ippan.org.np</strong>.
+                  Please mention Reference ID <strong>{id}</strong> in your wire remarks and email the bank swift advice/voucher to <strong>expo@ippan.org.np</strong>.
                 </p>
               </div>
             )}

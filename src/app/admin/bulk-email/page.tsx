@@ -70,7 +70,7 @@ export default function AdminBulkEmailPage() {
   const [subject, setSubject] = useState("Welcome to Himalayan Green Energy Expo 2027");
   const [headline, setHeadline] = useState("Official Expo Announcement");
   const [customMessage, setCustomMessage] = useState(
-    "We are delighted to welcome you to the 5th edition of the Himalayan Green Energy Expo 2027.\n\nOver 150 leading clean energy companies, government delegates, and technology developers from across South Asia will convene at BHRIKUTIMANDAP · KATHMANDU, NEPAL from 17–19 January 2027."
+    "We are delighted to welcome you to the 5th edition of the Himalayan Green Energy Expo 2027.\n\nOver 150 leading clean energy companies, government delegates, and technology developers from across South Asia will convene at BHRIKUTIMANDAP, KATHMANDU, NEPAL from 17–19 January 2027."
   );
   const [showButton, setShowButton] = useState(true);
   const [buttonText, setButtonText] = useState("View Expo Schedule");
@@ -293,7 +293,7 @@ export default function AdminBulkEmailPage() {
       setSubject("Welcome to Himalayan Green Energy Expo 2027");
       setHeadline("Official Expo Announcement");
       setCustomMessage(
-        "We are delighted to welcome you to the 5th edition of the Himalayan Green Energy Expo 2027.\n\nOver 150 leading clean energy companies, government delegates, and technology developers from across South Asia will convene at BHRIKUTIMANDAP · KATHMANDU, NEPAL from 17–19 January 2027."
+        "We are delighted to welcome you to the 5th edition of the Himalayan Green Energy Expo 2027.\n\nOver 150 leading clean energy companies, government delegates, and technology developers from across South Asia will convene at BHRIKUTIMANDAP, KATHMANDU, NEPAL from 17–19 January 2027."
       );
       setShowButton(true);
       setButtonText("View Expo Schedule");
@@ -302,7 +302,7 @@ export default function AdminBulkEmailPage() {
       setSubject("Your Entry Pass for Himalayan Green Energy Expo 2027");
       setHeadline("Important: Bring Your QR Code Pass");
       setCustomMessage(
-        "Please remember to keep your entry QR code handy on your phone when arriving at BHRIKUTIMANDAP · KATHMANDU, NEPAL.\n\nPresenting your QR pass at the entrance ensures immediate fast-track check-in and complimentary access across all 3 days."
+        "Please remember to keep your entry QR code handy on your phone when arriving at BHRIKUTIMANDAP, KATHMANDU, NEPAL.\n\nPresenting your QR pass at the entrance ensures immediate fast-track check-in and complimentary access across all 3 days."
       );
       setShowButton(true);
       setButtonText("Download My Pass");

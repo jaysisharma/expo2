@@ -15,6 +15,8 @@ import {
   Layers,
   FileDown,
   Ticket,
+  Crown,
+  Utensils,
 } from "lucide-react";
 
 export default function OfficialTariffsSection() {
@@ -66,12 +68,157 @@ export default function OfficialTariffsSection() {
         </div>
       </div>
 
+      {/* ── 00: APEX TITLE SPONSOR FLAGSHIP SPOTLIGHT ── */}
+      <div className="relative overflow-hidden rounded-3xl border-2 border-amber-400 bg-linear-to-br from-amber-50/90 via-white to-emerald-50/50 p-6 sm:p-8 shadow-md">
+        {/* Glow backdrop decoration */}
+        <div className="absolute -right-16 -top-16 w-64 h-64 bg-amber-300/30 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -left-16 -bottom-16 w-64 h-64 bg-emerald-300/20 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 space-y-6">
+          {/* Header Row */}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-linear-to-r from-amber-500 to-amber-600 text-white font-mono text-xs font-bold uppercase tracking-wider shadow-xs">
+                  <Crown className="w-3.5 h-3.5 fill-amber-200" />
+                  <span>Apex Flagship Partnership · 1 Exclusive Slot Only</span>
+                </span>
+                <span className="text-xs font-mono px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-950 font-bold border border-amber-300">
+                  Highest Sovereign Presence
+                </span>
+              </div>
+              <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-950 font-display tracking-tight flex items-center gap-2.5">
+                <span>TITLE SPONSOR</span>
+                <span className="text-slate-400 font-normal text-lg hidden sm:inline">|</span>
+                <span className="text-base sm:text-lg font-medium text-emerald-800">
+                  Himalayan Green Energy Expo 2027
+                </span>
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-700 max-w-3xl leading-relaxed">
+                The apex commercial and diplomatic co-branding partner of the 5th Edition. Maximum exposure across all main plenary backdrops, delegate credentials, sovereign inauguration ceremonies, and VIP ministerial networking plenaries.
+              </p>
+            </div>
+
+            {/* Price Box & Quick Action */}
+            <div className="p-4 rounded-2xl bg-white border border-amber-300/80 shadow-xs flex flex-col items-start lg:items-end gap-2 shrink-0">
+              <span className="text-[10px] font-mono text-slate-500 font-bold uppercase tracking-wider">
+                Official Tariff
+              </span>
+              <div className="text-2xl sm:text-3xl font-mono font-extrabold text-amber-950">
+                {currency === "NPR" ? "NRs 50,00,000/-" : "USD $35,000.00"}
+              </div>
+              <span className="text-[11px] font-mono text-slate-500">
+                {currency === "NPR" ? "Equiv. USD $35,000 (+ 13% VAT)" : "Equiv. NRs 50,00,000 (+ 13% VAT)"}
+              </span>
+              <div className="flex items-center gap-2 pt-1 w-full sm:w-auto">
+                <Link
+                  href="/book-stall?tier=title-sponsor"
+                  className="px-4 py-2 rounded-xl bg-[#218A59] hover:bg-[#186a43] text-white font-mono text-xs font-bold transition-all shadow-xs flex items-center gap-1.5"
+                >
+                  <span>Reserve Title Sponsorship</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+                <Link
+                  href="/contact?subject=Title%20Sponsorship%20Inquiry%20HGEE2027"
+                  className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-mono text-xs font-semibold transition-colors"
+                >
+                  Direct Inquiry
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Core Privileges Matrix */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div className="p-3 rounded-2xl bg-white/90 border border-amber-200 shadow-2xs space-y-1">
+              <span className="text-[10px] font-mono font-bold text-amber-900 uppercase block">
+                🏢 Bare Space
+              </span>
+              <div className="font-mono font-extrabold text-base text-slate-900">
+                72 m²
+              </div>
+              <p className="text-[10px] text-slate-500 leading-tight">
+                2 Bare Space Stalls (6M × 6M × 2 · Central A1 &amp; A2)
+              </p>
+            </div>
+
+            <div className="p-3 rounded-2xl bg-white/90 border border-amber-200 shadow-2xs space-y-1">
+              <span className="text-[10px] font-mono font-bold text-emerald-800 uppercase block">
+                🍽️ Gala Dinner
+              </span>
+              <div className="font-mono font-extrabold text-base text-emerald-700">
+                25 Passes
+              </div>
+              <p className="text-[10px] text-slate-500 leading-tight">
+                VIP Networking at Royal Tulip Kathmandu
+              </p>
+            </div>
+
+            <div className="p-3 rounded-2xl bg-white/90 border border-amber-200 shadow-2xs space-y-1">
+              <span className="text-[10px] font-mono font-bold text-slate-800 uppercase block">
+                🏛️ Inauguration
+              </span>
+              <div className="font-mono font-extrabold text-base text-slate-900">
+                50 VIP Passes
+              </div>
+              <p className="text-[10px] text-slate-500 leading-tight">
+                Sovereign Head of State Inauguration Seating
+              </p>
+            </div>
+
+            <div className="p-3 rounded-2xl bg-white/90 border border-amber-200 shadow-2xs space-y-1">
+              <span className="text-[10px] font-mono font-bold text-slate-800 uppercase block">
+                🪪 Exhibitor
+              </span>
+              <div className="font-mono font-extrabold text-base text-slate-900">
+                20 Badges
+              </div>
+              <p className="text-[10px] text-slate-500 leading-tight">
+                Official Badges with Executive VIP Lounge Access
+              </p>
+            </div>
+
+            <div className="p-3 rounded-2xl bg-white/90 border border-amber-200 shadow-2xs space-y-1">
+              <span className="text-[10px] font-mono font-bold text-slate-800 uppercase block">
+                🎟️ General Passes
+              </span>
+              <div className="font-mono font-extrabold text-base text-slate-900">
+                500 Passes
+              </div>
+              <p className="text-[10px] text-slate-500 leading-tight">
+                Complimentary Client &amp; Stakeholder Invitations
+              </p>
+            </div>
+
+            <div className="p-3 rounded-2xl bg-white/90 border border-amber-200 shadow-2xs space-y-1">
+              <span className="text-[10px] font-mono font-bold text-slate-800 uppercase block">
+                📢 Promo Displays
+              </span>
+              <div className="font-mono font-extrabold text-base text-slate-900">
+                5 Areas
+              </div>
+              <p className="text-[10px] text-slate-500 leading-tight">
+                6FT × 4FT × 5 High-Traffic Venue Signage Areas
+              </p>
+            </div>
+          </div>
+
+          {/* High-level Branding Privileges Banner */}
+          <div className="p-3.5 rounded-xl bg-amber-100/70 border border-amber-300/70 flex items-start sm:items-center gap-2.5 text-xs text-amber-950 font-medium">
+            <Sparkles className="w-4 h-4 text-amber-700 shrink-0 mt-0.5 sm:mt-0" />
+            <div className="leading-relaxed">
+              <strong>Apex Sovereign &amp; Ministerial Co-Branding:</strong> Exclusive title prefix on all event documentation, summit backdrop stage co-branding, delegate kit bags &amp; lanyard cords, national television broadcast media walls, and an <strong>Inaugural Plenary Keynote Address slot</strong>.
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* ── 01: SPONSORSHIP DETAILS TABLE ── */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
             <Award className="w-5 h-5 text-[#218A59]" />
-            <span>Sponsorship Packages & Privileges</span>
+            <span>Sponsorship Packages & Privileges Comparison</span>
           </h3>
           <span className="text-xs font-mono text-slate-500">
             Swipe table horizontally on mobile →
@@ -107,32 +254,45 @@ export default function OfficialTariffsSection() {
               {SPONSORSHIP_DETAILS.map((tier, idx) => (
                 <tr
                   key={idx}
-                  className={`hover:bg-emerald-50/40 transition-colors ${
-                    tier.featured ? "bg-emerald-50/20 font-semibold" : ""
+                  className={`transition-colors ${
+                    tier.featured
+                      ? "bg-linear-to-r from-amber-50/70 via-amber-50/30 to-emerald-50/40 font-semibold border-l-4 border-l-amber-500"
+                      : "hover:bg-emerald-50/40"
                   }`}
                 >
                   <td className="py-3.5 px-4">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-slate-900 text-sm">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {tier.featured && (
+                        <Crown className="w-4 h-4 text-amber-600 fill-amber-400 shrink-0" />
+                      )}
+                      <span className={`text-sm ${tier.featured ? "font-bold text-amber-950 font-display" : "font-bold text-slate-900"}`}>
                         {tier.tier}
                       </span>
                       {tier.slots && (
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-bold border border-slate-200">
+                        <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold border ${
+                          tier.featured
+                            ? "bg-amber-100 text-amber-950 border-amber-300"
+                            : "bg-slate-100 text-slate-600 border-slate-200"
+                        }`}>
                           {tier.slots} Slot
                         </span>
                       )}
                       {tier.featured && (
-                        <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-[#15803D] text-white font-bold uppercase tracking-wide">
-                          FLAGSHIP
+                        <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-linear-to-r from-amber-500 to-amber-600 text-white font-bold uppercase tracking-wider shadow-2xs">
+                          👑 APEX FLAGSHIP
                         </span>
                       )}
                     </div>
                   </td>
                   <td className="py-3.5 px-4 font-mono font-bold text-slate-900 whitespace-nowrap">
                     {currency === "NPR" ? (
-                      <span className="text-[#15803D] text-sm">NRs {tier.amountNPR}</span>
+                      <span className={tier.featured ? "text-amber-950 font-mono text-sm font-extrabold" : "text-[#15803D] text-sm"}>
+                        NRs {tier.amountNPR}
+                      </span>
                     ) : (
-                      <span className="text-[#234679] text-sm">${tier.amountUSD}</span>
+                      <span className={tier.featured ? "text-amber-950 font-mono text-sm font-extrabold" : "text-[#234679] text-sm"}>
+                        ${tier.amountUSD}
+                      </span>
                     )}
                   </td>
                   <td className="py-3.5 px-4 font-mono text-slate-700 whitespace-nowrap">
@@ -144,7 +304,9 @@ export default function OfficialTariffsSection() {
                   <td className="py-3.5 px-3 text-center font-mono font-bold text-slate-900 bg-slate-50/50">
                     {tier.inaugurationPass}
                   </td>
-                  <td className="py-3.5 px-3 text-center font-mono font-bold text-emerald-700 bg-emerald-50/30">
+                  <td className={`py-3.5 px-3 text-center font-mono font-bold ${
+                    tier.featured ? "text-amber-900 bg-amber-100/50" : "text-emerald-700 bg-emerald-50/30"
+                  }`}>
                     {tier.galaDinnerPass}
                   </td>
                   <td className="py-3.5 px-3 text-center font-mono text-slate-800">
@@ -158,7 +320,11 @@ export default function OfficialTariffsSection() {
                       href={`/contact?subject=Sponsorship%20Inquiry%20${encodeURIComponent(
                         tier.tier
                       )}`}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-[#218A59] text-white font-mono text-[11px] font-bold transition-all shadow-xs"
+                      className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg font-mono text-[11px] font-bold transition-all shadow-xs ${
+                        tier.featured
+                          ? "bg-amber-600 hover:bg-amber-700 text-white"
+                          : "bg-slate-900 hover:bg-[#218A59] text-white"
+                      }`}
                     >
                       <span>Inquire</span>
                       <ArrowRight className="w-3 h-3" />

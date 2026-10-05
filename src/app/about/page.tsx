@@ -60,7 +60,7 @@ export default function AboutPage() {
                 {header?.title || "About The Expo"}
               </h1>
               <p className="mt-3 text-sm sm:text-base text-emerald-100/75 max-w-xl">
-                {header?.subtitle || "BHRIKUTIMANDAP · KATHMANDU, NEPAL · 17–19 January 2027"}
+                {header?.subtitle || "BHRIKUTIMANDAP, KATHMANDU, NEPAL · 17–19 January 2027"}
               </p>
 
               {/* Quick Metrics */}

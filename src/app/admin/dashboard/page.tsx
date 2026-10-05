@@ -902,7 +902,7 @@ export default function AdminDashboardPage() {
                 </span>
                 <span className="font-medium text-slate-800 flex items-center gap-1">
                   <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
-                  <span>{data?.settings?.venue || "BHRIKUTIMANDAP · KATHMANDU, NEPAL"}</span>
+                  <span>{data?.settings?.venue || "BHRIKUTIMANDAP, KATHMANDU, NEPAL"}</span>
                 </span>
               </div>
 

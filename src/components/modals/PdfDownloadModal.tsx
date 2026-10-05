@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -207,10 +207,19 @@ export default function PdfDownloadModal() {
     };
   };
 
+  const lastDownloadRef = useRef<number>(0);
+
   const downloadPdfFile = (url: string) => {
+    const now = Date.now();
+    // Debounce to prevent multiple downloads within 1.5 seconds
+    if (now - lastDownloadRef.current < 1500) {
+      return;
+    }
+    lastDownloadRef.current = now;
+
     const { downloadUrl, filename } = getDownloadMetadata(url);
 
-    // 1. Direct anchor download with HTML5 download attribute
+    // Direct anchor download with HTML5 download attribute
     const link = document.createElement("a");
     link.href = downloadUrl;
     link.download = filename;
@@ -219,22 +228,11 @@ export default function PdfDownloadModal() {
     document.body.appendChild(link);
     link.click();
 
-    // 2. Hidden iframe fallback to guarantee download trigger across all browsers
-    try {
-      const iframe = document.createElement("iframe");
-      iframe.style.display = "none";
-      iframe.src = downloadUrl;
-      document.body.appendChild(iframe);
-      setTimeout(() => {
-        if (document.body.contains(iframe)) document.body.removeChild(iframe);
-      }, 5000);
-    } catch {
-      // ignore
-    }
-
     setTimeout(() => {
-      if (document.body.contains(link)) document.body.removeChild(link);
-    }, 1500);
+      if (document.body.contains(link)) {
+        document.body.removeChild(link);
+      }
+    }, 1000);
   };
 
   const validate = () => {
@@ -268,6 +266,7 @@ export default function PdfDownloadModal() {
   };
 
   const handleInstantDownload = () => {
+    if (isSubmitting) return;
     setIsSubmitting(true);
 
     // 1. Trigger the download immediately within user gesture
@@ -286,6 +285,7 @@ export default function PdfDownloadModal() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     if (!validate()) return;
 
     setIsSubmitting(true);
@@ -696,7 +696,6 @@ export default function PdfDownloadModal() {
 
                   <a
                     href={getDownloadMetadata(pdfUrl).downloadUrl}
-                    download={getDownloadMetadata(pdfUrl).filename}
                     target="_blank"
                     rel="noopener noreferrer"
                     data-no-intercept="true"

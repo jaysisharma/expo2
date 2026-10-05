@@ -38,7 +38,7 @@ export function Footer() {
             <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 pt-1">
               <span className="text-emerald-400 font-medium">17–19 January 2027 (Magh 3–5, 2083)</span>
               <span className="text-slate-600">•</span>
-              <span className="text-slate-300">BHRIKUTIMANDAP · KATHMANDU, NEPAL</span>
+              <span className="text-slate-300">BHRIKUTIMANDAP, KATHMANDU, NEPAL</span>
             </div>
 
             <div className="pt-2">

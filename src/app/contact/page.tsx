@@ -441,7 +441,7 @@ export default function ContactPage() {
                     ? {
                         tag: "Primary Exhibition Venue",
                         tagClass: "bg-emerald-50 text-emerald-700 border-emerald-200",
-                        name: "BHRIKUTIMANDAP · KATHMANDU, NEPAL",
+                        name: "BHRIKUTIMANDAP, KATHMANDU, NEPAL",
                         subtitle: "Exhibition Road, Pradarshani Marg, Kathmandu 44600, Nepal",
                         dates: "17–19 January 2027 · Magh 3–5, 2083",
                         hours: "9:00 AM – 6:00 PM Daily",

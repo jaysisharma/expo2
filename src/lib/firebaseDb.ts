@@ -109,7 +109,7 @@ export async function getFirebaseBoothOverrides() {
 
 export async function setFirebaseBoothOverride(
   boothNumber: string,
-  data: { status: string; exhibitorName?: string; priceUSD?: number; priceNPR?: number }
+  data: { status?: string; exhibitorName?: string; priceUSD?: number; priceNPR?: number; isPrime?: boolean }
 ) {
   try {
     const ref = doc(db, COLLECTIONS.BOOTHS, boothNumber);
@@ -383,6 +383,69 @@ export async function saveFirebaseCurrentPartners(partners: any[]): Promise<bool
     return true;
   } catch (error) {
     console.warn("Firestore saveFirebaseCurrentPartners error:", error);
+    return false;
+  }
+}
+
+// ----------------- VIDEOS (Drone Film & Past Editions Glimpse) -----------------
+export async function getFirebaseVideos(): Promise<any[] | null> {
+  try {
+    const ref = doc(db, "videos", "videos_config");
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+      const data = snap.data();
+      return Array.isArray(data.videos) ? data.videos : null;
+    }
+    return null;
+  } catch (error) {
+    console.warn("Firestore getVideos error:", error);
+    return null;
+  }
+}
+
+export async function saveFirebaseVideos(videos: any[]): Promise<boolean> {
+  try {
+    const ref = doc(db, "videos", "videos_config");
+    await setDoc(ref, {
+      videos,
+      updatedAt: new Date().toISOString(),
+    });
+    return true;
+  } catch (error) {
+    console.warn("Firestore saveVideos error:", error);
+    return false;
+  }
+}
+
+// ----------------- FLOOR PLAN PERSISTENCE -----------------
+export async function getFirebaseFloorPlan(): Promise<any | null> {
+  try {
+    const ref = doc(db, COLLECTIONS.SETTINGS, "floor_plan_design");
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+      return snap.data();
+    }
+    return null;
+  } catch (error) {
+    console.warn("Firestore getFloorPlan error:", error);
+    return null;
+  }
+}
+
+export async function saveFirebaseFloorPlan(data: any): Promise<boolean> {
+  try {
+    const ref = doc(db, COLLECTIONS.SETTINGS, "floor_plan_design");
+    await setDoc(
+      ref,
+      {
+        ...data,
+        updatedAt: new Date().toISOString(),
+      },
+      { merge: true }
+    );
+    return true;
+  } catch (error) {
+    console.warn("Firestore saveFloorPlan error:", error);
     return false;
   }
 }

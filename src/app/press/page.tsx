@@ -131,7 +131,7 @@ export default function PressPage() {
                   </div>
                   <div className="flex items-center gap-2 text-xs text-slate-200">
                     <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                    <span>BHRIKUTIMANDAP · KATHMANDU, NEPAL</span>
+                    <span>BHRIKUTIMANDAP, KATHMANDU, NEPAL</span>
                   </div>
                 </div>
 

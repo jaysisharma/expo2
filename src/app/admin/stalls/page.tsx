@@ -17,6 +17,7 @@ import {
   ExternalLink,
   AlertCircle,
   Loader2,
+  Sparkles,
 } from "lucide-react";
 import { boothsData, extractBoothsFromElements } from "@/data/booths";
 import { Booth } from "@/lib/types";
@@ -41,6 +42,7 @@ export default function AdminStallsPage() {
   const [modalExhibitor, setModalExhibitor] = useState<string>("");
   const [modalPriceUSD, setModalPriceUSD] = useState<number>(0);
   const [modalPriceNPR, setModalPriceNPR] = useState<number>(0);
+  const [modalIsPrime, setModalIsPrime] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
 
   // Reset Confirmation Modal
@@ -106,8 +108,9 @@ export default function AdminStallsPage() {
               override.exhibitorName !== undefined ? override.exhibitorName : b.exhibitorName,
             priceUSD: override.priceUSD !== undefined ? Number(override.priceUSD) : b.priceUSD,
             priceNPR: override.priceNPR !== undefined ? Number(override.priceNPR) : b.priceNPR,
+            isPrime: override.isPrime !== undefined ? Boolean(override.isPrime) : Boolean(b.isPrime),
           }
-        : b;
+        : { ...b, isPrime: Boolean(b.isPrime) };
     });
   }, [baseBooths, data?.boothOverrides]);
 
@@ -180,6 +183,7 @@ export default function AdminStallsPage() {
     const initialNPR = booth.priceNPR || Math.round(initialUSD * exchangeRate);
     setModalPriceUSD(initialUSD);
     setModalPriceNPR(initialNPR);
+    setModalIsPrime(Boolean(booth.isPrime));
   };
 
   const handleSaveBooth = async () => {
@@ -198,6 +202,7 @@ export default function AdminStallsPage() {
             exhibitorName: modalExhibitor,
             priceUSD: Number(modalPriceUSD),
             priceNPR: Number(modalPriceNPR),
+            isPrime: modalIsPrime,
           },
         }),
       });
@@ -211,6 +216,36 @@ export default function AdminStallsPage() {
       notify("Failed to update booth", "error");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  // Bulk Prime Update
+  const handleBulkSetPrime = async (isPrime: boolean) => {
+    if (selectedNumbers.length === 0 || isBulkUpdating) return;
+    setIsBulkUpdating(true);
+
+    try {
+      const res = await fetch("/api/admin/data", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "batch_update_booths",
+          payload: {
+            boothNumbers: selectedNumbers,
+            isPrime,
+          },
+        }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        notify(`Updated ${selectedNumbers.length} stalls to ${isPrime ? "Prime (+25%)" : "Standard"}`);
+        setSelectedNumbers([]);
+        fetchBoothsData();
+      }
+    } catch {
+      notify("Failed to update prime status", "error");
+    } finally {
+      setIsBulkUpdating(false);
     }
   };
 
@@ -537,7 +572,7 @@ export default function AdminStallsPage() {
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="text-[11px] text-slate-400 hidden sm:inline">Set Status:</span>
             <button
               onClick={() => handleBulkSetStatus("Available")}
@@ -560,9 +595,25 @@ export default function AdminStallsPage() {
             >
               Booked
             </button>
+            <span className="text-slate-600 mx-0.5">|</span>
+            <button
+              onClick={() => handleBulkSetPrime(true)}
+              disabled={isBulkUpdating}
+              className="px-2.5 py-1 rounded-md bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-bold transition-colors cursor-pointer flex items-center gap-1"
+            >
+              <Sparkles className="w-3 h-3 text-amber-900" />
+              <span>Set Prime (+25%)</span>
+            </button>
+            <button
+              onClick={() => handleBulkSetPrime(false)}
+              disabled={isBulkUpdating}
+              className="px-2.5 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition-colors cursor-pointer"
+            >
+              Remove Prime
+            </button>
             <button
               onClick={() => setSelectedNumbers([])}
-              className="px-2.5 py-1 text-xs text-slate-400 hover:text-white transition-colors cursor-pointer"
+              className="px-2.5 py-1 text-xs text-slate-400 hover:text-white transition-colors cursor-pointer ml-1"
             >
               Deselect
             </button>
@@ -645,12 +696,19 @@ export default function AdminStallsPage() {
 
                       {/* Stall # */}
                       <td className="py-3 px-3 font-mono font-bold text-[#234679]">
-                        <button
-                          onClick={() => handleOpenEdit(booth)}
-                          className="hover:underline cursor-pointer"
-                        >
-                          {booth.number}
-                        </button>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <button
+                            onClick={() => handleOpenEdit(booth)}
+                            className="hover:underline cursor-pointer"
+                          >
+                            {booth.number}
+                          </button>
+                          {booth.isPrime && (
+                            <span className="text-[9px] font-mono px-1.5 py-0.5 rounded font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                              ★ PRIME (+25%)
+                            </span>
+                          )}
+                        </div>
                       </td>
 
                       {/* Zone */}
@@ -743,7 +801,14 @@ export default function AdminStallsPage() {
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-mono font-bold text-slate-900">{booth.number}</span>
+                  <div className="flex items-center gap-1">
+                    <span className="font-mono font-bold text-slate-900">{booth.number}</span>
+                    {booth.isPrime && (
+                      <span className="text-[8px] font-mono px-1 py-0.2 rounded font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                        ★ PRIME
+                      </span>
+                    )}
+                  </div>
                   <span
                     className={`text-[9px] font-mono px-1.5 py-0.2 rounded font-semibold ${
                       booth.status === "Booked"
@@ -865,6 +930,34 @@ export default function AdminStallsPage() {
                     className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-emerald-700 font-mono font-bold text-xs focus:outline-none focus:border-[#218A59] focus:bg-white"
                   />
                 </div>
+              </div>
+
+              {/* Prime Stall Toggle */}
+              <div className="p-3.5 rounded-xl bg-amber-50/80 border border-amber-200 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 font-bold text-amber-950 text-xs">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                    <span>Prime Stall (+25% Premium)</span>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={modalIsPrime}
+                      onChange={(e) => setModalIsPrime(e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-600"></div>
+                  </label>
+                </div>
+                <p className="text-[11px] text-amber-800 leading-relaxed">
+                  Mark this stall as a Prime Stall. In accordance with HIGEX official tariffs, a 25% prime surcharge is applied and showcased on the public floor plan.
+                </p>
+                {modalIsPrime && (
+                  <div className="pt-2 border-t border-amber-200/60 flex items-center justify-between text-[10px] font-mono font-bold text-amber-950">
+                    <span>+25% Prime Extra: NPR {Math.round(modalPriceNPR * 0.25).toLocaleString()}</span>
+                    <span>Tariff: NPR {Math.round(modalPriceNPR * 1.25).toLocaleString()} (+ VAT)</span>
+                  </div>
+                )}
               </div>
 
               <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between text-[11px] text-slate-500">

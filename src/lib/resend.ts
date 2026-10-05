@@ -258,7 +258,7 @@ ${stall ? `Stall: ${stall}\n` : ""}
 Verify or view your pass: ${passVerificationUrl}
 
 Dates: 17–19 January 2027 (10:00 AM – 6:00 PM)
-Venue: BHRIKUTIMANDAP · KATHMANDU, NEPAL
+Venue: BHRIKUTIMANDAP, KATHMANDU, NEPAL
 
 Organizing Secretariat
 IPPAN & Event Solution Pvt. Ltd.

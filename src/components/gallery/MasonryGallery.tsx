@@ -13,6 +13,13 @@ import { Play, Maximize2, Columns, LayoutGrid, Grid3X3, ArrowUpRight, Sparkles }
 type GalleryTab = "ALL" | "2024" | "2022" | "2019" | "2018" | "2027" | "VIDEOS";
 type LayoutMode = "masonry" | "bento" | "grid";
 
+const REMOVED_VIDEO_IDS = new Set([
+  "v-biz-online-inauguration-2024",
+  "v-3rd-recap-2022",
+  "v-4th-press-meet",
+  "v-2nd-intl-pavilion",
+]);
+
 export default function MasonryGallery({ limit }: { limit?: number }) {
   const [activeTab, setActiveTab] = useState<GalleryTab>("ALL");
   const [layoutMode, setLayoutMode] = useState<LayoutMode>("masonry");
@@ -20,14 +27,26 @@ export default function MasonryGallery({ limit }: { limit?: number }) {
   const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);
   const [visibleCount, setVisibleCount] = useState<number>(limit || 36);
   const [galleryData, setGalleryData] = useState<GalleryItem[]>(staticGalleryData);
+  const [videos, setVideos] = useState<VideoItem[]>(() =>
+    videosData.filter((v) => !REMOVED_VIDEO_IDS.has(v.id))
+  );
 
-  // Load from Firebase on mount — admin-published photos replace static data
+  // Load from Firebase on mount — admin-published photos & videos replace static data
   useEffect(() => {
     fetch(`/api/gallery?t=${Date.now()}`)
       .then((r) => r.json())
       .then((json) => {
         if (json.success && json.items && json.items.length > 0) {
           setGalleryData(json.items);
+        }
+      })
+      .catch(() => {});
+
+    fetch(`/api/videos?t=${Date.now()}`)
+      .then((r) => r.json())
+      .then((json) => {
+        if (json.success && json.videos && json.videos.length > 0) {
+          setVideos(json.videos.filter((v: VideoItem) => !REMOVED_VIDEO_IDS.has(v.id)));
         }
       })
       .catch(() => {});
@@ -46,7 +65,7 @@ export default function MasonryGallery({ limit }: { limit?: number }) {
       label: y,
       count: galleryData.filter((i) => i.year === y).length,
     })),
-    { id: "VIDEOS", label: "VIDEO VAULT", count: videosData.length },
+    { id: "VIDEOS", label: "VIDEO VAULT", count: videos.length },
   ];
 
   // Filtered photos
@@ -385,7 +404,7 @@ export default function MasonryGallery({ limit }: { limit?: number }) {
           transition={{ duration: 0.4 }}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6"
         >
-          {videosData.map((video) => (
+          {videos.map((video) => (
             <div
               key={video.id}
               onClick={() => setActiveVideo(video)}

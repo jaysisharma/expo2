@@ -15,6 +15,7 @@ import {
   Zap,
   Globe2,
   ExternalLink,
+  Crown,
 } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -37,17 +38,18 @@ interface SponsorshipTierItem {
 const sponsorshipTiers: SponsorshipTierItem[] = [
   {
     tier: "Title Sponsor",
-    badge: "FLAGSHIP",
+    badge: "👑 APEX FLAGSHIP · 1 SLOT",
     priceNPR: "NPR 50,00,000",
     priceUSD: "USD $35,000",
     space: "6M × 6M × 2 (2 Bare Space Stalls · 72m²)",
-    description: "Exclusive highest-tier summit naming & plenary stage presence across all official backdrops, lanyards, and VIP networking dinner.",
+    description: "Exclusive apex summit co-naming & plenary stage presence across all official backdrops, broadcast walls, delegate kit lanyards, and royal gala dinner.",
     features: [
-      "2 Bare Space Stalls (72m² prime central positioning)",
-      "25 VIP Networking Dinner passes at Royal Tulip Kathmandu",
-      "50 Inauguration VIP passes & 500 entry passes",
-      "20 Official Exhibitor badges & VIP lounge access",
+      "2 Bare Space Stalls (72m² prime central positioning · Stalls A1 & A2)",
+      "25 VIP Networking Gala Dinner passes at Royal Tulip Kathmandu",
+      "50 Inauguration Ceremony VIP passes & 500 entry passes",
+      "20 Official Exhibitor badges with VIP lounge access",
       "6FT × 4FT × 5 Promotional display branding areas",
+      "Inaugural Plenary Keynote Address slot & main media wall co-branding",
     ],
     recommended: true,
   },
@@ -319,93 +321,113 @@ export default function SponsorsPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {sponsorshipTiers.map((tier, idx) => (
-                <div
-                  key={idx}
-                  className={`p-6 sm:p-7 rounded-2xl border transition-all flex flex-col justify-between relative ${
-                    tier.recommended
-                      ? "bg-white border-[#218A59] ring-2 ring-[#218A59]/20 shadow-md"
-                      : "bg-white border-slate-200 shadow-xs hover:border-slate-300 hover:shadow-sm"
-                  }`}
-                >
-                  {tier.badge && (
-                    <div
-                      className={`absolute -top-3 left-6 px-3 py-0.5 rounded-full font-mono text-[10px] font-bold uppercase tracking-wider shadow-xs ${
-                        tier.recommended
-                          ? "bg-[#218A59] text-white"
-                          : "bg-slate-800 text-white"
-                      }`}
-                    >
-                      {tier.badge}
-                    </div>
-                  )}
+              {sponsorshipTiers.map((tier, idx) => {
+                const isTitleSponsor = tier.tier === "Title Sponsor";
+                return (
+                  <div
+                    key={idx}
+                    className={`p-6 sm:p-7 rounded-2xl border transition-all flex flex-col justify-between relative ${
+                      isTitleSponsor
+                        ? "bg-linear-to-b from-amber-50/70 via-white to-emerald-50/30 border-amber-400 ring-2 ring-amber-300/80 shadow-md"
+                        : tier.recommended
+                        ? "bg-white border-[#218A59] ring-2 ring-[#218A59]/20 shadow-md"
+                        : "bg-white border-slate-200 shadow-xs hover:border-slate-300 hover:shadow-sm"
+                    }`}
+                  >
+                    {tier.badge && (
+                      <div
+                        className={`absolute -top-3 left-6 px-3 py-0.5 rounded-full font-mono text-[10px] font-bold uppercase tracking-wider shadow-xs ${
+                          isTitleSponsor
+                            ? "bg-linear-to-r from-amber-500 to-amber-600 text-white font-bold border border-amber-300"
+                            : tier.recommended
+                            ? "bg-[#218A59] text-white"
+                            : "bg-slate-800 text-white"
+                        }`}
+                      >
+                        {tier.badge}
+                      </div>
+                    )}
 
-                  <div>
-                    <div className="flex items-center justify-between gap-2 mb-1.5 pt-1">
-                      <span className="text-xs font-mono text-[#007A5E] font-bold">
-                        TIER // 0{idx + 1}
-                      </span>
-                      <span className="text-[11px] font-mono text-slate-500 font-medium truncate">
-                        {tier.space.split("(")[0].trim()}
-                      </span>
-                    </div>
-
-                    <h3 className="font-bold text-xl text-slate-900 tracking-tight">
-                      {tier.tier}
-                    </h3>
-
-                    {/* Pricing */}
-                    <div className="my-3 p-3 rounded-xl bg-slate-50 border border-slate-200/80">
-                      <div className="flex items-baseline justify-between gap-2">
-                        <span className="text-base font-extrabold text-slate-950 font-mono">
-                          {tier.priceNPR}
+                    <div>
+                      <div className="flex items-center justify-between gap-2 mb-1.5 pt-1">
+                        <span className="text-xs font-mono text-[#007A5E] font-bold">
+                          TIER // 0{idx + 1}
                         </span>
-                        <span className="text-xs font-semibold text-slate-600 font-mono">
-                          {tier.priceUSD}
+                        <span className="text-[11px] font-mono text-slate-500 font-medium truncate">
+                          {tier.space.split("(")[0].trim()}
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-500 mt-1 font-medium">
-                        Booth: {tier.space}
-                      </p>
-                    </div>
 
-                    <p className="text-xs text-slate-600 leading-relaxed">
-                      {tier.description}
-                    </p>
+                      <h3 className={`font-bold text-xl tracking-tight flex items-center gap-1.5 ${
+                        isTitleSponsor ? "text-amber-950 font-display" : "text-slate-900"
+                      }`}>
+                        {isTitleSponsor && (
+                          <Crown className="w-5 h-5 text-amber-600 fill-amber-400 shrink-0" />
+                        )}
+                        <span>{tier.tier}</span>
+                      </h3>
 
-                    <div className="mt-4 pt-3.5 border-t border-slate-100 space-y-2">
-                      <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block font-mono">
-                        Included Privileges:
-                      </span>
-                      {tier.features.map((feat, fIdx) => (
-                        <div key={fIdx} className="flex items-start gap-2 text-xs text-slate-700">
-                          <Check className="w-3.5 h-3.5 text-[#218A59] shrink-0 mt-0.5" />
-                          <span>{feat}</span>
+                      {/* Pricing */}
+                      <div className={`my-3 p-3 rounded-xl border ${
+                        isTitleSponsor
+                          ? "bg-amber-100/40 border-amber-200"
+                          : "bg-slate-50 border-slate-200/80"
+                      }`}>
+                        <div className="flex items-baseline justify-between gap-2">
+                          <span className={`text-base font-extrabold font-mono ${
+                            isTitleSponsor ? "text-amber-950" : "text-slate-950"
+                          }`}>
+                            {tier.priceNPR}
+                          </span>
+                          <span className="text-xs font-semibold text-slate-600 font-mono">
+                            {tier.priceUSD}
+                          </span>
                         </div>
-                      ))}
+                        <p className="text-[11px] text-slate-500 mt-1 font-medium">
+                          Booth: {tier.space}
+                        </p>
+                      </div>
+
+                      <p className="text-xs text-slate-600 leading-relaxed">
+                        {tier.description}
+                      </p>
+
+                      <div className="mt-4 pt-3.5 border-t border-slate-100 space-y-2">
+                        <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block font-mono">
+                          Included Privileges:
+                        </span>
+                        {tier.features.map((feat, fIdx) => (
+                          <div key={fIdx} className="flex items-start gap-2 text-xs text-slate-700">
+                            <Check className="w-3.5 h-3.5 text-[#218A59] shrink-0 mt-0.5" />
+                            <span>{feat}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="mt-6 pt-4 border-t border-slate-100 grid grid-cols-2 gap-2">
+                      <Link
+                        href={`/book-stall?tier=${encodeURIComponent(tier.tier.toLowerCase().replace(/\s+/g, "-"))}`}
+                        className={`py-2 rounded-xl text-xs font-bold text-center block transition-all shadow-xs ${
+                          isTitleSponsor
+                            ? "bg-linear-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-mono font-bold"
+                            : tier.recommended
+                            ? "bg-[#218A59] hover:bg-[#1b734a] text-white"
+                            : "bg-slate-900 hover:bg-slate-800 text-white"
+                        }`}
+                      >
+                        Book Tier →
+                      </Link>
+                      <Link
+                        href={`/contact?subject=Sponsorship%20Inquiry%20${encodeURIComponent(tier.tier)}`}
+                        className="py-2 rounded-xl text-xs font-semibold text-center block text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors"
+                      >
+                        Inquire
+                      </Link>
                     </div>
                   </div>
-
-                  <div className="mt-6 pt-4 border-t border-slate-100 grid grid-cols-2 gap-2">
-                    <Link
-                      href="/book-stall"
-                      className={`py-2 rounded-xl text-xs font-bold text-center block transition-all shadow-xs ${
-                        tier.recommended
-                          ? "bg-[#218A59] hover:bg-[#1b734a] text-white"
-                          : "bg-slate-900 hover:bg-slate-800 text-white"
-                      }`}
-                    >
-                      Book Tier →
-                    </Link>
-                    <Link
-                      href={`/contact?subject=Sponsorship%20Inquiry%20${encodeURIComponent(tier.tier)}`}
-                      className="py-2 rounded-xl text-xs font-semibold text-center block text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors"
-                    >
-                      Inquire
-                    </Link>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Exhibition Stalls Breakdown */}

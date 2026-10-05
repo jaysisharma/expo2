@@ -77,7 +77,7 @@ export const PRESET_CATEGORIES: PresetCategory[] = [
   { name: "Hollow Wall / Boundary", color: "transparent", fillOpacity: 0, border: "#38BDF8", text: "#38BDF8", defaultDim: "Wall", sqm: 0, npr: 0, usd: 0, prefix: "WALL", defaultW: 40, defaultH: 40 },
   { name: "Walking Corridor / Aisle", color: "transparent", fillOpacity: 0, border: "#F59E0B", text: "#F59E0B", defaultDim: "Aisle", sqm: 0, npr: 0, usd: 0, prefix: "AISLE", defaultW: 60, defaultH: 40 },
   { name: "10m × 7m Bare Space", color: "#0284C7", fillOpacity: 0.85, border: "#38BDF8", text: "#FFFFFF", defaultDim: "10m × 7m", sqm: 70, npr: 875000, usd: 6500, prefix: "C", defaultW: 140, defaultH: 98 },
-  { name: "6m × 6m Space", color: "#D97706", fillOpacity: 0.85, border: "#FBBF24", text: "#FFFFFF", defaultDim: "6m × 6m", sqm: 36, npr: 540000, usd: 4000, prefix: "A", defaultW: 90, defaultH: 90 },
+  { name: "6m × 6m Space", color: "#D97706", fillOpacity: 0.85, border: "#FBBF24", text: "#FFFFFF", defaultDim: "6m × 6m", sqm: 36, npr: 378000, usd: 3000, prefix: "A", defaultW: 90, defaultH: 90 },
   { name: "Prime Space", color: "#16A34A", fillOpacity: 0.85, border: "#4ADE80", text: "#FFFFFF", defaultDim: "6m × 6m", sqm: 36, npr: 600000, usd: 4500, prefix: "P", defaultW: 90, defaultH: 90 },
   { name: "3m × 3m Shell Scheme", color: "#DC2626", fillOpacity: 0.85, border: "#F87171", text: "#FFFFFF", defaultDim: "3m × 3m", sqm: 9, npr: 180000, usd: 1350, prefix: "B", defaultW: 45, defaultH: 45 },
   { name: "Central Pavilion", color: "#9333EA", fillOpacity: 0.85, border: "#C084FC", text: "#FFFFFF", defaultDim: "8m × 8m", sqm: 64, npr: 1200000, usd: 9000, prefix: "A47", defaultW: 120, defaultH: 120 },

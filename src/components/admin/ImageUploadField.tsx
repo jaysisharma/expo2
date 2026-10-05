@@ -4,6 +4,8 @@ import React, { useState, useRef } from "react";
 import Image from "next/image";
 import { Upload, X, Loader2, Image as ImageIcon, CheckCircle2, Link as LinkIcon } from "lucide-react";
 
+import { compressImage } from "@/lib/imageCompression";
+
 interface ImageUploadFieldProps {
   label?: string;
   value: string;
@@ -35,17 +37,19 @@ export function ImageUploadField({
       return;
     }
 
-    if (file.size > 10 * 1024 * 1024) {
-      setError("Image file size must be less than 10MB");
-      return;
-    }
-
     setError(null);
     setIsUploading(true);
 
     try {
+      // Compress image client-side to prevent HTTP 413 and ensure fast upload
+      const fileToUpload = await compressImage(file, {
+        maxWidth: 2048,
+        maxHeight: 2048,
+        quality: 0.85,
+      });
+
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", fileToUpload);
       formData.append("folder", folder);
 
       const res = await fetch("/api/upload", {

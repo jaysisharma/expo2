@@ -12,6 +12,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { TopographicContours, MountainCrestSvg } from '@/components/ui';
+import DroneCinemaModal from './DroneCinemaModal';
 
 export function Hero() {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
@@ -277,80 +278,11 @@ export function Hero() {
         </div>
       </section>
 
-      {/* ── 3. CINEMATIC VIDEO OVERLAY MODAL & CREDITS ──────────────────────── */}
-      {isVideoOpen && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="Hydropower Drone Videomaking Competition 2022 Showcase"
-          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 lg:p-8 animate-in fade-in duration-200"
-        >
-          {/* Backdrop Blur */}
-          <div
-            className="fixed inset-0 bg-black/90 backdrop-blur-md transition-opacity cursor-pointer"
-            onClick={() => setIsVideoOpen(false)}
-            aria-hidden="true"
-          />
-
-          {/* Modal Container */}
-          <div className="relative z-10 w-full max-w-4xl bg-[#071322] border border-white/20 rounded-2xl sm:rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.95)] overflow-hidden flex flex-col max-h-[92vh] animate-in zoom-in-95 duration-200">
-            {/* Modal Header */}
-            <div className="flex items-center justify-end px-4 sm:px-6 py-3 border-b border-white/10 bg-slate-950/70">
-              <button
-                type="button"
-                onClick={() => setIsVideoOpen(false)}
-                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white flex items-center justify-center transition-colors focus:outline-none focus:ring-2 focus:ring-[#00E599]"
-                aria-label="Close video modal"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* 16:9 Video Frame */}
-            <div className="relative w-full aspect-video bg-black">
-              <iframe
-                src="https://www.youtube-nocookie.com/embed/sJy3FVrESKk?autoplay=1&rel=0&modestbranding=1"
-                title="Hydropower Drone Videomaking Competition 2022 - Saligram Dulal"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowFullScreen
-                className="absolute inset-0 w-full h-full border-0"
-              />
-            </div>
-
-            {/* Credits Docket Footer */}
-            <div className="px-4 sm:px-6 py-4 bg-slate-950/95 border-t border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 font-inter-tight">
-              <div className="space-y-1">
-                <h4 className="text-sm sm:text-base font-semibold text-white">
-                  Hydropower Drone Videomaking Competition 2022
-                </h4>
-                <p className="text-xs sm:text-sm text-slate-400">
-                  Footage &amp; Cinematography by{' '}
-                  <span className="text-slate-200 font-medium">Saligram Dulal</span>
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2.5 pt-2 sm:pt-0 shrink-0">
-                <a
-                  href="https://www.youtube.com/watch?v=sJy3FVrESKk"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-semibold border border-white/15 hover:border-white/30 transition-all shadow-sm"
-                >
-                  <span>Watch on YouTube</span>
-                  <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
-                </a>
-                <button
-                  type="button"
-                  onClick={() => setIsVideoOpen(false)}
-                  className="px-3.5 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-semibold border border-white/10 transition-colors"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* ── 3. CINEMATIC DRONE FILM & PAST EDITIONS GLIMPSE POPUP MODAL ──────── */}
+      <DroneCinemaModal
+        isOpen={isVideoOpen}
+        onClose={() => setIsVideoOpen(false)}
+      />
     </div>
   );
 }

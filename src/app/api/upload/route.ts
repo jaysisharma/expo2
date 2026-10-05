@@ -3,6 +3,7 @@ import cloudinary from "@/lib/cloudinary";
 import { UploadApiResponse } from "cloudinary";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
   try {
@@ -20,10 +21,10 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      // Check file size (max 10MB)
-      if (file.size > 10 * 1024 * 1024) {
+      // Check file size (max 50MB)
+      if (file.size > 50 * 1024 * 1024) {
         return NextResponse.json(
-          { success: false, error: "File size exceeds 10MB limit" },
+          { success: false, error: "File size exceeds 50MB limit" },
           { status: 400 }
         );
       }
