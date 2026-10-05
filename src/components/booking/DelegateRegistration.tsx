@@ -8,6 +8,7 @@ import {
   CheckCircle2,
   ArrowRight,
   Store,
+  Zap,
 } from "lucide-react";
 import IDCardBadgePreview from "./IDCardBadgePreview";
 import type { BadgeConfig } from "./AdminBadgeDesigner";
@@ -371,12 +372,12 @@ export default function DelegateRegistration() {
   return (
     <div className="w-full bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-xs">
       <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Pass Type Switcher: Visitor vs Networking Dinner */}
+        {/* Pass Type Switcher: Visitor vs Networking Dinner vs EV Rally */}
         <div>
           <label className="block text-xs font-semibold text-slate-700 mb-2">
-            Pass Type
+            Pass &amp; Participation Type
           </label>
-          <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-100 rounded-xl">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 p-1 bg-slate-100 rounded-xl">
             <button
               type="button"
               onClick={() => {
@@ -389,7 +390,7 @@ export default function DelegateRegistration() {
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              Trade Visitor (Free Pass)
+              Trade Visitor (Free)
             </button>
             <button
               type="button"
@@ -405,13 +406,49 @@ export default function DelegateRegistration() {
             >
               VIP Networking Dinner
             </button>
+            <Link
+              href="/ev-rally"
+              className="py-2 px-2.5 rounded-lg text-xs font-semibold text-slate-700 hover:text-emerald-800 hover:bg-white/80 transition-all flex items-center justify-center gap-1.5"
+            >
+              <Zap className="w-3.5 h-3.5 text-[#007A5E] fill-current" />
+              <span>EV Rally (9th Jan)</span>
+            </Link>
           </div>
         </div>
 
-        {/* Exhibitor Redirection Banner */}
-        <div className="p-3.5 bg-emerald-50/70 border border-emerald-200/90 rounded-xl flex items-center justify-between gap-3 text-xs">
+        {/* EV Rally Callout Banner */}
+        <div className="p-3.5 bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border border-emerald-200/90 rounded-xl flex items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-emerald-100 border border-emerald-300/80 flex items-center justify-center shrink-0 text-[#007A5E]">
+            <div className="w-8 h-8 rounded-lg bg-[#007A5E] text-white flex items-center justify-center shrink-0 shadow-2xs">
+              <Zap className="w-4 h-4 fill-current" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-slate-900 leading-tight">
+                  Clean Energy EV Rally
+                </span>
+                <span className="px-2 py-0.5 rounded-full bg-emerald-100/90 text-emerald-800 font-mono text-[10px] font-bold">
+                  9th Jan 2027
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-600 truncate mt-0.5">
+                Register your electric car, scooter, fleet or prototype for the Kathmandu roadshow.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/ev-rally"
+            className="px-3.5 py-1.5 rounded-lg bg-[#007A5E] hover:bg-[#005C42] text-white font-semibold text-[11px] flex items-center gap-1 shrink-0 transition-colors shadow-2xs cursor-pointer"
+          >
+            <span>Register EV</span>
+            <ArrowRight className="w-3 h-3" />
+          </Link>
+        </div>
+
+        {/* Exhibitor Redirection Banner */}
+        <div className="p-3.5 bg-slate-50 border border-slate-200/90 rounded-xl flex items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center shrink-0 text-slate-700">
               <Store className="w-4 h-4" />
             </div>
             <div className="min-w-0">
@@ -425,7 +462,7 @@ export default function DelegateRegistration() {
           </div>
           <Link
             href="/book-stall"
-            className="px-3.5 py-1.5 rounded-lg bg-[#007A5E] hover:bg-[#005C42] text-white font-semibold text-[11px] flex items-center gap-1 shrink-0 transition-colors shadow-2xs cursor-pointer"
+            className="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-900 text-white font-semibold text-[11px] flex items-center gap-1 shrink-0 transition-colors shadow-2xs cursor-pointer"
           >
             <span>Book Stall</span>
             <ArrowRight className="w-3 h-3" />
