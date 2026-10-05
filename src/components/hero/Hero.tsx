@@ -112,12 +112,12 @@ export function Hero() {
               title="Event Solution Nepal"
               className="group block w-full text-center transition-opacity hover:opacity-90 py-1"
             >
-              <div className="relative h-7 sm:h-8 w-full flex items-center justify-center">
+              <div className="relative h-[34px] sm:h-[40px] w-full flex items-center justify-center">
                 <Image
                   src="/images/event_solution_vector.svg"
                   alt="Event Solution"
                   fill
-                  className="object-contain transition-transform group-hover:scale-105"
+                  className="object-contain scale-105 transition-transform group-hover:scale-115"
                 />
               </div>
             </a>

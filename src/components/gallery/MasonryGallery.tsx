@@ -228,7 +228,7 @@ export default function MasonryGallery({ limit }: { limit?: number }) {
                       <div className={`relative w-full ${aspectClass} overflow-hidden`}>
                         <Image
                           src={item.image}
-                          alt={item.title}
+                          alt={item.title || item.category || "Expo Photo"}
                           fill
                           loading="lazy"
                           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
@@ -254,7 +254,7 @@ export default function MasonryGallery({ limit }: { limit?: number }) {
                             {item.year} · EXHIBITION ARCHIVE
                           </div>
                           <h4 className="font-sans font-bold text-xs sm:text-sm text-white line-clamp-2 leading-snug">
-                            {item.title}
+                            {item.title || item.category || "Expo Archive"}
                           </h4>
                         </div>
                       </div>
@@ -281,7 +281,7 @@ export default function MasonryGallery({ limit }: { limit?: number }) {
                     >
                       <Image
                         src={item.image}
-                        alt={item.title}
+                        alt={item.title || item.category || "Expo Photo"}
                         fill
                         loading="lazy"
                         sizes={
@@ -307,7 +307,7 @@ export default function MasonryGallery({ limit }: { limit?: number }) {
                             {item.year} · MASTERPIECE
                           </div>
                           <h4 className="font-sans font-bold text-xs sm:text-sm text-white line-clamp-2 leading-snug">
-                            {item.title}
+                            {item.title || item.category || "Expo Archive"}
                           </h4>
                         </div>
                       </div>
@@ -329,7 +329,7 @@ export default function MasonryGallery({ limit }: { limit?: number }) {
                   >
                     <Image
                       src={item.image}
-                      alt={item.title}
+                      alt={item.title || item.category || "Expo Photo"}
                       fill
                       loading="lazy"
                       sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
@@ -351,7 +351,7 @@ export default function MasonryGallery({ limit }: { limit?: number }) {
                           {item.year}
                         </div>
                         <h4 className="font-sans font-bold text-xs sm:text-sm text-white line-clamp-1 leading-snug">
-                          {item.title}
+                          {item.title || item.category || "Expo Archive"}
                         </h4>
                       </div>
                     </div>

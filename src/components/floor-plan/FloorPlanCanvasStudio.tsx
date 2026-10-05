@@ -276,6 +276,8 @@ export default function FloorPlanCanvasStudio() {
                 selectAllStalls={selectAllStalls}
                 groupSelected={groupSelected}
                 ungroupSelected={ungroupSelected}
+                saveToStorage={saveToStorage}
+                isSaving={isSaving}
               />
             ) : (
               <ToolsPalette

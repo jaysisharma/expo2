@@ -1,17 +1,21 @@
 import React, { useState } from "react";
-import { DollarSign, Maximize2 } from "lucide-react";
+import { DollarSign, Maximize2, Save } from "lucide-react";
 import { CanvasElement } from "../../../types";
 
 interface InspectorPriceAndSizeProps {
   primarySelected: CanvasElement;
   selectedElementsCount: number;
   updateSelectedBatch: (updates: Partial<CanvasElement> | ((el: CanvasElement) => Partial<CanvasElement>)) => void;
+  saveToStorage?: () => void;
+  isSaving?: boolean;
 }
 
 export function InspectorPriceAndSize({
   primarySelected,
   selectedElementsCount,
   updateSelectedBatch,
+  saveToStorage,
+  isSaving,
 }: InspectorPriceAndSizeProps) {
   const [resizeCanvasBox, setResizeCanvasBox] = useState(false);
 
@@ -75,6 +79,18 @@ export function InspectorPriceAndSize({
             ))}
           </div>
         </div>
+
+        {saveToStorage && (
+          <button
+            type="button"
+            onClick={saveToStorage}
+            disabled={isSaving}
+            className="w-full mt-2.5 py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm cursor-pointer disabled:opacity-60"
+          >
+            <Save className={`w-3.5 h-3.5 ${isSaving ? "animate-spin" : ""}`} />
+            <span>{isSaving ? "Saving to Server..." : "Save Prices to Live Map"}</span>
+          </button>
+        )}
       </div>
 
       {/* 2. SIZE & DIMENSIONS CONFIGURATION */}

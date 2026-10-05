@@ -39,6 +39,8 @@ export default function AdminStallsPage() {
   const [editingBooth, setEditingBooth] = useState<Booth | null>(null);
   const [modalStatus, setModalStatus] = useState<"Available" | "Reserved" | "Booked">("Available");
   const [modalExhibitor, setModalExhibitor] = useState<string>("");
+  const [modalPriceUSD, setModalPriceUSD] = useState<number>(0);
+  const [modalPriceNPR, setModalPriceNPR] = useState<number>(0);
   const [isSaving, setIsSaving] = useState<boolean>(false);
 
   // Reset Confirmation Modal
@@ -102,6 +104,8 @@ export default function AdminStallsPage() {
             status: (override.status || b.status) as any,
             exhibitorName:
               override.exhibitorName !== undefined ? override.exhibitorName : b.exhibitorName,
+            priceUSD: override.priceUSD !== undefined ? Number(override.priceUSD) : b.priceUSD,
+            priceNPR: override.priceNPR !== undefined ? Number(override.priceNPR) : b.priceNPR,
           }
         : b;
     });
@@ -172,6 +176,10 @@ export default function AdminStallsPage() {
     setEditingBooth(booth);
     setModalStatus(booth.status as "Available" | "Reserved" | "Booked");
     setModalExhibitor(booth.exhibitorName || "");
+    const initialUSD = booth.priceUSD || 0;
+    const initialNPR = booth.priceNPR || Math.round(initialUSD * exchangeRate);
+    setModalPriceUSD(initialUSD);
+    setModalPriceNPR(initialNPR);
   };
 
   const handleSaveBooth = async () => {
@@ -188,6 +196,8 @@ export default function AdminStallsPage() {
             boothNumber: editingBooth.number,
             status: modalStatus,
             exhibitorName: modalExhibitor,
+            priceUSD: Number(modalPriceUSD),
+            priceNPR: Number(modalPriceNPR),
           },
         }),
       });
@@ -826,17 +836,40 @@ export default function AdminStallsPage() {
                 />
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 space-y-1 text-[11px] text-slate-500">
-                <div className="flex justify-between">
-                  <span>Booth Tariff</span>
-                  <span className="font-mono font-semibold text-slate-800">
-                    {formatCurrencyUSD(editingBooth.priceUSD)}
-                  </span>
+              <div className="grid grid-cols-2 gap-2.5">
+                <div>
+                  <label className="block text-[11px] font-mono font-medium text-slate-700 mb-1">
+                    PRICE (USD $)
+                  </label>
+                  <input
+                    type="number"
+                    value={modalPriceUSD}
+                    onChange={(e) => {
+                      const usd = Number(e.target.value);
+                      setModalPriceUSD(usd);
+                      setModalPriceNPR(Math.round(usd * exchangeRate));
+                    }}
+                    placeholder="USD"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono font-bold text-xs focus:outline-none focus:border-[#218A59] focus:bg-white"
+                  />
                 </div>
-                <div className="flex justify-between">
-                  <span>Power Specification</span>
-                  <span className="text-slate-700">{editingBooth.powerIncluded || "15A 3-Phase"}</span>
+                <div>
+                  <label className="block text-[11px] font-mono font-medium text-slate-700 mb-1">
+                    PRICE (NPR)
+                  </label>
+                  <input
+                    type="number"
+                    value={modalPriceNPR}
+                    onChange={(e) => setModalPriceNPR(Number(e.target.value))}
+                    placeholder="NPR"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-emerald-700 font-mono font-bold text-xs focus:outline-none focus:border-[#218A59] focus:bg-white"
+                  />
                 </div>
+              </div>
+
+              <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+                <span>Power Specification</span>
+                <span className="text-slate-700 font-medium">{editingBooth.powerIncluded || "15A 3-Phase"}</span>
               </div>
             </div>
 

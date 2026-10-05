@@ -367,17 +367,63 @@ export async function POST(req: Request) {
       }
 
       case "update_booth": {
-        const { boothNumber, status, exhibitorName } = payload;
+        const { boothNumber, status, exhibitorName, priceUSD, priceNPR } = payload;
+        const parsedUSD = priceUSD !== undefined && priceUSD !== null && !isNaN(Number(priceUSD)) ? Number(priceUSD) : undefined;
+        const parsedNPR = priceNPR !== undefined && priceNPR !== null && !isNaN(Number(priceNPR)) ? Number(priceNPR) : undefined;
+
         data.boothOverrides[boothNumber] = {
           ...(data.boothOverrides[boothNumber] || {}),
           status,
           exhibitorName: exhibitorName || "",
+          ...(parsedUSD !== undefined ? { priceUSD: parsedUSD } : {}),
+          ...(parsedNPR !== undefined ? { priceNPR: parsedNPR } : {}),
           updatedAt: new Date().toISOString(),
         };
+
         await Promise.all([
           saveAdminData(data),
-          setFirebaseBoothOverride(boothNumber, { status, exhibitorName }).catch(() => {}),
+          setFirebaseBoothOverride(boothNumber, {
+            status,
+            exhibitorName,
+            ...(parsedUSD !== undefined ? { priceUSD: parsedUSD } : {}),
+            ...(parsedNPR !== undefined ? { priceNPR: parsedNPR } : {}),
+          }).catch(() => {}),
         ]);
+
+        // Also sync price and status to savedCustomFloorPlan.json
+        try {
+          const ROOT_FLOOR = path.join(process.cwd(), "data", "savedCustomFloorPlan.json");
+          const SRC_FLOOR = path.join(process.cwd(), "src", "data", "savedCustomFloorPlan.json");
+          let floorData: any = null;
+          try {
+            floorData = JSON.parse(await fs.readFile(ROOT_FLOOR, "utf-8"));
+          } catch {
+            floorData = JSON.parse(await fs.readFile(SRC_FLOOR, "utf-8"));
+          }
+          if (floorData && Array.isArray(floorData.elements)) {
+            let changed = false;
+            floorData.elements = floorData.elements.map((el: any) => {
+              if (el.number && el.number.trim().toLowerCase() === boothNumber.trim().toLowerCase()) {
+                changed = true;
+                return {
+                  ...el,
+                  status: status || el.status,
+                  ...(parsedUSD !== undefined ? { priceUSD: parsedUSD } : {}),
+                  ...(parsedNPR !== undefined ? { priceNPR: parsedNPR } : {}),
+                };
+              }
+              return el;
+            });
+            if (changed) {
+              const floorContent = JSON.stringify(floorData, null, 2);
+              await fs.writeFile(ROOT_FLOOR, floorContent, "utf-8").catch(() => {});
+              await fs.writeFile(SRC_FLOOR, floorContent, "utf-8").catch(() => {});
+            }
+          }
+        } catch (e) {
+          console.warn("Failed to sync floor plan files from update_booth:", e);
+        }
+
         return NextResponse.json({ success: true, message: `Booth ${boothNumber} updated`, data: data.boothOverrides[boothNumber] });
       }
 

@@ -242,18 +242,28 @@ export default function StallBookingWizard() {
 
   const [bookingRef, setBookingRef] = useState<string>("");
 
-  // Load custom elements configured from Admin Floor Plan Studio
+  // Load custom elements configured from Admin Floor Plan Studio & overrides
   const [elements, setElements] = useState<any[]>(
     (savedFloorPlanFallback as any).elements || []
   );
+  const [boothOverrides, setBoothOverrides] = useState<Record<string, any>>({});
 
   useEffect(() => {
     async function loadAdminFloorPlan() {
       try {
-        const res = await fetch("/api/floor-plan/save");
+        const [res, adminRes] = await Promise.all([
+          fetch(`/api/floor-plan/save?t=${Date.now()}`, { cache: "no-store" }),
+          fetch(`/api/admin/data?t=${Date.now()}`, { cache: "no-store" }).catch(() => null),
+        ]);
         const json = await res.json();
         if (json.success && json.data?.elements && Array.isArray(json.data.elements) && json.data.elements.length > 0) {
           setElements(json.data.elements);
+        }
+        if (adminRes && adminRes.ok) {
+          const adminJson = await adminRes.json();
+          if (adminJson?.data?.boothOverrides) {
+            setBoothOverrides(adminJson.data.boothOverrides);
+          }
         }
       } catch (err) {
         console.warn("Using fallback floor plan elements in StallBookingWizard", err);
@@ -295,8 +305,15 @@ export default function StallBookingWizard() {
     const sizeSqM = Number(custom?.sizeSqM ?? official?.sizeSqM ?? fallback?.sizeSqM ?? 9);
     const sizeSqFt = Number(custom?.sizeSqFt ?? official?.sizeSqFt ?? Math.round(sizeSqM * 10.76));
 
+    const override =
+      boothOverrides[cleanNum] ||
+      boothOverrides[number?.toLowerCase()] ||
+      (custom?.id && boothOverrides[custom.id]);
+
     let priceNPR = 180000;
-    if (custom?.priceNPR !== undefined && custom?.priceNPR !== null && !isNaN(Number(custom.priceNPR))) {
+    if (override?.priceNPR !== undefined && override?.priceNPR !== null && !isNaN(Number(override.priceNPR))) {
+      priceNPR = Number(override.priceNPR);
+    } else if (custom?.priceNPR !== undefined && custom?.priceNPR !== null && !isNaN(Number(custom.priceNPR))) {
       priceNPR = Number(custom.priceNPR);
     } else if (official?.priceNPR !== undefined && !isNaN(Number(official.priceNPR))) {
       priceNPR = Number(official.priceNPR);
@@ -305,7 +322,9 @@ export default function StallBookingWizard() {
     }
 
     let priceUSD = 1350;
-    if (custom?.priceUSD !== undefined && custom?.priceUSD !== null && !isNaN(Number(custom.priceUSD))) {
+    if (override?.priceUSD !== undefined && override?.priceUSD !== null && !isNaN(Number(override.priceUSD))) {
+      priceUSD = Number(override.priceUSD);
+    } else if (custom?.priceUSD !== undefined && custom?.priceUSD !== null && !isNaN(Number(custom.priceUSD))) {
       priceUSD = Number(custom.priceUSD);
     } else if (official?.priceUSD !== undefined && !isNaN(Number(official.priceUSD))) {
       priceUSD = Number(official.priceUSD);

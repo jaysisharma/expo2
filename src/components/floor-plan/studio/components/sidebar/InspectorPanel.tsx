@@ -30,6 +30,8 @@ interface InspectorPanelProps {
   selectAllStalls: () => void;
   groupSelected: () => void;
   ungroupSelected: () => void;
+  saveToStorage?: () => void;
+  isSaving?: boolean;
 }
 
 export function InspectorPanel({
@@ -54,6 +56,8 @@ export function InspectorPanel({
   selectAllStalls,
   groupSelected,
   ungroupSelected,
+  saveToStorage,
+  isSaving,
 }: InspectorPanelProps) {
   if (selectedElements.length === 0 || !primarySelected) {
     return (
@@ -106,6 +110,8 @@ export function InspectorPanel({
         primarySelected={primarySelected}
         selectedElementsCount={selectedElements.length}
         updateSelectedBatch={updateSelectedBatch}
+        saveToStorage={saveToStorage}
+        isSaving={isSaving}
       />
       <InspectorStyling
         primarySelected={primarySelected}

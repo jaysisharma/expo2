@@ -109,7 +109,7 @@ export async function getFirebaseBoothOverrides() {
 
 export async function setFirebaseBoothOverride(
   boothNumber: string,
-  data: { status: string; exhibitorName?: string }
+  data: { status: string; exhibitorName?: string; priceUSD?: number; priceNPR?: number }
 ) {
   try {
     const ref = doc(db, COLLECTIONS.BOOTHS, boothNumber);

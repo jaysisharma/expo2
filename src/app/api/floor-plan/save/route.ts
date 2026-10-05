@@ -30,32 +30,43 @@ async function readFloorPlanData() {
 export async function GET() {
   try {
     const json = await readFloorPlanData();
+    const headers = {
+      "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
+      Pragma: "no-cache",
+      Expires: "0",
+    };
     if (json) {
-      return NextResponse.json({
+      return NextResponse.json(
+        {
+          success: true,
+          data: {
+            ...json,
+            canvasWidth: json.canvasWidth || 1200,
+            canvasHeight: json.canvasHeight || 850,
+            canvasBgMode: json.canvasBgMode || "cad-dark",
+            showBgImage: json.showBgImage !== undefined ? json.showBgImage : true,
+            bgImageSrc: json.bgImageSrc || "/images/floor-plan-official.webp",
+            blueprintOpacity: json.blueprintOpacity ?? 0.65,
+          },
+        },
+        { headers }
+      );
+    }
+    return NextResponse.json(
+      {
         success: true,
         data: {
-          ...json,
-          canvasWidth: json.canvasWidth || 1200,
-          canvasHeight: json.canvasHeight || 850,
-          canvasBgMode: json.canvasBgMode || "cad-dark",
-          showBgImage: json.showBgImage !== undefined ? json.showBgImage : true,
-          bgImageSrc: json.bgImageSrc || "/images/floor-plan-official.webp",
-          blueprintOpacity: json.blueprintOpacity ?? 0.65,
+          elements: [],
+          canvasWidth: 1200,
+          canvasHeight: 850,
+          bgImageSrc: "/images/floor-plan-official.webp",
+          blueprintOpacity: 0.65,
+          canvasBgMode: "cad-dark",
+          showBgImage: true,
         },
-      });
-    }
-    return NextResponse.json({
-      success: true,
-      data: {
-        elements: [],
-        canvasWidth: 1200,
-        canvasHeight: 850,
-        bgImageSrc: "/images/floor-plan-official.webp",
-        blueprintOpacity: 0.65,
-        canvasBgMode: "cad-dark",
-        showBgImage: true,
       },
-    });
+      { headers }
+    );
   } catch (error) {
     console.error("Error reading saved floor plan:", error);
     return NextResponse.json({ success: false, elements: [] }, { status: 200 });

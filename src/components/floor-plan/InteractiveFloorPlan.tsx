@@ -84,12 +84,14 @@ export default function InteractiveFloorPlan({
     async function loadFloorPlan() {
       try {
         const [res, adminRes] = await Promise.all([
-          fetch("/api/floor-plan/save"),
-          fetch("/api/admin/data").catch(() => null),
+          fetch(`/api/floor-plan/save?t=${Date.now()}`, { cache: "no-store" }),
+          fetch(`/api/admin/data?t=${Date.now()}`, { cache: "no-store" }).catch(() => null),
         ]);
         const json = await res.json();
+        let loadedElements = elements;
         if (json.success && json.data) {
           if (Array.isArray(json.data.elements) && json.data.elements.length > 0) {
+            loadedElements = json.data.elements;
             setElements(json.data.elements);
           }
           if (json.data.bgImageSrc) setBgImageSrc(json.data.bgImageSrc);
@@ -104,6 +106,20 @@ export default function InteractiveFloorPlan({
           const adminJson = await adminRes.json();
           if (adminJson?.data?.boothOverrides) {
             setBoothOverrides(adminJson.data.boothOverrides);
+            const overrides = adminJson.data.boothOverrides;
+            setElements((prev) =>
+              prev.map((el) => {
+                const sNum = el.number || el.id;
+                const ov = overrides[sNum] || (el.id && overrides[el.id]);
+                if (!ov) return el;
+                return {
+                  ...el,
+                  priceNPR: ov.priceNPR !== undefined && ov.priceNPR !== null ? Number(ov.priceNPR) : el.priceNPR,
+                  priceUSD: ov.priceUSD !== undefined && ov.priceUSD !== null ? Number(ov.priceUSD) : el.priceUSD,
+                  status: ov.status || el.status,
+                };
+              })
+            );
           }
         }
       } catch (err) {
@@ -191,14 +207,29 @@ export default function InteractiveFloorPlan({
     (acc, curr) => acc + (curr.sizeSqFt !== undefined && curr.sizeSqFt !== null ? Number(curr.sizeSqFt) : Math.round((Number(curr.sizeSqM) || 9) * 10.76)),
     0
   );
-  const totalPriceNPR = selectedStallObjects.reduce(
-    (acc, curr) => acc + (curr.priceNPR !== undefined && curr.priceNPR !== null ? Number(curr.priceNPR) : 180000),
-    0
-  );
-  const totalPriceUSD = selectedStallObjects.reduce(
-    (acc, curr) => acc + (curr.priceUSD !== undefined && curr.priceUSD !== null ? Number(curr.priceUSD) : 1350),
-    0
-  );
+  const totalPriceNPR = selectedStallObjects.reduce((acc, curr) => {
+    const sNum = curr.number || curr.id;
+    const ov = boothOverrides[sNum] || (curr.id && boothOverrides[curr.id]);
+    const price =
+      ov?.priceNPR !== undefined && ov?.priceNPR !== null
+        ? Number(ov.priceNPR)
+        : curr.priceNPR !== undefined && curr.priceNPR !== null
+        ? Number(curr.priceNPR)
+        : 180000;
+    return acc + price;
+  }, 0);
+
+  const totalPriceUSD = selectedStallObjects.reduce((acc, curr) => {
+    const sNum = curr.number || curr.id;
+    const ov = boothOverrides[sNum] || (curr.id && boothOverrides[curr.id]);
+    const price =
+      ov?.priceUSD !== undefined && ov?.priceUSD !== null
+        ? Number(ov.priceUSD)
+        : curr.priceUSD !== undefined && curr.priceUSD !== null
+        ? Number(curr.priceUSD)
+        : 1350;
+    return acc + price;
+  }, 0);
 
   return (
     <div className="w-full font-sans select-none space-y-6">
@@ -688,7 +719,22 @@ export default function InteractiveFloorPlan({
                 Area: {hoveredStall.sizeSqM ?? 9} m² ({hoveredStall.sizeSqFt ?? Math.round((hoveredStall.sizeSqM ?? 9) * 10.76)} sq.ft)
               </div>
               <div className="text-[#34D399] font-bold text-xs pt-0.5">
-                NPR {(hoveredStall.priceNPR !== undefined && hoveredStall.priceNPR !== null ? Number(hoveredStall.priceNPR) : 180000).toLocaleString()} / USD ${(hoveredStall.priceUSD !== undefined && hoveredStall.priceUSD !== null ? Number(hoveredStall.priceUSD) : 1350).toLocaleString()}
+                NPR {(() => {
+                  const ov = boothOverrides[stallNum] || (hoveredStall.id && boothOverrides[hoveredStall.id]);
+                  const npr =
+                    ov?.priceNPR !== undefined && ov?.priceNPR !== null
+                      ? Number(ov.priceNPR)
+                      : hoveredStall.priceNPR !== undefined && hoveredStall.priceNPR !== null
+                      ? Number(hoveredStall.priceNPR)
+                      : 180000;
+                  const usd =
+                    ov?.priceUSD !== undefined && ov?.priceUSD !== null
+                      ? Number(ov.priceUSD)
+                      : hoveredStall.priceUSD !== undefined && hoveredStall.priceUSD !== null
+                      ? Number(hoveredStall.priceUSD)
+                      : 1350;
+                  return `${npr.toLocaleString()} / USD $${usd.toLocaleString()}`;
+                })()}
               </div>
             </div>
           );

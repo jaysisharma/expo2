@@ -21,6 +21,12 @@ import {
   Layers,
   ArrowUpRight,
   SlidersHorizontal,
+  UploadCloud,
+  Upload,
+  Loader2,
+  Images,
+  FolderPlus,
+  Link as LinkIcon,
 } from "lucide-react";
 import { galleryData as initialGallery } from "@/data/gallery";
 import { saveFirebaseGallery, getFirebaseGallery } from "@/lib/firebaseDb";
@@ -71,17 +77,33 @@ export default function AdminGalleryPage() {
 
   // Modals state
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showBulkModal, setShowBulkModal] = useState(false);
   const [showEditionsModal, setShowEditionsModal] = useState(false);
   const [editingItem, setEditingItem] = useState<GalleryItem | null>(null);
   const [previewingItem, setPreviewingItem] = useState<GalleryItem | null>(null);
 
-  // Add Photo Form State
+  // Add Single Photo Form State
   const [addTitle, setAddTitle] = useState("");
   const [addCategory, setAddCategory] = useState("5TH EDITION (2027)");
   const [addYear, setAddYear] = useState("2027");
   const [addImage, setAddImage] = useState("");
   const [addCaption, setAddCaption] = useState("");
   const [addAspectRatio, setAddAspectRatio] = useState<"landscape" | "portrait" | "square">("landscape");
+
+  // Bulk Upload State
+  const [bulkCategory, setBulkCategory] = useState("5TH EDITION (2027)");
+  const [bulkYear, setBulkYear] = useState("2027");
+  const [bulkBaseTitle, setBulkBaseTitle] = useState("");
+  const [bulkCaption, setBulkCaption] = useState("");
+  const [bulkAspectRatio, setBulkAspectRatio] = useState<"landscape" | "portrait" | "square">("landscape");
+  const [bulkFiles, setBulkFiles] = useState<{ id: string; file?: File; preview: string; name: string; size?: number }[]>([]);
+  const [bulkUrlInput, setBulkUrlInput] = useState("");
+  const [showBulkUrlMode, setShowBulkUrlMode] = useState(false);
+  const [isBulkUploading, setIsBulkUploading] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState<{ current: number; total: number; statusText: string } | null>(null);
+  const [bulkInlineNewEdition, setBulkInlineNewEdition] = useState(false);
+  const [bulkNewEditionName, setBulkNewEditionName] = useState("");
+  const [bulkNewEditionYear, setBulkNewEditionYear] = useState("");
 
   // Inline Edition Drawer State inside Add/Edit Photo
   const [showInlineNewEdition, setShowInlineNewEdition] = useState(false);
@@ -152,10 +174,10 @@ export default function AdminGalleryPage() {
       const q = searchQuery.toLowerCase().trim();
       const matchesSearch =
         !q ||
-        item.title.toLowerCase().includes(q) ||
-        item.caption.toLowerCase().includes(q) ||
-        item.category.toLowerCase().includes(q) ||
-        item.year.toLowerCase().includes(q);
+        (item.title || "").toLowerCase().includes(q) ||
+        (item.caption || "").toLowerCase().includes(q) ||
+        (item.category || "").toLowerCase().includes(q) ||
+        (item.year || "").toLowerCase().includes(q);
 
       return matchesCat && matchesYear && matchesSearch;
     });
@@ -201,29 +223,29 @@ export default function AdminGalleryPage() {
     notify(`Edition "${editionName}" removed`);
   };
 
-  // Add Photo Submit Handler
+  // Add Single Photo Submit Handler (Title & Caption are optional)
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!addTitle.trim()) {
-      notify("Photo title is required");
+    if (!addImage.trim()) {
+      notify("Please select or upload an image");
       return;
     }
 
-    const chosenImage = addImage.trim() || "/images/gallery/2022/DSC_6673.webp";
+    const chosenImage = addImage.trim();
 
     const newItem: GalleryItem = {
       id: `g-${Date.now()}`,
       title: addTitle.trim(),
       category: addCategory || "5TH EDITION (2027)",
       image: chosenImage,
-      caption: addCaption.trim() || addTitle.trim(),
+      caption: addCaption.trim(),
       year: addYear.trim() || "2027",
       aspectRatio: addAspectRatio,
     };
 
     setItems((prev) => [newItem, ...prev]);
-    notify(`Published "${newItem.title}" to gallery`);
+    notify(newItem.title ? `Published "${newItem.title}" to gallery` : `Added photo to ${newItem.category}`);
 
     // Reset form
     setAddTitle("");
@@ -231,6 +253,160 @@ export default function AdminGalleryPage() {
     setAddImage("");
     setShowAddModal(false);
     setShowInlineNewEdition(false);
+  };
+
+  // Add Bulk Files Handler (via picker or drag-and-drop)
+  const handleAddBulkFiles = (incomingFiles: FileList | File[]) => {
+    const validFiles = Array.from(incomingFiles).filter((f) =>
+      f.type.startsWith("image/")
+    );
+
+    if (validFiles.length === 0) {
+      notify("Please select valid image files (JPG, PNG, WEBP, SVG, etc.)");
+      return;
+    }
+
+    const newEntries = validFiles.map((file) => ({
+      id: `bulk-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      file,
+      preview: URL.createObjectURL(file),
+      name: file.name,
+      size: file.size,
+    }));
+
+    setBulkFiles((prev) => [...prev, ...newEntries]);
+  };
+
+  // Add Bulk URLs Handler
+  const handleAddBulkUrls = () => {
+    const urls = bulkUrlInput
+      .split("\n")
+      .map((u) => u.trim())
+      .filter((u) => u.length > 0);
+
+    if (urls.length === 0) {
+      notify("Please enter at least one image URL");
+      return;
+    }
+
+    const newEntries = urls.map((url, idx) => ({
+      id: `bulk-url-${Date.now()}-${idx}-${Math.random().toString(36).substring(2, 7)}`,
+      preview: url,
+      name: url.split("/").pop() || `Image URL ${idx + 1}`,
+    }));
+
+    setBulkFiles((prev) => [...prev, ...newEntries]);
+    setBulkUrlInput("");
+    setShowBulkUrlMode(false);
+    notify(`Added ${newEntries.length} photo URLs to batch`);
+  };
+
+  // Remove individual file from bulk queue
+  const handleRemoveBulkFile = (id: string) => {
+    setBulkFiles((prev) => prev.filter((f) => f.id !== id));
+  };
+
+  // Execute Bulk Upload Handler
+  const handleExecuteBulkUpload = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (bulkFiles.length === 0) {
+      notify("Please select or add at least one photo");
+      return;
+    }
+
+    setIsBulkUploading(true);
+    setBulkProgress({
+      current: 0,
+      total: bulkFiles.length,
+      statusText: "Initializing batch upload...",
+    });
+
+    const uploadedUrls: string[] = [];
+    const total = bulkFiles.length;
+
+    for (let i = 0; i < total; i++) {
+      const item = bulkFiles[i];
+      setBulkProgress({
+        current: i + 1,
+        total,
+        statusText: `Uploading photo ${i + 1} of ${total}: ${item.name}`,
+      });
+
+      if (item.file) {
+        try {
+          const formData = new FormData();
+          formData.append("file", item.file);
+          formData.append("folder", "gallery");
+
+          const res = await fetch("/api/upload", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            if (data.success && data.url) {
+              uploadedUrls.push(data.url);
+              continue;
+            }
+          }
+
+          // Fallback to client data URL if upload endpoint failed
+          const fallbackDataUrl = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.onerror = () => resolve(item.preview);
+            reader.readAsDataURL(item.file!);
+          });
+          uploadedUrls.push(fallbackDataUrl);
+        } catch {
+          const fallbackDataUrl = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.onerror = () => resolve(item.preview);
+            reader.readAsDataURL(item.file!);
+          });
+          uploadedUrls.push(fallbackDataUrl);
+        }
+      } else {
+        // Direct URL
+        uploadedUrls.push(item.preview);
+      }
+    }
+
+    const now = Date.now();
+    const trimmedBaseTitle = bulkBaseTitle.trim();
+    const trimmedCaption = bulkCaption.trim();
+
+    const createdItems: GalleryItem[] = uploadedUrls.map((url, idx) => {
+      let finalTitle = "";
+      if (trimmedBaseTitle) {
+        finalTitle =
+          uploadedUrls.length > 1 ? `${trimmedBaseTitle} (${idx + 1})` : trimmedBaseTitle;
+      }
+      return {
+        id: `g-${now}-${idx}-${Math.random().toString(36).substring(2, 6)}`,
+        title: finalTitle, // Title is optional
+        category: bulkCategory || "5TH EDITION (2027)",
+        image: url,
+        caption: trimmedCaption, // Caption is optional
+        year: bulkYear.trim() || "2027",
+        aspectRatio: bulkAspectRatio,
+      };
+    });
+
+    setItems((prev) => [...createdItems, ...prev]);
+    setIsBulkUploading(false);
+    setBulkProgress(null);
+    setShowBulkModal(false);
+    setBulkFiles([]);
+    setBulkBaseTitle("");
+    setBulkCaption("");
+    setBulkUrlInput("");
+    setBulkInlineNewEdition(false);
+
+    notify(`Successfully added ${createdItems.length} photos to ${bulkCategory}`);
   };
 
   // Save Edit Handler
@@ -246,8 +422,9 @@ export default function AdminGalleryPage() {
   };
 
   // Delete Photo Handler
-  const handleDelete = (id: string, title: string) => {
-    if (!confirm(`Are you sure you want to delete "${title}"?`)) return;
+  const handleDelete = (id: string, title?: string) => {
+    const label = title?.trim() ? `"${title}"` : "this photo";
+    if (!confirm(`Are you sure you want to delete ${label}?`)) return;
     setItems((prev) => prev.filter((item) => item.id !== id));
     notify("Photo removed from gallery");
   };
@@ -316,17 +493,43 @@ export default function AdminGalleryPage() {
 
           <button
             onClick={() => {
+              const defaultCat =
+                selectedCategory !== "All"
+                  ? selectedCategory
+                  : (editions[0]?.name || "5TH EDITION (2027)");
+              const match = editions.find((ed) => ed.name === defaultCat);
+              setBulkCategory(defaultCat);
+              setBulkYear(match ? match.year : "2027");
+              setBulkBaseTitle("");
+              setBulkCaption("");
+              setBulkFiles([]);
+              setBulkUrlInput("");
+              setShowBulkModal(true);
+            }}
+            className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+          >
+            <Images className="w-3.5 h-3.5" />
+            <span>Bulk Upload</span>
+          </button>
+
+          <button
+            onClick={() => {
               setAddTitle("");
               setAddCaption("");
               setAddImage("");
-              setAddCategory(editions[0]?.name || "5TH EDITION (2027)");
-              setAddYear(editions[0]?.year || "2027");
+              const defaultCat =
+                selectedCategory !== "All"
+                  ? selectedCategory
+                  : (editions[0]?.name || "5TH EDITION (2027)");
+              const match = editions.find((ed) => ed.name === defaultCat);
+              setAddCategory(defaultCat);
+              setAddYear(match ? match.year : "2027");
               setShowAddModal(true);
             }}
             className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>Add Photo</span>
+            <span>Add Single Photo</span>
           </button>
         </div>
       </div>
@@ -524,12 +727,14 @@ export default function AdminGalleryPage() {
                     <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200/80 inline-block mb-1">
                       {item.category}
                     </span>
-                    <h3 className="font-semibold text-xs text-slate-900 line-clamp-1 mt-0.5" title={item.title}>
-                      {item.title}
+                    <h3 className="font-semibold text-xs text-slate-900 line-clamp-1 mt-0.5" title={item.title || item.category || "Expo Photo"}>
+                      {item.title || <span className="text-slate-400 italic font-normal">Untitled Photo</span>}
                     </h3>
-                    <p className="text-[11px] text-slate-500 line-clamp-2 mt-1 leading-relaxed">
-                      {item.caption}
-                    </p>
+                    {item.caption ? (
+                      <p className="text-[11px] text-slate-500 line-clamp-2 mt-1 leading-relaxed">
+                        {item.caption}
+                      </p>
+                    ) : null}
                   </div>
 
                   <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 font-mono">
@@ -576,11 +781,13 @@ export default function AdminGalleryPage() {
                           onClick={() => setPreviewingItem(item)}
                           className="relative w-12 h-10 rounded-lg overflow-hidden bg-slate-100 border border-slate-200/80 cursor-pointer shrink-0"
                         >
-                          <Image src={item.image} alt={item.title} fill className="object-cover" />
+                          <Image src={item.image} alt={item.title || item.category || "Expo Photo"} fill className="object-cover" />
                         </div>
                       </td>
                       <td className="py-3 px-3.5 font-semibold text-slate-900 max-w-[200px]">
-                        <div className="truncate">{item.title}</div>
+                        <div className="truncate">
+                          {item.title || <span className="text-slate-400 italic font-normal">Untitled</span>}
+                        </div>
                       </td>
                       <td className="py-3 px-3.5">
                         <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-mono text-[10px] font-semibold uppercase">
@@ -591,7 +798,7 @@ export default function AdminGalleryPage() {
                         {item.year}
                       </td>
                       <td className="py-3 px-3.5 text-slate-600 text-[11px] max-w-[260px] truncate">
-                        {item.caption}
+                        {item.caption || <span className="text-slate-400 italic">—</span>}
                       </td>
                       <td className="py-3 px-3.5 text-right">
                         <div className="flex items-center justify-end gap-1">
@@ -640,7 +847,7 @@ export default function AdminGalleryPage() {
             <div className="relative h-[420px] w-full bg-slate-950 flex items-center justify-center">
               <Image
                 src={previewingItem.image}
-                alt={previewingItem.title}
+                alt={previewingItem.title || previewingItem.category || "Expo Photo"}
                 fill
                 className="object-contain"
               />
@@ -659,8 +866,12 @@ export default function AdminGalleryPage() {
                 </span>
                 <span className="text-xs text-slate-400 font-mono">ID: {previewingItem.id}</span>
               </div>
-              <h3 className="font-bold text-base text-slate-900">{previewingItem.title}</h3>
-              <p className="text-xs text-slate-600 leading-relaxed">{previewingItem.caption}</p>
+              <h3 className="font-bold text-base text-slate-900">
+                {previewingItem.title || previewingItem.category || "Expo Photo"}
+              </h3>
+              {previewingItem.caption ? (
+                <p className="text-xs text-slate-600 leading-relaxed">{previewingItem.caption}</p>
+              ) : null}
             </div>
           </div>
         </div>
@@ -800,14 +1011,13 @@ export default function AdminGalleryPage() {
               {/* Photo Title */}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  Photo Title *
+                  Photo Title <span className="font-normal text-slate-400">(Optional)</span>
                 </label>
                 <input
                   type="text"
-                  required
                   value={addTitle}
                   onChange={(e) => setAddTitle(e.target.value)}
-                  placeholder="e.g. Inauguration & High-Level Dais"
+                  placeholder="e.g. Inauguration & High-Level Dais (optional)"
                   className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-400 focus:bg-white text-xs transition-colors"
                 />
               </div>
@@ -992,13 +1202,13 @@ export default function AdminGalleryPage() {
               {/* Caption / Description */}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  Caption / Description
+                  Caption / Description <span className="font-normal text-slate-400">(Optional)</span>
                 </label>
                 <textarea
                   rows={3}
                   value={addCaption}
                   onChange={(e) => setAddCaption(e.target.value)}
-                  placeholder="Describe the occasion, dignitaries, and ceremony..."
+                  placeholder="Describe the occasion, dignitaries, and ceremony (optional)..."
                   className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-400 focus:bg-white text-xs transition-colors"
                 />
               </div>
@@ -1028,6 +1238,401 @@ export default function AdminGalleryPage() {
         </div>
       )}
 
+      {/* Bulk Upload Modal */}
+      {showBulkModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/40 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150 overflow-y-auto">
+          <div className="w-full max-w-2xl bg-white border border-slate-200/90 rounded-2xl p-6 shadow-2xl space-y-4 my-8 animate-in zoom-in-95 duration-150 max-h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-200/80">
+                  <Images className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-slate-900">Bulk Upload Photos</h3>
+                  <p className="text-[11px] text-slate-500 mt-0.5">
+                    Batch upload multiple images for any edition. Title and caption are completely optional.
+                  </p>
+                </div>
+              </div>
+              <button
+                disabled={isBulkUploading}
+                onClick={() => {
+                  setShowBulkModal(false);
+                  setBulkInlineNewEdition(false);
+                }}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 cursor-pointer transition-colors disabled:opacity-40"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleExecuteBulkUpload} className="space-y-4 text-xs overflow-y-auto pr-1 flex-1">
+              {/* Target Edition / Category & Year */}
+              <div className="p-3 rounded-xl bg-slate-50/80 border border-slate-200/80 space-y-2.5">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-xs font-semibold text-slate-700">
+                        Target Edition / Category <span className="text-rose-500">*</span>
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setBulkInlineNewEdition(!bulkInlineNewEdition)}
+                        className="text-[11px] font-medium text-emerald-700 hover:text-emerald-800 flex items-center gap-1 cursor-pointer transition-colors"
+                      >
+                        <Plus className="w-3 h-3" />
+                        <span>{bulkInlineNewEdition ? "Close" : "New Edition"}</span>
+                      </button>
+                    </div>
+
+                    <select
+                      value={bulkCategory}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val === "__new__") {
+                          setBulkInlineNewEdition(true);
+                          return;
+                        }
+                        setBulkCategory(val);
+                        const match = editions.find((ed) => ed.name === val);
+                        if (match) setBulkYear(match.year);
+                      }}
+                      className="w-full p-2.5 rounded-xl bg-white border border-slate-200 text-slate-900 focus:outline-none focus:border-slate-400 text-xs transition-colors cursor-pointer"
+                    >
+                      {editions.map((ed) => (
+                        <option key={ed.name} value={ed.name}>
+                          {ed.name}
+                        </option>
+                      ))}
+                      <option value="__new__">+ Add New Edition...</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      Year / Tag <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={bulkYear}
+                      onChange={(e) => setBulkYear(e.target.value)}
+                      placeholder="e.g. 2027"
+                      className="w-full p-2.5 rounded-xl bg-white border border-slate-200 text-slate-900 focus:outline-none focus:border-slate-400 text-xs transition-colors"
+                    />
+                  </div>
+                </div>
+
+                {/* Inline New Edition Creator */}
+                {bulkInlineNewEdition && (
+                  <div className="p-3 rounded-lg bg-white border border-emerald-200 space-y-2 mt-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-emerald-900">
+                        Create New Edition
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setBulkInlineNewEdition(false)}
+                        className="text-slate-400 hover:text-slate-600 text-xs cursor-pointer"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="col-span-2">
+                        <input
+                          type="text"
+                          value={bulkNewEditionName}
+                          onChange={(e) => setBulkNewEditionName(e.target.value)}
+                          placeholder="Edition Name (e.g. 6TH EDITION (2029))"
+                          className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-400"
+                        />
+                      </div>
+                      <div>
+                        <input
+                          type="text"
+                          value={bulkNewEditionYear}
+                          onChange={(e) => setBulkNewEditionYear(e.target.value)}
+                          placeholder="Year (e.g. 2029)"
+                          className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-400"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex justify-end gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!bulkNewEditionName.trim()) return;
+                          const created = handleCreateEdition(bulkNewEditionName, bulkNewEditionYear);
+                          if (created) {
+                            setBulkCategory(created.name);
+                            setBulkYear(created.year);
+                          }
+                          setBulkInlineNewEdition(false);
+                          setBulkNewEditionName("");
+                          setBulkNewEditionYear("");
+                        }}
+                        className="px-3 py-1 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold cursor-pointer shadow-xs transition-colors"
+                      >
+                        Save & Select
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Multi-Image File Dropzone & Picker */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-semibold text-slate-700">
+                    Upload Photos <span className="text-rose-500">*</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowBulkUrlMode(!showBulkUrlMode)}
+                    className="text-[11px] font-medium text-slate-500 hover:text-slate-800 flex items-center gap-1 cursor-pointer transition-colors"
+                  >
+                    <LinkIcon className="w-3 h-3 text-slate-400" />
+                    <span>{showBulkUrlMode ? "Upload Image Files Instead" : "Paste Image URLs Instead"}</span>
+                  </button>
+                </div>
+
+                {!showBulkUrlMode ? (
+                  <div>
+                    <label
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                          handleAddBulkFiles(e.dataTransfer.files);
+                        }
+                      }}
+                      className="border-2 border-dashed border-slate-300 hover:border-emerald-500 hover:bg-emerald-50/20 rounded-2xl p-6 text-center transition-colors cursor-pointer flex flex-col items-center justify-center gap-2 group block"
+                    >
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files.length > 0) {
+                            handleAddBulkFiles(e.target.files);
+                            e.target.value = "";
+                          }
+                        }}
+                        className="hidden"
+                      />
+                      <div className="w-12 h-12 rounded-2xl bg-emerald-50 group-hover:bg-emerald-100 text-emerald-600 flex items-center justify-center transition-colors">
+                        <UploadCloud className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-slate-800">
+                          Click to select photos or drag and drop multiple files
+                        </p>
+                        <p className="text-[11px] text-slate-400 mt-0.5">
+                          Supports JPG, PNG, WEBP, SVG • Select as many as you need
+                        </p>
+                      </div>
+                    </label>
+                  </div>
+                ) : (
+                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                    <p className="text-[11px] text-slate-500">
+                      Paste multiple image URLs (one URL per line):
+                    </p>
+                    <textarea
+                      rows={4}
+                      value={bulkUrlInput}
+                      onChange={(e) => setBulkUrlInput(e.target.value)}
+                      placeholder={"https://example.com/photo1.webp\nhttps://example.com/photo2.webp"}
+                      className="w-full p-2.5 rounded-xl bg-white border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-400 text-xs font-mono"
+                    />
+                    <div className="flex justify-end">
+                      <button
+                        type="button"
+                        onClick={handleAddBulkUrls}
+                        className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs cursor-pointer shadow-xs"
+                      >
+                        Add URLs to Queue
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Selected Photos Preview Strip */}
+              {bulkFiles.length > 0 && (
+                <div className="p-3 rounded-xl bg-slate-50/80 border border-slate-200 space-y-2.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-semibold text-slate-800 flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                      <span>Selected Photos ({bulkFiles.length})</span>
+                    </span>
+                    <button
+                      type="button"
+                      disabled={isBulkUploading}
+                      onClick={() => setBulkFiles([])}
+                      className="text-[11px] text-rose-600 hover:text-rose-800 font-medium cursor-pointer"
+                    >
+                      Remove All
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 max-h-44 overflow-y-auto p-1">
+                    {bulkFiles.map((f, idx) => (
+                      <div
+                        key={f.id}
+                        className="relative group rounded-lg overflow-hidden border border-slate-200 bg-white aspect-square shadow-2xs"
+                      >
+                        {/* Thumbnail */}
+                        <img
+                          src={f.preview}
+                          alt={f.name}
+                          className="w-full h-full object-cover"
+                        />
+                        <button
+                          type="button"
+                          disabled={isBulkUploading}
+                          onClick={() => handleRemoveBulkFile(f.id)}
+                          className="absolute top-1 right-1 p-1 rounded-md bg-black/70 hover:bg-rose-600 text-white transition-colors cursor-pointer opacity-90 group-hover:opacity-100"
+                          title="Remove this photo"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                        <div className="absolute bottom-0 inset-x-0 bg-black/60 px-1 py-0.5 text-[9px] text-white truncate font-mono">
+                          #{idx + 1}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Display Aspect Ratio */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Display Aspect Ratio
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { id: "landscape", label: "Landscape (16:9)" },
+                    { id: "portrait", label: "Portrait (3:4)" },
+                    { id: "square", label: "Square (1:1)" },
+                  ].map((ratio) => (
+                    <button
+                      key={ratio.id}
+                      type="button"
+                      disabled={isBulkUploading}
+                      onClick={() => setBulkAspectRatio(ratio.id as any)}
+                      className={`p-2 rounded-xl text-xs font-medium border text-center transition-all cursor-pointer ${
+                        bulkAspectRatio === ratio.id
+                          ? "bg-slate-900 text-white border-slate-900 shadow-2xs font-semibold"
+                          : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200"
+                      }`}
+                    >
+                      {ratio.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Optional Base Title */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Base Photo Title <span className="font-normal text-slate-400">(Optional)</span>
+                </label>
+                <input
+                  type="text"
+                  value={bulkBaseTitle}
+                  disabled={isBulkUploading}
+                  onChange={(e) => setBulkBaseTitle(e.target.value)}
+                  placeholder="e.g. Inauguration & Ceremonies (optional, leave blank if not needed)"
+                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-400 focus:bg-white text-xs transition-colors"
+                />
+                <p className="text-[10px] text-slate-400 mt-1">
+                  If provided, photos will be named with numbering (e.g. &ldquo;Inauguration (1)&rdquo;). If left empty, photos will be published without a mandatory title.
+                </p>
+              </div>
+
+              {/* Optional Caption / Description */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Caption / Description <span className="font-normal text-slate-400">(Optional)</span>
+                </label>
+                <textarea
+                  rows={2}
+                  value={bulkCaption}
+                  disabled={isBulkUploading}
+                  onChange={(e) => setBulkCaption(e.target.value)}
+                  placeholder="Describe the occasion, delegates, or highlight moments (optional)..."
+                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-400 focus:bg-white text-xs transition-colors"
+                />
+              </div>
+
+              {/* Upload Progress Indicator */}
+              {isBulkUploading && bulkProgress && (
+                <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 space-y-2">
+                  <div className="flex items-center justify-between text-xs text-emerald-900 font-semibold">
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin text-emerald-600" />
+                      <span>{bulkProgress.statusText}</span>
+                    </div>
+                    <span className="font-mono">
+                      {Math.round((bulkProgress.current / bulkProgress.total) * 100)}%
+                    </span>
+                  </div>
+                  <div className="w-full h-2 rounded-full bg-emerald-200 overflow-hidden">
+                    <div
+                      className="h-full bg-emerald-600 rounded-full transition-all duration-300"
+                      style={{
+                        width: `${Math.round((bulkProgress.current / bulkProgress.total) * 100)}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Actions Footer */}
+              <div className="flex items-center justify-between pt-3 border-t border-slate-100 shrink-0">
+                <span className="text-[11px] text-slate-500 font-medium">
+                  {bulkFiles.length > 0 ? `${bulkFiles.length} photo${bulkFiles.length > 1 ? "s" : ""} queued for ${bulkCategory}` : "No photos selected"}
+                </span>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    disabled={isBulkUploading}
+                    onClick={() => {
+                      setShowBulkModal(false);
+                      setBulkInlineNewEdition(false);
+                    }}
+                    className="px-3.5 py-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 font-medium cursor-pointer transition-colors disabled:opacity-40"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={bulkFiles.length === 0 || isBulkUploading}
+                    className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-200 disabled:text-slate-400 text-white font-semibold flex items-center gap-2 cursor-pointer shadow-xs transition-colors"
+                  >
+                    {isBulkUploading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Uploading Batch...</span>
+                      </>
+                    ) : (
+                      <>
+                        <UploadCloud className="w-4 h-4" />
+                        <span>Upload {bulkFiles.length > 0 ? `${bulkFiles.length} Photos` : "Photos"}</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Edit Photo Modal */}
       {editingItem && (
         <div className="fixed inset-0 z-50 bg-slate-950/40 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150 overflow-y-auto">
@@ -1048,13 +1653,13 @@ export default function AdminGalleryPage() {
             <form onSubmit={handleSaveEdit} className="space-y-4 text-xs">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  Photo Title *
+                  Photo Title <span className="font-normal text-slate-400">(Optional)</span>
                 </label>
                 <input
                   type="text"
-                  required
                   value={editingItem.title}
                   onChange={(e) => setEditingItem({ ...editingItem, title: e.target.value })}
+                  placeholder="e.g. Inauguration Ceremony (optional)"
                   className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-slate-400 focus:bg-white text-xs transition-colors"
                 />
               </div>
@@ -1134,12 +1739,13 @@ export default function AdminGalleryPage() {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  Caption / Description
+                  Caption / Description <span className="font-normal text-slate-400">(Optional)</span>
                 </label>
                 <textarea
                   rows={3}
                   value={editingItem.caption}
                   onChange={(e) => setEditingItem({ ...editingItem, caption: e.target.value })}
+                  placeholder="Caption or description (optional)..."
                   className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-slate-400 focus:bg-white text-xs transition-colors"
                 />
               </div>
