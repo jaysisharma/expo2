@@ -283,6 +283,34 @@ export function Navbar() {
       className="sticky top-0 z-50 w-full bg-white border-b border-slate-200/90 shadow-xs"
       onMouseLeave={handleMouseLeave}
     >
+      {/* ── Top Announcement Strip: Clean Energy EV Rally 2027 ── */}
+      <div className="w-full bg-gradient-to-r from-[#032018] via-[#004D38] to-[#032018] text-white border-b border-emerald-500/25 py-2 px-3 sm:px-6 relative z-10">
+        <div className="max-w-[1440px] mx-auto flex items-center justify-between text-xs gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#10B981] text-[#032018] font-black text-[10px] tracking-wider uppercase shrink-0 shadow-xs">
+              <Zap className="w-2.5 h-2.5 fill-current animate-pulse" />
+              <span>EV RALLY</span>
+            </span>
+            <div className="flex items-center gap-2 truncate text-[11px] sm:text-xs">
+              <span className="font-semibold text-emerald-100 truncate">
+                Kathmandu Valley Clean Energy EV Rally
+              </span>
+              <span className="hidden sm:inline-block text-emerald-400 font-mono text-[11px]">
+                · Flag-Off: Friday, 9th Jan 2027 · Bhrikutimandap
+              </span>
+            </div>
+          </div>
+
+          <Link
+            href="/ev-rally"
+            className="group/rally shrink-0 inline-flex items-center gap-1 sm:gap-1.5 px-3 py-1 rounded-full bg-white/10 hover:bg-[#10B981] text-emerald-200 hover:text-[#032018] text-[11px] font-bold tracking-tight border border-emerald-400/30 hover:border-[#10B981] transition-all duration-200 active:scale-95"
+          >
+            <span>Register Vehicle</span>
+            <ArrowRight className="w-3 h-3 transition-transform duration-200 group-hover/rally:translate-x-0.5" />
+          </Link>
+        </div>
+      </div>
+
       <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 h-20 sm:h-[88px] lg:h-[96px] flex items-center justify-between gap-4">
         {/* ── Left: Official Expo Logo ───────────────────────────────── */}
         <Link

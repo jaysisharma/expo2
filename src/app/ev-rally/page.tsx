@@ -123,7 +123,7 @@ export default function EVRallyPage() {
           <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 pt-2 text-xs font-mono text-emerald-100/80">
             <div className="flex items-center gap-1.5 bg-black/30 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10">
               <Calendar className="w-4 h-4 text-[#34D399]" />
-              <span>17–19 January 2027</span>
+              <span>Friday, 9th January 2027</span>
             </div>
             <div className="flex items-center gap-1.5 bg-black/30 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10">
               <Clock className="w-4 h-4 text-[#34D399]" />
@@ -183,7 +183,7 @@ export default function EVRallyPage() {
                 </div>
                 <div className="flex justify-between py-1">
                   <span className="text-slate-500">Assembly Time</span>
-                  <span className="font-semibold text-emerald-700">7:30 AM (Magh 3, 2083)</span>
+                  <span className="font-semibold text-emerald-700">7:30 AM · Friday, 9th Jan 2027</span>
                 </div>
               </div>
 

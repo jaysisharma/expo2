@@ -138,7 +138,7 @@ export async function POST(req: NextRequest) {
                   ${vehicleMakeModel ? `<tr><td style="padding: 4px 0; color: #64748b;">Make & Model:</td><td style="font-weight: 600; color: #0f172a;">${vehicleMakeModel}</td></tr>` : ''}
                   ${registrationNumber ? `<tr><td style="padding: 4px 0; color: #64748b;">Vehicle Plate:</td><td style="font-weight: 600; color: #0f172a;">${registrationNumber}</td></tr>` : ''}
                   <tr><td style="padding: 4px 0; color: #64748b;">Reporting Location:</td><td style="font-weight: 600; color: #0f172a;">Bhrikutimandap Exhibition Grounds, Kathmandu</td></tr>
-                  <tr><td style="padding: 4px 0; color: #64748b;">Dates:</td><td style="font-weight: 600; color: #0f172a;">17–19 January 2027 (Magh 3–5, 2083)</td></tr>
+                  <tr><td style="padding: 4px 0; color: #64748b;">Rally Date:</td><td style="font-weight: 600; color: #0f172a;">Friday, 9th January 2027 (Assembly 7:30 AM · Flag-Off 8:30 AM)</td></tr>
                 </table>
               </div>
 
