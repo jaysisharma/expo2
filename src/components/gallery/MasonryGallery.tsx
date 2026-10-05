@@ -8,10 +8,10 @@ import { videosData } from "@/data/videos";
 import { GalleryItem, VideoItem } from "@/lib/types";
 import ImageLightbox from "./ImageLightbox";
 import VideoModal from "./VideoModal";
-import { Play, Maximize2, Columns, LayoutGrid, Grid3X3, ArrowUpRight, Sparkles } from "lucide-react";
+import { Play, Maximize2, LayoutGrid, Grid3X3, ArrowUpRight, Sparkles } from "lucide-react";
 
 type GalleryTab = "ALL" | "2024" | "2022" | "2019" | "2018" | "2027" | "VIDEOS";
-type LayoutMode = "masonry" | "bento" | "grid";
+type LayoutMode = "bento" | "grid";
 
 const REMOVED_VIDEO_IDS = new Set([
   "v-biz-online-inauguration-2024",
@@ -22,7 +22,7 @@ const REMOVED_VIDEO_IDS = new Set([
 
 export default function MasonryGallery({ limit }: { limit?: number }) {
   const [activeTab, setActiveTab] = useState<GalleryTab>("ALL");
-  const [layoutMode, setLayoutMode] = useState<LayoutMode>("masonry");
+  const [layoutMode, setLayoutMode] = useState<LayoutMode>("bento");
   const [activePhoto, setActivePhoto] = useState<GalleryItem | null>(null);
   const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);
   const [visibleCount, setVisibleCount] = useState<number>(limit || 36);
@@ -171,20 +171,9 @@ export default function MasonryGallery({ limit }: { limit?: number }) {
           })}
         </div>
 
-        {/* Layout Switcher (Masonry vs Bento vs Grid) */}
+        {/* Layout Switcher (Bento vs Grid) */}
         {activeTab !== "VIDEOS" && (
           <div className="flex items-center gap-1 p-1 rounded-2xl bg-neutral-100/80 border border-neutral-200/60 self-start sm:self-auto shrink-0">
-            <button
-              onClick={() => setLayoutMode("masonry")}
-              className={`p-2 rounded-xl transition-all cursor-pointer ${
-                layoutMode === "masonry"
-                  ? "bg-white text-neutral-950 shadow-xs"
-                  : "text-neutral-500 hover:text-neutral-900"
-              }`}
-              title="Masonry Organic Flow"
-            >
-              <Columns className="w-4 h-4" />
-            </button>
             <button
               onClick={() => setLayoutMode("bento")}
               className={`p-2 rounded-xl transition-all cursor-pointer ${
@@ -224,65 +213,6 @@ export default function MasonryGallery({ limit }: { limit?: number }) {
             exit={{ opacity: 0, transition: { duration: 0.2 } }}
             className="space-y-10"
           >
-            {/* LAYOUT 1: AWWWARDS MASONRY (Pinterest / Unsplash natural proportions) */}
-            {layoutMode === "masonry" && (
-              <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-5 space-y-5">
-                {displayedPhotos.map((item, idx) => {
-                  const aspectClass =
-                    idx % 5 === 0
-                      ? "aspect-[3/4]"
-                      : idx % 3 === 0
-                      ? "aspect-[4/5]"
-                      : idx % 2 === 0
-                      ? "aspect-[16/10]"
-                      : "aspect-[4/3]";
-
-                  return (
-                    <motion.div
-                      key={item.id}
-                      variants={itemVariants}
-                      onClick={() => setActivePhoto(item)}
-                      className="group relative cursor-pointer rounded-3xl overflow-hidden bg-neutral-900 border border-neutral-200/80 hover:border-[#10B981] hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.15)] transition-all duration-500 break-inside-avoid mb-5 block"
-                    >
-                      <div className={`relative w-full ${aspectClass} overflow-hidden`}>
-                        <Image
-                          src={item.image}
-                          alt={item.title || item.category || "Expo Photo"}
-                          fill
-                          loading="lazy"
-                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                          className="object-cover object-center group-hover:scale-106 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
-                        />
-                      </div>
-
-                      {/* AWWWARDS HOVER OVERLAY: Ultra-smooth Frosted Glass Reveal */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-4 pointer-events-none">
-                        {/* Top Badge Tag */}
-                        <div className="flex items-center justify-between translate-y-[-6px] group-hover:translate-y-0 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]">
-                          <span className="text-[10px] font-mono font-bold text-neutral-300 bg-white/15 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/20">
-                            #{String(idx + 1).padStart(2, "0")}
-                          </span>
-                          <span className="p-2 rounded-full bg-white/20 backdrop-blur-md text-white border border-white/20">
-                            <Maximize2 className="w-3.5 h-3.5" />
-                          </span>
-                        </div>
-
-                        {/* Bottom Metadata Reveal */}
-                        <div className="space-y-1 translate-y-3 group-hover:translate-y-0 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]">
-                          <div className="text-[10px] font-mono font-bold text-[#34D399] uppercase tracking-wider">
-                            {item.year} · EXHIBITION ARCHIVE
-                          </div>
-                          <h4 className="font-sans font-bold text-xs sm:text-sm text-white line-clamp-2 leading-snug">
-                            {item.title || item.category || "Expo Archive"}
-                          </h4>
-                        </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            )}
-
             {/* LAYOUT 2: AWWWARDS EDITORIAL BENTO MOSAIC */}
             {layoutMode === "bento" && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">

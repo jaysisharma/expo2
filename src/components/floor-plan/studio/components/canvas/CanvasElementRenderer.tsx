@@ -141,8 +141,8 @@ export function CanvasElementRenderer({
                     ? 0.95
                     : 0.85
                 }
-                stroke={isSelected ? "#38BDF8" : el.borderColor}
-                strokeWidth={isSelected ? Math.max(3, el.strokeWidth + 1.5) : el.strokeWidth || 2}
+                stroke={isSelected ? "#38BDF8" : el.isPrime ? "#F59E0B" : el.borderColor}
+                strokeWidth={isSelected ? Math.max(3, el.strokeWidth + 1.5) : el.isPrime ? Math.max(2.5, (el.strokeWidth || 2) + 0.5) : el.strokeWidth || 2}
                 pointerEvents={isOutline ? "stroke" : undefined}
               />
 
@@ -163,7 +163,7 @@ export function CanvasElementRenderer({
                 fontFamily="sans-serif"
                 pointerEvents="none"
               >
-                {el.number}
+                {el.isPrime ? `★ ${el.number}` : el.number}
               </text>
 
               {/* Interactive Resize & Rotation Handles */}

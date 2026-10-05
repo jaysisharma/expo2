@@ -39,6 +39,15 @@ import {
   ChevronRight,
   Trash2,
   Info,
+  Crown,
+  Flame,
+  Star,
+  Handshake,
+  Users2,
+  Megaphone,
+  Heart,
+  Box,
+  LayoutGrid,
 } from "lucide-react";
 
 export interface StallPackage {
@@ -262,6 +271,7 @@ export default function StallBookingWizard() {
     (savedFloorPlanFallback as any).elements || []
   );
   const [boothOverrides, setBoothOverrides] = useState<Record<string, any>>({});
+  const [primeSurchargePercent, setPrimeSurchargePercent] = useState<number>(25);
 
   useEffect(() => {
     async function loadAdminFloorPlan() {
@@ -278,6 +288,9 @@ export default function StallBookingWizard() {
           const adminJson = await adminRes.json();
           if (adminJson?.data?.boothOverrides) {
             setBoothOverrides(adminJson.data.boothOverrides);
+          }
+          if (adminJson?.data?.settings?.primeStallSurchargePercent !== undefined) {
+            setPrimeSurchargePercent(Number(adminJson.data.settings.primeStallSurchargePercent) || 25);
           }
         }
       } catch (err) {
@@ -325,27 +338,40 @@ export default function StallBookingWizard() {
       boothOverrides[number?.toLowerCase()] ||
       (custom?.id && boothOverrides[custom.id]);
 
-    let priceNPR = 180000;
+    const isPrime =
+      override?.isPrime !== undefined
+        ? Boolean(override.isPrime)
+        : custom?.isPrime !== undefined
+          ? Boolean(custom.isPrime)
+          : Boolean(fallback?.isPrime);
+
+    let basePriceNPR = 180000;
     if (override?.priceNPR !== undefined && override?.priceNPR !== null && !isNaN(Number(override.priceNPR))) {
-      priceNPR = Number(override.priceNPR);
+      basePriceNPR = Number(override.priceNPR);
     } else if (custom?.priceNPR !== undefined && custom?.priceNPR !== null && !isNaN(Number(custom.priceNPR))) {
-      priceNPR = Number(custom.priceNPR);
+      basePriceNPR = Number(custom.priceNPR);
     } else if (official?.priceNPR !== undefined && !isNaN(Number(official.priceNPR))) {
-      priceNPR = Number(official.priceNPR);
+      basePriceNPR = Number(official.priceNPR);
     } else if (fallback?.priceNPR !== undefined && !isNaN(Number(fallback.priceNPR))) {
-      priceNPR = Number(fallback.priceNPR);
+      basePriceNPR = Number(fallback.priceNPR);
     }
 
-    let priceUSD = 1350;
+    let basePriceUSD = 1350;
     if (override?.priceUSD !== undefined && override?.priceUSD !== null && !isNaN(Number(override.priceUSD))) {
-      priceUSD = Number(override.priceUSD);
+      basePriceUSD = Number(override.priceUSD);
     } else if (custom?.priceUSD !== undefined && custom?.priceUSD !== null && !isNaN(Number(custom.priceUSD))) {
-      priceUSD = Number(custom.priceUSD);
+      basePriceUSD = Number(custom.priceUSD);
     } else if (official?.priceUSD !== undefined && !isNaN(Number(official.priceUSD))) {
-      priceUSD = Number(official.priceUSD);
+      basePriceUSD = Number(official.priceUSD);
     } else if (fallback?.priceUSD !== undefined && !isNaN(Number(fallback.priceUSD))) {
-      priceUSD = Number(fallback.priceUSD);
+      basePriceUSD = Number(fallback.priceUSD);
     }
+
+    const primeSurchargeRate = (primeSurchargePercent || 25) / 100;
+    const primeSurchargeNPR = isPrime ? Math.round(basePriceNPR * primeSurchargeRate) : 0;
+    const primeSurchargeUSD = isPrime ? Math.round(basePriceUSD * primeSurchargeRate) : 0;
+    const priceNPR = basePriceNPR + primeSurchargeNPR;
+    const priceUSD = basePriceUSD + primeSurchargeUSD;
 
     const block = custom?.block || official?.block || fallback?.hall || (number ? `Block ${number.charAt(0).toUpperCase()}` : "Main Pavilion");
     const status = custom?.status || official?.status || fallback?.status || "Available";
@@ -364,10 +390,15 @@ export default function StallBookingWizard() {
       displayName,
       spaceType: isBareSpace ? "Bare Space" : "",
       isBareSpace,
+      isPrime,
       block,
       dimensions,
       sizeSqM,
       sizeSqFt,
+      basePriceNPR,
+      basePriceUSD,
+      primeSurchargeNPR,
+      primeSurchargeUSD,
       priceNPR,
       priceUSD,
       category: isBareSpace ? `${dimensions} Bare Space` : category,
@@ -393,8 +424,13 @@ export default function StallBookingWizard() {
   const isSponsorPackage = Boolean(selectedPackage && selectedPackage.type === "sponsor");
 
   const totalAreaSqM = selectedStallObjects.reduce((acc, curr) => acc + (curr.sizeSqM || 0), 0);
+  const rawBasePriceNPR = selectedStallObjects.reduce((acc, curr) => acc + (curr.basePriceNPR || 0), 0);
+  const rawBasePriceUSD = selectedStallObjects.reduce((acc, curr) => acc + (curr.basePriceUSD || 0), 0);
+  const totalPrimeSurchargeNPR = selectedStallObjects.reduce((acc, curr) => acc + (curr.primeSurchargeNPR || 0), 0);
+  const totalPrimeSurchargeUSD = selectedStallObjects.reduce((acc, curr) => acc + (curr.primeSurchargeUSD || 0), 0);
   const rawTotalPriceNPR = selectedStallObjects.reduce((acc, curr) => acc + (curr.priceNPR || 0), 0);
   const rawTotalPriceUSD = selectedStallObjects.reduce((acc, curr) => acc + (curr.priceUSD || 0), 0);
+  const hasPrimeStalls = selectedStallObjects.some((s) => s.isPrime);
 
   const finalPriceNPR = isSponsorPackage && selectedPackage
     ? selectedPackage.priceNPR
@@ -403,6 +439,14 @@ export default function StallBookingWizard() {
   const finalPriceUSD = isSponsorPackage && selectedPackage
     ? selectedPackage.priceUSD
     : rawTotalPriceUSD;
+
+  const finalBasePriceNPR = isSponsorPackage && selectedPackage
+    ? selectedPackage.priceNPR
+    : rawBasePriceNPR;
+
+  const finalBasePriceUSD = isSponsorPackage && selectedPackage
+    ? selectedPackage.priceUSD
+    : rawBasePriceUSD;
 
   // 13% Government VAT
   const vatRate = 0.13;
@@ -512,7 +556,7 @@ export default function StallBookingWizard() {
     return officialStalls
       .filter((s) => s.status !== "Booked")
       .map((s) => findStall(s.number || s.id));
-  }, [elements]);
+  }, [elements, boothOverrides, primeSurchargePercent]);
 
   const toggleStallSelection = (stallNum: string) => {
     setIsCustomizedOnMap(true);
@@ -700,42 +744,51 @@ export default function StallBookingWizard() {
       {step === 1 && (
         <div className="space-y-6">
           {/* =========================================================================
-              PARTICIPATION PACKAGE & STALL SELECTOR (COLOR ACCENTED DESIGN)
+              PARTICIPATION PACKAGE & STALL SELECTOR (PIXEL-PERFECT FROM REFERENCE)
              ========================================================================= */}
-          <div className="p-4 sm:p-6 rounded-2xl bg-gradient-to-b from-slate-50 via-emerald-50/20 to-slate-50/80 border border-emerald-100 shadow-xs space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="space-y-6">
+            {/* Header with Title and Mode Toggles */}
+            <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
               <div>
-                <span className="text-[11px] font-mono font-bold text-emerald-800 uppercase tracking-wider block mb-0.5">
-                  Step 1 · Stall Allocation & Sponsorship Tier
-                </span>
-                <h3 className="font-sans font-bold text-lg sm:text-xl text-slate-900 tracking-tight">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="text-[11px] font-mono font-bold text-emerald-800 uppercase tracking-widest">
+                    STEP 1
+                  </span>
+                  <span className="w-5 h-px bg-slate-300" />
+                  <span className="text-[11px] font-mono font-bold text-emerald-800 uppercase tracking-widest">
+                    STALL ALLOCATION &amp; SPONSORSHIP TIER
+                  </span>
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
                   Choose a Package or Stall Type
-                </h3>
-                <p className="text-xs text-slate-600 mt-0.5 max-w-xl leading-relaxed">
-                  Select an option below to assign your space automatically. Stalls can be reviewed or changed directly on the interactive floor plan anytime.
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-2xl leading-relaxed">
+                  Select a sponsorship or exhibition option to secure your space. You can review details and make changes anytime.
                 </p>
               </div>
 
-              {/* View Mode Toggle */}
-              <div className="flex items-center gap-1 p-1 rounded-xl bg-white border border-slate-200 shadow-2xs text-xs shrink-0 self-start sm:self-auto">
+              {/* View Mode Toggle Pill (Black Floor Plan & White List View) */}
+              <div className="flex items-center p-1 rounded-xl bg-slate-100 border border-slate-200/80 shrink-0 self-start">
                 <button
                   type="button"
                   onClick={() => setViewMode("map")}
-                  className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-medium transition-colors cursor-pointer ${viewMode === "map"
-                    ? "bg-slate-900 text-white shadow-xs"
-                    : "text-slate-600 hover:text-slate-900"
-                    }`}
+                  className={`px-3.5 py-1.5 rounded-lg flex items-center gap-2 text-xs font-semibold transition-all cursor-pointer ${
+                    viewMode === "map"
+                      ? "bg-[#0b2b24] text-white shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
                 >
-                  <Map className="w-3.5 h-3.5" />
+                  <LayoutGrid className="w-3.5 h-3.5" />
                   <span>Floor Plan</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setViewMode("list")}
-                  className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-medium transition-colors cursor-pointer ${viewMode === "list"
-                    ? "bg-slate-900 text-white shadow-xs"
-                    : "text-slate-600 hover:text-slate-900"
-                    }`}
+                  className={`px-3.5 py-1.5 rounded-lg flex items-center gap-2 text-xs font-semibold transition-all cursor-pointer ${
+                    viewMode === "list"
+                      ? "bg-[#0b2b24] text-white shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
                 >
                   <ListFilter className="w-3.5 h-3.5" />
                   <span>List View</span>
@@ -743,11 +796,11 @@ export default function StallBookingWizard() {
               </div>
             </div>
 
-            {/* Category Segmented Tabs */}
-            <div className="flex items-center gap-1.5 border-b border-slate-200/80 pb-2.5 overflow-x-auto scrollbar-none">
+            {/* Category Filter Pills */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
               {[
                 { key: "all", label: "All Packages", count: 10 },
-                { key: "sponsor", label: "Sponsorship Tiers", count: 7 },
+                { key: "sponsor", label: "Sponsorship Tiers", count: 6 },
                 { key: "stall", label: "Exhibition Stalls", count: 2 },
                 { key: "custom", label: "Custom Selection", count: 1 },
               ].map((tab) => {
@@ -757,17 +810,19 @@ export default function StallBookingWizard() {
                     key={tab.key}
                     type="button"
                     onClick={() => setPackageFilter(tab.key as any)}
-                    className={`px-3 py-1.5 rounded-lg text-xs transition-colors shrink-0 cursor-pointer flex items-center gap-1.5 ${isActive
-                      ? "bg-white text-slate-900 border border-emerald-300 shadow-2xs font-semibold"
-                      : "text-slate-500 hover:text-slate-800 hover:bg-slate-100/70 font-medium"
-                      }`}
+                    className={`px-4 py-2 rounded-xl text-xs transition-all shrink-0 cursor-pointer flex items-center gap-2 font-medium ${
+                      isActive
+                        ? "bg-[#007A5E] text-white shadow-xs"
+                        : "bg-white text-slate-600 border border-slate-200/90 hover:border-slate-300 hover:text-slate-900"
+                    }`}
                   >
                     <span>{tab.label}</span>
                     <span
-                      className={`text-[10px] px-1.5 py-0.5 rounded-full ${isActive
-                        ? "bg-emerald-100 text-emerald-800 font-mono font-bold"
-                        : "bg-slate-200/60 text-slate-500"
-                        }`}
+                      className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold ${
+                        isActive
+                          ? "bg-white/20 text-white"
+                          : "bg-slate-100 text-slate-600"
+                      }`}
                     >
                       {tab.count}
                     </span>
@@ -776,288 +831,255 @@ export default function StallBookingWizard() {
               })}
             </div>
 
-            {/* ─── 1. PRIME FLAGSHIP: TITLE SPONSOR (Amber/Gold Rich BG) ─── */}
+            {/* ─── TITLE SPONSOR HERO CARD (Yellow-border hero container) ─── */}
             {(packageFilter === "all" || packageFilter === "sponsor") && (() => {
               const pkg = PARTICIPATION_PACKAGES.find((p) => p.id === "title-sponsor")!;
               const isSelected = selectedPackageId === pkg.id;
               return (
                 <div
                   onClick={() => selectPackage(pkg.id)}
-                  className={`p-4 sm:p-5 rounded-2xl border-2 transition-all cursor-pointer relative overflow-hidden ${isSelected
-                    ? "bg-gradient-to-r from-amber-100 via-amber-50 to-amber-100/70 border-amber-500 ring-2 ring-amber-400/40 shadow-md"
-                    : "bg-gradient-to-r from-amber-50 via-amber-50/50 to-yellow-50/40 border-amber-300 hover:border-amber-400 hover:shadow-xs"
-                    }`}
+                  className={`p-5 sm:p-6 rounded-2xl border-2 transition-all cursor-pointer relative bg-gradient-to-r from-amber-50/50 via-white to-amber-50/30 ${
+                    isSelected
+                      ? "border-amber-400 ring-2 ring-amber-300/40 shadow-md"
+                      : "border-amber-400/90 hover:border-amber-500 hover:shadow-xs"
+                  }`}
                 >
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-3.5">
-                    <div className="flex items-start gap-3">
-                      <div
-                        className={`w-4 h-4 mt-0.5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${isSelected ? "border-amber-700 bg-amber-500" : "border-amber-400 bg-white"
+                  {/* Top-Right "Most Popular" Pill */}
+                  <div className="absolute top-4 right-5 sm:right-6">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-900 font-bold text-[11px] border border-amber-200/80">
+                      <Flame className="w-3.5 h-3.5 text-amber-600 fill-amber-500" />
+                      <span>Most Popular</span>
+                    </span>
+                  </div>
+
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pr-0 lg:pr-36">
+                    {/* Left: Radio Circle + Crown Icon + Title + Specs + Inclusions */}
+                    <div className="space-y-2.5">
+                      <div className="flex items-center gap-3">
+                        {/* Radio Selector Circle */}
+                        <div
+                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors shrink-0 ${
+                            isSelected
+                              ? "border-amber-600 bg-amber-500"
+                              : "border-slate-300 bg-white"
                           }`}
-                      >
-                        {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                        >
+                          {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                        </div>
+
+                        <div className="w-10 h-10 rounded-2xl bg-amber-100/90 border border-amber-200 flex items-center justify-center shrink-0 text-amber-700">
+                          <Crown className="w-5 h-5 fill-amber-500 text-amber-600" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className="font-extrabold text-xl sm:text-2xl text-slate-900 tracking-tight">
+                              Title Sponsor
+                            </h3>
+                            <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 uppercase tracking-wider">
+                              <Sparkles className="w-2.5 h-2.5" />
+                              <span>PRIME FLAGSHIP</span>
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-xs text-slate-600 font-medium mt-0.5">
+                            <Box className="w-3.5 h-3.5 text-slate-400" />
+                            <span>6M × 6M × 2 (2 Bare Space Stalls · 72m²)</span>
+                          </div>
+                        </div>
                       </div>
 
-                      <div className="space-y-1.5">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h4 className="font-sans font-bold text-base text-slate-900">
-                            {pkg.name}
-                          </h4>
-                          <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 shadow-2xs">
-                            <Sparkles className="w-2.5 h-2.5" />
-                            <span>PRIME FLAGSHIP</span>
+                      {/* Inclusion check pills */}
+                      <div className="flex flex-wrap items-center gap-2 pt-1 pl-0 sm:pl-13">
+                        {pkg.perks.map((perk, idx) => (
+                          <span
+                            key={idx}
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/90 text-slate-800 border border-slate-200/90 text-xs font-medium shadow-2xs"
+                          >
+                            <Check className="w-3 h-3 text-emerald-600 stroke-[2.5]" />
+                            <span>{perk}</span>
                           </span>
-                        </div>
-
-                        <p className="text-xs text-amber-950/80 font-medium">
-                          {pkg.spaceDescription}
-                        </p>
-
-                        {/* Perks Inclusions */}
-                        <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                          {pkg.perks.slice(0, 3).map((perk, i) => (
-                            <span
-                              key={i}
-                              className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-md bg-white/80 text-amber-950 border border-amber-200/90 font-medium"
-                            >
-                              <Check className="w-2.5 h-2.5 text-amber-700 shrink-0" />
-                              <span>{perk}</span>
-                            </span>
-                          ))}
-                          {pkg.perks.length > 3 && (
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setPerksModalPackageId(pkg.id);
-                              }}
-                              className="text-[10px] font-mono font-bold text-amber-900 hover:underline cursor-pointer ml-1"
-                            >
-                              +{pkg.perks.length - 3} more perks &rarr;
-                            </button>
-                          )}
-                        </div>
+                        ))}
                       </div>
                     </div>
 
-                    <div className="text-left md:text-right shrink-0 pl-7 md:pl-0 pt-2 md:pt-0 border-t md:border-t-0 border-amber-200/60">
-                      <div className="text-[10px] font-mono uppercase tracking-wider text-amber-800 font-bold mb-0.5">
-                        Flagship Investment
+                    {/* Right: Investment & Pricing + Select Button */}
+                    <div className="flex flex-col items-start lg:items-end justify-between gap-3 shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-amber-200/60 pl-0 sm:pl-13 lg:pl-0">
+                      <div>
+                        <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400">
+                          INVESTMENT
+                        </div>
+                        <div className="font-mono font-extrabold text-2xl text-slate-900 tracking-tight">
+                          {pkg.priceDisplayNPR}
+                        </div>
+                        <div className="font-mono text-xs text-slate-500 mt-0.5">
+                          {pkg.priceDisplayUSD}
+                        </div>
                       </div>
-                      <div className="font-mono font-bold text-lg text-amber-950">
-                        {pkg.priceDisplayNPR}
-                      </div>
-                      <div className="font-mono text-xs text-amber-800/80">
-                        {pkg.priceDisplayUSD}
-                      </div>
+
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          selectPackage(pkg.id);
+                        }}
+                        className={`py-2 px-5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs ${
+                          isSelected
+                            ? "bg-[#007A5E] text-white hover:bg-[#00664e] shadow-xs ring-2 ring-emerald-500/20"
+                            : "bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold"
+                        }`}
+                      >
+                        {isSelected ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                            <span>Selected</span>
+                          </>
+                        ) : (
+                          <span>Select Title Sponsor</span>
+                        )}
+                      </button>
                     </div>
                   </div>
                 </div>
               );
             })()}
 
-            {/* ─── 2. SPONSORSHIP TIERS TABLE (With Distinct Colorful Row Backgrounds) ─── */}
+            {/* ─── SPONSORSHIP PARTNERSHIPS SECTION (6 Columns Grid) ─── */}
             {(packageFilter === "all" || packageFilter === "sponsor") && (
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between px-1">
-                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500">
-                    Sponsorship Partnerships
-                  </span>
-                  <span className="text-[10px] font-mono text-slate-400">
-                    6 Available Tiers
-                  </span>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-700">
+                    SPONSORSHIP PARTNERSHIPS
+                  </h4>
+                  <div className="flex items-center gap-1 text-xs text-slate-500 font-medium">
+                    <Users2 className="w-3.5 h-3.5 text-slate-400" />
+                    <span>6 sponsorship tiers available</span>
+                  </div>
                 </div>
 
-                <div className="rounded-xl border border-slate-200/90 overflow-hidden divide-y divide-slate-100 bg-white shadow-2xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3.5 items-stretch">
                   {PARTICIPATION_PACKAGES.filter(
                     (p) => p.type === "sponsor" && p.id !== "title-sponsor"
                   ).map((pkg) => {
                     const isSelected = selectedPackageId === pkg.id;
 
-                    // Distinct theme color per sponsorship tier
-                    const tierStyles: Record<string, { bg: string; selectedBg: string; border: string; badge: string; text: string }> = {
+                    // Tier-specific icons & colors from the image
+                    const tierMeta: Record<string, { icon: React.ReactNode; badgeClass?: string }> = {
                       "in-association-with": {
-                        bg: "bg-emerald-50/40 hover:bg-emerald-50/70",
-                        selectedBg: "bg-emerald-100/70",
-                        border: "border-emerald-300",
-                        badge: "bg-emerald-100 text-emerald-900 border-emerald-300",
-                        text: "text-emerald-900",
+                        icon: <Star className="w-4 h-4 fill-emerald-600 text-emerald-600" />,
+                        badgeClass: "bg-emerald-100 text-emerald-800",
                       },
                       "powered-by": {
-                        bg: "bg-teal-50/40 hover:bg-teal-50/70",
-                        selectedBg: "bg-teal-100/70",
-                        border: "border-teal-300",
-                        badge: "bg-teal-100 text-teal-900 border-teal-300",
-                        text: "text-teal-900",
+                        icon: <Award className="w-4 h-4 text-blue-600" />,
+                        badgeClass: "bg-blue-100 text-blue-800",
                       },
                       "sponsor": {
-                        bg: "bg-sky-50/40 hover:bg-sky-50/70",
-                        selectedBg: "bg-sky-100/70",
-                        border: "border-sky-300",
-                        badge: "bg-sky-100 text-sky-900 border-sky-300",
-                        text: "text-sky-900",
+                        icon: <Handshake className="w-4 h-4 text-blue-600" />,
                       },
                       "official-partner": {
-                        bg: "bg-blue-50/40 hover:bg-blue-50/70",
-                        selectedBg: "bg-blue-100/70",
-                        border: "border-blue-300",
-                        badge: "bg-blue-100 text-blue-900 border-blue-300",
-                        text: "text-blue-900",
+                        icon: <Users2 className="w-4 h-4 text-indigo-600" />,
                       },
                       "co-sponsor": {
-                        bg: "bg-indigo-50/40 hover:bg-indigo-50/70",
-                        selectedBg: "bg-indigo-100/70",
-                        border: "border-indigo-300",
-                        badge: "bg-indigo-100 text-indigo-900 border-indigo-300",
-                        text: "text-indigo-900",
+                        icon: <Megaphone className="w-4 h-4 text-blue-500" />,
                       },
                       "supporter": {
-                        bg: "bg-purple-50/40 hover:bg-purple-50/70",
-                        selectedBg: "bg-purple-100/70",
-                        border: "border-purple-300",
-                        badge: "bg-purple-100 text-purple-900 border-purple-300",
-                        text: "text-purple-900",
+                        icon: <Heart className="w-4 h-4 text-rose-500" />,
                       },
                     };
 
-                    const style = tierStyles[pkg.id] || {
-                      bg: "hover:bg-slate-50/80",
-                      selectedBg: "bg-emerald-50/70",
-                      border: "border-slate-200",
-                      badge: "bg-slate-100 text-slate-700 border-slate-200",
-                      text: "text-slate-900",
+                    const meta = tierMeta[pkg.id] || {
+                      icon: <Award className="w-4 h-4 text-slate-600" />,
                     };
 
                     return (
                       <div
                         key={pkg.id}
                         onClick={() => selectPackage(pkg.id)}
-                        className={`px-4 py-3 flex items-center justify-between gap-3 cursor-pointer transition-colors ${isSelected ? style.selectedBg : style.bg
-                          }`}
+                        className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between relative bg-white ${
+                          isSelected
+                            ? "border-[#007A5E] ring-1.5 ring-[#007A5E] shadow-sm"
+                            : "border-slate-200 hover:border-slate-300 hover:shadow-2xs"
+                        }`}
                       >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div
-                            className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-colors ${isSelected
-                              ? "border-[#218A59] bg-[#218A59]"
-                              : "border-slate-300 bg-white"
-                              }`}
-                          >
-                            {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                          </div>
-
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              <span className="font-bold text-slate-900 text-xs sm:text-sm">
-                                {pkg.name}
-                              </span>
-                              {pkg.badge && (
-                                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border hidden sm:inline ${style.badge}`}>
-                                  {pkg.badge}
-                                </span>
-                              )}
-                            </div>
-                            <p className="text-[11px] text-slate-600 truncate">
-                              {pkg.spaceDescription}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-4 shrink-0">
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setPerksModalPackageId(pkg.id);
-                            }}
-                            className="text-[11px] font-semibold text-emerald-800 hover:text-emerald-950 hover:underline cursor-pointer hidden md:flex items-center gap-1"
-                          >
-                            <span>{pkg.perks.length} Perks</span>
-                            <ChevronRight className="w-3 h-3" />
-                          </button>
-
-                          <div className="text-right">
-                            <div className="font-mono font-bold text-xs sm:text-sm text-slate-900">
-                              {pkg.priceDisplayNPR}
-                            </div>
-                            <div className="font-mono text-[10px] text-slate-500">
-                              {pkg.priceDisplayUSD}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* ─── 3. EXHIBITION STALL PACKAGES (Side by Side) ─── */}
-            {(packageFilter === "all" || packageFilter === "stall") && (
-              <div className="space-y-1.5">
-                <div className="px-1">
-                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500">
-                    Standard Exhibition Stalls
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {PARTICIPATION_PACKAGES.filter((p) => p.type === "stall").map((pkg) => {
-                    const isSelected = selectedPackageId === pkg.id;
-                    return (
-                      <div
-                        key={pkg.id}
-                        onClick={() => selectPackage(pkg.id)}
-                        className={`p-4 rounded-xl border cursor-pointer transition-all flex flex-col justify-between gap-3 ${isSelected
-                          ? "bg-white border-[#218A59] ring-2 ring-[#218A59]/20 shadow-xs"
-                          : "bg-white border-slate-200/90 hover:border-slate-300"
-                          }`}
-                      >
-                        <div>
-                          <div className="flex items-center justify-between gap-2 mb-1">
-                            <div className="flex items-center gap-2">
-                              <div
-                                className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${isSelected
-                                  ? "border-[#218A59] bg-[#218A59]"
+                        <div className="space-y-3">
+                          {/* Radio Selector + Icon */}
+                          <div className="flex items-center justify-between">
+                            <div
+                              className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${
+                                isSelected
+                                  ? "border-[#007A5E] bg-[#007A5E]"
                                   : "border-slate-300 bg-white"
-                                  }`}
-                              >
-                                {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                              </div>
-                              <span className="font-bold text-slate-900 text-sm">
-                                {pkg.name}
-                              </span>
+                              }`}
+                            >
+                              {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                             </div>
-                            {pkg.badge && (
-                              <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+
+                            <div className="w-7 h-7 rounded-full bg-slate-50 flex items-center justify-center">
+                              {meta.icon}
+                            </div>
+                          </div>
+
+                          {/* Title & Dimension */}
+                          <div>
+                            <h5 className="font-bold text-sm text-slate-900 leading-snug">
+                              {pkg.name}
+                            </h5>
+                            {pkg.badge && meta.badgeClass && (
+                              <span
+                                className={`inline-block mt-1 text-[10px] font-semibold px-2 py-0.5 rounded-full ${meta.badgeClass}`}
+                              >
                                 {pkg.badge}
                               </span>
                             )}
+                            <p className="text-[11px] text-slate-500 mt-1 font-mono">
+                              6M × 6M × 1 (36m²)
+                            </p>
                           </div>
 
-                          <p className="text-xs text-slate-500 pl-6 mb-2">
-                            {pkg.spaceDescription}
-                          </p>
-
-                          <div className="pl-6 flex flex-wrap gap-1">
-                            {pkg.perks.map((perk, i) => (
-                              <span
-                                key={i}
-                                className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-slate-50 text-slate-700 border border-slate-200/70 font-medium"
+                          {/* Bulleted Perk List with Green Checkmarks */}
+                          <div className="space-y-1.5 pt-1 border-t border-slate-100">
+                            {pkg.perks.map((perk, pIdx) => (
+                              <div
+                                key={pIdx}
+                                className="flex items-start gap-1.5 text-[11px] text-slate-600 leading-tight"
                               >
-                                <Check className="w-2.5 h-2.5 text-emerald-600 shrink-0" />
+                                <Check className="w-3 h-3 text-[#007A5E] shrink-0 mt-0.5 stroke-[2.5]" />
                                 <span>{perk}</span>
-                              </span>
+                              </div>
                             ))}
                           </div>
                         </div>
 
-                        <div className="pt-2 border-t border-slate-100 pl-6 flex items-baseline justify-between font-mono text-xs">
-                          <span className="text-[10px] text-slate-400 uppercase">Tariff Range</span>
-                          <div className="text-right">
-                            <span className="font-bold text-slate-900">{pkg.priceDisplayNPR}</span>
-                            {pkg.priceDisplayUSD && pkg.priceNPR > 0 && (
-                              <span className="text-slate-400 text-[10px] ml-1">· {pkg.priceDisplayUSD}</span>
-                            )}
+                        {/* Bottom Pricing & Action Button */}
+                        <div className="pt-3 border-t border-slate-100 mt-4 space-y-2.5">
+                          <div>
+                            <div className="font-mono font-bold text-xs sm:text-sm text-slate-900">
+                              {pkg.priceDisplayNPR}
+                            </div>
+                            <div className="font-mono text-[10px] text-slate-400">
+                              {pkg.priceDisplayUSD}
+                            </div>
                           </div>
+
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              selectPackage(pkg.id);
+                            }}
+                            className={`w-full py-1.5 px-2 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                              isSelected
+                                ? "bg-[#007A5E] text-white shadow-2xs"
+                                : "bg-white border border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50"
+                            }`}
+                          >
+                            {isSelected ? (
+                              <>
+                                <Check className="w-3.5 h-3.5" />
+                                <span>Selected</span>
+                              </>
+                            ) : (
+                              <span>Select Package</span>
+                            )}
+                          </button>
                         </div>
                       </div>
                     );
@@ -1066,29 +1088,231 @@ export default function StallBookingWizard() {
               </div>
             )}
 
-            {/* ─── 4. CUSTOM SELECTION ROW ─── */}
+            {/* ─── STANDARD EXHIBITION STALLS (2 Horizontal Cards Grid) ─── */}
+            {(packageFilter === "all" || packageFilter === "stall") && (
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-700">
+                    STANDARD EXHIBITION STALLS
+                  </h4>
+                  <div className="flex items-center gap-1 text-xs text-slate-500 font-medium">
+                    <Box className="w-3.5 h-3.5 text-slate-400" />
+                    <span>2 stall types available</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Stall 1: Standard Built Stall */}
+                  {(() => {
+                    const pkg = PARTICIPATION_PACKAGES.find((p) => p.id === "standard-stall")!;
+                    const isSelected = selectedPackageId === pkg.id;
+                    return (
+                      <div
+                        onClick={() => selectPackage(pkg.id)}
+                        className={`p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between bg-white relative ${
+                          isSelected
+                            ? "border-[#007A5E] ring-1.5 ring-[#007A5E] shadow-sm"
+                            : "border-slate-200 hover:border-slate-300"
+                        }`}
+                      >
+                        <div className="flex items-start gap-4">
+                          {/* Radio */}
+                          <div
+                            className={`w-4 h-4 rounded-full border flex items-center justify-center mt-1 shrink-0 ${
+                              isSelected
+                                ? "border-[#007A5E] bg-[#007A5E]"
+                                : "border-slate-300 bg-white"
+                            }`}
+                          >
+                            {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                          </div>
+
+                          {/* Octonorm Booth Realistic Graphic */}
+                          <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-slate-100 border border-slate-200/80 shrink-0 flex items-center justify-center p-1.5 overflow-hidden">
+                            <div className="w-full h-full rounded-lg bg-gradient-to-b from-slate-200 to-slate-300/80 flex flex-col items-center justify-between p-1.5 border border-slate-300/60 shadow-2xs">
+                              <div className="w-full h-2 rounded bg-emerald-700/80 text-[6px] text-white font-bold flex items-center justify-center">
+                                EXHIBITOR
+                              </div>
+                              <div className="w-6 h-6 rounded-full border border-slate-400/50 bg-white/60 flex items-center justify-center">
+                                <Box className="w-3 h-3 text-slate-500" />
+                              </div>
+                              <div className="w-full h-1 bg-slate-400/40 rounded" />
+                            </div>
+                          </div>
+
+                          {/* Info & Badges */}
+                          <div className="flex-1 min-w-0 space-y-1.5">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h5 className="font-bold text-sm sm:text-base text-slate-900">
+                                Standard Stall (3m × 3m)
+                              </h5>
+                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                                Built Stall
+                              </span>
+                            </div>
+                            <p className="text-xs text-slate-500 font-mono">
+                              3M × 3M Built Stall (B1–B22, H1–H8)
+                            </p>
+
+                            {/* Inclusion check pills */}
+                            <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                              {pkg.perks.map((perk, i) => (
+                                <span
+                                  key={i}
+                                  className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-md bg-slate-50 text-slate-700 border border-slate-200/70 font-medium"
+                                >
+                                  <Check className="w-2.5 h-2.5 text-emerald-600 stroke-[2.5]" />
+                                  <span>{perk}</span>
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Bottom Price & Button */}
+                        <div className="flex items-center justify-between pt-4 mt-3 border-t border-slate-100 pl-8">
+                          <div>
+                            <div className="font-mono font-bold text-sm text-slate-900">
+                              NPR 85,000 – 1,80,000
+                            </div>
+                            <div className="font-mono text-[10px] text-slate-400">
+                              USD 700 – 1,350
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              selectPackage(pkg.id);
+                            }}
+                            className="px-4 py-1.5 rounded-xl text-xs font-semibold border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 cursor-pointer"
+                          >
+                            Select Stall
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Stall 2: Bare Space Stall (Custom) */}
+                  {(() => {
+                    const pkg = PARTICIPATION_PACKAGES.find((p) => p.id === "bare-space-stall")!;
+                    const isSelected = selectedPackageId === pkg.id;
+                    return (
+                      <div
+                        onClick={() => selectPackage(pkg.id)}
+                        className={`p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between bg-white relative ${
+                          isSelected
+                            ? "border-[#007A5E] ring-1.5 ring-[#007A5E] shadow-sm"
+                            : "border-slate-200 hover:border-slate-300"
+                        }`}
+                      >
+                        <div className="flex items-start gap-4">
+                          {/* Radio */}
+                          <div
+                            className={`w-4 h-4 rounded-full border flex items-center justify-center mt-1 shrink-0 ${
+                              isSelected
+                                ? "border-[#007A5E] bg-[#007A5E]"
+                                : "border-slate-300 bg-white"
+                            }`}
+                          >
+                            {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                          </div>
+
+                          {/* Raw Floor Isometric Graphic */}
+                          <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-slate-100 border border-slate-200/80 shrink-0 flex items-center justify-center p-2 overflow-hidden">
+                            <div className="w-full h-full rounded-lg bg-gradient-to-tr from-slate-300 via-slate-200 to-slate-100 border border-slate-300 shadow-2xs flex items-center justify-center relative">
+                              <div className="absolute inset-2 border border-dashed border-slate-400/60 rounded" />
+                              <span className="font-mono text-[9px] font-bold text-slate-500">RAW AREA</span>
+                            </div>
+                          </div>
+
+                          {/* Info & Badges */}
+                          <div className="flex-1 min-w-0 space-y-1.5">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h5 className="font-bold text-sm sm:text-base text-slate-900">
+                                Bare Space Stall (Custom)
+                              </h5>
+                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                                Raw Space
+                              </span>
+                            </div>
+                            <p className="text-xs text-slate-500 font-mono">
+                              6M × 6M or 10M × 7M Raw Space (Block A / Block C)
+                            </p>
+
+                            {/* Inclusion check pills */}
+                            <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                              {pkg.perks.map((perk, i) => (
+                                <span
+                                  key={i}
+                                  className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-md bg-slate-50 text-slate-700 border border-slate-200/70 font-medium"
+                                >
+                                  <Check className="w-2.5 h-2.5 text-emerald-600 stroke-[2.5]" />
+                                  <span>{perk}</span>
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Bottom Price & Button */}
+                        <div className="flex items-center justify-between pt-4 mt-3 border-t border-slate-100 pl-8">
+                          <div>
+                            <div className="font-mono font-bold text-sm text-slate-900">
+                              From NPR 3,78,000
+                            </div>
+                            <div className="font-mono text-[10px] text-slate-400">
+                              From USD 3,000
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              selectPackage(pkg.id);
+                            }}
+                            className="px-4 py-1.5 rounded-xl text-xs font-semibold border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 cursor-pointer"
+                          >
+                            Select Stall
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+            )}
+
+            {/* ─── CUSTOM MAP SELECTION BAR ─── */}
             {(packageFilter === "all" || packageFilter === "custom") && (() => {
               const pkg = PARTICIPATION_PACKAGES.find((p) => p.id === "custom-selection")!;
               const isSelected = selectedPackageId === pkg.id;
               return (
                 <div
                   onClick={() => selectPackage(pkg.id)}
-                  className={`px-4 py-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between gap-3 ${isSelected
-                    ? "bg-white border-[#218A59] ring-2 ring-[#218A59]/20 shadow-xs"
-                    : "bg-white border-slate-200/90 hover:border-slate-300"
-                    }`}
+                  className={`p-3.5 sm:p-4 rounded-xl border cursor-pointer transition-all flex items-center justify-between gap-3 ${
+                    isSelected
+                      ? "bg-white border-[#007A5E] ring-1.5 ring-[#007A5E] shadow-2xs"
+                      : "bg-white border-slate-200 hover:border-slate-300"
+                  }`}
                 >
-                  <div className="flex items-center gap-2.5">
+                  <div className="flex items-center gap-3">
                     <div
-                      className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${isSelected ? "border-[#218A59] bg-[#218A59]" : "border-slate-300 bg-white"
-                        }`}
+                      className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
+                        isSelected ? "border-[#007A5E] bg-[#007A5E]" : "border-slate-300 bg-white"
+                      }`}
                     >
                       {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                     </div>
                     <div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-bold text-slate-900 text-sm">Custom Map Selection</span>
-                        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-slate-900 text-sm">
+                          Custom Map Selection
+                        </span>
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
                           Interactive
                         </span>
                       </div>
@@ -1098,58 +1322,38 @@ export default function StallBookingWizard() {
                     </div>
                   </div>
 
-                  <div className="font-mono text-xs text-slate-500 shrink-0">
+                  <div className="text-right shrink-0 font-mono text-xs text-slate-500">
                     Per Stall
                   </div>
                 </div>
               );
             })()}
 
-            {/* ─── ACTIVE PACKAGE NOTIFICATION BAR ─── */}
+            {/* Active notification indicator */}
             {selectedPackage && (
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
-                <div className="flex items-center gap-2">
-                  <div
-                    className={`w-2 h-2 rounded-full shrink-0 ${selectedPackage.id === "title-sponsor" ? "bg-amber-500" : "bg-[#218A59]"
-                      }`}
-                  />
-                  <span className="text-slate-700">
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                <div className="flex items-center gap-2 text-slate-700">
+                  <div className={`w-2 h-2 rounded-full shrink-0 ${selectedPackage.id === "title-sponsor" ? "bg-amber-500" : "bg-[#007A5E]"}`} />
+                  <span>
                     <strong className="text-slate-900">{selectedPackage.name}</strong> selected.
                     {selectedPackage.id === "custom-selection" ? (
-                      <span className="text-slate-500 ml-1">
-                        Pick stalls on the interactive floor plan below.
-                      </span>
+                      <span className="text-slate-500 ml-1">Pick stalls on the interactive floor plan below.</span>
                     ) : (
-                      <span>
-                        {" "}Assigned:{" "}
-                        <strong className="font-mono text-[#15803D]">
-                          {selectedBoothNumbers.length > 0
-                            ? `STALL ${selectedBoothNumbers.join(", ")}`
-                            : "Assigning..."}
-                        </strong>
-                        {isCustomizedOnMap && (
-                          <button
-                            type="button"
-                            onClick={() => selectPackage(selectedPackage.id)}
-                            className="ml-2 text-slate-500 hover:text-slate-800 hover:underline font-medium cursor-pointer inline-flex items-center gap-1"
-                          >
-                            <RotateCcw className="w-3 h-3" />
-                            Reset recommended
-                          </button>
-                        )}
+                      <span className="ml-1">
+                        Assigned: <strong className="font-mono text-[#007A5E]">{selectedBoothNumbers.length > 0 ? `STALL ${selectedBoothNumbers.join(", ")}` : "None"}</strong>.
                       </span>
                     )}
                   </span>
                 </div>
 
-                {selectedPackage.perks && selectedPackage.perks.length > 0 && (
+                {isCustomizedOnMap && selectedPackage.preferredStalls.length > 0 && (
                   <button
                     type="button"
-                    onClick={() => setPerksModalPackageId(selectedPackage.id)}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-emerald-300 text-slate-700 hover:text-emerald-800 font-medium text-[11px] transition-colors cursor-pointer shrink-0"
+                    onClick={() => selectPackage(selectedPackage.id)}
+                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600 hover:text-slate-900 cursor-pointer"
                   >
-                    <Check className="w-3 h-3 text-emerald-600" />
-                    <span>View {selectedPackage.perks.length} Perks</span>
+                    <RotateCcw className="w-3 h-3" />
+                    <span>Reset Stalls</span>
                   </button>
                 )}
               </div>
@@ -1209,7 +1413,14 @@ export default function StallBookingWizard() {
                             }`}
                         >
                           <div className="flex items-center justify-between">
-                            <span className="font-sans font-bold text-sm">Stall {s.number}</span>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="font-sans font-bold text-sm">Stall {s.number}</span>
+                              {s.isPrime && (
+                                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                                  ★ PRIME (+{primeSurchargePercent}%)
+                                </span>
+                              )}
+                            </div>
                             <span className="text-[10px] text-emerald-700 font-bold">
                               NPR {s.priceNPR.toLocaleString()}
                             </span>
@@ -1273,13 +1484,18 @@ export default function StallBookingWizard() {
                           className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 hover:border-slate-300 transition-all text-xs"
                         >
                           <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-1.5 min-w-0">
+                            <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
                               <span className="font-mono font-bold text-slate-900">
                                 {s.displayName}
                               </span>
                               <span className="text-[10px] text-slate-500 font-mono">
                                 ({s.block})
                               </span>
+                              {s.isPrime && (
+                                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded font-bold bg-amber-100 text-amber-900 border border-amber-300 shrink-0">
+                                  ★ PRIME (+{primeSurchargePercent}%)
+                                </span>
+                              )}
                             </div>
                             <button
                               type="button"
@@ -1295,9 +1511,16 @@ export default function StallBookingWizard() {
                             <span>
                               {s.dimensions} · {s.sizeSqM} m²
                             </span>
-                            <span className="font-mono font-semibold text-slate-800">
-                              NPR {s.priceNPR.toLocaleString()}
-                            </span>
+                            <div className="text-right font-mono">
+                              <span className="font-semibold text-slate-800">
+                                NPR {s.priceNPR.toLocaleString()}
+                              </span>
+                              {s.isPrime && (
+                                <span className="text-[9px] text-amber-700 block font-sans">
+                                  Base NPR {s.basePriceNPR.toLocaleString()} + {primeSurchargePercent}%
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
                       ))}
@@ -1385,13 +1608,30 @@ export default function StallBookingWizard() {
                       <span>Base Stall Tariff</span>
                       <div className="text-right">
                         <span className="font-semibold text-slate-800">
-                          NPR {finalPriceNPR.toLocaleString()}
+                          NPR {finalBasePriceNPR.toLocaleString()}
                         </span>
                         <span className="text-[10px] text-slate-400 block">
-                          (${finalPriceUSD.toLocaleString()})
+                          (${finalBasePriceUSD.toLocaleString()})
                         </span>
                       </div>
                     </div>
+
+                    {hasPrimeStalls && !isSponsorPackage && (
+                      <div className="flex items-center justify-between text-amber-800 bg-amber-50/80 px-2 py-1.5 rounded-lg border border-amber-200">
+                        <div className="flex items-center gap-1 font-sans text-[11px] font-semibold">
+                          <Sparkles className="w-3 h-3 text-amber-600 shrink-0" />
+                          <span>Prime Surcharge (+{primeSurchargePercent}%)</span>
+                        </div>
+                        <div className="text-right">
+                          <span className="font-semibold text-amber-900">
+                            + NPR {totalPrimeSurchargeNPR.toLocaleString()}
+                          </span>
+                          <span className="text-[10px] text-amber-700/80 block">
+                            (+${totalPrimeSurchargeUSD.toLocaleString()})
+                          </span>
+                        </div>
+                      </div>
+                    )}
 
                     <div className="flex items-center justify-between text-slate-600">
                       <span>Govt. 13% VAT</span>
@@ -1755,8 +1995,13 @@ export default function StallBookingWizard() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
               <div>
                 <span className="text-[10px] font-mono text-slate-400 font-bold uppercase">ALLOCATED STALLS</span>
-                <div className="font-sans font-bold text-lg text-[#218A59]">
-                  STALL {selectedBoothNumbers.join(", ")}
+                <div className="font-sans font-bold text-lg text-[#218A59] flex items-center gap-1.5 flex-wrap">
+                  <span>STALL {selectedBoothNumbers.join(", ")}</span>
+                  {selectedStallObjects.some((s) => s.isPrime) && (
+                    <span className="text-[9px] font-mono px-1.5 py-0.5 rounded font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                      ★ Prime Location (+{primeSurchargePercent}%)
+                    </span>
+                  )}
                 </div>
                 <span className="text-[11px] text-slate-600">
                   {totalAreaSqM}m² {selectedStallObjects.some((s) => s.isBareSpace) ? "(Bare Space)" : ""}
@@ -1795,9 +2040,17 @@ export default function StallBookingWizard() {
                   <div className="flex justify-between">
                     <span>Base Tariff:</span>
                     <span className="font-semibold text-slate-800">
-                      {exhibitorOrigin === "international" ? `USD $${finalPriceUSD.toLocaleString()}` : `NPR ${finalPriceNPR.toLocaleString()}`}
+                      {exhibitorOrigin === "international" ? `USD $${finalBasePriceUSD.toLocaleString()}` : `NPR ${finalBasePriceNPR.toLocaleString()}`}
                     </span>
                   </div>
+                  {hasPrimeStalls && !isSponsorPackage && (
+                    <div className="flex justify-between text-amber-800 font-semibold">
+                      <span>★ Prime Surcharge (+{primeSurchargePercent}%):</span>
+                      <span>
+                        {exhibitorOrigin === "international" ? `+ USD $${totalPrimeSurchargeUSD.toLocaleString()}` : `+ NPR ${totalPrimeSurchargeNPR.toLocaleString()}`}
+                      </span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-emerald-700">
                     <span>+ 13% VAT:</span>
                     <span className="font-semibold">

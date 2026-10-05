@@ -88,6 +88,8 @@ export default function AdminStallsPage() {
   }, []);
 
   const exchangeRate = data?.settings?.currencyRateUSD_NPR || 134.5;
+  const primePct = data?.settings?.primeStallSurchargePercent ?? 25;
+  const primeRate = primePct / 100;
 
   const baseBooths: Booth[] = useMemo(() => {
     if (floorPlanElements && floorPlanElements.length > 0) {
@@ -238,7 +240,7 @@ export default function AdminStallsPage() {
       });
       const json = await res.json();
       if (json.success) {
-        notify(`Updated ${selectedNumbers.length} stalls to ${isPrime ? "Prime (+25%)" : "Standard"}`);
+        notify(`Updated ${selectedNumbers.length} stalls to ${isPrime ? `Prime (+${primePct}%)` : "Standard"}`);
         setSelectedNumbers([]);
         fetchBoothsData();
       }
@@ -705,7 +707,7 @@ export default function AdminStallsPage() {
                           </button>
                           {booth.isPrime && (
                             <span className="text-[9px] font-mono px-1.5 py-0.5 rounded font-bold bg-amber-100 text-amber-900 border border-amber-300">
-                              ★ PRIME (+25%)
+                              ★ PRIME (+{primePct}%)
                             </span>
                           )}
                         </div>
@@ -937,7 +939,7 @@ export default function AdminStallsPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5 font-bold text-amber-950 text-xs">
                     <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                    <span>Prime Stall (+25% Premium)</span>
+                    <span>Prime Stall (+{primePct}% Premium)</span>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
@@ -950,12 +952,12 @@ export default function AdminStallsPage() {
                   </label>
                 </div>
                 <p className="text-[11px] text-amber-800 leading-relaxed">
-                  Mark this stall as a Prime Stall. In accordance with HIGEX official tariffs, a 25% prime surcharge is applied and showcased on the public floor plan.
+                  Mark this stall as a Prime Stall. In accordance with configured tariffs, a {primePct}% prime surcharge is applied and showcased on the public floor plan.
                 </p>
                 {modalIsPrime && (
                   <div className="pt-2 border-t border-amber-200/60 flex items-center justify-between text-[10px] font-mono font-bold text-amber-950">
-                    <span>+25% Prime Extra: NPR {Math.round(modalPriceNPR * 0.25).toLocaleString()}</span>
-                    <span>Tariff: NPR {Math.round(modalPriceNPR * 1.25).toLocaleString()} (+ VAT)</span>
+                    <span>+{primePct}% Prime Extra: NPR {Math.round(modalPriceNPR * primeRate).toLocaleString()}</span>
+                    <span>Tariff: NPR {Math.round(modalPriceNPR * (1 + primeRate)).toLocaleString()} (+ VAT)</span>
                   </div>
                 )}
               </div>

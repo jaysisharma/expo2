@@ -78,6 +78,7 @@ export default function InteractiveFloorPlan({
   const [zoomLevel, setZoomLevel] = useState<number>(initialZoom);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [boothOverrides, setBoothOverrides] = useState<Record<string, any>>({});
+  const [primeSurchargePercent, setPrimeSurchargePercent] = useState<number>(25);
 
   // Fetch latest saved custom floor plan and overrides from API
   useEffect(() => {
@@ -104,6 +105,9 @@ export default function InteractiveFloorPlan({
         }
         if (adminRes && adminRes.ok) {
           const adminJson = await adminRes.json();
+          if (adminJson?.data?.settings?.primeStallSurchargePercent !== undefined) {
+            setPrimeSurchargePercent(Number(adminJson.data.settings.primeStallSurchargePercent) || 25);
+          }
           if (adminJson?.data?.boothOverrides) {
             setBoothOverrides(adminJson.data.boothOverrides);
             const overrides = adminJson.data.boothOverrides;
@@ -208,6 +212,8 @@ export default function InteractiveFloorPlan({
     (acc, curr) => acc + (curr.sizeSqFt !== undefined && curr.sizeSqFt !== null ? Number(curr.sizeSqFt) : Math.round((Number(curr.sizeSqM) || 9) * 10.76)),
     0
   );
+  const primeSurchargeRate = (primeSurchargePercent || 25) / 100;
+
   const totalPriceNPR = selectedStallObjects.reduce((acc, curr) => {
     const sNum = curr.number || curr.id;
     const ov = boothOverrides[sNum] || (curr.id && boothOverrides[curr.id]);
@@ -218,7 +224,7 @@ export default function InteractiveFloorPlan({
         ? Number(curr.priceNPR)
         : 180000;
     const isPrime = ov?.isPrime !== undefined ? Boolean(ov.isPrime) : Boolean(curr.isPrime);
-    const surcharge = isPrime ? Math.round(basePrice * 0.25) : 0;
+    const surcharge = isPrime ? Math.round(basePrice * primeSurchargeRate) : 0;
     return acc + basePrice + surcharge;
   }, 0);
 
@@ -232,7 +238,7 @@ export default function InteractiveFloorPlan({
         ? Number(curr.priceUSD)
         : 1350;
     const isPrime = ov?.isPrime !== undefined ? Boolean(ov.isPrime) : Boolean(curr.isPrime);
-    const surcharge = isPrime ? Math.round(basePrice * 0.25) : 0;
+    const surcharge = isPrime ? Math.round(basePrice * primeSurchargeRate) : 0;
     return acc + basePrice + surcharge;
   }, 0);
 
@@ -732,7 +738,7 @@ export default function InteractiveFloorPlan({
                   if (isStallPrime) {
                     return (
                       <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-amber-400 text-slate-950 flex items-center gap-0.5 shadow-xs">
-                        ★ PRIME (+25%)
+                        ★ PRIME (+{primeSurchargePercent}%)
                       </span>
                     );
                   }
@@ -772,8 +778,8 @@ export default function InteractiveFloorPlan({
                       : hoveredStall.priceUSD !== undefined && hoveredStall.priceUSD !== null
                       ? Number(hoveredStall.priceUSD)
                       : 1350;
-                  const nprEffective = isStallPrime ? Math.round(npr * 1.25) : npr;
-                  const usdEffective = isStallPrime ? Math.round(usd * 1.25) : usd;
+                  const nprEffective = isStallPrime ? Math.round(npr * (1 + primeSurchargeRate)) : npr;
+                  const usdEffective = isStallPrime ? Math.round(usd * (1 + primeSurchargeRate)) : usd;
                   return `${nprEffective.toLocaleString()} / USD $${usdEffective.toLocaleString()}`;
                 })()}
                 <span className="text-[10px] text-slate-300 font-normal ml-1 font-sans">(+ 13% VAT)</span>
@@ -790,7 +796,7 @@ export default function InteractiveFloorPlan({
                     : 180000;
                 return (
                   <div className="text-[10px] text-amber-300 font-mono">
-                    Includes 25% Prime Surcharge (+NPR {Math.round(npr * 0.25).toLocaleString()})
+                    Includes {primeSurchargePercent}% Prime Surcharge (+NPR {Math.round(npr * primeSurchargeRate).toLocaleString()})
                   </div>
                 );
               })()}
@@ -857,7 +863,7 @@ export default function InteractiveFloorPlan({
               <div className="text-[10px] text-slate-400 uppercase font-bold tracking-widest flex items-center justify-end gap-1.5 flex-wrap">
                 {hasSelectedPrime && (
                   <span className="bg-amber-400 text-slate-950 text-[9px] px-1.5 py-0.5 rounded font-bold font-mono">
-                    ★ PRIME (+25%)
+                    ★ PRIME (+{primeSurchargePercent}%)
                   </span>
                 )}
                 <span>ESTIMATED TOTAL</span>

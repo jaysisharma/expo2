@@ -2,10 +2,12 @@
 
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import confetti from "canvas-confetti";
 import {
   CheckCircle2,
   ArrowRight,
+  Store,
 } from "lucide-react";
 import IDCardBadgePreview from "./IDCardBadgePreview";
 import type { BadgeConfig } from "./AdminBadgeDesigner";
@@ -364,12 +366,12 @@ export default function DelegateRegistration() {
   return (
     <div className="w-full bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-xs">
       <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Pass Type Switcher */}
+        {/* Pass Type Switcher: Visitor vs Networking Dinner */}
         <div>
           <label className="block text-xs font-semibold text-slate-700 mb-2">
             Pass Type
           </label>
-          <div className="grid grid-cols-3 gap-1.5 p-1 bg-slate-100 rounded-xl">
+          <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-100 rounded-xl">
             <button
               type="button"
               onClick={() => {
@@ -382,25 +384,7 @@ export default function DelegateRegistration() {
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              Trade Visitor
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setRegistrationRole("exhibitor");
-                setFormData((prev) => ({
-                  ...prev,
-                  passType: "Exhibitor Pass (All Access)",
-                  stallNumber: prev.stallNumber || "Title Sponsor",
-                }));
-              }}
-              className={`py-2 px-2.5 rounded-lg text-xs font-semibold transition-all ${
-                registrationRole === "exhibitor"
-                  ? "bg-white text-slate-900 shadow-2xs"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              Exhibitor / Partner
+              Trade Visitor (Free Pass)
             </button>
             <button
               type="button"
@@ -414,9 +398,33 @@ export default function DelegateRegistration() {
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              Networking Dinner
+              VIP Networking Dinner
             </button>
           </div>
+        </div>
+
+        {/* Exhibitor Redirection Banner */}
+        <div className="p-3.5 bg-emerald-50/70 border border-emerald-200/90 rounded-xl flex items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-emerald-100 border border-emerald-300/80 flex items-center justify-center shrink-0 text-[#007A5E]">
+              <Store className="w-4 h-4" />
+            </div>
+            <div className="min-w-0">
+              <span className="font-bold text-slate-900 block leading-tight">
+                Looking to Exhibit or Sponsor?
+              </span>
+              <p className="text-[11px] text-slate-600 truncate mt-0.5">
+                Reserve your stall &amp; sponsorship package with official booth allocation.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/book-stall"
+            className="px-3.5 py-1.5 rounded-lg bg-[#007A5E] hover:bg-[#005C42] text-white font-semibold text-[11px] flex items-center gap-1 shrink-0 transition-colors shadow-2xs cursor-pointer"
+          >
+            <span>Book Stall</span>
+            <ArrowRight className="w-3 h-3" />
+          </Link>
         </div>
 
         {/* Networking Dinner Pricing Toggle */}
@@ -450,36 +458,6 @@ export default function DelegateRegistration() {
                 International · USD 50
               </button>
             </div>
-          </div>
-        )}
-
-        {/* Exhibitor Category Selector */}
-        {registrationRole === "exhibitor" && (
-          <div className="space-y-2">
-            <label className="block text-xs font-semibold text-slate-700">
-              Sponsorship &amp; Exhibitor Category *
-            </label>
-            <select
-              value={formData.stallNumber}
-              onChange={(e) => setFormData({ ...formData, stallNumber: e.target.value })}
-              className="w-full h-10 px-3 rounded-lg bg-white border border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 cursor-pointer font-medium"
-            >
-              <option value="Title Sponsor">Title Sponsor (NRs 50,00,000/- · Flagship)</option>
-              <option value="In Association With">In Association With (NRs 40,00,000/-)</option>
-              <option value="Powered By">Powered By (NRs 30,00,000/-)</option>
-              <option value="Sponsor">Sponsor (NRs 15,00,000/-)</option>
-              <option value="Official Partner">Official Partner (NRs 13,00,000/-)</option>
-              <option value="Co-Sponsor">Co-Sponsor (NRs 10,00,000/-)</option>
-              <option value="Supporter">Supporter (NRs 5,00,000/-)</option>
-              <option value="Standard Exhibitor">Standard Exhibitor (Custom Booth / Stall)</option>
-            </select>
-
-            {selectedSponsorTier && (
-              <p className="text-[11px] text-slate-500 bg-slate-50 p-2.5 rounded-lg border border-slate-200 leading-relaxed">
-                <span className="font-semibold text-slate-800">{selectedSponsorTier.tier}: </span>
-                {selectedSponsorTier.bareSpace} Space · {selectedSponsorTier.inaugurationPass} Inauguration · {selectedSponsorTier.galaDinnerPass} Networking Dinner · {selectedSponsorTier.exhibitorPass} Exhibitor passes
-              </p>
-            )}
           </div>
         )}
 

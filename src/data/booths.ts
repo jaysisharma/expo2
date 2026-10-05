@@ -118,6 +118,7 @@ export function extractBoothsFromElements(elements: any[]): Booth[] {
       priceUSD: el.priceUSD && el.priceUSD > 0 ? Number(el.priceUSD) : defaultPriceUSD,
       priceNPR: el.priceNPR && el.priceNPR > 0 ? Number(el.priceNPR) : defaultPriceNPR,
       status: (el.status === "Booked" || el.status === "Reserved" ? el.status : "Available") as "Available" | "Reserved" | "Booked",
+      isPrime: Boolean(el.isPrime),
       dimensions: el.dimensions && el.dimensions !== "Wall" ? el.dimensions : defaultDimensions,
       powerIncluded: el.powerIncluded || powerIncluded,
       coordinates: {

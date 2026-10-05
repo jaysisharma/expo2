@@ -84,6 +84,7 @@ export default function AdminSidebar({
       group: "Communication",
       items: [
         { label: "Bulk Email", href: "/admin/bulk-email", icon: Mail },
+        { label: "Expo Journey CMS", href: "/admin/expo-journey", icon: Compass },
         { label: "About Page CMS", href: "/admin/about", icon: FileText },
         { label: "News & Articles", href: "/admin/news", icon: Newspaper },
         { label: "Photo Gallery", href: "/admin/gallery", icon: ImageIcon },

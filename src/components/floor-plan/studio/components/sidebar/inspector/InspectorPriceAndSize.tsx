@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { DollarSign, Maximize2, Save } from "lucide-react";
+import { DollarSign, Maximize2, Save, Sparkles } from "lucide-react";
 import { CanvasElement } from "../../../types";
 
 interface InspectorPriceAndSizeProps {
@@ -54,6 +54,34 @@ export function InspectorPriceAndSize({
               className="w-full p-2 rounded-lg bg-white dark:bg-[#070B12] border border-slate-200 dark:border-slate-700 text-sky-600 dark:text-sky-400 font-mono font-bold text-xs focus:outline-none focus:border-sky-500"
             />
           </div>
+        </div>
+
+        {/* Prime Location Toggle */}
+        <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 space-y-1.5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5 font-bold text-amber-900 dark:text-amber-300 text-xs">
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              <span>Prime Location (+25%)</span>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={Boolean(primarySelected.isPrime)}
+                onChange={(e) => updateSelectedBatch({ isPrime: e.target.checked })}
+                className="sr-only peer"
+              />
+              <div className="w-8 h-4.5 bg-slate-300 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-amber-500"></div>
+            </label>
+          </div>
+          <p className="text-[10px] text-amber-800 dark:text-amber-300/80 leading-tight">
+            Prime stalls automatically add the configured prime surcharge on the public interactive map and booking wizard.
+          </p>
+          {primarySelected.isPrime && (
+            <div className="pt-1.5 border-t border-amber-500/20 flex items-center justify-between text-[10px] font-mono font-bold text-amber-900 dark:text-amber-300">
+              <span>+25% Surcharge:</span>
+              <span>NPR {Math.round((primarySelected.priceNPR || 0) * 0.25).toLocaleString()} ($ {Math.round((primarySelected.priceUSD || 0) * 0.25).toLocaleString()})</span>
+            </div>
+          )}
         </div>
 
         {/* Quick Price Chips */}

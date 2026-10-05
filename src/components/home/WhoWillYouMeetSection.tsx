@@ -100,7 +100,7 @@ export function WhoWillYouMeetSection() {
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-12">
         <ScrollReveal direction="up" distance={25} duration={0.6}>
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-            
+
             {/* ── LEFT COLUMN (40% width): Header + Dam & Mountain Clay Visual ── */}
             <div className="lg:col-span-5 flex flex-col justify-between h-full space-y-8">
               {/* Header Box */}
@@ -125,28 +125,7 @@ export function WhoWillYouMeetSection() {
                   HIGEX 2027 brings together industry leaders, investors, policymakers, technology providers, developers and energy professionals to explore opportunities across Nepal’s evolving clean-energy landscape.
                 </p>
 
-                {/* Verified Stats */}
-                <div className="mt-6 pt-5 border-t border-slate-300/70 flex items-center gap-8">
-                  <div>
-                    <div className="text-2xl sm:text-3xl font-extrabold text-[#0D2E37] font-mono leading-none">
-                      100+
-                    </div>
-                    <div className="text-[11px] text-slate-600 font-medium uppercase tracking-wider mt-1">
-                      Expected Exhibitors
-                    </div>
-                  </div>
 
-                  <div className="w-px h-9 bg-slate-300" />
-
-                  <div>
-                    <div className="text-2xl sm:text-3xl font-extrabold text-[#0D2E37] font-mono leading-none">
-                      30,000+
-                    </div>
-                    <div className="text-[11px] text-slate-600 font-medium uppercase tracking-wider mt-1">
-                      Expected Visitors
-                    </div>
-                  </div>
-                </div>
               </div>
 
               {/* Dam & Mountain Landscape: Bleeds to left edge, unzoomed natural aspect ratio, no card container */}
@@ -164,7 +143,7 @@ export function WhoWillYouMeetSection() {
 
             {/* ── RIGHT COLUMN (60% width): Top Exhibition Photo with Dry Brush Splatter Edge + Two Breakout Lists ── */}
             <div className="lg:col-span-7 flex flex-col space-y-8 lg:space-y-10">
-              
+
               {/* Wide Exhibition Hall Panoramic Photo with Authentic Dry Brush Stroke Edge */}
               <div className="relative w-full h-56 sm:h-72 lg:h-84 overflow-hidden group">
                 <Image
@@ -179,7 +158,7 @@ export function WhoWillYouMeetSection() {
 
               {/* Bottom Two-Column Breakout: VISITORS vs EXHIBITORS */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 sm:gap-10 pt-2">
-                
+
                 {/* ── Column 1: VISITORS (01 to 06) ── */}
                 <div className="space-y-5">
                   {/* Eyebrow & Title */}

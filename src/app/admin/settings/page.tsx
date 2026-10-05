@@ -20,6 +20,7 @@ export default function AdminSettingsPage() {
     contactEmail: "info@himalayanenergyexpo.com",
     contactPhone: "+977-9703606348",
     currencyRateUSD_NPR: 134.5,
+    primeStallSurchargePercent: 25,
   });
 
   const [isSaving, setIsSaving] = useState(false);
@@ -180,6 +181,39 @@ export default function AdminSettingsPage() {
                 }
                 className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono focus:outline-none focus:border-[#218A59]"
               />
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-[11px] font-mono font-bold text-slate-700">
+                  PRIME STALL SURCHARGE (% EXTRA)
+                </label>
+                <span className="text-[10px] font-mono font-bold text-amber-700 bg-amber-100 px-1.5 py-0.2 rounded">
+                  Official Tariff: +25%
+                </span>
+              </div>
+              <div className="relative">
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="1"
+                  value={settings.primeStallSurchargePercent ?? 25}
+                  onChange={(e) =>
+                    setSettings({
+                      ...settings,
+                      primeStallSurchargePercent: Number(e.target.value) || 0,
+                    })
+                  }
+                  className="w-full p-2.5 pr-8 rounded-xl bg-slate-50 border border-slate-200 text-amber-900 font-mono font-bold focus:outline-none focus:border-amber-500"
+                />
+                <span className="absolute right-3 top-2.5 text-xs font-mono font-bold text-slate-400">
+                  %
+                </span>
+              </div>
+              <p className="text-[10px] text-slate-500 mt-1">
+                Automatically added to prime location stalls on the interactive map &amp; booking wizard.
+              </p>
             </div>
 
             <div>

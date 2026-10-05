@@ -282,75 +282,11 @@ export default function DroneCinemaModal({
               )}
             </div>
 
-            {/* Video Details & Meta Below Player */}
-            <div className="mt-4 sm:mt-5 space-y-3">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold tracking-wider uppercase bg-[#00E599]/15 text-[#00E599] border border-[#00E599]/30">
-                    {activeVideo.category}
-                  </span>
-                  <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-medium text-slate-300 bg-white/10 border border-white/10">
-                    {activeVideo.year}
-                  </span>
-                  {activeVideo.duration && (
-                    <span className="px-2 py-0.5 rounded-md text-[10px] font-mono text-slate-400 bg-white/5 border border-white/10">
-                      Duration: {activeVideo.duration}
-                    </span>
-                  )}
-                </div>
-
-                {/* Player Controls (Prev / Next Film) */}
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={handlePrevVideo}
-                    className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition-colors cursor-pointer text-xs flex items-center gap-1"
-                    title="Previous Film"
-                  >
-                    <ChevronLeft className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline text-[11px]">Prev</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleNextVideo}
-                    className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition-colors cursor-pointer text-xs flex items-center gap-1"
-                    title="Next Film"
-                  >
-                    <span className="hidden sm:inline text-[11px]">Next</span>
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <h4 className="text-base sm:text-lg font-bold text-white font-inter-tight leading-snug">
-                  {activeVideo.title}
-                </h4>
-                {activeVideo.credits && (
-                  <p className="text-xs text-slate-300 mt-1 font-medium flex items-center gap-1.5">
-                    <span className="text-slate-400">Cinematography &amp; Footage:</span>
-                    <span className="text-[#00E599]">{activeVideo.credits}</span>
-                  </p>
-                )}
-                {activeVideo.description && (
-                  <p className="text-xs sm:text-sm text-slate-300 mt-2 leading-relaxed">
-                    {activeVideo.description}
-                  </p>
-                )}
-              </div>
-
-              {/* Action Buttons */}
-              <div className="pt-2 flex flex-wrap items-center gap-3">
-                <a
-                  href={activeVideo.videoUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/15 transition-colors shadow-sm"
-                >
-                  <span>Open Video in New Tab</span>
-                  <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
-                </a>
-              </div>
+            {/* Clean Video Title Below Player */}
+            <div className="mt-3 sm:mt-4">
+              <h4 className="text-sm sm:text-base font-bold text-white font-inter-tight leading-snug">
+                {activeVideo.title}
+              </h4>
             </div>
           </div>
 

@@ -27,54 +27,29 @@ interface StoryEdition {
   caption: string;
 }
 
-const storyEditions: StoryEdition[] = [
-  {
-    year: '2018',
-    edition: '1ST EDITION',
-    phase: 'THE INAUGURAL CONVERGENCE',
-    title: 'Where the clean energy movement began.',
-    story:
-      "Nepal's pioneer independent power producers, state utilities, and global equipment makers gathered under one roof at Bhrikutimandap.",
-    meta: 'Inaugural Trade Floor · 10,000+ Visitors',
-    image: '/images/gallery/2018/IMG_0047.webp',
-    caption: 'Inaugural ceremony uniting developers and public utilities.',
-  },
-  {
-    year: '2019',
-    edition: '2ND EDITION',
-    phase: 'INTERNATIONAL EXPANSION',
-    title: 'Building regional clean power momentum.',
-    story:
-      'Doubled international footprint with dedicated European and Asian technology pavilions and commercial banking syndicates.',
-    meta: 'Global Pavilions · Banking Syndicates',
-    image: '/images/gallery/2019/shankar(MATINA P & V)289.webp',
-    caption: 'International exhibition pavilions & plenaries.',
-  },
-  {
-    year: '2022',
-    edition: '3RD EDITION',
-    phase: 'RESILIENCE & GREEN TECH',
-    title: 'Reconvening the sector post-disruption.',
-    story:
-      'Focused on silt-abrasion resistant turbines, 400kV gas-insulated substations, and cross-border power transmission.',
-    meta: 'Turbine Engineering · 400kV Switchgear',
-    image: '/images/gallery/2022/DSC_6673.webp',
-    caption: 'Official 2022 inaugural stage & hydro exhibitions.',
-  },
-  {
-    year: '2024',
-    edition: '4TH EDITION',
-    phase: 'RECORD REGIONAL SCALE',
-    title: "South Asia's clean energy powerhouse.",
-    story:
-      'Featured over 100 global brands, official trilateral trade delegations from India and Bangladesh, and landmark power purchase agreements.',
-    meta: '100+ Global Brands · Trilateral Delegations',
-    image: '/images/event-photo-6.webp',
-    caption: 'Ministers and delegations exploring global pavilions.',
-  },
-];
+import defaultJourneyData from '@/data/expoJourneyData.json';
 
 export function ExpoJourney() {
+  const [journeyData, setJourneyData] = React.useState(defaultJourneyData);
+
+  React.useEffect(() => {
+    async function loadData() {
+      try {
+        const res = await fetch(`/api/expo-journey?t=${Date.now()}`);
+        const json = await res.json();
+        if (json.success && json.data) {
+          setJourneyData(json.data);
+        }
+      } catch (err) {
+        console.warn('Could not fetch dynamic Expo Journey data:', err);
+      }
+    }
+    loadData();
+  }, []);
+
+  const header = journeyData.header || defaultJourneyData.header;
+  const editions = journeyData.editions || defaultJourneyData.editions;
+
   return (
     <section
       id="expo-journey"
@@ -90,30 +65,31 @@ export function ExpoJourney() {
             <div className="max-w-2xl space-y-3">
               <div className="flex items-center gap-3">
                 <span className="text-xs font-bold text-[#007A5E] uppercase tracking-wider font-mono">
-                  THE EXPO JOURNEY
+                  {header.badge || 'THE EXPO JOURNEY'}
                 </span>
                 <div className="w-12 h-0.5 bg-[#007A5E]/40 rounded-full" />
               </div>
 
               <h2 className="text-3xl sm:text-4xl lg:text-[40px] font-bold text-slate-900 leading-[1.18] tracking-tight">
-                Four Editions. <span className="text-[#007A5E]">One Green Journey.</span>
+                {header.title}{' '}
+                <span className="text-[#007A5E]">{header.titleHighlight}</span>
               </h2>
 
               <p className="text-sm text-slate-500 font-normal">
-                A verified track record of advancing clean energy and cross-border power in Nepal.
+                {header.subtitle}
               </p>
             </div>
 
             <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 text-xs font-bold text-slate-600 shadow-2xs">
               <Sparkles className="w-3.5 h-3.5 text-[#007A5E]" />
-              <span>A Decade of Verified Clean Impact</span>
+              <span>{header.tagline || 'A Decade of Verified Clean Impact'}</span>
             </div>
           </div>
         </ScrollReveal>
 
         {/* ── 02: EDITORIAL DOCUMENTARY STORY TIMELINE (Clean, Uncluttered Cards) ── */}
         <div className="space-y-6 sm:space-y-8 relative mb-14 sm:mb-16">
-          {storyEditions.map((item, index) => {
+          {editions.map((item: any, index: number) => {
             const isEven = index % 2 === 0;
 
             return (

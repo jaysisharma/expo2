@@ -42,6 +42,7 @@ export interface CanvasElement {
   exhibitorCountry?: string;
   exhibitorWebsite?: string;
   cornerPremiumPct?: number;
+  isPrime?: boolean;
 }
 
 export type ToolType =

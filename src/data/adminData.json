@@ -168,6 +168,7 @@
     "registrationsOpen": true,
     "stallBookingsOpen": true,
     "currencyRateUSD_NPR": 154,
+    "primeStallSurchargePercent": 25,
     "venue": "BHRIKUTIMANDAP, KATHMANDU, NEPAL",
     "eventDates": "Magh 3 – 5 · 17–19 Jan 2027"
   },
