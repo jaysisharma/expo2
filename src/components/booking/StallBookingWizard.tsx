@@ -503,10 +503,13 @@ export default function StallBookingWizard() {
   const selectedPackage = PARTICIPATION_PACKAGES.find((p) => p.id === selectedPackageId);
   const isSponsorPackage = Boolean(selectedPackage && selectedPackage.type === "sponsor");
 
-  // Automatically select 72h hold if requested via query param for sponsor packages
+  const hasFastTrackedRef = useRef(false);
+  // Automatically select 72h hold if requested via query param for sponsor packages and fast-track to Step 2
   useEffect(() => {
-    if (queryHold && isSponsorPackage) {
+    if (queryHold && isSponsorPackage && !hasFastTrackedRef.current) {
+      hasFastTrackedRef.current = true;
       setPaymentMethod("hold_72h");
+      setStep(2);
     }
   }, [queryHold, isSponsorPackage]);
 
@@ -1986,13 +1989,49 @@ export default function StallBookingWizard() {
       {step === 2 && (
         <div className="space-y-6">
           <div>
-            <h3 className="font-sans font-bold text-2xl text-slate-900">
-              Step 2: Exhibitor Organization Details
-            </h3>
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h3 className="font-sans font-bold text-2xl text-slate-900">
+                Step 2: Exhibitor Organization Details
+              </h3>
+              {isSponsorPackage && paymentMethod === "hold_72h" && (
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-mono font-bold border border-emerald-300">
+                  ⚡ FAST-TRACK 72H COURTESY HOLD
+                </span>
+              )}
+            </div>
             <p className="text-xs text-slate-600 font-normal mt-1">
-              Provide company metadata for listing in the official 2027 Expo Directory, exhibitor badges, and pro-forma invoice.
+              {isSponsorPackage && paymentMethod === "hold_72h"
+                ? "Enter your primary organization and executive contact details to place your 72-hour zero-cost hold. Booth specifications and branding can be finalized later."
+                : "Provide company metadata for listing in the official 2027 Expo Directory, exhibitor badges, and pro-forma invoice."}
             </p>
           </div>
+
+          {/* VIP Fast-Track Banner for 72-Hour Hold */}
+          {isSponsorPackage && paymentMethod === "hold_72h" && (
+            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-emerald-50 via-white to-emerald-50/60 border-2 border-emerald-500/30 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3.5">
+                <div className="w-11 h-11 rounded-2xl bg-[#007A5E] text-white flex items-center justify-center shrink-0 shadow-sm">
+                  <Clock className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-bold text-sm text-slate-900">
+                      72-Hour Zero-Commitment Courtesy Freeze
+                    </span>
+                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                      NPR 0 / $0 DUE TODAY
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-600 font-normal mt-0.5 leading-relaxed">
+                    Holding <strong>{selectedPackage?.name}</strong>. Prime floor positions ({selectedBoothNumbers.join(", ")}) are provisionally locked while your executive board reviews the proposal.
+                  </p>
+                </div>
+              </div>
+              <div className="text-[11px] font-mono font-bold text-emerald-800 bg-white border border-emerald-200/80 px-3 py-1.5 rounded-xl shrink-0 shadow-2xs">
+                Zero Cancellation Risk
+              </div>
+            </div>
+          )}
 
           {/* Exhibitor Classification: Domestic vs International */}
           <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3">
@@ -2245,12 +2284,16 @@ export default function StallBookingWizard() {
         <div className="space-y-6">
           <div>
             <h3 className="font-sans font-bold text-2xl text-slate-900">
-              {exhibitorOrigin === "international"
+              {paymentMethod === "hold_72h" && isSponsorPackage
+                ? "Step 3: Review Sponsorship & Confirm 72-Hour Free Courtesy Hold"
+                : exhibitorOrigin === "international"
                 ? "Step 3: Review Details & Confirm Reservation"
                 : "Step 3: Select Payment Method & Finalize Booking"}
             </h3>
             <p className="text-xs text-slate-600 font-normal mt-1">
-              {exhibitorOrigin === "international"
+              {paymentMethod === "hold_72h" && isSponsorPackage
+                ? "Lock your VIP sponsorship package instantly with zero payment today. You have 72 hours of guaranteed exclusivity while processing corporate approvals."
+                : exhibitorOrigin === "international"
                 ? "Review your booking details below. Confirming will place your stall on hold and generate your official USD SWIFT Pro-Forma Invoice."
                 : "Complete your exhibition stall reservation instantly and securely via the Khalti ePayment gateway."}
             </p>
@@ -2424,8 +2467,16 @@ export default function StallBookingWizard() {
                     <span>Complimentary 72-Hour Courtesy Hold (NPR 0 / USD $0 Due Today)</span>
                   </h4>
                   <p className="text-xs text-slate-600 leading-relaxed font-normal max-w-2xl">
-                    Secure <strong>{selectedPackage?.name}</strong> and your designated exhibition stalls ({selectedBoothNumbers.join(", ")}) immediately for 72 hours without paying anything today. Allows your corporate board or finance committee time to process remittance formalities with zero risk of losing this exclusive tier.
+                    Secure <strong>{selectedPackage?.name}</strong> and your designated complimentary exhibition stalls ({selectedBoothNumbers.join(", ")}) immediately for 72 hours without paying anything today. Allows your corporate board or finance committee time to process remittance formalities with zero risk of losing this exclusive tier.
                   </p>
+                  <div className="p-3 rounded-xl bg-emerald-50/80 border border-emerald-200/90 text-[11px] text-emerald-950 font-normal leading-relaxed space-y-1">
+                    <div>
+                      <strong>🛡️ Zero-Liability Guarantee:</strong> If your organization decides not to proceed, the hold releases automatically after 72 hours with zero penalty and no hidden fees.
+                    </div>
+                    <div>
+                      <strong>🏛️ Complimentary Prime Stalls:</strong> The IPPAN Floor Management Concierge will collaborate directly with your team to finalize exact booth layout and custom fascia branding.
+                    </div>
+                  </div>
                 </div>
                 <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-[#007A5E] font-bold">
                   <div className="flex items-center gap-1.5">
@@ -2644,7 +2695,7 @@ export default function StallBookingWizard() {
                 disabled={isSubmitting}
                 className={`px-8 py-3.5 rounded-full font-mono text-xs font-bold tracking-wider shadow-md transition-all flex items-center gap-2 text-white ${isSubmitting
                   ? "bg-slate-300 text-slate-500 cursor-not-allowed shadow-none"
-                  : paymentMethod === "hold_72h" && step === 3
+                  : paymentMethod === "hold_72h" && isSponsorPackage
                     ? "bg-[#007A5E] hover:bg-[#005f49] cursor-pointer"
                     : exhibitorOrigin === "international" && step === 3
                       ? "bg-sky-600 hover:bg-sky-700 cursor-pointer"
@@ -2667,9 +2718,11 @@ export default function StallBookingWizard() {
                           : exhibitorOrigin === "international"
                             ? `CONFIRM & HOLD STALL (USD $${totalWithVatUSD.toLocaleString()})`
                             : `PAY WITH KHALTI (NPR ${totalWithVatNPR.toLocaleString()})`
-                        : exhibitorOrigin === "international"
-                          ? "CONTINUE TO REVIEW & RESERVE"
-                          : "CONTINUE TO REVIEW & PAYMENT"}
+                        : paymentMethod === "hold_72h" && isSponsorPackage
+                          ? "CONTINUE TO 72-HR HOLD REVIEW (NPR 0 DUE)"
+                          : exhibitorOrigin === "international"
+                            ? "CONTINUE TO REVIEW & RESERVE"
+                            : "CONTINUE TO REVIEW & PAYMENT"}
                     </span>
                     <ArrowRight className="w-4 h-4" />
                   </>

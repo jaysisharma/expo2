@@ -20,6 +20,10 @@ import {
   QrCode,
   Landmark,
   Clock,
+  Copy,
+  Check,
+  MessageSquare,
+  Share2,
 } from "lucide-react";
 
 function PaymentSuccessContent() {
@@ -34,6 +38,22 @@ function PaymentSuccessContent() {
   const passTier = searchParams.get("pass") || "national";
   const qty = searchParams.get("qty") || "1";
   const currency = searchParams.get("currency") || (passTier === "international" ? "USD" : "NPR");
+
+  const [copied, setCopied] = React.useState(false);
+
+  const handleCopy = () => {
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(
+        `Himalayan Green Energy Expo 2027 Sponsorship 72-Hour Courtesy Hold - Reference ID: ${id}. Space and tier provisionally locked at zero cost.`
+      );
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    }
+  };
+
+  const whatsappShareUrl = `https://wa.me/?text=${encodeURIComponent(
+    `Hello, I have placed an official 72-Hour Courtesy Hold on a Sponsorship Tier at Himalayan Green Energy Expo 2027 (Ref: ${id}). Zero upfront cost. Please review the reservation details.`
+  )}`;
 
   useEffect(() => {
     confetti({
@@ -205,14 +225,59 @@ function PaymentSuccessContent() {
 
             {/* 72-Hour Courtesy Hold Details Box */}
             {isHold72h && (
-              <div className="p-5 sm:p-6 rounded-2xl bg-emerald-50/90 border border-emerald-300 text-xs space-y-3 font-sans">
+              <div className="p-5 sm:p-6 rounded-2xl bg-emerald-50/90 border border-emerald-300 text-xs space-y-4 font-sans">
                 <div className="flex items-center gap-2 font-bold text-emerald-950 font-mono text-sm">
                   <Clock className="w-5 h-5 text-emerald-700" />
                   <span>72-Hour Exclusivity Hold Guarantee (Zero Upfront Commitment)</span>
                 </div>
                 <p className="text-emerald-900 leading-relaxed font-normal">
-                  Your sponsorship tier and prime stall allocation are held exclusively for your organization for the next 72 hours. No other company can claim this placement during your courtesy window. Our summit secretariat will contact your team to deliver the formal sponsorship agreement and assist with wire invoice processing.
+                  Your sponsorship tier and prime stall allocation are held exclusively for your organization for the next 72 hours. No other enterprise can claim this placement during your courtesy window. Our summit secretariat will contact your team to deliver the formal sponsorship agreement and assist with wire invoice processing.
                 </p>
+
+                {/* Quick Share to Accounts & Decision Makers */}
+                <div className="p-3.5 rounded-xl bg-white border border-emerald-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                  <div>
+                    <div className="font-bold text-slate-900 font-mono text-[11px] uppercase">
+                      Forward to Finance / Accounts Department
+                    </div>
+                    <div className="text-[11px] text-slate-500 font-normal mt-0.5">
+                      Share official reservation details with your executive decision-makers
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <button
+                      type="button"
+                      onClick={handleCopy}
+                      className="px-3.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-mono text-[11px] font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                    >
+                      {copied ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>COPIED REF!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>COPY REF</span>
+                        </>
+                      )}
+                    </button>
+                    <a
+                      href={whatsappShareUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#25D366] hover:bg-[#20ba59] text-white font-mono text-[11px] font-bold transition-colors shadow-2xs"
+                    >
+                      <MessageSquare className="w-3.5 h-3.5" />
+                      <span>SHARE ON WHATSAPP</span>
+                    </a>
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-xl bg-emerald-100/60 border border-emerald-200/80 text-[11px] text-emerald-950 font-normal leading-relaxed">
+                  <strong>Zero-Liability Expiration:</strong> If your executive board chooses not to proceed, this reservation automatically releases after 72 hours with no cancellation penalty, no hidden fees, and zero financial obligation.
+                </div>
+
                 <div className="pt-2 border-t border-emerald-200/80 flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
                   <div className="text-emerald-800">
                     <strong>Need direct secretariat assistance or an official invoice?</strong>
@@ -260,39 +325,74 @@ function PaymentSuccessContent() {
             {/* Next Steps */}
             <div className="space-y-3 pt-2">
               <h3 className="font-sans font-bold text-sm text-slate-900 uppercase tracking-wide">
-                {isGala ? "Networking Dinner Delegate Entry Protocol" : "Exhibitor Onboarding & Next Steps"}
+                {isHold72h
+                  ? "72-Hour Courtesy Hold Protocol & Next Steps"
+                  : isGala
+                  ? "Networking Dinner Delegate Entry Protocol"
+                  : "Exhibitor Onboarding & Next Steps"}
               </h3>
               <ul className="text-xs text-slate-600 space-y-2 pl-1 font-normal">
-                <li className="flex items-start gap-2.5">
-                  <span className="w-5 h-5 rounded-full bg-emerald-100 text-[#15803D] font-mono text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">
-                    1
-                  </span>
-                  <span>
-                    {isGala
-                      ? "Your digital VIP Networking Dinner e-ticket with registered QR code is issued under your reference ID."
-                      : "Our organizing team will issue your formal tax receipt and exhibitor manual via email within 24 hours."}
-                  </span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <span className="w-5 h-5 rounded-full bg-emerald-100 text-[#15803D] font-mono text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">
-                    2
-                  </span>
-                  <span>
-                    {isGala
-                      ? "Dress code: Formal Evening / Business Suit / Traditional National Attire. Arrival and welcome cocktail starts at 6:00 PM."
-                      : "Submit fascia branding typography, exhibitor badges, and electrical load requirements by Poush 15, 2083."}
-                  </span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <span className="w-5 h-5 rounded-full bg-emerald-100 text-[#15803D] font-mono text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">
-                    3
-                  </span>
-                  <span>
-                    {isGala
-                      ? "Your Networking Dinner Pass includes complimentary 3-day full access badge to the main exhibition at Bhrikuti Mandap."
-                      : "Stall setup and shell-scheme decoration begins on Magh 1, 2083 (Jan 15, 2027) at Bhrikutimandap."}
-                  </span>
-                </li>
+                {isHold72h ? (
+                  <>
+                    <li className="flex items-start gap-2.5">
+                      <span className="w-5 h-5 rounded-full bg-emerald-100 text-[#15803D] font-mono text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">
+                        1
+                      </span>
+                      <span>
+                        Our executive secretariat will deliver your official Pro-Forma Invoice and sponsorship benefits dossier directly to your registered email address within 2 business hours.
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2.5">
+                      <span className="w-5 h-5 rounded-full bg-emerald-100 text-[#15803D] font-mono text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">
+                        2
+                      </span>
+                      <span>
+                        An IPPAN Senior Concierge Manager will contact your team to assist with custom branding placements, VIP inauguration passes, and gala dinner table arrangements.
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2.5">
+                      <span className="w-5 h-5 rounded-full bg-emerald-100 text-[#15803D] font-mono text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">
+                        3
+                      </span>
+                      <span>
+                        Settle wire remittance anytime within 72 hours to permanently seal your sponsorship contract. If your organization decides not to proceed, the hold expires automatically with zero penalty.
+                      </span>
+                    </li>
+                  </>
+                ) : (
+                  <>
+                    <li className="flex items-start gap-2.5">
+                      <span className="w-5 h-5 rounded-full bg-emerald-100 text-[#15803D] font-mono text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">
+                        1
+                      </span>
+                      <span>
+                        {isGala
+                          ? "Your digital VIP Networking Dinner e-ticket with registered QR code is issued under your reference ID."
+                          : "Our organizing team will issue your formal tax receipt and exhibitor manual via email within 24 hours."}
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2.5">
+                      <span className="w-5 h-5 rounded-full bg-emerald-100 text-[#15803D] font-mono text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">
+                        2
+                      </span>
+                      <span>
+                        {isGala
+                          ? "Dress code: Formal Evening / Business Suit / Traditional National Attire. Arrival and welcome cocktail starts at 6:00 PM."
+                          : "Submit fascia branding typography, exhibitor badges, and electrical load requirements by Poush 15, 2083."}
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2.5">
+                      <span className="w-5 h-5 rounded-full bg-emerald-100 text-[#15803D] font-mono text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">
+                        3
+                      </span>
+                      <span>
+                        {isGala
+                          ? "Your Networking Dinner Pass includes complimentary 3-day full access badge to the main exhibition at Bhrikuti Mandap."
+                          : "Stall setup and shell-scheme decoration begins on Magh 1, 2083 (Jan 15, 2027) at Bhrikutimandap."}
+                      </span>
+                    </li>
+                  </>
+                )}
               </ul>
             </div>
 
