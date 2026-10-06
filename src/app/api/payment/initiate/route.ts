@@ -129,8 +129,8 @@ export async function POST(req: Request) {
       paymentMethod,
       is72hHold: isHold72h,
       holdExpiresAt,
-      paymentStatus: isHold72h ? "COURTESY_HOLD_72H" : paymentMethod === "bank" ? "PENDING_WIRE" : "INITIATED",
-      bookingStatus: isHold72h ? "72h Courtesy Hold" : "Reserved",
+      paymentStatus: isHold72h ? "FREE_HOLD_72H" : paymentMethod === "bank" ? "PENDING_WIRE" : "INITIATED",
+      bookingStatus: isHold72h ? "72h Free Hold" : "Reserved",
       createdAt: new Date().toISOString(),
     };
 
@@ -165,11 +165,11 @@ export async function POST(req: Request) {
       phone,
       company: company || contactPerson,
       subject: isHold72h
-        ? `[72-HOUR FREE COURTESY HOLD] Sponsorship & Stalls [${stallListStr}]`
+        ? `[72-HOUR FREE HOLD] Reservation [${stallListStr}]`
         : `Stall Reservation [${stallListStr}] - Method: ${paymentMethod.toUpperCase()}`,
       message: `Booking Ref: ${orderId}. Stalls: ${stallListStr}. Fascia: ${fasciaName || company}. ${
         isHold72h
-          ? `72-HOUR FREE COURTESY HOLD (Zero Cost). Expires at: ${holdExpiresAt}.`
+          ? `72-HOUR FREE HOLD (Zero Cost). Expires at: ${holdExpiresAt}.`
           : `Total: NPR ${amountNPR?.toLocaleString()} / USD ${amountUSD?.toLocaleString()}.`
       } Power: ${powerOption}. Notes: ${specialRequirements || "None"}.`,
       stallInterest: stallListStr,
@@ -230,11 +230,11 @@ export async function POST(req: Request) {
                 &bull; <strong>Industry Category:</strong> ${escapeHtml(industryCategory)}<br/>
                 &bull; <strong>Total Fee (incl. 13% VAT):</strong> ${
                   isHold72h
-                    ? `<span style="color: #047857; font-weight: 700;">NPR 0 / USD $0 (Free 72-Hour Courtesy Hold)</span> &bull; Full package tariff (NPR ${formattedNPR} / USD ${formattedUSD}) due within 72 hrs`
+                    ? `<span style="color: #047857; font-weight: 700;">NPR 0 / USD $0 (72-Hour Free Hold)</span> &bull; Full package tariff (NPR ${formattedNPR} / USD ${formattedUSD}) due within 72 hrs`
                     : `NPR ${formattedNPR} / USD ${formattedUSD}`
                 }<br/>
                 &bull; <strong>Payment Method:</strong> ${
-                  isHold72h ? "72-HOUR FREE COURTESY HOLD" : escapeHtml(paymentMethod.toUpperCase())
+                  isHold72h ? "72-HOUR FREE HOLD" : escapeHtml(paymentMethod.toUpperCase())
                 }<br/>
                 ${
                   isHold72h && holdExpiresAt
@@ -252,7 +252,7 @@ export async function POST(req: Request) {
                   ? `
               <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 16px 20px; margin: 18px 0; font-size: 13px; line-height: 1.7;">
                 <strong style="color: #065f46;">72-Hour Exclusivity Lock Active:</strong><br/>
-                Your selected sponsorship package and allocated stalls are reserved exclusively in your company&apos;s name for the next 72 hours at zero cost. No other organization can claim this allocation during your courtesy hold.<br/><br/>
+                Your selected reservation is held exclusively in your company&apos;s name for the next 72 hours at zero cost. No other organization can claim this allocation during your hold period.<br/><br/>
                 <strong>Next Steps:</strong> Our exhibition secretariat will provide your official corporate sponsorship contract. When ready to confirm, your finance department may wire remittance to the account below:<br/><br/>
                 &bull; <strong>Account Name:</strong> IPPAN - GREEN ENERGY EXPO<br/>
                 &bull; <strong>Bank Name:</strong> Nepal Investment Mega Bank (NIMB)<br/>
@@ -303,7 +303,7 @@ export async function POST(req: Request) {
           to: email,
           replyTo: `"Expo Secretariat" <info@eventsolutionnepal.com.np>`,
           subject: isHold72h
-            ? `[72-Hour Free Courtesy Hold Confirmed] Ref: ${orderId} | Himalayan Green Energy Expo 2027`
+            ? `[72-Hour Free Hold Confirmed] Ref: ${orderId} | Himalayan Green Energy Expo 2027`
             : `Stall Reservation Confirmed [Ref: ${orderId}] | Himalayan Green Energy Expo 2027`,
           html: emailHtml,
         }).catch((err) => {
@@ -320,7 +320,7 @@ export async function POST(req: Request) {
         ? "http://localhost:3000"
         : "https://himalayanenergyexpo.com");
 
-    // 2. Handle 72-Hour Free Courtesy Hold Routing (Exclusively for Sponsors, Zero Cost)
+    // 2. Handle 72-Hour Free Hold Routing (Zero Cost)
     if (isHold72h) {
       return NextResponse.json({
         success: true,
@@ -328,7 +328,7 @@ export async function POST(req: Request) {
         paymentMethod: "hold_72h",
         isHold72h: true,
         holdExpiresAt,
-        message: "72-Hour Free Courtesy Hold secured successfully at zero cost.",
+        message: "72-Hour Free Hold secured successfully at zero cost.",
         redirectUrl: `/payment/success?id=${encodeURIComponent(
           orderId
         )}&gateway=hold_72h&stalls=${encodeURIComponent(

@@ -122,7 +122,7 @@ export default function OfficialTariffsSection() {
                 <Link
                   href="/book-stall?tier=title-sponsor&hold=true"
                   className="px-3 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-mono text-xs font-bold transition-colors flex items-center gap-1"
-                  title="Claim complimentary 72-hour zero-cost courtesy hold on Title Sponsorship"
+                  title="Claim 72-hour free hold on Title Sponsorship"
                 >
                   <Clock className="w-3.5 h-3.5 text-emerald-700" />
                   <span>72h Free Hold ⏱</span>
@@ -331,7 +331,7 @@ export default function OfficialTariffsSection() {
                           tier.tier.toLowerCase().replace(/\s+/g, "-")
                         )}&hold=true`}
                         className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg font-mono text-[10.5px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100 transition-all shadow-2xs"
-                        title="Claim 72-Hour Free Courtesy Hold (Zero Cost)"
+                        title="Claim 72-Hour Free Hold (Zero Cost)"
                       >
                         <Clock className="w-3 h-3 text-emerald-700" />
                         <span>72h Free Hold</span>

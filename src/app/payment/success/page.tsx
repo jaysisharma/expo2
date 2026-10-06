@@ -44,7 +44,7 @@ function PaymentSuccessContent() {
   const handleCopy = () => {
     if (typeof navigator !== "undefined" && navigator.clipboard) {
       navigator.clipboard.writeText(
-        `Himalayan Green Energy Expo 2027 Sponsorship 72-Hour Courtesy Hold - Reference ID: ${id}. Space and tier provisionally locked at zero cost.`
+        `Himalayan Green Energy Expo 2027 72-Hour Free Hold - Reference ID: ${id}. Space provisionally locked at zero cost.`
       );
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
@@ -52,7 +52,7 @@ function PaymentSuccessContent() {
   };
 
   const whatsappShareUrl = `https://wa.me/?text=${encodeURIComponent(
-    `Hello, I have placed an official 72-Hour Courtesy Hold on a Sponsorship Tier at Himalayan Green Energy Expo 2027 (Ref: ${id}). Zero upfront cost. Please review the reservation details.`
+    `Hello, I have placed an official 72-Hour Free Hold at Himalayan Green Energy Expo 2027 (Ref: ${id}). Zero upfront cost. Please review the reservation details.`
   )}`;
 
   useEffect(() => {
@@ -81,7 +81,7 @@ function PaymentSuccessContent() {
             <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
             <span>
               {isHold72h
-                ? "OFFICIAL 72-HOUR FREE COURTESY HOLD CONFIRMATION"
+                ? "OFFICIAL 72-HOUR FREE HOLD CONFIRMATION"
                 : isGala
                 ? "OFFICIAL NETWORKING DINNER VIP PASS CONFIRMATION"
                 : "OFFICIAL STALL ALLOCATION CONFIRMATION"}
@@ -89,7 +89,7 @@ function PaymentSuccessContent() {
           </div>
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white">
             {isHold72h
-              ? "72-Hour Courtesy Hold Confirmed (Zero Cost)!"
+              ? "72-Hour Free Hold Confirmed (Zero Cost)!"
               : isGala
               ? isBank
                 ? "Networking Dinner VIP Pass Reservation Received!"
@@ -100,7 +100,7 @@ function PaymentSuccessContent() {
           </h1>
           <p className="text-sm sm:text-base text-emerald-100/80 max-w-xl mx-auto leading-relaxed">
             {isHold72h
-              ? "Your exclusive 72-hour courtesy hold is officially active! Your sponsorship package and allocated booth space have been locked in at zero upfront cost while your organization finalizes internal approvals."
+              ? "Your exclusive 72-hour free hold is officially active! Your reservation has been locked in at zero upfront cost while your organization finalizes internal approvals."
               : isGala
               ? isBank
                 ? "Your Networking Dinner seats at Royal Tulip Kathmandu (Gwarko) have been provisionally held. Please complete the bank wire remittance within 48 hours to finalize guest seating."
@@ -137,7 +137,7 @@ function PaymentSuccessContent() {
                 {isHold72h && (
                   <div className="flex items-center gap-1.5 text-emerald-900 font-bold">
                     <Clock className="w-4 h-4 text-emerald-700" />
-                    <span>72-Hour Free Courtesy Hold</span>
+                    <span>72-Hour Free Hold</span>
                   </div>
                 )}
                 {isKhalti && !isHold72h && (
@@ -223,15 +223,15 @@ function PaymentSuccessContent() {
               )}
             </div>
 
-            {/* 72-Hour Courtesy Hold Details Box */}
+            {/* 72-Hour Free Hold Details Box */}
             {isHold72h && (
               <div className="p-5 sm:p-6 rounded-2xl bg-emerald-50/90 border border-emerald-300 text-xs space-y-4 font-sans">
                 <div className="flex items-center gap-2 font-bold text-emerald-950 font-mono text-sm">
                   <Clock className="w-5 h-5 text-emerald-700" />
-                  <span>72-Hour Exclusivity Hold Guarantee (Zero Upfront Commitment)</span>
+                  <span>72-Hour Free Hold Guarantee (Zero Upfront Cost)</span>
                 </div>
                 <p className="text-emerald-900 leading-relaxed font-normal">
-                  Your sponsorship tier and prime stall allocation are held exclusively for your organization for the next 72 hours. No other enterprise can claim this placement during your courtesy window. Our summit secretariat will contact your team to deliver the formal sponsorship agreement and assist with wire invoice processing.
+                  Your reservation is held exclusively for your organization for the next 72 hours. No other enterprise can claim this placement during your hold period. Our exhibition secretariat will contact your team to deliver formal confirmation and assist with invoice processing.
                 </p>
 
                 {/* Quick Share to Accounts & Decision Makers */}
@@ -326,7 +326,7 @@ function PaymentSuccessContent() {
             <div className="space-y-3 pt-2">
               <h3 className="font-sans font-bold text-sm text-slate-900 uppercase tracking-wide">
                 {isHold72h
-                  ? "72-Hour Courtesy Hold Protocol & Next Steps"
+                  ? "72-Hour Free Hold - Next Steps"
                   : isGala
                   ? "Networking Dinner Delegate Entry Protocol"
                   : "Exhibitor Onboarding & Next Steps"}

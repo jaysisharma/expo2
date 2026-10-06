@@ -785,8 +785,8 @@ export default function StallBookingWizard() {
             industryCategory: resolvedIndustry,
             specialRequirements:
               selectedPackage && selectedPackage.id !== "custom-selection"
-                ? `[${exhibitorOrigin.toUpperCase()} EXHIBITOR] ${paymentMethod === "hold_72h" ? "[72-HOUR FREE COURTESY HOLD] " : ""}Package: ${selectedPackage.name} | Stalls: ${selectedBoothNumbers.join(", ")}`
-                : `[${exhibitorOrigin.toUpperCase()} EXHIBITOR] Stalls: ${selectedBoothNumbers.join(", ")}`,
+                ? `[${exhibitorOrigin.toUpperCase()} EXHIBITOR] ${paymentMethod === "hold_72h" ? "[72-HOUR FREE HOLD] " : ""}Package: ${selectedPackage.name} | Stalls: ${selectedBoothNumbers.join(", ")}`
+                : `[${exhibitorOrigin.toUpperCase()} EXHIBITOR] ${paymentMethod === "hold_72h" ? "[72-HOUR FREE HOLD] " : ""}Stalls: ${selectedBoothNumbers.join(", ")}`,
             paymentMethod: paymentMethod === "hold_72h" ? "hold_72h" : exhibitorOrigin === "international" ? "bank" : paymentMethod,
             isHold72h: paymentMethod === "hold_72h",
           }),
@@ -798,7 +798,7 @@ export default function StallBookingWizard() {
           throw new Error(data.error || "Failed to initialize booking and payment.");
         }
 
-        // For 72-Hour Free Courtesy Hold, directly navigate to success page or open confirmation
+        // For 72-Hour Free Hold, directly navigate to success page or open confirmation
         if (paymentMethod === "hold_72h") {
           confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
           if (data.redirectUrl) {
@@ -1848,7 +1848,7 @@ export default function StallBookingWizard() {
                           {paymentMethod === "hold_72h" && isSponsorPackage ? "Amount Due Today" : "Total Payable"}
                         </span>
                         <span className="text-[10px] text-slate-400 font-sans block">
-                          {paymentMethod === "hold_72h" && isSponsorPackage ? "72-Hr Courtesy Hold" : "All taxes included"}
+                          {paymentMethod === "hold_72h" && isSponsorPackage ? "72-Hour Free Hold" : "All taxes included"}
                         </span>
                       </div>
                       <div className="text-right">
@@ -1915,7 +1915,7 @@ export default function StallBookingWizard() {
                         className="w-full py-2.5 px-4 rounded-xl font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all border-2 border-[#007A5E] bg-emerald-50 text-[#007A5E] hover:bg-emerald-100 hover:shadow-xs cursor-pointer"
                       >
                         <Clock className="w-4 h-4 text-[#007A5E]" />
-                        <span>FREE 72-HOUR COURTESY HOLD (NPR 0 TODAY)</span>
+                        <span>FREE 72-HOUR HOLD (NPR 0 TODAY)</span>
                       </button>
                     )}
                   </div>
@@ -1955,7 +1955,7 @@ export default function StallBookingWizard() {
               </h3>
               {paymentMethod === "hold_72h" && (
                 <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-mono font-bold border border-emerald-300">
-                  72H COURTESY HOLD (NPR 0 TODAY)
+                  72-HOUR FREE HOLD (NPR 0 TODAY)
                 </span>
               )}
             </div>
@@ -2303,7 +2303,7 @@ export default function StallBookingWizard() {
               </div>
             </div>
 
-            {/* 72-Hour Free Courtesy Hold Card */}
+            {/* 72-Hour Free Hold Card */}
             <div
               onClick={() => setPaymentMethod("hold_72h")}
               className={`p-4 rounded-xl border-2 transition-all cursor-pointer flex items-center justify-between gap-4 ${
@@ -2318,7 +2318,7 @@ export default function StallBookingWizard() {
                     72-HOUR FREE HOLD
                   </span>
                   <h4 className="font-bold text-sm text-slate-900">
-                    72-Hour Courtesy Hold (NPR 0 Today)
+                    72-Hour Free Hold (NPR 0 Today)
                   </h4>
                 </div>
                 <p className="text-xs text-slate-600 mt-1">
@@ -2410,7 +2410,7 @@ export default function StallBookingWizard() {
           <div>
             <span className="font-mono text-xs text-[#059669] tracking-widest uppercase font-bold">
               {paymentMethod === "hold_72h"
-                ? "72-HOUR FREE COURTESY HOLD ACTIVATED"
+                ? "72-HOUR FREE HOLD CONFIRMED"
                 : "STALL RESERVATION SUBMITTED"}
             </span>
             <h3 className="font-sans font-bold text-3xl text-slate-900 mt-1">
@@ -2419,15 +2419,14 @@ export default function StallBookingWizard() {
             <p className="text-xs sm:text-sm text-slate-600 font-normal mt-2 max-w-md mx-auto leading-relaxed">
               {paymentMethod === "hold_72h" ? (
                 <>
-                  Your complimentary <strong>72-Hour Exclusivity Hold</strong> for{" "}
+                  Your <strong>72-Hour Free Hold</strong> for{" "}
                   <strong>
                     {selectedPackage && selectedPackage.id !== "custom-selection"
                       ? selectedPackage.name
                       : `STALL ${selectedBoothNumbers.join(", ")}`}
                   </strong>{" "}
-                  is officially locked in at zero upfront cost.
-                  Our secretariat will contact you within 24 hours with your executive agreement and
-                  pro-forma wire invoice.
+                  is locked in at zero cost today.
+                  Our exhibition team will contact you within 24 hours with details and wire invoice.
                 </>
               ) : (
                 <>
