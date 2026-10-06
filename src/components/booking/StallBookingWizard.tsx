@@ -19,7 +19,6 @@ import {
   Map,
   ListFilter,
   CreditCard,
-  QrCode,
   Landmark,
   Loader2,
   X,
@@ -289,18 +288,20 @@ export default function StallBookingWizard() {
   const [viewMode, setViewMode] = useState<"map" | "list">("map");
   const [boothType, setBoothType] = useState<"Shell Scheme" | "Bare Space">("Shell Scheme");
   const [powerOption, setPowerOption] = useState<string>("Standard 15A Included");
-  const [paymentMethod, setPaymentMethod] = useState<"khalti" | "fonepay" | "bank" | "hold_72h">("khalti");
+  const [paymentMethod, setPaymentMethod] = useState<"khalti" | "bank" | "hold_72h">("khalti");
   const [agreedTerms, setAgreedTerms] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [formError, setFormError] = useState<string>("");
   const [exhibitorOrigin, setExhibitorOrigin] = useState<"domestic" | "international">("domestic");
 
-  // Automatically enforce SWIFT bank transfer for international exhibitors so they are never redirected to Khalti
+  // Automatically enforce SWIFT bank transfer for international exhibitors, and default to Khalti for domestic
   useEffect(() => {
     if (exhibitorOrigin === "international") {
       setPaymentMethod("bank");
+    } else if (paymentMethod === "bank") {
+      setPaymentMethod("khalti");
     }
-  }, [exhibitorOrigin]);
+  }, [exhibitorOrigin, paymentMethod]);
 
   const [formData, setFormData] = useState({
     companyName: "",
@@ -2251,7 +2252,7 @@ export default function StallBookingWizard() {
             <p className="text-xs text-slate-600 font-normal mt-1">
               {exhibitorOrigin === "international"
                 ? "Review your booking details below. Confirming will place your stall on hold and generate your official USD SWIFT Pro-Forma Invoice."
-                : "Choose your preferred payment gateway from Nepal (Khalti, Fonepay) or request an official Bank Wire Invoice."}
+                : "Complete your exhibition stall reservation instantly and securely via the Khalti ePayment gateway."}
             </p>
           </div>
 
@@ -2486,105 +2487,41 @@ export default function StallBookingWizard() {
                 </div>
               </div>
             ) : (
-              /* DOMESTIC GATEWAY OPTIONS */
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Option 1: Khalti */}
-                <div
-                  onClick={() => setPaymentMethod("khalti")}
-                  className={`p-5 rounded-2xl border-2 transition-all cursor-pointer relative flex flex-col justify-between ${
-                    paymentMethod === "khalti"
-                      ? "border-[#5D2E8E] bg-[#5D2E8E]/5 shadow-md ring-2 ring-[#5D2E8E]/20"
-                      : "border-slate-200 bg-white hover:border-slate-300"
-                  }`}
-                >
+              /* DOMESTIC GATEWAY: KHALTI EPAYMENT ONLY */
+              <div
+                onClick={() => setPaymentMethod("khalti")}
+                className="p-5 sm:p-6 rounded-2xl border-2 border-[#5D2E8E] bg-[#5D2E8E]/5 shadow-sm ring-2 ring-[#5D2E8E]/20 transition-all cursor-pointer relative"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1.5">
-                        <div className="px-2.5 py-1 rounded-lg bg-[#5D2E8E] text-white font-mono text-[10px] font-bold">
-                          KHALTI
-                        </div>
+                    <div className="flex items-center gap-2">
+                      <div className="px-3 py-1 rounded-lg bg-[#5D2E8E] text-white font-mono text-[10px] font-bold">
+                        KHALTI EPAYMENT
                       </div>
-                      {paymentMethod === "khalti" && (
-                        <CheckCircle2 className="w-5 h-5 text-[#5D2E8E]" />
-                      )}
+                      <span className="text-[11px] font-mono text-emerald-700 bg-emerald-100 border border-emerald-300 px-2.5 py-0.5 rounded-full font-bold">
+                        INSTANT CONFIRMATION
+                      </span>
                     </div>
-                    <h4 className="font-sans font-bold text-base text-slate-900">
-                      Khalti ePayment API v2
+                    <h4 className="font-sans font-bold text-lg text-slate-900">
+                      Khalti Online Payment Gateway
                     </h4>
-                    <p className="text-xs text-slate-600 leading-relaxed font-normal">
-                      Instant checkout via Khalti Mobile Wallet, SCT Cards, eBanking &amp; ConnectIPS.
+                    <p className="text-xs text-slate-600 leading-relaxed font-normal max-w-xl">
+                      Instant checkout via Khalti Mobile Wallet, SCT Cards, Mobile Banking (50+ partner banks) &amp; ConnectIPS. Your stall allocation is locked immediately upon successful payment.
                     </p>
                   </div>
-                  <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-1 text-[11px] font-mono text-[#5D2E8E] font-bold">
+                  <div className="w-12 h-12 rounded-2xl bg-[#5D2E8E]/10 text-[#5D2E8E] flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="w-6 h-6 text-[#5D2E8E]" />
+                  </div>
+                </div>
+
+                <div className="mt-4 pt-3.5 border-t border-slate-200/80 flex flex-wrap items-center justify-between gap-2 text-xs">
+                  <div className="flex items-center gap-1.5 text-[11px] font-mono text-[#5D2E8E] font-bold">
                     <Sparkles className="w-3.5 h-3.5" />
-                    <span>Instant Confirmation</span>
+                    <span>Real-time API Verification &middot; Official E-Receipt Issued Automatically</span>
                   </div>
-                </div>
-
-                {/* Option 2: Fonepay */}
-                <div
-                  onClick={() => setPaymentMethod("fonepay")}
-                  className={`p-5 rounded-2xl border-2 transition-all cursor-pointer relative flex flex-col justify-between ${
-                    paymentMethod === "fonepay"
-                      ? "border-[#D92525] bg-[#D92525]/5 shadow-md ring-2 ring-[#D92525]/20"
-                      : "border-slate-200 bg-white hover:border-slate-300"
-                  }`}
-                >
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1.5">
-                        <div className="px-2.5 py-1 rounded-lg bg-[#D92525] text-white font-mono text-[10px] font-bold">
-                          FONEPAY
-                        </div>
-                      </div>
-                      {paymentMethod === "fonepay" && (
-                        <CheckCircle2 className="w-5 h-5 text-[#D92525]" />
-                      )}
-                    </div>
-                    <h4 className="font-sans font-bold text-base text-slate-900">
-                      Fonepay Direct QR
-                    </h4>
-                    <p className="text-xs text-slate-600 leading-relaxed font-normal">
-                      Scan dynamic QR or pay directly from 50+ Nepalese commercial bank mobile apps.
-                    </p>
-                  </div>
-                  <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-1 text-[11px] font-mono text-[#D92525] font-bold">
-                    <QrCode className="w-3.5 h-3.5" />
-                    <span>50+ Partner Banks</span>
-                  </div>
-                </div>
-
-                {/* Option 3: Bank Transfer / Pro-Forma Invoice */}
-                <div
-                  onClick={() => setPaymentMethod("bank")}
-                  className={`p-5 rounded-2xl border-2 transition-all cursor-pointer relative flex flex-col justify-between ${
-                    paymentMethod === "bank"
-                      ? "border-[#218A59] bg-[#218A59]/5 shadow-md ring-2 ring-[#218A59]/20"
-                      : "border-slate-200 bg-white hover:border-slate-300"
-                  }`}
-                >
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1.5">
-                        <div className="px-2.5 py-1 rounded-lg text-white font-mono text-[10px] font-bold bg-[#218A59]">
-                          BANK WIRE
-                        </div>
-                      </div>
-                      {paymentMethod === "bank" && (
-                        <CheckCircle2 className="w-5 h-5 text-[#218A59]" />
-                      )}
-                    </div>
-                    <h4 className="font-sans font-bold text-base text-slate-900">
-                      Bank Remittance / Invoice
-                    </h4>
-                    <p className="text-xs text-slate-600 leading-relaxed font-normal">
-                      Lock stall provisionally and remit via SWIFT / RTGS directly to IPPAN account.
-                    </p>
-                  </div>
-                  <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-1 text-[11px] font-mono font-bold text-[#218A59]">
-                    <Landmark className="w-3.5 h-3.5" />
-                    <span>Official Pro-Forma Invoice</span>
-                  </div>
+                  <span className="text-[11px] text-slate-500 font-mono">
+                    Secured by 256-bit SSL
+                  </span>
                 </div>
               </div>
             )}
@@ -2711,11 +2648,9 @@ export default function StallBookingWizard() {
                     ? "bg-[#007A5E] hover:bg-[#005f49] cursor-pointer"
                     : exhibitorOrigin === "international" && step === 3
                       ? "bg-sky-600 hover:bg-sky-700 cursor-pointer"
-                      : paymentMethod === "khalti" && step === 3
+                      : step === 3
                         ? "bg-[#5D2E8E] hover:bg-[#482370] cursor-pointer"
-                        : paymentMethod === "fonepay" && step === 3
-                          ? "bg-[#D92525] hover:bg-[#b01c1c] cursor-pointer"
-                          : "bg-[#218A59] hover:bg-[#186a43] cursor-pointer"
+                        : "bg-[#218A59] hover:bg-[#186a43] cursor-pointer"
                   }`}
               >
                 {isSubmitting ? (
@@ -2731,9 +2666,7 @@ export default function StallBookingWizard() {
                           ? "CONFIRM 72-HOUR FREE COURTESY HOLD (NPR 0 / $0)"
                           : exhibitorOrigin === "international"
                             ? `CONFIRM & HOLD STALL (USD $${totalWithVatUSD.toLocaleString()})`
-                            : paymentMethod === "bank"
-                              ? "CONFIRM RESERVATION & GENERATE INVOICE"
-                              : `PAY WITH ${paymentMethod.toUpperCase()} (NPR ${totalWithVatNPR.toLocaleString()})`
+                            : `PAY WITH KHALTI (NPR ${totalWithVatNPR.toLocaleString()})`
                         : exhibitorOrigin === "international"
                           ? "CONTINUE TO REVIEW & RESERVE"
                           : "CONTINUE TO REVIEW & PAYMENT"}
