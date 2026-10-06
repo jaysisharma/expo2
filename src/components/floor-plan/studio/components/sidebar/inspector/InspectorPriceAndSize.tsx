@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { DollarSign, Maximize2, Save, Sparkles, Calculator, Check, ArrowRight } from "lucide-react";
+import { DollarSign, Maximize2, Save, Sparkles, Calculator, Check, ArrowRight, Palette } from "lucide-react";
 import { CanvasElement } from "../../../types";
 
 interface InspectorPriceAndSizeProps {
@@ -79,12 +79,18 @@ export function InspectorPriceAndSize({
   };
 
   const handleSetIrregularBareSpace = () => {
+    const currentColor =
+      primarySelected.color && primarySelected.color !== "transparent"
+        ? primarySelected.color
+        : "#0D9488";
+    const currentBorder = primarySelected.borderColor || "#2DD4BF";
+
     updateSelectedBatch({
       category: "Irregular Bare Space",
       isIrregular: true,
-      color: "#0D9488",
+      color: currentColor,
       fillOpacity: 0.85,
-      borderColor: "#2DD4BF",
+      borderColor: currentBorder,
       textColor: "#FFFFFF",
       dimensions: primarySelected.dimensions || `${currentSqm} m² (Custom)`,
       priceNPR: calculatedTotalNPR,
@@ -242,6 +248,121 @@ export function InspectorPriceAndSize({
                 <ArrowRight className="w-3 h-3" />
                 <span>Set Irregular Space</span>
               </button>
+            </div>
+          </div>
+
+          {/* 1.2 Irregular Space Color & Appearance Customization */}
+          <div className="pt-2 border-t border-teal-500/20 space-y-2">
+            <div className="flex items-center justify-between text-[11px] font-bold text-teal-950 dark:text-teal-200">
+              <span className="flex items-center gap-1.5">
+                <Palette className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
+                <span>Irregular Space Color &amp; Appearance</span>
+              </span>
+              <span className="text-[9.5px] font-mono text-teal-600 dark:text-teal-400">
+                {primarySelected.color || "#0D9488"}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-[10px] text-teal-900 dark:text-teal-300 font-medium block mb-1">
+                  Fill Color
+                </label>
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="color"
+                    value={
+                      primarySelected.color === "transparent" || !primarySelected.color
+                        ? "#0D9488"
+                        : primarySelected.color
+                    }
+                    onChange={(e) =>
+                      updateSelectedBatch({
+                        color: e.target.value,
+                        fillOpacity: primarySelected.fillOpacity || 0.85,
+                        textColor: "#FFFFFF",
+                      })
+                    }
+                    className="w-7 h-7 rounded-md border border-teal-300 dark:border-teal-700 bg-transparent cursor-pointer shrink-0"
+                    title="Choose Custom Fill Color"
+                  />
+                  <input
+                    type="text"
+                    value={primarySelected.color || "#0D9488"}
+                    onChange={(e) =>
+                      updateSelectedBatch({
+                        color: e.target.value,
+                        fillOpacity: primarySelected.fillOpacity || 0.85,
+                        textColor: "#FFFFFF",
+                      })
+                    }
+                    className="w-full px-2 py-1 rounded bg-white dark:bg-[#070B12] border border-teal-300 dark:border-teal-700 text-teal-800 dark:text-teal-200 font-mono text-[10px]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] text-teal-900 dark:text-teal-300 font-medium block mb-1">
+                  Border Color
+                </label>
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="color"
+                    value={primarySelected.borderColor || "#2DD4BF"}
+                    onChange={(e) => updateSelectedBatch({ borderColor: e.target.value })}
+                    className="w-7 h-7 rounded-md border border-teal-300 dark:border-teal-700 bg-transparent cursor-pointer shrink-0"
+                    title="Choose Custom Border Color"
+                  />
+                  <input
+                    type="text"
+                    value={primarySelected.borderColor || "#2DD4BF"}
+                    onChange={(e) => updateSelectedBatch({ borderColor: e.target.value })}
+                    className="w-full px-2 py-1 rounded bg-white dark:bg-[#070B12] border border-teal-300 dark:border-teal-700 text-teal-800 dark:text-teal-200 font-mono text-[10px]"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Theme Presets for Irregular Stall */}
+            <div>
+              <span className="text-[9.5px] text-teal-800 dark:text-teal-400 font-medium block mb-1">
+                Quick Preset Themes:
+              </span>
+              <div className="grid grid-cols-4 gap-1">
+                {[
+                  { name: "Teal", fill: "#0D9488", border: "#2DD4BF" },
+                  { name: "Emerald", fill: "#059669", border: "#34D399" },
+                  { name: "Cyan", fill: "#0891B2", border: "#22D3EE" },
+                  { name: "Sky", fill: "#0284C7", border: "#38BDF8" },
+                  { name: "Amber", fill: "#D97706", border: "#FBBF24" },
+                  { name: "Violet", fill: "#7C3AED", border: "#A78BFA" },
+                  { name: "Rose", fill: "#E11D48", border: "#FB7185" },
+                  { name: "Slate", fill: "#334155", border: "#94A3B8" },
+                ].map((palette) => (
+                  <button
+                    key={palette.name}
+                    type="button"
+                    title={palette.name}
+                    onClick={() =>
+                      updateSelectedBatch({
+                        color: palette.fill,
+                        borderColor: palette.border,
+                        fillOpacity: 0.85,
+                        textColor: "#FFFFFF",
+                      })
+                    }
+                    className="flex items-center gap-1 p-1 rounded bg-white dark:bg-slate-900 border border-teal-200 dark:border-teal-800 hover:scale-102 transition-transform cursor-pointer justify-center"
+                  >
+                    <span
+                      className="w-2.5 h-2.5 rounded-full shrink-0 border border-black/20"
+                      style={{ backgroundColor: palette.fill }}
+                    />
+                    <span className="text-[9px] font-medium text-slate-700 dark:text-slate-300 font-sans truncate">
+                      {palette.name}
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>

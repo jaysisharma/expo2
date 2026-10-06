@@ -431,13 +431,39 @@ export default function StallBookingWizard() {
     const hMatch = upper.match(/^H(\d+)$/);
     const isH = Boolean(hMatch && parseInt(hMatch[1], 10) >= 1 && parseInt(hMatch[1], 10) <= 8);
     const isBareSpace = !isB && !isH;
-    const displayName = isBareSpace ? `STALL ${number} (Bare Space)` : `STALL ${number}`;
+
+    // Detect Irregular Bare Space (custom footprint charged per sq.m)
+    const isIrregular = Boolean(
+      custom?.isIrregular ||
+      custom?.category === "Irregular Bare Space" ||
+      (custom?.dimensions && custom.dimensions.toLowerCase().includes("custom")) ||
+      (category && category.toLowerCase().includes("irregular")) ||
+      upper.startsWith("IRR")
+    );
+
+    const ratePerSqMNPR = Number(
+      custom?.ratePerSqMNPR ||
+      (basePriceNPR && sizeSqM ? Math.round(basePriceNPR / sizeSqM) : 10500)
+    );
+    const ratePerSqMUSD = Number(
+      custom?.ratePerSqMUSD ||
+      (basePriceUSD && sizeSqM ? Number((basePriceUSD / sizeSqM).toFixed(2)) : 83.33)
+    );
+
+    const displayName = isIrregular
+      ? `STALL ${number} (Irregular Bare Space)`
+      : isBareSpace
+        ? `STALL ${number} (Bare Space)`
+        : `STALL ${number}`;
 
     return {
       number,
       displayName,
-      spaceType: isBareSpace ? "Bare Space" : "",
+      spaceType: isIrregular ? "Irregular Bare Space" : isBareSpace ? "Bare Space" : "",
       isBareSpace,
+      isIrregular,
+      ratePerSqMNPR,
+      ratePerSqMUSD,
       isPrime,
       block,
       dimensions,
@@ -449,7 +475,7 @@ export default function StallBookingWizard() {
       primeSurchargeUSD,
       priceNPR,
       priceUSD,
-      category: isBareSpace ? `${dimensions} Bare Space` : category,
+      category: isIrregular ? "Irregular Bare Space" : isBareSpace ? `${dimensions} Bare Space` : category,
       status,
       powerIncluded: custom?.powerIncluded || official?.powerIncluded || (isBareSpace ? "Direct Power Provision" : "Standard 15A Included"),
     };
@@ -1503,18 +1529,39 @@ export default function StallBookingWizard() {
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-1.5 flex-wrap">
                               <span className="font-sans font-bold text-sm">Stall {s.number}</span>
+                              {s.isIrregular && (
+                                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded font-bold bg-teal-100 text-teal-800 border border-teal-300">
+                                  IRREGULAR BARE SPACE
+                                </span>
+                              )}
                               {s.isPrime && (
                                 <span className="text-[9px] font-mono px-1.5 py-0.5 rounded font-bold bg-amber-100 text-amber-900 border border-amber-300">
                                   ★ PRIME (+{primeSurchargePercent}%)
                                 </span>
                               )}
                             </div>
-                            <span className="text-[10px] text-emerald-700 font-bold">
-                              NPR {s.priceNPR.toLocaleString()}
-                            </span>
+                            {s.isIrregular ? (
+                              <div className="text-right">
+                                <span className="text-[11px] text-teal-700 font-bold font-mono block">
+                                  NPR {s.ratePerSqMNPR?.toLocaleString() || "10,500"} / m²
+                                </span>
+                                <span className="text-[9px] text-teal-600 block font-mono">
+                                  (${((s.ratePerSqMUSD || 83.33)).toFixed(2)}/m²)
+                                </span>
+                              </div>
+                            ) : (
+                              <span className="text-[10px] text-emerald-700 font-bold">
+                                NPR {s.priceNPR.toLocaleString()}
+                              </span>
+                            )}
                           </div>
                           <div className="text-[11px] text-slate-500 mt-1">
-                            {s.sizeSqM}m² ({s.dimensions}){s.isBareSpace ? " · Bare Space" : ""} · {s.block}
+                            {s.sizeSqM}m² ({s.dimensions})
+                            {s.isIrregular
+                              ? " · Irregular Bare Space"
+                              : s.isBareSpace
+                                ? " · Bare Space"
+                                : ""} · {s.block}
                           </div>
                         </button>
                       );
@@ -1579,6 +1626,11 @@ export default function StallBookingWizard() {
                               <span className="text-[10px] text-slate-500 font-mono">
                                 ({s.block})
                               </span>
+                              {s.isIrregular && (
+                                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded font-bold bg-teal-100 text-teal-800 border border-teal-300 shrink-0">
+                                  IRREGULAR BARE SPACE
+                                </span>
+                              )}
                               {s.isPrime && (
                                 <span className="text-[9px] font-mono px-1.5 py-0.5 rounded font-bold bg-amber-100 text-amber-900 border border-amber-300 shrink-0">
                                   ★ PRIME (+{primeSurchargePercent}%)
@@ -1596,19 +1648,40 @@ export default function StallBookingWizard() {
                           </div>
 
                           <div className="flex items-baseline justify-between mt-1 text-[11px] text-slate-500">
-                            <span>
-                              {s.dimensions} · {s.sizeSqM} m²
-                            </span>
-                            <div className="text-right font-mono">
-                              <span className="font-semibold text-slate-800">
-                                NPR {s.priceNPR.toLocaleString()}
+                            <div>
+                              <span>
+                                {s.dimensions} · {s.sizeSqM} m²
                               </span>
-                              {s.isPrime && (
-                                <span className="text-[9px] text-amber-700 block font-sans">
-                                  Base NPR {s.basePriceNPR.toLocaleString()} + {primeSurchargePercent}%
+                              {s.isIrregular && (
+                                <span className="text-[10px] text-teal-700 font-medium block">
+                                  Footprint: {s.sizeSqM} m² (Raw Bare Space)
                                 </span>
                               )}
                             </div>
+                            {s.isIrregular ? (
+                              <div className="text-right font-mono">
+                                <span className="font-bold text-teal-700 block text-xs">
+                                  NPR {s.ratePerSqMNPR?.toLocaleString() || "10,500"} / m²
+                                </span>
+                                <span className="text-[10px] text-teal-600 block">
+                                  (${((s.ratePerSqMUSD || 83.33)).toFixed(2)} / m²)
+                                </span>
+                                <span className="text-[9.5px] text-slate-400 block font-sans">
+                                  Total: NPR {s.priceNPR.toLocaleString()}
+                                </span>
+                              </div>
+                            ) : (
+                              <div className="text-right font-mono">
+                                <span className="font-semibold text-slate-800">
+                                  NPR {s.priceNPR.toLocaleString()}
+                                </span>
+                                {s.isPrime && (
+                                  <span className="text-[9px] text-amber-700 block font-sans">
+                                    Base NPR {s.basePriceNPR.toLocaleString()} + {primeSurchargePercent}%
+                                  </span>
+                                )}
+                              </div>
+                            )}
                           </div>
                         </div>
                       ))}
@@ -1669,11 +1742,15 @@ export default function StallBookingWizard() {
                       <div className="col-span-2 pt-1 border-t border-slate-100 flex items-center justify-between text-xs">
                         <span className="text-slate-400 font-mono text-[10px]">SPACE SCHEME:</span>
                         <span className="font-medium text-slate-700 text-[11px]">
-                          {selectedStallObjects.every((s) => s.isBareSpace)
-                            ? "Bare Space (Raw Area)"
-                            : selectedStallObjects.some((s) => s.isBareSpace)
-                              ? "Mixed (Bare & Shell)"
-                              : "Shell Scheme (Octanorm)"}
+                          {selectedStallObjects.every((s) => s.isIrregular)
+                            ? "Irregular Bare Space (Charged per sq.m)"
+                            : selectedStallObjects.some((s) => s.isIrregular)
+                              ? "Mixed (Irregular Bare & Standard)"
+                              : selectedStallObjects.every((s) => s.isBareSpace)
+                                ? "Bare Space (Raw Area)"
+                                : selectedStallObjects.some((s) => s.isBareSpace)
+                                  ? "Mixed (Bare & Shell)"
+                                  : "Shell Scheme (Octanorm)"}
                         </span>
                       </div>
                     </div>
@@ -1701,6 +1778,11 @@ export default function StallBookingWizard() {
                         <span className="text-[10px] text-slate-400 block">
                           (${finalBasePriceUSD.toLocaleString()})
                         </span>
+                        {selectedStallObjects.some((s) => s.isIrregular) && (
+                          <span className="text-[9.5px] text-teal-700 block font-sans">
+                            Incl. Irregular Bare Space @ NPR {selectedStallObjects.find((s) => s.isIrregular)?.ratePerSqMNPR?.toLocaleString() || "10,500"}/m²
+                          </span>
+                        )}
                       </div>
                     </div>
 
@@ -2085,6 +2167,11 @@ export default function StallBookingWizard() {
                 <span className="text-[10px] font-mono text-slate-400 font-bold uppercase">ALLOCATED STALLS</span>
                 <div className="font-sans font-bold text-lg text-[#218A59] flex items-center gap-1.5 flex-wrap">
                   <span>STALL {selectedBoothNumbers.join(", ")}</span>
+                  {selectedStallObjects.some((s) => s.isIrregular) && (
+                    <span className="text-[9px] font-mono px-1.5 py-0.5 rounded font-bold bg-teal-100 text-teal-800 border border-teal-300">
+                      Irregular Bare Space
+                    </span>
+                  )}
                   {selectedStallObjects.some((s) => s.isPrime) && (
                     <span className="text-[9px] font-mono px-1.5 py-0.5 rounded font-bold bg-amber-100 text-amber-900 border border-amber-300">
                       ★ Prime Location (+{primeSurchargePercent}%)
@@ -2092,7 +2179,7 @@ export default function StallBookingWizard() {
                   )}
                 </div>
                 <span className="text-[11px] text-slate-600">
-                  {totalAreaSqM}m² {selectedStallObjects.some((s) => s.isBareSpace) ? "(Bare Space)" : ""}
+                  {totalAreaSqM}m² {selectedStallObjects.some((s) => s.isIrregular) ? "(Irregular Bare Space)" : selectedStallObjects.some((s) => s.isBareSpace) ? "(Bare Space)" : ""}
                 </span>
               </div>
 
@@ -2131,6 +2218,16 @@ export default function StallBookingWizard() {
                       {exhibitorOrigin === "international" ? `USD $${finalBasePriceUSD.toLocaleString()}` : `NPR ${finalBasePriceNPR.toLocaleString()}`}
                     </span>
                   </div>
+                  {selectedStallObjects.some((s) => s.isIrregular) && (
+                    <div className="flex justify-between text-teal-700 font-mono text-[9.5px]">
+                      <span>Irregular Rate:</span>
+                      <span>
+                        {exhibitorOrigin === "international"
+                          ? `USD $${(selectedStallObjects.find((s) => s.isIrregular)?.ratePerSqMUSD || 83.33).toFixed(2)}/m²`
+                          : `NPR ${selectedStallObjects.find((s) => s.isIrregular)?.ratePerSqMNPR?.toLocaleString() || "10,500"}/m²`}
+                      </span>
+                    </div>
+                  )}
                   {hasPrimeStalls && !isSponsorPackage && (
                     <div className="flex justify-between text-amber-800 font-semibold">
                       <span>★ Prime Surcharge (+{primeSurchargePercent}%):</span>

@@ -94,6 +94,8 @@ export function InspectorStyling({
           <div className="flex flex-wrap gap-1.5">
             {[
               { name: "Sky Blue", hex: "#0284C7" },
+              { name: "Teal (Irregular)", hex: "#0D9488" },
+              { name: "Cyan", hex: "#0891B2" },
               { name: "Amber", hex: "#D97706" },
               { name: "Emerald", hex: "#16A34A" },
               { name: "Red", hex: "#DC2626" },
@@ -162,7 +164,7 @@ export function InspectorStyling({
             />
           </div>
           <div className="flex flex-wrap gap-1.5">
-            {["#38BDF8", "#FBBF24", "#4ADE80", "#F87171", "#C084FC", "#FFFFFF", "#94A3B8", "#061A2A"].map((c) => (
+            {["#38BDF8", "#2DD4BF", "#22D3EE", "#FBBF24", "#4ADE80", "#F87171", "#C084FC", "#FFFFFF", "#94A3B8", "#061A2A"].map((c) => (
               <button
                 key={c}
                 type="button"

@@ -174,6 +174,62 @@ export function ToolsPalette({
                 );
               })}
             </div>
+
+            {selectedCategory.name === "Irregular Bare Space" && (
+              <div className="p-2.5 rounded-xl bg-teal-500/10 border border-teal-500/30 space-y-2 mt-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-teal-900 dark:text-teal-200">
+                    🎨 Irregular Space Preset Color
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="color"
+                      value={selectedCategory.color === "transparent" ? "#0D9488" : selectedCategory.color}
+                      onChange={(e) => {
+                        selectedCategory.color = e.target.value;
+                        setActiveFillColor(e.target.value);
+                      }}
+                      className="w-5 h-5 rounded border border-teal-300 dark:border-teal-700 bg-transparent cursor-pointer"
+                      title="Change Fill Color"
+                    />
+                    <input
+                      type="color"
+                      value={selectedCategory.border || "#2DD4BF"}
+                      onChange={(e) => {
+                        selectedCategory.border = e.target.value;
+                        setActiveStrokeColor(e.target.value);
+                      }}
+                      className="w-5 h-5 rounded border border-teal-300 dark:border-teal-700 bg-transparent cursor-pointer"
+                      title="Change Border Color"
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center gap-1">
+                  {[
+                    { name: "Teal", fill: "#0D9488", border: "#2DD4BF" },
+                    { name: "Emerald", fill: "#059669", border: "#34D399" },
+                    { name: "Cyan", fill: "#0891B2", border: "#22D3EE" },
+                    { name: "Amber", fill: "#D97706", border: "#FBBF24" },
+                    { name: "Violet", fill: "#7C3AED", border: "#A78BFA" },
+                    { name: "Rose", fill: "#E11D48", border: "#FB7185" },
+                  ].map((theme) => (
+                    <button
+                      key={theme.name}
+                      type="button"
+                      title={`Preset: ${theme.name}`}
+                      onClick={() => {
+                        selectedCategory.color = theme.fill;
+                        selectedCategory.border = theme.border;
+                        setActiveFillColor(theme.fill);
+                        setActiveStrokeColor(theme.border);
+                      }}
+                      className="w-4 h-4 rounded-full border border-white/60 shadow-xs hover:scale-125 transition-transform cursor-pointer"
+                      style={{ backgroundColor: theme.fill }}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Next Stall Number */}
