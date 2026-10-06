@@ -347,7 +347,7 @@ function PaymentSuccessContent() {
                         2
                       </span>
                       <span>
-                        An IPPAN Senior Concierge Manager will contact your team to assist with custom branding placements, VIP inauguration passes, and gala dinner table arrangements.
+                        An IPPAN Senior Concierge Manager will contact your team to assist with custom branding placements, VIP inauguration passes, and networking dinner table arrangements.
                       </span>
                     </li>
                     <li className="flex items-start gap-2.5">
