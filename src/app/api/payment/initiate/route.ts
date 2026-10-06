@@ -104,11 +104,18 @@ export async function POST(req: Request) {
       adminData.stallBookings = [];
     }
 
+    const isHold72h = paymentMethod === "hold_72h" || Boolean(body.isHold72h);
+    const holdExpiresAt = isHold72h
+      ? new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString()
+      : undefined;
+
     const newBookingRecord = {
       id: orderId,
       stalls: stallNumbers,
-      amountNPR: Number(amountNPR) || 875000,
-      amountUSD: Number(amountUSD) || 6500,
+      amountNPR: isHold72h ? 0 : Number(amountNPR) || 875000,
+      amountUSD: isHold72h ? 0 : Number(amountUSD) || 6500,
+      packageTariffNPR: Number(body.fullPackageAmountNPR) || Number(amountNPR) || 0,
+      packageTariffUSD: Number(body.fullPackageAmountUSD) || Number(amountUSD) || 0,
       company: company || contactPerson,
       contactPerson,
       email,
@@ -120,8 +127,10 @@ export async function POST(req: Request) {
       industryCategory,
       specialRequirements,
       paymentMethod,
-      paymentStatus: paymentMethod === "bank" ? "PENDING_WIRE" : "INITIATED",
-      bookingStatus: "Reserved",
+      is72hHold: isHold72h,
+      holdExpiresAt,
+      paymentStatus: isHold72h ? "COURTESY_HOLD_72H" : paymentMethod === "bank" ? "PENDING_WIRE" : "INITIATED",
+      bookingStatus: isHold72h ? "72h Courtesy Hold" : "Reserved",
       createdAt: new Date().toISOString(),
     };
 
@@ -133,13 +142,15 @@ export async function POST(req: Request) {
       adminData.stallBookings.unshift(newBookingRecord);
     }
 
-    // Mark stalls as Reserved in boothOverrides
+    // Mark stalls as Reserved or 72h Hold in boothOverrides
     if (!adminData.boothOverrides) adminData.boothOverrides = {};
     for (const stNum of stallNumbers) {
       adminData.boothOverrides[stNum] = {
-        status: "Reserved",
+        status: isHold72h ? "72h Hold" : "Reserved",
         exhibitorName: company || contactPerson,
         bookingRef: orderId,
+        is72hHold: isHold72h,
+        holdExpiresAt,
         updatedAt: new Date().toISOString(),
       };
     }
@@ -153,10 +164,16 @@ export async function POST(req: Request) {
       email,
       phone,
       company: company || contactPerson,
-      subject: `Stall Reservation [${stallListStr}] - Method: ${paymentMethod.toUpperCase()}`,
-      message: `Booking Ref: ${orderId}. Stalls: ${stallListStr}. Fascia: ${fasciaName || company}. Total: NPR ${amountNPR?.toLocaleString()} / USD ${amountUSD?.toLocaleString()}. Power: ${powerOption}. Notes: ${specialRequirements || "None"}.`,
+      subject: isHold72h
+        ? `[72-HOUR FREE COURTESY HOLD] Sponsorship & Stalls [${stallListStr}]`
+        : `Stall Reservation [${stallListStr}] - Method: ${paymentMethod.toUpperCase()}`,
+      message: `Booking Ref: ${orderId}. Stalls: ${stallListStr}. Fascia: ${fasciaName || company}. ${
+        isHold72h
+          ? `72-HOUR FREE COURTESY HOLD (Zero Cost). Expires at: ${holdExpiresAt}.`
+          : `Total: NPR ${amountNPR?.toLocaleString()} / USD ${amountUSD?.toLocaleString()}.`
+      } Power: ${powerOption}. Notes: ${specialRequirements || "None"}.`,
       stallInterest: stallListStr,
-      status: "New",
+      status: isHold72h ? "72h Hold" : "New",
       submittedAt: new Date().toISOString(),
     });
 
@@ -211,13 +228,41 @@ export async function POST(req: Request) {
                 &bull; <strong>Fascia Board Name:</strong> ${escapeHtml(fasciaName || company || primaryName)}<br/>
                 &bull; <strong>Booth Type:</strong> ${escapeHtml(boothType)}<br/>
                 &bull; <strong>Industry Category:</strong> ${escapeHtml(industryCategory)}<br/>
-                &bull; <strong>Total Fee (incl. 13% VAT):</strong> NPR ${formattedNPR} / USD ${formattedUSD}<br/>
-                &bull; <strong>Payment Method:</strong> ${escapeHtml(paymentMethod.toUpperCase())}<br/>
+                &bull; <strong>Total Fee (incl. 13% VAT):</strong> ${
+                  isHold72h
+                    ? `<span style="color: #047857; font-weight: 700;">NPR 0 / USD $0 (Free 72-Hour Courtesy Hold)</span> &bull; Full package tariff (NPR ${formattedNPR} / USD ${formattedUSD}) due within 72 hrs`
+                    : `NPR ${formattedNPR} / USD ${formattedUSD}`
+                }<br/>
+                &bull; <strong>Payment Method:</strong> ${
+                  isHold72h ? "72-HOUR FREE COURTESY HOLD" : escapeHtml(paymentMethod.toUpperCase())
+                }<br/>
+                ${
+                  isHold72h && holdExpiresAt
+                    ? `&bull; <strong>Hold Expiration Window:</strong> <span style="color: #b45309; font-weight: 700;">72 Hours Exclusivity Lock (Expires: ${new Date(
+                        holdExpiresAt
+                      ).toLocaleString("en-US", { timeZone: "Asia/Kathmandu" })} NPT)</span><br/>`
+                    : ""
+                }
                 &bull; <strong>Expo Dates:</strong> 17–19 January 2027 (10:00 AM – 6:00 PM)<br/>
                 &bull; <strong>Venue:</strong> BHRIKUTIMANDAP, KATHMANDU, NEPAL
               </div>
 
-              ${isBankTransfer ? `
+              ${
+                isHold72h
+                  ? `
+              <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 16px 20px; margin: 18px 0; font-size: 13px; line-height: 1.7;">
+                <strong style="color: #065f46;">72-Hour Exclusivity Lock Active:</strong><br/>
+                Your selected sponsorship package and allocated stalls are reserved exclusively in your company&apos;s name for the next 72 hours at zero cost. No other organization can claim this allocation during your courtesy hold.<br/><br/>
+                <strong>Next Steps:</strong> Our exhibition secretariat will provide your official corporate sponsorship contract. When ready to confirm, your finance department may wire remittance to the account below:<br/><br/>
+                &bull; <strong>Account Name:</strong> IPPAN - GREEN ENERGY EXPO<br/>
+                &bull; <strong>Bank Name:</strong> Nepal Investment Mega Bank (NIMB)<br/>
+                &bull; <strong>Account Number:</strong> 001001201928471<br/>
+                &bull; <strong>Branch / SWIFT:</strong> Durbarmarg, Kathmandu / NIMBNPKA<br/>
+                &bull; <strong>Reference:</strong> Quote booking ID <code>${escapeHtml(orderId)}</code>
+              </div>
+              `
+                  : isBankTransfer
+                  ? `
               <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 16px 20px; margin: 18px 0; font-size: 13px; line-height: 1.7;">
                 <strong style="color: #065f46;">Bank Wire Remittance Instructions:</strong><br/>
                 Please deposit / wire the stall fees to the official IPPAN account below:<br/><br/>
@@ -227,11 +272,13 @@ export async function POST(req: Request) {
                 &bull; <strong>Branch / SWIFT:</strong> Durbarmarg, Kathmandu / NIMBNPKA<br/>
                 &bull; <strong>Wire Remarks:</strong> Please quote booking ID <code>${escapeHtml(orderId)}</code> and email the bank swift advice/voucher to <a href="mailto:expo@ippan.org.np" style="color: #047857; font-weight: 600;">expo@ippan.org.np</a>.
               </div>
-              ` : `
+              `
+                  : `
               <p style="font-size: 13px; color: #475569; line-height: 1.6;">
                 Once your online payment verification is confirmed, your stall status will automatically lock as <strong>Confirmed &amp; Booked</strong> on the interactive floor plan.
               </p>
-              `}
+              `
+              }
 
               <div style="border-top: 1px solid #e2e8f0; padding-top: 16px; margin-top: 20px; font-size: 13px; color: #475569; line-height: 1.6;">
                 <strong>Secretariat Contact Details:</strong><br/>
@@ -255,7 +302,9 @@ export async function POST(req: Request) {
           from: `"${fromName}" <${smtpUser}>`,
           to: email,
           replyTo: `"Expo Secretariat" <info@eventsolutionnepal.com.np>`,
-          subject: `Stall Reservation Confirmed [Ref: ${orderId}] | Himalayan Green Energy Expo 2027`,
+          subject: isHold72h
+            ? `[72-Hour Free Courtesy Hold Confirmed] Ref: ${orderId} | Himalayan Green Energy Expo 2027`
+            : `Stall Reservation Confirmed [Ref: ${orderId}] | Himalayan Green Energy Expo 2027`,
           html: emailHtml,
         }).catch((err) => {
           console.warn("[stall-booking] Auto-reply send error:", err?.message || err);
@@ -271,6 +320,23 @@ export async function POST(req: Request) {
         ? "http://localhost:3000"
         : "https://himalayanenergyexpo.com");
 
+    // 2. Handle 72-Hour Free Courtesy Hold Routing (Exclusively for Sponsors, Zero Cost)
+    if (isHold72h) {
+      return NextResponse.json({
+        success: true,
+        bookingId: orderId,
+        paymentMethod: "hold_72h",
+        isHold72h: true,
+        holdExpiresAt,
+        message: "72-Hour Free Courtesy Hold secured successfully at zero cost.",
+        redirectUrl: `/payment/success?id=${encodeURIComponent(
+          orderId
+        )}&gateway=hold_72h&stalls=${encodeURIComponent(
+          stallListStr
+        )}&amount=0&hold=72h`,
+      });
+    }
+
     const isInternational =
       (country && country.trim().toLowerCase() !== "nepal") ||
       (specialRequirements && specialRequirements.toLowerCase().includes("international")) ||
@@ -281,7 +347,7 @@ export async function POST(req: Request) {
     // Online card checkout is currently under construction.
     const effectivePaymentMethod = isInternational ? "bank" : paymentMethod;
 
-    // 2. Handle Payment Method Routing
+    // 3. Handle Payment Method Routing
     if (isInternational || effectivePaymentMethod === "bank") {
       const finalAmount = isInternational ? (amountUSD || 1350) : (amountNPR || 875000);
       const currency = isInternational ? "USD" : "NPR";

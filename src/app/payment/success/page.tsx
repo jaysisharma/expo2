@@ -19,6 +19,7 @@ import {
   CreditCard,
   QrCode,
   Landmark,
+  Clock,
 } from "lucide-react";
 
 function PaymentSuccessContent() {
@@ -46,6 +47,10 @@ function PaymentSuccessContent() {
   const isBank = gateway.toLowerCase() === "bank";
   const isKhalti = gateway.toLowerCase() === "khalti";
   const isFonepay = gateway.toLowerCase() === "fonepay";
+  const isHold72h =
+    gateway.toLowerCase() === "hold_72h" ||
+    searchParams.get("hold") === "72h" ||
+    searchParams.get("hold") === "true";
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-900 flex flex-col">
@@ -55,11 +60,17 @@ function PaymentSuccessContent() {
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/30 text-xs font-mono font-bold text-[#34D399] uppercase shadow-xs">
             <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
             <span>
-              {isGala ? "OFFICIAL NETWORKING DINNER VIP PASS CONFIRMATION" : "OFFICIAL STALL ALLOCATION CONFIRMATION"}
+              {isHold72h
+                ? "OFFICIAL 72-HOUR FREE COURTESY HOLD CONFIRMATION"
+                : isGala
+                ? "OFFICIAL NETWORKING DINNER VIP PASS CONFIRMATION"
+                : "OFFICIAL STALL ALLOCATION CONFIRMATION"}
             </span>
           </div>
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white">
-            {isGala
+            {isHold72h
+              ? "72-Hour Courtesy Hold Confirmed (Zero Cost)!"
+              : isGala
               ? isBank
                 ? "Networking Dinner VIP Pass Reservation Received!"
                 : "Payment & Networking Dinner VIP Pass Confirmed!"
@@ -68,7 +79,9 @@ function PaymentSuccessContent() {
                 : "Payment & Stall Booking Confirmed!"}
           </h1>
           <p className="text-sm sm:text-base text-emerald-100/80 max-w-xl mx-auto leading-relaxed">
-            {isGala
+            {isHold72h
+              ? "Your exclusive 72-hour courtesy hold is officially active! Your sponsorship package and allocated booth space have been locked in at zero upfront cost while your organization finalizes internal approvals."
+              : isGala
               ? isBank
                 ? "Your Networking Dinner seats at Royal Tulip Kathmandu (Gwarko) have been provisionally held. Please complete the bank wire remittance within 48 hours to finalize guest seating."
                 : "Your Khalti payment has been successfully verified. Your VIP delegate credential for the Royal Tulip Kathmandu (Gwarko) Networking Dinner is officially locked in."
@@ -101,19 +114,25 @@ function PaymentSuccessContent() {
 
               {/* Gateway Badge */}
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-200 text-xs font-mono font-bold text-slate-700 self-start sm:self-auto">
-                {isKhalti && (
+                {isHold72h && (
+                  <div className="flex items-center gap-1.5 text-emerald-900 font-bold">
+                    <Clock className="w-4 h-4 text-emerald-700" />
+                    <span>72-Hour Free Courtesy Hold</span>
+                  </div>
+                )}
+                {isKhalti && !isHold72h && (
                   <>
                     <CreditCard className="w-4 h-4 text-[#5D2E8E]" />
                     <span>Paid via Khalti ePayment</span>
                   </>
                 )}
-                {isFonepay && (
+                {isFonepay && !isHold72h && (
                   <>
                     <QrCode className="w-4 h-4 text-[#D92525]" />
                     <span>Paid via Fonepay Direct</span>
                   </>
                 )}
-                {isBank && (
+                {isBank && !isHold72h && (
                   <>
                     <Landmark className="w-4 h-4 text-[#218A59]" />
                     <span>{currency === "USD" ? "USD SWIFT Wire Invoice" : "Bank Wire / Invoice"}</span>
@@ -136,17 +155,27 @@ function PaymentSuccessContent() {
               </div>
 
               <div>
-                <span className="text-slate-500 text-[10px] uppercase font-bold">TOTAL AMOUNT</span>
+                <span className="text-slate-500 text-[10px] uppercase font-bold">
+                  {isHold72h ? "AMOUNT DUE TODAY" : "TOTAL AMOUNT"}
+                </span>
                 <div className="font-sans font-bold text-lg text-slate-900 mt-0.5">
-                  {amount
-                    ? currency === "USD"
-                      ? `USD $${Number(amount).toLocaleString()}`
-                      : `NPR ${Number(amount).toLocaleString()}`
-                    : isGala
-                      ? passTier === "international"
-                        ? `USD $${50 * Number(qty)} (≈ NPR ${(6750 * Number(qty)).toLocaleString()})`
-                        : `NPR ${(6000 * Number(qty)).toLocaleString()}`
-                      : "NPR 875,000"}
+                  {isHold72h ? (
+                    <span className="text-emerald-700">FREE · NPR 0 / USD $0</span>
+                  ) : amount ? (
+                    currency === "USD" ? (
+                      `USD $${Number(amount).toLocaleString()}`
+                    ) : (
+                      `NPR ${Number(amount).toLocaleString()}`
+                    )
+                  ) : isGala ? (
+                    passTier === "international" ? (
+                      `USD $${50 * Number(qty)} (≈ NPR ${(6750 * Number(qty)).toLocaleString()})`
+                    ) : (
+                      `NPR ${(6000 * Number(qty)).toLocaleString()}`
+                    )
+                  ) : (
+                    "NPR 875,000"
+                  )}
                 </div>
               </div>
 
@@ -173,6 +202,39 @@ function PaymentSuccessContent() {
                 </div>
               )}
             </div>
+
+            {/* 72-Hour Courtesy Hold Details Box */}
+            {isHold72h && (
+              <div className="p-5 sm:p-6 rounded-2xl bg-emerald-50/90 border border-emerald-300 text-xs space-y-3 font-sans">
+                <div className="flex items-center gap-2 font-bold text-emerald-950 font-mono text-sm">
+                  <Clock className="w-5 h-5 text-emerald-700" />
+                  <span>72-Hour Exclusivity Hold Guarantee (Zero Upfront Commitment)</span>
+                </div>
+                <p className="text-emerald-900 leading-relaxed font-normal">
+                  Your sponsorship tier and prime stall allocation are held exclusively for your organization for the next 72 hours. No other company can claim this placement during your courtesy window. Our summit secretariat will contact your team to deliver the formal sponsorship agreement and assist with wire invoice processing.
+                </p>
+                <div className="pt-2 border-t border-emerald-200/80 flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
+                  <div className="text-emerald-800">
+                    <strong>Need direct secretariat assistance or an official invoice?</strong>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <a
+                      href="tel:+9779703606348"
+                      className="text-emerald-900 font-bold hover:underline"
+                    >
+                      +977 9703606348 / 9703606345
+                    </a>
+                    <span>&bull;</span>
+                    <a
+                      href="mailto:info@himalayanenergyexpo.com"
+                      className="text-emerald-900 font-bold hover:underline"
+                    >
+                      info@himalayanenergyexpo.com
+                    </a>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Bank Wire Details Box (if bank transfer chosen) */}
             {isBank && (

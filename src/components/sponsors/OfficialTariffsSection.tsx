@@ -17,6 +17,7 @@ import {
   Ticket,
   Crown,
   Utensils,
+  Clock,
 } from "lucide-react";
 
 export default function OfficialTariffsSection() {
@@ -110,13 +111,21 @@ export default function OfficialTariffsSection() {
               <span className="text-[11px] font-mono text-slate-500">
                 {currency === "NPR" ? "Equiv. USD $35,000 (+ 13% VAT)" : "Equiv. NRs 50,00,000 (+ 13% VAT)"}
               </span>
-              <div className="flex items-center gap-2 pt-1 w-full sm:w-auto">
+              <div className="flex items-center gap-2 pt-1 w-full sm:w-auto flex-wrap">
                 <Link
                   href="/book-stall?tier=title-sponsor"
                   className="px-4 py-2 rounded-xl bg-[#218A59] hover:bg-[#186a43] text-white font-mono text-xs font-bold transition-all shadow-xs flex items-center gap-1.5"
                 >
                   <span>Reserve Title Sponsorship</span>
                   <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+                <Link
+                  href="/book-stall?tier=title-sponsor&hold=true"
+                  className="px-3 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-mono text-xs font-bold transition-colors flex items-center gap-1"
+                  title="Claim complimentary 72-hour zero-cost courtesy hold on Title Sponsorship"
+                >
+                  <Clock className="w-3.5 h-3.5 text-emerald-700" />
+                  <span>72h Free Hold ⏱</span>
                 </Link>
                 <Link
                   href="/contact?subject=Title%20Sponsorship%20Inquiry%20HGEE2027"
@@ -316,19 +325,31 @@ export default function OfficialTariffsSection() {
                     {tier.normalPass}
                   </td>
                   <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                    <Link
-                      href={`/contact?subject=Sponsorship%20Inquiry%20${encodeURIComponent(
-                        tier.tier
-                      )}`}
-                      className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg font-mono text-[11px] font-bold transition-all shadow-xs ${
-                        tier.featured
-                          ? "bg-amber-600 hover:bg-amber-700 text-white"
-                          : "bg-slate-900 hover:bg-[#218A59] text-white"
-                      }`}
-                    >
-                      <span>Inquire</span>
-                      <ArrowRight className="w-3 h-3" />
-                    </Link>
+                    <div className="flex items-center justify-end gap-1.5">
+                      <Link
+                        href={`/book-stall?tier=${encodeURIComponent(
+                          tier.tier.toLowerCase().replace(/\s+/g, "-")
+                        )}&hold=true`}
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg font-mono text-[10.5px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100 transition-all shadow-2xs"
+                        title="Claim 72-Hour Free Courtesy Hold (Zero Cost)"
+                      >
+                        <Clock className="w-3 h-3 text-emerald-700" />
+                        <span>72h Free Hold</span>
+                      </Link>
+                      <Link
+                        href={`/contact?subject=Sponsorship%20Inquiry%20${encodeURIComponent(
+                          tier.tier
+                        )}`}
+                        className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg font-mono text-[11px] font-bold transition-all shadow-xs ${
+                          tier.featured
+                            ? "bg-amber-600 hover:bg-amber-700 text-white"
+                            : "bg-slate-900 hover:bg-[#218A59] text-white"
+                        }`}
+                      >
+                        <span>Inquire</span>
+                        <ArrowRight className="w-3 h-3" />
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))}

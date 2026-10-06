@@ -48,6 +48,7 @@ import {
   Heart,
   Box,
   LayoutGrid,
+  Clock,
 } from "lucide-react";
 
 export interface StallPackage {
@@ -275,6 +276,10 @@ export default function StallBookingWizard() {
     searchParams.get("tier") ||
     searchParams.get("package") ||
     searchParams.get("type");
+  const queryHold =
+    searchParams.get("hold") === "true" ||
+    searchParams.get("action") === "hold" ||
+    searchParams.get("mode") === "hold";
 
   const [step, setStep] = useState(1);
   const [selectedBoothNumbers, setSelectedBoothNumbers] = useState<string[]>([]);
@@ -284,7 +289,7 @@ export default function StallBookingWizard() {
   const [viewMode, setViewMode] = useState<"map" | "list">("map");
   const [boothType, setBoothType] = useState<"Shell Scheme" | "Bare Space">("Shell Scheme");
   const [powerOption, setPowerOption] = useState<string>("Standard 15A Included");
-  const [paymentMethod, setPaymentMethod] = useState<"khalti" | "fonepay" | "bank">("khalti");
+  const [paymentMethod, setPaymentMethod] = useState<"khalti" | "fonepay" | "bank" | "hold_72h">("khalti");
   const [agreedTerms, setAgreedTerms] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [formError, setFormError] = useState<string>("");
@@ -496,6 +501,21 @@ export default function StallBookingWizard() {
 
   const selectedPackage = PARTICIPATION_PACKAGES.find((p) => p.id === selectedPackageId);
   const isSponsorPackage = Boolean(selectedPackage && selectedPackage.type === "sponsor");
+
+  // Automatically select 72h hold if requested via query param for sponsor packages
+  useEffect(() => {
+    if (queryHold && isSponsorPackage) {
+      setPaymentMethod("hold_72h");
+    }
+  }, [queryHold, isSponsorPackage]);
+
+  // STRICT GUARANTEE: 72-hour courtesy hold is exclusively for Sponsorship Packages.
+  // Never allow 72-hour hold for regular exhibition stalls, bare space stalls, or custom map stalls.
+  useEffect(() => {
+    if (!isSponsorPackage && paymentMethod === "hold_72h") {
+      setPaymentMethod(exhibitorOrigin === "international" ? "bank" : "khalti");
+    }
+  }, [isSponsorPackage, paymentMethod, exhibitorOrigin]);
 
   const totalAreaSqM = selectedStallObjects.reduce((acc, curr) => acc + (curr.sizeSqM || 0), 0);
   const rawBasePriceNPR = selectedStallObjects.reduce((acc, curr) => acc + (curr.basePriceNPR || 0), 0);
@@ -749,8 +769,10 @@ export default function StallBookingWizard() {
           body: JSON.stringify({
             bookingId: ref,
             stallNumbers: selectedBoothNumbers,
-            amountNPR: totalWithVatNPR,
-            amountUSD: totalWithVatUSD,
+            amountNPR: paymentMethod === "hold_72h" ? 0 : totalWithVatNPR,
+            amountUSD: paymentMethod === "hold_72h" ? 0 : totalWithVatUSD,
+            fullPackageAmountNPR: totalWithVatNPR,
+            fullPackageAmountUSD: totalWithVatUSD,
             baseAmountNPR: finalPriceNPR,
             baseAmountUSD: finalPriceUSD,
             vatNPR,
@@ -767,9 +789,10 @@ export default function StallBookingWizard() {
             industryCategory: resolvedIndustry,
             specialRequirements:
               selectedPackage && selectedPackage.id !== "custom-selection"
-                ? `[${exhibitorOrigin.toUpperCase()} EXHIBITOR] Package: ${selectedPackage.name} | Stalls: ${selectedBoothNumbers.join(", ")}`
+                ? `[${exhibitorOrigin.toUpperCase()} EXHIBITOR] ${paymentMethod === "hold_72h" ? "[72-HOUR FREE COURTESY HOLD] " : ""}Package: ${selectedPackage.name} | Stalls: ${selectedBoothNumbers.join(", ")}`
                 : `[${exhibitorOrigin.toUpperCase()} EXHIBITOR] Stalls: ${selectedBoothNumbers.join(", ")}`,
-            paymentMethod: exhibitorOrigin === "international" ? "bank" : paymentMethod,
+            paymentMethod: paymentMethod === "hold_72h" ? "hold_72h" : exhibitorOrigin === "international" ? "bank" : paymentMethod,
+            isHold72h: paymentMethod === "hold_72h",
           }),
         });
 
@@ -777,6 +800,17 @@ export default function StallBookingWizard() {
 
         if (!response.ok || !data.success) {
           throw new Error(data.error || "Failed to initialize booking and payment.");
+        }
+
+        // For 72-Hour Free Courtesy Hold, directly navigate to success page or open confirmation
+        if (paymentMethod === "hold_72h") {
+          confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+          if (data.redirectUrl) {
+            router.push(data.redirectUrl);
+            return;
+          }
+          setStep(4);
+          return;
         }
 
         // For international exhibitors, always route to official invoice success page, never external gateways
@@ -990,6 +1024,10 @@ export default function StallBookingWizard() {
                               <Sparkles className="w-2.5 h-2.5" />
                               <span>PRIME FLAGSHIP</span>
                             </span>
+                            <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300 uppercase tracking-wider">
+                              <Clock className="w-2.5 h-2.5 text-emerald-700" />
+                              <span>72H FREE HOLD</span>
+                            </span>
                           </div>
                           <div className="flex items-center gap-1.5 text-xs text-slate-600 font-medium mt-0.5">
                             <Box className="w-3.5 h-3.5 text-slate-400" />
@@ -1026,27 +1064,46 @@ export default function StallBookingWizard() {
                         </div>
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          selectPackage(pkg.id);
-                        }}
-                        className={`py-2 px-5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs ${
-                          isSelected
-                            ? "bg-[#007A5E] text-white hover:bg-[#00664e] shadow-xs ring-2 ring-emerald-500/20"
-                            : "bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold"
-                        }`}
-                      >
-                        {isSelected ? (
-                          <>
-                            <Check className="w-3.5 h-3.5 stroke-[2.5]" />
-                            <span>Selected</span>
-                          </>
-                        ) : (
-                          <span>Select Title Sponsor</span>
-                        )}
-                      </button>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            selectPackage(pkg.id);
+                          }}
+                          className={`py-2 px-4 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs ${
+                            isSelected && paymentMethod !== "hold_72h"
+                              ? "bg-[#007A5E] text-white hover:bg-[#00664e] shadow-xs ring-2 ring-emerald-500/20"
+                              : "bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold"
+                          }`}
+                        >
+                          {isSelected && paymentMethod !== "hold_72h" ? (
+                            <>
+                              <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                              <span>Selected</span>
+                            </>
+                          ) : (
+                            <span>Select Title Sponsor</span>
+                          )}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            selectPackage(pkg.id);
+                            setPaymentMethod("hold_72h");
+                          }}
+                          className={`py-2 px-3 rounded-xl text-xs font-bold font-mono transition-all cursor-pointer flex items-center justify-center gap-1 shadow-2xs ${
+                            isSelected && paymentMethod === "hold_72h"
+                              ? "bg-emerald-700 text-white border border-emerald-800"
+                              : "bg-white border border-emerald-300 text-emerald-800 hover:bg-emerald-50"
+                          }`}
+                          title="Place a complimentary 72-hour zero-cost hold on Title Sponsorship"
+                        >
+                          <Clock className="w-3 h-3 text-emerald-600" />
+                          <span>72h Free Hold</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1160,7 +1217,7 @@ export default function StallBookingWizard() {
                         </div>
 
                         {/* Bottom Pricing & Action Button */}
-                        <div className="pt-3 border-t border-slate-100 mt-4 space-y-2.5">
+                        <div className="pt-3 border-t border-slate-100 mt-4 space-y-2">
                           <div>
                             <div className="font-mono font-bold text-xs sm:text-sm text-slate-900">
                               {pkg.priceDisplayNPR}
@@ -1170,27 +1227,46 @@ export default function StallBookingWizard() {
                             </div>
                           </div>
 
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              selectPackage(pkg.id);
-                            }}
-                            className={`w-full py-1.5 px-2 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-1 ${
-                              isSelected
-                                ? "bg-[#007A5E] text-white shadow-2xs"
-                                : "bg-white border border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50"
-                            }`}
-                          >
-                            {isSelected ? (
-                              <>
-                                <Check className="w-3.5 h-3.5" />
-                                <span>Selected</span>
-                              </>
-                            ) : (
-                              <span>Select Package</span>
-                            )}
-                          </button>
+                          <div className="space-y-1.5">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                selectPackage(pkg.id);
+                              }}
+                              className={`w-full py-1.5 px-2 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                                isSelected && paymentMethod !== "hold_72h"
+                                  ? "bg-[#007A5E] text-white shadow-2xs"
+                                  : "bg-white border border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50"
+                              }`}
+                            >
+                              {isSelected && paymentMethod !== "hold_72h" ? (
+                                <>
+                                  <Check className="w-3.5 h-3.5" />
+                                  <span>Selected</span>
+                                </>
+                              ) : (
+                                <span>Select Package</span>
+                              )}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                selectPackage(pkg.id);
+                                setPaymentMethod("hold_72h");
+                              }}
+                              className={`w-full py-1 px-2 rounded-lg text-[10.5px] font-mono font-bold transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                                isSelected && paymentMethod === "hold_72h"
+                                  ? "bg-emerald-700 text-white"
+                                  : "bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300"
+                              }`}
+                              title="Claim complimentary 72-hour zero-cost courtesy hold"
+                            >
+                              <Clock className="w-3 h-3 text-emerald-700" />
+                              <span>72h Free Hold ⏱</span>
+                            </button>
+                          </div>
                         </div>
                       </div>
                     );
@@ -1819,22 +1895,41 @@ export default function StallBookingWizard() {
                     <div className="pt-3 border-t border-slate-200 flex items-baseline justify-between">
                       <div>
                         <span className="font-sans font-bold text-xs text-slate-900 block">
-                          Total Payable
+                          {paymentMethod === "hold_72h" && isSponsorPackage ? "Amount Due Today" : "Total Payable"}
                         </span>
                         <span className="text-[10px] text-slate-400 font-sans block">
-                          All taxes included
+                          {paymentMethod === "hold_72h" && isSponsorPackage ? "72-Hr Courtesy Hold" : "All taxes included"}
                         </span>
                       </div>
                       <div className="text-right">
-                        <div className="text-lg font-bold font-mono text-[#15803D]">
-                          NPR {totalWithVatNPR.toLocaleString()}
-                        </div>
-                        <div className="text-xs font-mono text-slate-500">
-                          USD ${totalWithVatUSD.toLocaleString()}
-                        </div>
+                        {paymentMethod === "hold_72h" && isSponsorPackage ? (
+                          <>
+                            <div className="text-lg font-bold font-mono text-[#15803D]">
+                              NPR 0 (FREE)
+                            </div>
+                            <div className="text-xs font-mono text-slate-500">
+                              USD $0 Today
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="text-lg font-bold font-mono text-[#15803D]">
+                              NPR {totalWithVatNPR.toLocaleString()}
+                            </div>
+                            <div className="text-xs font-mono text-slate-500">
+                              USD ${totalWithVatUSD.toLocaleString()}
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
+
+                  {paymentMethod === "hold_72h" && isSponsorPackage && (
+                    <div className="text-[10.5px] font-mono text-emerald-900 bg-emerald-50 border border-emerald-200 p-2 rounded-lg">
+                      ⏱️ 72-Hour Free Hold: Zero payment today. Full invoice (NPR {totalWithVatNPR.toLocaleString()}) due via wire within 72h.
+                    </div>
+                  )}
 
                   {isSponsorPackage && (
                     <p className="text-[11px] text-emerald-800 font-medium pt-1.5 border-t border-slate-100">
@@ -2207,7 +2302,9 @@ export default function StallBookingWizard() {
                   </span>
                 </div>
                 <div className="font-sans font-bold text-xl text-[#15803D]">
-                  {exhibitorOrigin === "international"
+                  {paymentMethod === "hold_72h" && isSponsorPackage
+                    ? "NPR 0 / USD $0 (Free Hold)"
+                    : exhibitorOrigin === "international"
                     ? `USD $${totalWithVatUSD.toLocaleString()}`
                     : `NPR ${totalWithVatNPR.toLocaleString()}`}
                 </div>
@@ -2293,6 +2390,53 @@ export default function StallBookingWizard() {
                 </button>
               </div>
             </div>
+
+            {/* 72-Hour Free Courtesy Hold Card (SPONSORSHIP PACKAGES ONLY) */}
+            {isSponsorPackage && (
+              <div
+                onClick={() => setPaymentMethod("hold_72h")}
+                className={`p-5 sm:p-6 rounded-2xl border-2 transition-all cursor-pointer relative flex flex-col justify-between ${
+                  paymentMethod === "hold_72h"
+                    ? "border-[#007A5E] bg-[#007A5E]/5 shadow-md ring-2 ring-[#007A5E]/20"
+                    : "border-emerald-300 bg-linear-to-r from-emerald-50/70 via-white to-emerald-50/40 hover:border-emerald-400"
+                }`}
+              >
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="px-2.5 py-1 rounded-lg bg-[#007A5E] text-white font-mono text-[10px] font-bold">
+                        72-HOUR COURTESY HOLD
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 font-mono text-[10px] font-bold border border-emerald-300">
+                        100% FREE · ZERO UPFRONT COST
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 font-mono text-[9px] font-bold border border-amber-300">
+                        SPONSORS ONLY
+                      </span>
+                    </div>
+                    {paymentMethod === "hold_72h" && (
+                      <CheckCircle2 className="w-5 h-5 text-[#007A5E]" />
+                    )}
+                  </div>
+                  <h4 className="font-sans font-bold text-base text-slate-900 flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-[#007A5E]" />
+                    <span>Complimentary 72-Hour Courtesy Hold (NPR 0 / USD $0 Due Today)</span>
+                  </h4>
+                  <p className="text-xs text-slate-600 leading-relaxed font-normal max-w-2xl">
+                    Secure <strong>{selectedPackage?.name}</strong> and your designated exhibition stalls ({selectedBoothNumbers.join(", ")}) immediately for 72 hours without paying anything today. Allows your corporate board or finance committee time to process remittance formalities with zero risk of losing this exclusive tier.
+                  </p>
+                </div>
+                <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-[#007A5E] font-bold">
+                  <div className="flex items-center gap-1.5">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                    <span>Guaranteed Exclusivity Lock for 72 Hours</span>
+                  </div>
+                  <span className="text-[10px] text-slate-500 font-sans font-normal">
+                    Wire remittance invoice payable within 72 hrs
+                  </span>
+                </div>
+              </div>
+            )}
 
             {exhibitorOrigin === "international" ? (
               /* CLEAN INTERNATIONAL PAYMENT / PRO-FORMA INVOICE CARD */
@@ -2468,24 +2612,54 @@ export default function StallBookingWizard() {
       {step === 4 && (
         <div className="text-center py-8 space-y-6">
           <div className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-300 text-[#059669] flex items-center justify-center mx-auto shadow-xs">
-            <CheckCircle2 className="w-10 h-10" />
+            {paymentMethod === "hold_72h" ? (
+              <Clock className="w-9 h-9 text-emerald-600" />
+            ) : (
+              <CheckCircle2 className="w-10 h-10" />
+            )}
           </div>
 
           <div>
             <span className="font-mono text-xs text-[#059669] tracking-widest uppercase font-bold">
-              STALL RESERVATION SUBMITTED
+              {paymentMethod === "hold_72h"
+                ? "72-HOUR FREE COURTESY HOLD ACTIVATED"
+                : "STALL RESERVATION SUBMITTED"}
             </span>
             <h3 className="font-sans font-bold text-3xl text-slate-900 mt-1">
-              Thank You, {formData.companyName || "Exhibitor"}!
+              Thank You, {formData.companyName || "Partner"}!
             </h3>
             <p className="text-xs sm:text-sm text-slate-600 font-normal mt-2 max-w-md mx-auto leading-relaxed">
-              Your provisional booking for <strong>STALL {selectedBoothNumbers.join(", ")}</strong> has been received. Our exhibition team will issue your formal pro-forma invoice and exhibitor kit within 24 hours.
+              {paymentMethod === "hold_72h" ? (
+                <>
+                  Your complimentary <strong>72-Hour Exclusivity Hold</strong> for{" "}
+                  <strong>{selectedPackage?.name}</strong> (Stalls:{" "}
+                  {selectedBoothNumbers.join(", ")}) is officially locked in at zero upfront cost.
+                  Our secretariat will contact you within 24 hours with your executive agreement and
+                  pro-forma wire invoice.
+                </>
+              ) : (
+                <>
+                  Your provisional booking for <strong>STALL {selectedBoothNumbers.join(", ")}</strong> has been received. Our exhibition team will issue your formal pro-forma invoice and exhibitor kit within 24 hours.
+                </>
+              )}
             </p>
           </div>
 
           <div className="inline-block p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-900 font-bold">
             REFERENCE ID: {bookingRef}
           </div>
+
+          {paymentMethod === "hold_72h" && (
+            <div className="max-w-md mx-auto p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 space-y-1 font-mono text-center">
+              <div className="font-bold flex items-center justify-center gap-1.5 text-amber-950">
+                <Clock className="w-4 h-4 text-amber-700" />
+                <span>Exclusivity Window: 72 Hours Active</span>
+              </div>
+              <p className="text-[11px] text-amber-800 font-sans">
+                Zero payment due today. Complete your board formalities and wire remittance within 72 hours to finalize confirmation.
+              </p>
+            </div>
+          )}
 
           <div className="pt-4 flex flex-wrap justify-center gap-4">
             <button
@@ -2533,13 +2707,15 @@ export default function StallBookingWizard() {
                 disabled={isSubmitting}
                 className={`px-8 py-3.5 rounded-full font-mono text-xs font-bold tracking-wider shadow-md transition-all flex items-center gap-2 text-white ${isSubmitting
                   ? "bg-slate-300 text-slate-500 cursor-not-allowed shadow-none"
-                  : exhibitorOrigin === "international" && step === 3
-                    ? "bg-sky-600 hover:bg-sky-700 cursor-pointer"
-                    : paymentMethod === "khalti" && step === 3
-                      ? "bg-[#5D2E8E] hover:bg-[#482370] cursor-pointer"
-                      : paymentMethod === "fonepay" && step === 3
-                        ? "bg-[#D92525] hover:bg-[#b01c1c] cursor-pointer"
-                        : "bg-[#218A59] hover:bg-[#186a43] cursor-pointer"
+                  : paymentMethod === "hold_72h" && step === 3
+                    ? "bg-[#007A5E] hover:bg-[#005f49] cursor-pointer"
+                    : exhibitorOrigin === "international" && step === 3
+                      ? "bg-sky-600 hover:bg-sky-700 cursor-pointer"
+                      : paymentMethod === "khalti" && step === 3
+                        ? "bg-[#5D2E8E] hover:bg-[#482370] cursor-pointer"
+                        : paymentMethod === "fonepay" && step === 3
+                          ? "bg-[#D92525] hover:bg-[#b01c1c] cursor-pointer"
+                          : "bg-[#218A59] hover:bg-[#186a43] cursor-pointer"
                   }`}
               >
                 {isSubmitting ? (
@@ -2551,11 +2727,13 @@ export default function StallBookingWizard() {
                   <>
                     <span>
                       {step === 3
-                        ? exhibitorOrigin === "international"
-                          ? `CONFIRM & HOLD STALL (USD $${totalWithVatUSD.toLocaleString()})`
-                          : paymentMethod === "bank"
-                            ? "CONFIRM RESERVATION & GENERATE INVOICE"
-                            : `PAY WITH ${paymentMethod.toUpperCase()} (NPR ${totalWithVatNPR.toLocaleString()})`
+                        ? paymentMethod === "hold_72h" && isSponsorPackage
+                          ? "CONFIRM 72-HOUR FREE COURTESY HOLD (NPR 0 / $0)"
+                          : exhibitorOrigin === "international"
+                            ? `CONFIRM & HOLD STALL (USD $${totalWithVatUSD.toLocaleString()})`
+                            : paymentMethod === "bank"
+                              ? "CONFIRM RESERVATION & GENERATE INVOICE"
+                              : `PAY WITH ${paymentMethod.toUpperCase()} (NPR ${totalWithVatNPR.toLocaleString()})`
                         : exhibitorOrigin === "international"
                           ? "CONTINUE TO REVIEW & RESERVE"
                           : "CONTINUE TO REVIEW & PAYMENT"}
