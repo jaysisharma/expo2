@@ -1068,20 +1068,20 @@ export default function StallBookingWizard() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 flex-wrap">
+                      <div>
                         <button
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
                             selectPackage(pkg.id);
                           }}
-                          className={`py-2 px-4 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs ${
-                            isSelected && paymentMethod !== "hold_72h"
+                          className={`py-2 px-5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs ${
+                            isSelected
                               ? "bg-[#007A5E] text-white hover:bg-[#00664e] shadow-xs ring-2 ring-emerald-500/20"
                               : "bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold"
                           }`}
                         >
-                          {isSelected && paymentMethod !== "hold_72h" ? (
+                          {isSelected ? (
                             <>
                               <Check className="w-3.5 h-3.5 stroke-[2.5]" />
                               <span>Selected</span>
@@ -1089,23 +1089,6 @@ export default function StallBookingWizard() {
                           ) : (
                             <span>Select Title Sponsor</span>
                           )}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            selectPackage(pkg.id);
-                            setPaymentMethod("hold_72h");
-                          }}
-                          className={`py-2 px-3 rounded-xl text-xs font-bold font-mono transition-all cursor-pointer flex items-center justify-center gap-1 shadow-2xs ${
-                            isSelected && paymentMethod === "hold_72h"
-                              ? "bg-emerald-700 text-white border border-emerald-800"
-                              : "bg-white border border-emerald-300 text-emerald-800 hover:bg-emerald-50"
-                          }`}
-                          title="Place a complimentary 72-hour zero-cost hold on Title Sponsorship"
-                        >
-                          <Clock className="w-3 h-3 text-emerald-600" />
-                          <span>72h Free Hold</span>
                         </button>
                       </div>
                     </div>
@@ -1231,20 +1214,20 @@ export default function StallBookingWizard() {
                             </div>
                           </div>
 
-                          <div className="space-y-1.5">
+                          <div>
                             <button
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 selectPackage(pkg.id);
                               }}
-                              className={`w-full py-1.5 px-2 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-1 ${
-                                isSelected && paymentMethod !== "hold_72h"
-                                  ? "bg-[#007A5E] text-white shadow-2xs"
+                              className={`w-full py-2 px-3 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                                isSelected
+                                  ? "bg-[#007A5E] text-white shadow-xs font-bold"
                                   : "bg-white border border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50"
                               }`}
                             >
-                              {isSelected && paymentMethod !== "hold_72h" ? (
+                              {isSelected ? (
                                 <>
                                   <Check className="w-3.5 h-3.5" />
                                   <span>Selected</span>
@@ -1252,23 +1235,6 @@ export default function StallBookingWizard() {
                               ) : (
                                 <span>Select Package</span>
                               )}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                selectPackage(pkg.id);
-                                setPaymentMethod("hold_72h");
-                              }}
-                              className={`w-full py-1 px-2 rounded-lg text-[10.5px] font-mono font-bold transition-all cursor-pointer flex items-center justify-center gap-1 ${
-                                isSelected && paymentMethod === "hold_72h"
-                                  ? "bg-emerald-700 text-white"
-                                  : "bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300"
-                              }`}
-                              title="Claim complimentary 72-hour zero-cost courtesy hold"
-                            >
-                              <Clock className="w-3 h-3 text-emerald-700" />
-                              <span>72h Free Hold ⏱</span>
                             </button>
                           </div>
                         </div>
@@ -1941,11 +1907,14 @@ export default function StallBookingWizard() {
                     </p>
                   )}
 
-                  {/* Primary Action Button */}
-                  <div className="pt-1">
+                  {/* Action Buttons */}
+                  <div className="pt-1 space-y-2">
                     <button
                       type="button"
-                      onClick={handleNext}
+                      onClick={() => {
+                        setPaymentMethod(exhibitorOrigin === "international" ? "bank" : "khalti");
+                        handleNext();
+                      }}
                       disabled={selectedBoothNumbers.length === 0}
                       className={`w-full py-3 px-4 rounded-xl font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-sm ${selectedBoothNumbers.length === 0
                         ? "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none"
@@ -1955,9 +1924,26 @@ export default function StallBookingWizard() {
                       <span>
                         {selectedBoothNumbers.length === 0
                           ? "SELECT STALL TO CONTINUE"
+                          : isSponsorPackage
+                          ? `BOOK SPONSORSHIP DIRECTLY →`
                           : `CONTINUE (${selectedBoothNumbers.length} STALL${selectedBoothNumbers.length > 1 ? "S" : ""}) →`}
                       </span>
                     </button>
+
+                    {/* FREE 72-HOUR HOLD BUTTON IN BOOKING SUMMARY (SPONSORS ONLY) */}
+                    {isSponsorPackage && selectedBoothNumbers.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPaymentMethod("hold_72h");
+                          handleNext();
+                        }}
+                        className="w-full py-2.5 px-4 rounded-xl font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all border-2 border-[#007A5E] bg-emerald-50 text-[#007A5E] hover:bg-emerald-100 hover:shadow-xs cursor-pointer"
+                      >
+                        <Clock className="w-4 h-4 text-[#007A5E]" />
+                        <span>FREE 72-HOUR COURTESY HOLD (NPR 0 TODAY)</span>
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -1995,43 +1981,16 @@ export default function StallBookingWizard() {
               </h3>
               {isSponsorPackage && paymentMethod === "hold_72h" && (
                 <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-mono font-bold border border-emerald-300">
-                  ⚡ FAST-TRACK 72H COURTESY HOLD
+                  72H COURTESY HOLD (NPR 0 TODAY)
                 </span>
               )}
             </div>
             <p className="text-xs text-slate-600 font-normal mt-1">
               {isSponsorPackage && paymentMethod === "hold_72h"
-                ? "Enter your primary organization and executive contact details to place your 72-hour zero-cost hold. Booth specifications and branding can be finalized later."
-                : "Provide company metadata for listing in the official 2027 Expo Directory, exhibitor badges, and pro-forma invoice."}
+                ? `Enter organization contact details to place a 72-hour hold on ${selectedPackage?.name || "sponsorship"}. Zero upfront payment.`
+                : "Provide company details for official directory listing, badges, and invoice generation."}
             </p>
           </div>
-
-          {/* VIP Fast-Track Banner for 72-Hour Hold */}
-          {isSponsorPackage && paymentMethod === "hold_72h" && (
-            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-emerald-50 via-white to-emerald-50/60 border-2 border-emerald-500/30 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div className="flex items-center gap-3.5">
-                <div className="w-11 h-11 rounded-2xl bg-[#007A5E] text-white flex items-center justify-center shrink-0 shadow-sm">
-                  <Clock className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-bold text-sm text-slate-900">
-                      72-Hour Zero-Commitment Courtesy Freeze
-                    </span>
-                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-                      NPR 0 / $0 DUE TODAY
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-600 font-normal mt-0.5 leading-relaxed">
-                    Holding <strong>{selectedPackage?.name}</strong>. Prime floor positions ({selectedBoothNumbers.join(", ")}) are provisionally locked while your executive board reviews the proposal.
-                  </p>
-                </div>
-              </div>
-              <div className="text-[11px] font-mono font-bold text-emerald-800 bg-white border border-emerald-200/80 px-3 py-1.5 rounded-xl shrink-0 shadow-2xs">
-                Zero Cancellation Risk
-              </div>
-            </div>
-          )}
 
           {/* Exhibitor Classification: Domestic vs International */}
           <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3">
@@ -2284,143 +2243,78 @@ export default function StallBookingWizard() {
         <div className="space-y-6">
           <div>
             <h3 className="font-sans font-bold text-2xl text-slate-900">
-              {paymentMethod === "hold_72h" && isSponsorPackage
-                ? "Step 3: Review Sponsorship & Confirm 72-Hour Free Courtesy Hold"
-                : exhibitorOrigin === "international"
-                ? "Step 3: Review Details & Confirm Reservation"
-                : "Step 3: Select Payment Method & Finalize Booking"}
+              Step 3: Review &amp; Payment
             </h3>
             <p className="text-xs text-slate-600 font-normal mt-1">
-              {paymentMethod === "hold_72h" && isSponsorPackage
-                ? "Lock your VIP sponsorship package instantly with zero payment today. You have 72 hours of guaranteed exclusivity while processing corporate approvals."
-                : exhibitorOrigin === "international"
-                ? "Review your booking details below. Confirming will place your stall on hold and generate your official USD SWIFT Pro-Forma Invoice."
-                : "Complete your exhibition stall reservation instantly and securely via the Khalti ePayment gateway."}
+              Verify your booking details and select your preferred payment option below.
             </p>
           </div>
 
-          {/* Booking Summary Box */}
-          <div className="p-6 rounded-2xl bg-[#F8FAFC] border border-slate-200 space-y-4">
+          {/* Booking Summary Box - Clean & Minimal */}
+          <div className="p-5 rounded-2xl bg-[#F8FAFC] border border-slate-200">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
               <div>
                 <span className="text-[10px] font-mono text-slate-400 font-bold uppercase">ALLOCATED STALLS</span>
-                <div className="font-sans font-bold text-lg text-[#218A59] flex items-center gap-1.5 flex-wrap">
-                  <span>STALL {selectedBoothNumbers.join(", ")}</span>
-                  {selectedStallObjects.some((s) => s.isIrregular) && (
-                    <span className="text-[9px] font-mono px-1.5 py-0.5 rounded font-bold bg-teal-100 text-teal-800 border border-teal-300">
-                      Irregular Bare Space
-                    </span>
-                  )}
-                  {selectedStallObjects.some((s) => s.isPrime) && (
-                    <span className="text-[9px] font-mono px-1.5 py-0.5 rounded font-bold bg-amber-100 text-amber-900 border border-amber-300">
-                      ★ Prime Location (+{primeSurchargePercent}%)
-                    </span>
-                  )}
+                <div className="font-sans font-bold text-base text-[#218A59] mt-0.5">
+                  STALL {selectedBoothNumbers.join(", ")}
                 </div>
-                <span className="text-[11px] text-slate-600">
-                  {totalAreaSqM}m² {selectedStallObjects.some((s) => s.isIrregular) ? "(Irregular Bare Space)" : selectedStallObjects.some((s) => s.isBareSpace) ? "(Bare Space)" : ""}
+                <span className="text-[11px] text-slate-500">
+                  {totalAreaSqM}m² · {selectedStallObjects.some((s) => s.isBareSpace) ? "Bare Space" : "Shell Scheme"}
                 </span>
               </div>
 
               <div>
-                <span className="text-[10px] font-mono text-slate-400 font-bold uppercase">EXHIBITOR ENTITY</span>
-                <div className="font-sans font-bold text-base text-slate-900 flex items-center gap-1.5">
-                  <span>{formData.companyName || "Organization"}</span>
-                  <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded font-bold ${exhibitorOrigin === "international"
-                    ? "bg-sky-100 text-sky-800"
-                    : "bg-emerald-100 text-emerald-800"
-                    }`}>
-                    {exhibitorOrigin === "international" ? "International" : "Domestic"}
-                  </span>
+                <span className="text-[10px] font-mono text-slate-400 font-bold uppercase">EXHIBITOR</span>
+                <div className="font-sans font-bold text-base text-slate-900 mt-0.5">
+                  {formData.companyName || "Organization"}
                 </div>
-                <span className="text-[11px] text-slate-600">
+                <span className="text-[11px] text-slate-500">
                   {formData.contactPerson} ({formData.country})
                 </span>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-white border border-slate-200 space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-mono text-slate-500 font-bold uppercase">TOTAL INVESTMENT</span>
-                  <span className="text-[9px] font-mono bg-emerald-100 text-emerald-800 border border-emerald-300 px-1.5 py-0.5 rounded font-bold">
-                    + 13% VAT INCL.
-                  </span>
-                </div>
-                <div className="font-sans font-bold text-xl text-[#15803D]">
+              <div className="p-3 rounded-xl bg-white border border-slate-200">
+                <span className="text-[10px] font-mono text-slate-400 font-bold uppercase block">
+                  {paymentMethod === "hold_72h" ? "AMOUNT DUE TODAY" : "TOTAL PAYABLE"}
+                </span>
+                <div className="font-sans font-bold text-lg text-[#15803D] mt-0.5">
                   {paymentMethod === "hold_72h" && isSponsorPackage
-                    ? "NPR 0 / USD $0 (Free Hold)"
+                    ? "FREE · NPR 0"
                     : exhibitorOrigin === "international"
                     ? `USD $${totalWithVatUSD.toLocaleString()}`
                     : `NPR ${totalWithVatNPR.toLocaleString()}`}
                 </div>
-                <div className="pt-1 border-t border-slate-100 text-[10px] text-slate-600 font-mono space-y-0.5">
-                  <div className="flex justify-between">
-                    <span>Base Tariff:</span>
-                    <span className="font-semibold text-slate-800">
-                      {exhibitorOrigin === "international" ? `USD $${finalBasePriceUSD.toLocaleString()}` : `NPR ${finalBasePriceNPR.toLocaleString()}`}
-                    </span>
-                  </div>
-                  {selectedStallObjects.some((s) => s.isIrregular) && (
-                    <div className="flex justify-between text-teal-700 font-mono text-[9.5px]">
-                      <span>Irregular Rate:</span>
-                      <span>
-                        {exhibitorOrigin === "international"
-                          ? `USD $${(selectedStallObjects.find((s) => s.isIrregular)?.ratePerSqMUSD || 83.33).toFixed(2)}/m²`
-                          : `NPR ${selectedStallObjects.find((s) => s.isIrregular)?.ratePerSqMNPR?.toLocaleString() || "10,500"}/m²`}
-                      </span>
-                    </div>
-                  )}
-                  {hasPrimeStalls && !isSponsorPackage && (
-                    <div className="flex justify-between text-amber-800 font-semibold">
-                      <span>★ Prime Surcharge (+{primeSurchargePercent}%):</span>
-                      <span>
-                        {exhibitorOrigin === "international" ? `+ USD $${totalPrimeSurchargeUSD.toLocaleString()}` : `+ NPR ${totalPrimeSurchargeNPR.toLocaleString()}`}
-                      </span>
-                    </div>
-                  )}
-                  <div className="flex justify-between text-emerald-700">
-                    <span>+ 13% VAT:</span>
-                    <span className="font-semibold">
-                      {exhibitorOrigin === "international" ? `USD $${vatUSD.toLocaleString()}` : `NPR ${vatNPR.toLocaleString()}`}
-                    </span>
-                  </div>
-                </div>
-                <span className="text-[10px] text-slate-400 font-mono block pt-0.5">
-                  {exhibitorOrigin === "international"
-                    ? `Approx. NPR ${totalWithVatNPR.toLocaleString()}`
-                    : `Approx. USD $${totalWithVatUSD.toLocaleString()}`}
+                <span className="text-[10.5px] font-mono text-slate-500 block">
+                  {paymentMethod === "hold_72h" && isSponsorPackage
+                    ? `Package: NPR ${totalWithVatNPR.toLocaleString()}`
+                    : "13% VAT Included"}
                 </span>
               </div>
             </div>
 
-            <div className="pt-3 border-t border-slate-200 text-xs text-slate-700 flex flex-wrap items-center justify-between gap-2">
+            <div className="mt-3 pt-3 border-t border-slate-200/60 text-xs text-slate-600 flex flex-wrap items-center justify-between gap-2">
               {selectedPackage && selectedPackage.id !== "custom-selection" && (
                 <div>
-                  <strong>Package Tier:</strong> {selectedPackage.name} ({selectedPackage.spaceDescription})
+                  <span className="font-semibold text-slate-800">Package:</span> {selectedPackage.name}
                 </div>
               )}
               <div>
-                <strong>Industry Sector:</strong>{" "}
-                {formData.industryCategory === "Other"
-                  ? customIndustry || "Other"
-                  : formData.industryCategory}
+                <span className="font-semibold text-slate-800">Email:</span> {formData.email}
               </div>
               <div>
-                <strong>Official Email:</strong> {formData.email}
-              </div>
-              <div>
-                <strong>Contact:</strong> {formData.phone}
+                <span className="font-semibold text-slate-800">Phone:</span> {formData.phone}
               </div>
             </div>
           </div>
 
-          {/* Payment Gateway Cards / Payment Method */}
-          <div className="space-y-4">
+          {/* Payment Selection */}
+          <div className="space-y-3">
             <div className="flex items-center justify-between">
               <label className="block text-xs font-mono text-slate-700 font-bold uppercase">
-                {exhibitorOrigin === "international" ? "PAYMENT METHOD" : "SELECT PAYMENT GATEWAY"}
+                PAYMENT METHOD
               </label>
               <div className="flex items-center gap-1.5 text-[11px] font-mono">
-                <span className="text-slate-500">Exhibitor:</span>
+                <span className="text-slate-500">Currency:</span>
                 <button
                   type="button"
                   onClick={() => {
@@ -2435,160 +2329,94 @@ export default function StallBookingWizard() {
               </div>
             </div>
 
-            {/* 72-Hour Free Courtesy Hold Card (SPONSORSHIP PACKAGES ONLY) */}
+            {/* 72-Hour Free Courtesy Hold Card (Sponsors Only) */}
             {isSponsorPackage && (
               <div
                 onClick={() => setPaymentMethod("hold_72h")}
-                className={`p-5 sm:p-6 rounded-2xl border-2 transition-all cursor-pointer relative flex flex-col justify-between ${
+                className={`p-4 rounded-xl border-2 transition-all cursor-pointer flex items-center justify-between gap-4 ${
                   paymentMethod === "hold_72h"
-                    ? "border-[#007A5E] bg-[#007A5E]/5 shadow-md ring-2 ring-[#007A5E]/20"
-                    : "border-emerald-300 bg-linear-to-r from-emerald-50/70 via-white to-emerald-50/40 hover:border-emerald-400"
+                    ? "border-[#007A5E] bg-[#007A5E]/5 ring-2 ring-[#007A5E]/20"
+                    : "border-slate-200 bg-white hover:border-slate-300"
                 }`}
               >
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="px-2.5 py-1 rounded-lg bg-[#007A5E] text-white font-mono text-[10px] font-bold">
-                        72-HOUR COURTESY HOLD
-                      </span>
-                      <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 font-mono text-[10px] font-bold border border-emerald-300">
-                        100% FREE · ZERO UPFRONT COST
-                      </span>
-                      <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 font-mono text-[9px] font-bold border border-amber-300">
-                        SPONSORS ONLY
-                      </span>
-                    </div>
-                    {paymentMethod === "hold_72h" && (
-                      <CheckCircle2 className="w-5 h-5 text-[#007A5E]" />
-                    )}
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-0.5 rounded bg-[#007A5E] text-white font-mono text-[10px] font-bold">
+                      72-HOUR FREE HOLD
+                    </span>
+                    <h4 className="font-bold text-sm text-slate-900">
+                      72-Hour Courtesy Hold (NPR 0 Today)
+                    </h4>
                   </div>
-                  <h4 className="font-sans font-bold text-base text-slate-900 flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-[#007A5E]" />
-                    <span>Complimentary 72-Hour Courtesy Hold (NPR 0 / USD $0 Due Today)</span>
-                  </h4>
-                  <p className="text-xs text-slate-600 leading-relaxed font-normal max-w-2xl">
-                    Secure <strong>{selectedPackage?.name}</strong> and your designated complimentary exhibition stalls ({selectedBoothNumbers.join(", ")}) immediately for 72 hours without paying anything today. Allows your corporate board or finance committee time to process remittance formalities with zero risk of losing this exclusive tier.
+                  <p className="text-xs text-slate-600 mt-1">
+                    Hold this sponsorship package for 72 hours with zero commitment. Automatically releases if not confirmed.
                   </p>
-                  <div className="p-3 rounded-xl bg-emerald-50/80 border border-emerald-200/90 text-[11px] text-emerald-950 font-normal leading-relaxed space-y-1">
-                    <div>
-                      <strong>🛡️ Zero-Liability Guarantee:</strong> If your organization decides not to proceed, the hold releases automatically after 72 hours with zero penalty and no hidden fees.
-                    </div>
-                    <div>
-                      <strong>🏛️ Complimentary Prime Stalls:</strong> The IPPAN Floor Management Concierge will collaborate directly with your team to finalize exact booth layout and custom fascia branding.
-                    </div>
-                  </div>
                 </div>
-                <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-[#007A5E] font-bold">
-                  <div className="flex items-center gap-1.5">
-                    <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                    <span>Guaranteed Exclusivity Lock for 72 Hours</span>
-                  </div>
-                  <span className="text-[10px] text-slate-500 font-sans font-normal">
-                    Wire remittance invoice payable within 72 hrs
-                  </span>
-                </div>
+                {paymentMethod === "hold_72h" && (
+                  <CheckCircle2 className="w-5 h-5 text-[#007A5E] shrink-0" />
+                )}
               </div>
             )}
 
             {exhibitorOrigin === "international" ? (
-              /* CLEAN INTERNATIONAL PAYMENT / PRO-FORMA INVOICE CARD */
-              <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="space-y-1.5">
-                    <div className="flex items-center gap-2">
-                      <span className="px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold bg-sky-100 text-sky-800">
-                        SWIFT WIRE
-                      </span>
-                      <span className="text-sm font-bold text-slate-900 font-sans">
-                        Official USD Bank Transfer &amp; Pro-Forma Invoice
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-600 leading-relaxed font-normal max-w-xl">
-                      Your stall will be held immediately upon confirmation. Our secretariat will issue an official IPPAN USD Pro-Forma Invoice with complete SWIFT banking instructions to route your remittance.
-                    </p>
+              /* International: USD SWIFT Wire */
+              <div className="p-4 rounded-xl border-2 border-sky-400 bg-sky-50/40 flex items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-0.5 rounded bg-sky-600 text-white font-mono text-[10px] font-bold">
+                      SWIFT WIRE
+                    </span>
+                    <h4 className="font-bold text-sm text-slate-900">
+                      USD Bank Wire (Pro-Forma Invoice)
+                    </h4>
                   </div>
-                  <div className="w-10 h-10 rounded-xl bg-sky-50 text-sky-700 flex items-center justify-center shrink-0">
-                    <Landmark className="w-5 h-5 text-sky-600" />
-                  </div>
+                  <p className="text-xs text-slate-600 mt-1">
+                    Provisional hold. Official USD Pro-Forma Invoice with SWIFT banking details issued upon confirmation.
+                  </p>
                 </div>
-
-                {/* Direct Team Support */}
-                <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs">
-                  <span className="text-slate-500 font-medium">
-                    Questions about wire transfer or booking?
-                  </span>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <a
-                      href="https://wa.me/9779703606348?text=Hello%2C%20I%20am%20an%20international%20exhibitor%20inquiring%20about%20my%20stall%20booking."
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#25D366] text-white text-xs font-semibold hover:bg-[#20ba59] transition-colors"
-                    >
-                      <MessageSquare className="w-3.5 h-3.5" />
-                      <span>WhatsApp (+977 9703606348)</span>
-                    </a>
-                    <a
-                      href="mailto:info@himalayanenergyexpo.com?subject=International%20Stall%20Booking%20Inquiry"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors"
-                    >
-                      <Mail className="w-3.5 h-3.5" />
-                      <span>info@himalayanenergyexpo.com</span>
-                    </a>
-                  </div>
-                </div>
+                <Landmark className="w-5 h-5 text-sky-600 shrink-0" />
               </div>
             ) : (
-              /* DOMESTIC GATEWAY: KHALTI EPAYMENT ONLY */
+              /* Domestic: Khalti Only */
               <div
                 onClick={() => setPaymentMethod("khalti")}
-                className="p-5 sm:p-6 rounded-2xl border-2 border-[#5D2E8E] bg-[#5D2E8E]/5 shadow-sm ring-2 ring-[#5D2E8E]/20 transition-all cursor-pointer relative"
+                className={`p-4 rounded-xl border-2 transition-all cursor-pointer flex items-center justify-between gap-4 ${
+                  paymentMethod === "khalti"
+                    ? "border-[#5D2E8E] bg-[#5D2E8E]/5 ring-2 ring-[#5D2E8E]/20"
+                    : "border-slate-200 bg-white hover:border-slate-300"
+                }`}
               >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <div className="px-3 py-1 rounded-lg bg-[#5D2E8E] text-white font-mono text-[10px] font-bold">
-                        KHALTI EPAYMENT
-                      </div>
-                      <span className="text-[11px] font-mono text-emerald-700 bg-emerald-100 border border-emerald-300 px-2.5 py-0.5 rounded-full font-bold">
-                        INSTANT CONFIRMATION
-                      </span>
-                    </div>
-                    <h4 className="font-sans font-bold text-lg text-slate-900">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-0.5 rounded bg-[#5D2E8E] text-white font-mono text-[10px] font-bold">
+                      KHALTI
+                    </span>
+                    <h4 className="font-bold text-sm text-slate-900">
                       Khalti Online Payment Gateway
                     </h4>
-                    <p className="text-xs text-slate-600 leading-relaxed font-normal max-w-xl">
-                      Instant checkout via Khalti Mobile Wallet, SCT Cards, Mobile Banking (50+ partner banks) &amp; ConnectIPS. Your stall allocation is locked immediately upon successful payment.
-                    </p>
                   </div>
-                  <div className="w-12 h-12 rounded-2xl bg-[#5D2E8E]/10 text-[#5D2E8E] flex items-center justify-center shrink-0">
-                    <CheckCircle2 className="w-6 h-6 text-[#5D2E8E]" />
-                  </div>
+                  <p className="text-xs text-slate-600 mt-1">
+                    Instant checkout via Khalti Mobile Wallet, SCT Cards, Mobile Banking &amp; ConnectIPS.
+                  </p>
                 </div>
-
-                <div className="mt-4 pt-3.5 border-t border-slate-200/80 flex flex-wrap items-center justify-between gap-2 text-xs">
-                  <div className="flex items-center gap-1.5 text-[11px] font-mono text-[#5D2E8E] font-bold">
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>Real-time API Verification &middot; Official E-Receipt Issued Automatically</span>
-                  </div>
-                  <span className="text-[11px] text-slate-500 font-mono">
-                    Secured by 256-bit SSL
-                  </span>
-                </div>
+                {paymentMethod === "khalti" && (
+                  <CheckCircle2 className="w-5 h-5 text-[#5D2E8E] shrink-0" />
+                )}
               </div>
             )}
           </div>
 
           {/* Terms Agreement */}
-          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex items-start gap-3">
+          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-3">
             <input
               type="checkbox"
               id="terms-check"
               checked={agreedTerms}
               onChange={(e) => setAgreedTerms(e.target.checked)}
-              className="mt-1 w-4 h-4 text-[#218A59] rounded border-slate-300 focus:ring-[#218A59] cursor-pointer"
+              className="w-4 h-4 text-[#218A59] rounded border-slate-300 focus:ring-[#218A59] cursor-pointer"
             />
-            <label htmlFor="terms-check" className="text-xs text-slate-700 leading-relaxed cursor-pointer select-none">
-              I agree to the <strong>HIGEX 2027 Exhibition Regulations and stall allocation terms</strong>, and acknowledge that stall confirmation is subject to successful payment receipt verification.
+            <label htmlFor="terms-check" className="text-xs text-slate-700 cursor-pointer select-none">
+              I agree to the HIGEX 2027 Exhibition Regulations and booking terms.
             </label>
           </div>
         </div>
@@ -2714,7 +2542,7 @@ export default function StallBookingWizard() {
                     <span>
                       {step === 3
                         ? paymentMethod === "hold_72h" && isSponsorPackage
-                          ? "CONFIRM 72-HOUR FREE COURTESY HOLD (NPR 0 / $0)"
+                          ? "CONFIRM 72-HOUR FREE HOLD (NPR 0)"
                           : exhibitorOrigin === "international"
                             ? `CONFIRM & HOLD STALL (USD $${totalWithVatUSD.toLocaleString()})`
                             : `PAY WITH KHALTI (NPR ${totalWithVatNPR.toLocaleString()})`

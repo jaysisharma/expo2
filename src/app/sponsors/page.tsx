@@ -406,7 +406,7 @@ export default function SponsorsPage() {
                       </div>
                     </div>
 
-                    <div className="mt-6 pt-4 border-t border-slate-100 space-y-2">
+                    <div className="mt-6 pt-4 border-t border-slate-100">
                       <div className="grid grid-cols-2 gap-2">
                         <Link
                           href={`/book-stall?tier=${encodeURIComponent(tier.tier.toLowerCase().replace(/\s+/g, "-"))}`}
@@ -427,14 +427,6 @@ export default function SponsorsPage() {
                           Inquire
                         </Link>
                       </div>
-                      <Link
-                        href={`/book-stall?tier=${encodeURIComponent(tier.tier.toLowerCase().replace(/\s+/g, "-"))}&hold=true`}
-                        className="w-full py-1.5 px-2 rounded-xl text-[11px] font-mono font-bold text-center flex items-center justify-center gap-1.5 bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100 transition-colors"
-                        title="Place an exclusive 72-hour zero-cost courtesy hold on this sponsorship package"
-                      >
-                        <Clock className="w-3.5 h-3.5 text-emerald-700" />
-                        <span>72h Free Hold (Zero Cost) ⏱</span>
-                      </Link>
                     </div>
                   </div>
                 );
