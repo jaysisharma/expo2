@@ -68,11 +68,10 @@ export default function AboutPage() {
                 {(header?.metrics || []).map((m: any, idx: number) => (
                   <span
                     key={idx}
-                    className={`px-2.5 py-1 rounded ${
-                      m.isHighlighted
+                    className={`px-2.5 py-1 rounded ${m.isHighlighted
                         ? "bg-[#10B981]/25 text-[#34D399] border border-[#10B981]/50 font-bold"
                         : "bg-emerald-900/60 border border-emerald-500/30"
-                    }`}
+                      }`}
                   >
                     {m.label}
                   </span>
@@ -85,7 +84,7 @@ export default function AboutPage() {
                 href="/register"
                 className="px-5 py-2.5 rounded-lg bg-[#007A5E] hover:bg-[#005C42] text-white text-xs font-bold flex items-center gap-2 transition-colors shadow-md"
               >
-                <span>{header?.ctaRegisterText || "Register Badge"}</span>
+                <span>{header?.ctaRegisterText || "Register Now"}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
               <Link

@@ -119,7 +119,7 @@ export default function WelcomeExpoModal() {
                 onClick={handleClose}
                 className="flex-1 flex items-center justify-center py-3 px-6 rounded-full bg-white hover:bg-emerald-50 text-slate-900 font-bold text-xs tracking-wider uppercase text-center transition-all shadow-lg hover:scale-[1.02] active:scale-[0.98]"
               >
-                <span className="text-slate-900 font-bold">Register</span>
+                <span className="text-slate-900 font-bold">Register as Visitor</span>
               </Link>
 
               <Link

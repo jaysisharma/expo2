@@ -27,7 +27,7 @@ export function ConversionCTASection() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Main Executive Bottom Card */}
         <div className="rounded-3xl bg-[#051D2C] text-white p-8 sm:p-12 lg:p-14 shadow-[0_30px_70px_-15px_rgba(2,18,29,0.7),0_12px_24px_rgba(0,0,0,0.3)] relative overflow-hidden border border-[#0C3952]">
-          
+
           {/* Subtle Ambient Radial Lighting */}
           <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-96 h-96 bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -61,7 +61,7 @@ export function ConversionCTASection() {
           {/* ── 02: TWO DISTINCT CONVERSION PATHS (EXHIBIT VS ATTEND) ─ */}
           <ScrollReveal direction="up" distance={25} delay={0.1} duration={0.65}>
             <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-10">
-              
+
               {/* Card 1: For Exhibitors & Sponsors */}
               <div className="p-7 sm:p-8 rounded-2xl bg-[#0D2839]/90 border border-sky-400/20 backdrop-blur-xl flex flex-col justify-between space-y-6 hover:border-[#12B981]/50 transition-all duration-300 group shadow-lg">
                 <div className="space-y-4">
@@ -162,7 +162,7 @@ export function ConversionCTASection() {
                     href="/register"
                     className="w-full py-3.5 px-6 rounded-full bg-white hover:bg-slate-100 text-slate-900 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-md active:scale-98"
                   >
-                    <span>REGISTER</span>
+                    <span>REGISTER NOW</span>
                     <ArrowRight className="w-4 h-4" />
                   </Link>
                 </div>

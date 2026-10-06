@@ -476,7 +476,7 @@ export function Navbar() {
             href="/register"
             className="hidden sm:inline-flex items-center gap-1.5 px-4 sm:px-5 py-2.5 rounded-full border border-[#005C42] text-[#005C42] bg-transparent hover:bg-[#005C42] hover:text-white text-xs font-bold tracking-wider uppercase font-inter-tight transition-all duration-200 active:scale-98"
           >
-            <span>REGISTER</span>
+            <span>REGISTER NOW</span>
           </Link>
 
           {/* Deep Forest Green Rounded CTA Button */}

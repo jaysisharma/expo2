@@ -89,9 +89,8 @@ export function Hero() {
 
         {/* ── STICKY TOP-RIGHT ORGANIZER CARD (Attached Fully to Right Edge) ── */}
         <div
-          className={`fixed top-24 sm:top-28 right-0 z-40 select-none transition-all duration-300 ${
-            isPastHero ? 'max-sm:opacity-0 max-sm:pointer-events-none max-sm:translate-x-full' : 'max-sm:opacity-100 max-sm:translate-x-0'
-          }`}
+          className={`fixed top-24 sm:top-28 right-0 z-40 select-none transition-all duration-300 ${isPastHero ? 'max-sm:opacity-0 max-sm:pointer-events-none max-sm:translate-x-full' : 'max-sm:opacity-100 max-sm:translate-x-0'
+            }`}
         >
           <div className="w-[116px] sm:w-[132px] bg-white rounded-l-2xl rounded-r-none shadow-[-5px_10px_25px_rgba(0,0,0,0.25)] p-2.5 sm:p-3 flex flex-col items-center text-center border-y border-l border-slate-200/90">
             {/* Header: Jointly Organized */}
@@ -246,7 +245,7 @@ export function Hero() {
                 href="/register"
                 className="inline-flex items-center px-6 sm:px-7 py-3 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/40 hover:border-white text-xs sm:text-sm font-bold tracking-wider uppercase font-inter-tight backdrop-blur-md transition-all duration-200 active:scale-98 shadow-[0_8px_20px_rgba(0,0,0,0.3)] hover:shadow-[0_12px_25px_rgba(255,255,255,0.15)]"
               >
-                REGISTER
+                REGISTER NOW
               </Link>
             </div>
           </div>
