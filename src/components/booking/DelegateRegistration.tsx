@@ -102,7 +102,7 @@ export default function DelegateRegistration() {
           if (parsed && (parsed.visitor || parsed.exhibitor)) {
             setBadgeTemplates(parsed);
           }
-        } catch (err) {}
+        } catch (err) { }
       }
     };
 
@@ -255,8 +255,8 @@ export default function DelegateRegistration() {
       setEmailSending(true);
       const resolvedRole =
         registrationRole === "gala" ? "gala"
-        : registrationRole === "exhibitor" ? "exhibitor"
-        : "visitor";
+          : registrationRole === "exhibitor" ? "exhibitor"
+            : "visitor";
 
       try {
         await fetch("/api/send-pass", {
@@ -320,8 +320,8 @@ export default function DelegateRegistration() {
           {emailSending ? (
             <div className="flex items-center justify-center gap-2 text-xs text-slate-500">
               <svg className="animate-spin w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
               </svg>
               Sending your pass…
             </div>
@@ -384,11 +384,10 @@ export default function DelegateRegistration() {
                 setRegistrationRole("visitor");
                 setFormData({ ...formData, passType: "Trade Visitor" });
               }}
-              className={`py-2 px-2.5 rounded-lg text-xs font-semibold transition-all ${
-                registrationRole === "visitor"
+              className={`py-2 px-2.5 rounded-lg text-xs font-semibold transition-all ${registrationRole === "visitor"
                   ? "bg-white text-slate-900 shadow-2xs"
                   : "text-slate-600 hover:text-slate-900"
-              }`}
+                }`}
             >
               Trade Visitor
             </button>
@@ -398,13 +397,12 @@ export default function DelegateRegistration() {
                 setRegistrationRole("gala");
                 setFormData({ ...formData, passType: "Networking Dinner Pass" });
               }}
-              className={`py-2 px-2.5 rounded-lg text-xs font-semibold transition-all ${
-                registrationRole === "gala"
+              className={`py-2 px-2.5 rounded-lg text-xs font-semibold transition-all ${registrationRole === "gala"
                   ? "bg-white text-slate-900 shadow-2xs"
                   : "text-slate-600 hover:text-slate-900"
-              }`}
+                }`}
             >
-              VIP Networking Dinner
+              Networking Dinner
             </button>
             <Link
               href="/ev-rally"
@@ -480,22 +478,20 @@ export default function DelegateRegistration() {
               <button
                 type="button"
                 onClick={() => setFormData({ ...formData, delegateTier: "national" })}
-                className={`py-1.5 px-3 rounded-lg text-xs font-semibold border transition-all ${
-                  formData.delegateTier === "national"
+                className={`py-1.5 px-3 rounded-lg text-xs font-semibold border transition-all ${formData.delegateTier === "national"
                     ? "bg-white border-amber-500 text-amber-950 shadow-2xs"
                     : "bg-white/60 border-slate-200 text-slate-600 hover:border-slate-300"
-                }`}
+                  }`}
               >
                 National · NPR 6,000
               </button>
               <button
                 type="button"
                 onClick={() => setFormData({ ...formData, delegateTier: "international" })}
-                className={`py-1.5 px-3 rounded-lg text-xs font-semibold border transition-all ${
-                  formData.delegateTier === "international"
+                className={`py-1.5 px-3 rounded-lg text-xs font-semibold border transition-all ${formData.delegateTier === "international"
                     ? "bg-white border-amber-500 text-amber-950 shadow-2xs"
                     : "bg-white/60 border-slate-200 text-slate-600 hover:border-slate-300"
-                }`}
+                  }`}
               >
                 International · USD 50
               </button>
@@ -572,11 +568,10 @@ export default function DelegateRegistration() {
                 setFormData({ ...formData, email: e.target.value });
                 if (fieldErrors.email) setFieldErrors((p) => ({ ...p, email: undefined }));
               }}
-              className={`w-full h-10 px-3 rounded-lg bg-white border text-slate-900 text-xs focus:outline-none ${
-                fieldErrors.email
+              className={`w-full h-10 px-3 rounded-lg bg-white border text-slate-900 text-xs focus:outline-none ${fieldErrors.email
                   ? "border-rose-400 focus:border-rose-500"
                   : "border-slate-300 focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
-              }`}
+                }`}
             />
             {fieldErrors.email && (
               <p className="text-[11px] text-rose-600 mt-1">{fieldErrors.email}</p>
@@ -598,11 +593,10 @@ export default function DelegateRegistration() {
                 setFormData({ ...formData, phone: cleaned });
                 if (fieldErrors.phone) setFieldErrors((p) => ({ ...p, phone: undefined }));
               }}
-              className={`w-full h-10 px-3 rounded-lg bg-white border text-slate-900 text-xs focus:outline-none ${
-                fieldErrors.phone
+              className={`w-full h-10 px-3 rounded-lg bg-white border text-slate-900 text-xs focus:outline-none ${fieldErrors.phone
                   ? "border-rose-400 focus:border-rose-500"
                   : "border-slate-300 focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
-              }`}
+                }`}
             />
             {fieldErrors.phone && (
               <p className="text-[11px] text-rose-600 mt-1">{fieldErrors.phone}</p>
@@ -619,11 +613,10 @@ export default function DelegateRegistration() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className={`w-full h-11 rounded-lg text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer pt-0.5 ${
-            registrationRole === "gala"
+          className={`w-full h-11 rounded-lg text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer pt-0.5 ${registrationRole === "gala"
               ? "bg-[#5D2E8E] hover:bg-[#4E2477] shadow-purple-950/20"
               : "bg-[#218A59] hover:bg-[#197047]"
-          }`}
+            }`}
         >
           <span>
             {isSubmitting
