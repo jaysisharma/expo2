@@ -19,6 +19,7 @@ export interface SpaceDetail {
   block: string;
   size: string;
   spaceType: string;
+  perSqMtr?: string;
   rateNPR: string;
   rateNPRNum: number;
   rateUSD: string;
@@ -133,8 +134,8 @@ export const SPONSORSHIP_DETAILS: SponsorshipTier[] = [
     promotionalDisplayArea: "6FT X 4FT X 1",
     inaugurationInvitationPass: 20,
     inaugurationPass: 20,
-    networkingDinnerPass: 0,
-    galaDinnerPass: 0,
+    networkingDinnerPass: 3,
+    galaDinnerPass: 3,
     exhibitorPass: 20,
     normalPass: 50,
   },
@@ -146,6 +147,7 @@ export const SPACE_DETAILS: SpaceDetail[] = [
     block: "Block A",
     size: "6M × 6M (Other custom sizes)",
     spaceType: "Open Space",
+    perSqMtr: "10,500/- | $ 85",
     rateNPR: "3,78,000/-",
     rateNPRNum: 378000,
     rateUSD: "3,000.00",
@@ -156,6 +158,7 @@ export const SPACE_DETAILS: SpaceDetail[] = [
     block: "Block B",
     size: "3M × 3M",
     spaceType: "Octonorm Stall",
+    perSqMtr: "-",
     rateNPR: "85,000/-",
     rateNPRNum: 85000,
     rateUSD: "700.00",
@@ -166,6 +169,7 @@ export const SPACE_DETAILS: SpaceDetail[] = [
     block: "Block C",
     size: "10M × 7M",
     spaceType: "Open Space",
+    perSqMtr: "6,500/- | $ 50",
     rateNPR: "4,50,000/-",
     rateNPRNum: 450000,
     rateUSD: "3,500.00",
@@ -176,6 +180,7 @@ export const SPACE_DETAILS: SpaceDetail[] = [
     block: "Custom Space",
     size: "Custom m² (Charged per sq.m)",
     spaceType: "Open Space / Bare Space",
+    perSqMtr: "10,500/- | $ 85",
     rateNPR: "10,500 / sq.m",
     rateNPRNum: 10500,
     rateUSD: "83.33 / sq.m",

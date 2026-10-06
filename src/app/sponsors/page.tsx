@@ -148,6 +148,7 @@ const sponsorshipTiers: SponsorshipTierItem[] = [
     description: "Entry-level summit participation with exhibition stall and directory listing for growing enterprises.",
     features: [
       "1 Bare Space Stall (6M X 6M X 1 · 36m²)",
+      "3 VIP Networking Dinner passes",
       "20 Inauguration Invitation passes & 50 normal passes",
       "20 Exhibitor passes",
       "6FT X 4FT X 1 Promotional display branding area",

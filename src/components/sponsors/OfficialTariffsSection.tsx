@@ -401,6 +401,16 @@ export default function OfficialTariffsSection() {
                       {currency === "NPR" ? `NRs ${space.rateNPR}` : `US $${space.rateUSD}`}
                     </span>
                   </div>
+                  {space.perSqMtr && space.perSqMtr !== "-" && (
+                    <div className="flex items-center justify-between text-xs text-slate-500 font-mono">
+                      <span>Per Sq. Mtr:</span>
+                      <span className="font-semibold text-slate-700">
+                        {currency === "NPR"
+                          ? `NRs ${space.perSqMtr.split("|")[0].trim()}`
+                          : space.perSqMtr.split("|")[1]?.trim() || space.perSqMtr}
+                      </span>
+                    </div>
+                  )}
                   <div className="text-[11px] text-slate-400 font-mono text-right">
                     {currency === "NPR" ? `Equiv. US $${space.rateUSD}` : `Equiv. NRs ${space.rateNPR}`}
                   </div>

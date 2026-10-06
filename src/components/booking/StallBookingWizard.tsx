@@ -213,6 +213,7 @@ export const PARTICIPATION_PACKAGES: StallPackage[] = [
       "1 Bare Space Stall (6M X 6M X 1)",
       "1 Promotional Display Area (6FT X 4FT X 1)",
       "20 Inauguration Invitation Passes",
+      "3 Networking Dinner Passes",
       "20 Exhibitor Passes",
       "50 Normal Passes",
     ],
