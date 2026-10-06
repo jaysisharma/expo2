@@ -284,10 +284,10 @@ export function Navbar() {
       onMouseLeave={handleMouseLeave}
     >
       <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 h-20 sm:h-[88px] lg:h-[96px] flex items-center justify-between gap-4">
-        {/* ── Left: Official Expo Logo ───────────────────────────────── */}
+        {/* ── Left: Official Expo & Nepal Logos ──────────────────────── */}
         <Link
           href="/"
-          className="group inline-flex items-center shrink-0 focus-visible:outline-2 focus-visible:outline-[#00A370] rounded-xl transition-transform hover:opacity-95"
+          className="group inline-flex items-center gap-2.5 sm:gap-3.5 shrink-0 focus-visible:outline-2 focus-visible:outline-[#00A370] rounded-xl transition-transform hover:opacity-95"
           aria-label="Himalayan Green Energy Expo 2027 — Home"
         >
           <Image
@@ -297,6 +297,15 @@ export function Navbar() {
             height={150}
             priority
             className="h-12 sm:h-14 lg:h-16 w-auto object-contain transition-transform duration-200 group-hover:scale-[1.02]"
+          />
+          <div className="h-8 sm:h-9 lg:h-10 w-[1px] bg-slate-200 self-center" aria-hidden="true" />
+          <Image
+            src="/images/nepal_logo.jpg"
+            alt="Emblem of Nepal"
+            width={120}
+            height={144}
+            priority
+            className="h-9 sm:h-11 lg:h-12 w-auto object-contain transition-transform duration-200 group-hover:scale-[1.02]"
           />
         </Link>
 
