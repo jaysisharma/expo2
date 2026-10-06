@@ -1623,12 +1623,12 @@ export default function StallBookingWizard() {
                 {/* Header */}
                 <div className="px-5 py-4 bg-slate-50 border-b border-slate-200/80 flex items-center justify-between">
                   <div>
-                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 block">
-                      BOOKING SUMMARY
-                    </span>
-                    <h4 className="font-sans font-bold text-sm text-slate-900 mt-0.5">
-                      Allocation &amp; Tariff
+                    <h4 className="font-sans font-bold text-base text-slate-900 leading-tight">
+                      Booking Summary
                     </h4>
+                    <span className="text-[11px] text-slate-500 font-medium">
+                      Allocation &amp; Tariff
+                    </span>
                   </div>
                   <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-[#15803D] font-mono text-xs font-bold shrink-0">
                     {selectedBoothNumbers.length} {selectedBoothNumbers.length === 1 ? "Stall" : "Stalls"}
@@ -1654,7 +1654,7 @@ export default function StallBookingWizard() {
                   </div>
 
                   {selectedStallObjects.length > 0 ? (
-                    <div className="space-y-2">
+                    <div className="space-y-2.5">
                       {/* Show first 2 stalls by default, collapse remaining if > 2 */}
                       {(showAllSelectedStalls
                         ? selectedStallObjects
@@ -1662,35 +1662,13 @@ export default function StallBookingWizard() {
                       ).map((s) => (
                         <div
                           key={s.number}
-                          className="p-3 rounded-xl bg-slate-50 border border-slate-200 hover:border-slate-300 transition-all text-xs space-y-1.5"
+                          className="p-3.5 rounded-xl bg-slate-50/80 border border-slate-200 hover:border-slate-300 transition-all text-xs space-y-2"
                         >
+                          {/* Stall Number Header + Remove Button */}
                           <div className="flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
-                              <span className="font-mono font-bold text-slate-900 text-sm">
-                                STALL {s.number}
-                              </span>
-                              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-200/70 text-slate-700 font-semibold">
-                                {s.block}
-                              </span>
-                              {s.isIrregular ? (
-                                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded font-bold bg-teal-100 text-teal-800 border border-teal-200">
-                                  Irregular Bare
-                                </span>
-                              ) : s.isBareSpace ? (
-                                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                                  Bare Space
-                                </span>
-                              ) : (
-                                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded font-bold bg-blue-50 text-blue-700 border border-blue-200">
-                                  Shell Scheme
-                                </span>
-                              )}
-                              {s.isPrime && (
-                                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded font-bold bg-amber-100 text-amber-900 border border-amber-300">
-                                  ★ Prime (+{primeSurchargePercent}%)
-                                </span>
-                              )}
-                            </div>
+                            <span className="font-mono font-bold text-slate-900 text-sm tracking-tight">
+                              STALL {s.number}
+                            </span>
                             <button
                               type="button"
                               onClick={() => toggleStallSelection(s.number)}
@@ -1701,22 +1679,52 @@ export default function StallBookingWizard() {
                             </button>
                           </div>
 
-                          <div className="flex items-baseline justify-between text-xs pt-0.5">
-                            <span className="text-[11px] text-slate-500 font-medium">
-                              {s.dimensions} · {s.sizeSqM} m²
+                          {/* Stall Badges Row */}
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-200/80 text-slate-700 font-semibold">
+                              {s.block}
                             </span>
-                            <div className="text-right font-mono font-bold text-slate-900">
+                            {s.isIrregular ? (
+                              <span className="text-[10px] font-mono px-2 py-0.5 rounded font-bold bg-teal-50 text-teal-800 border border-teal-200">
+                                Irregular Bare
+                              </span>
+                            ) : s.isBareSpace ? (
+                              <span className="text-[10px] font-mono px-2 py-0.5 rounded font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                                Bare Space
+                              </span>
+                            ) : (
+                              <span className="text-[10px] font-mono px-2 py-0.5 rounded font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                                Shell Scheme
+                              </span>
+                            )}
+                            {s.isPrime && (
+                              <span className="text-[10px] font-mono px-2 py-0.5 rounded font-bold bg-amber-50 text-amber-900 border border-amber-200">
+                                ★ Prime (+{primeSurchargePercent}%)
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Dimensions & Price */}
+                          <div className="flex items-end justify-between text-xs pt-2 border-t border-slate-200/60">
+                            <span className="text-[11px] text-slate-500 font-medium">
+                              {s.isIrregular || s.dimensions?.toLowerCase().includes("custom")
+                                ? `${s.sizeSqM} m² (Custom Area)`
+                                : `${s.dimensions} · ${s.sizeSqM} m²`}
+                            </span>
+                            <div className="text-right font-mono">
                               {s.isIrregular ? (
                                 <div>
-                                  <span className="text-teal-700 font-bold block">
-                                    NPR {s.ratePerSqMNPR?.toLocaleString() || "10,500"}/m²
+                                  <span className="font-bold text-slate-900 text-xs block">
+                                    NPR {s.priceNPR.toLocaleString()}
                                   </span>
-                                  <span className="text-[10px] text-slate-400 block font-normal">
-                                    Total: NPR {s.priceNPR.toLocaleString()}
+                                  <span className="text-[10px] text-teal-700 block font-medium">
+                                    NPR {s.ratePerSqMNPR?.toLocaleString() || "10,500"}/m²
                                   </span>
                                 </div>
                               ) : (
-                                <span>NPR {s.priceNPR.toLocaleString()}</span>
+                                <span className="font-bold text-slate-900 text-xs">
+                                  NPR {s.priceNPR.toLocaleString()}
+                                </span>
                               )}
                             </div>
                           </div>
@@ -1754,35 +1762,29 @@ export default function StallBookingWizard() {
                   )}
                 </div>
 
-                {/* Section 2: Technical Specifications */}
+                {/* Section 2: Specifications Summary */}
                 {selectedStallObjects.length > 0 && (
-                  <div className="px-5 py-3.5 bg-slate-50/70 border-t border-slate-100 space-y-2.5">
+                  <div className="px-5 py-3.5 bg-slate-50/80 border-t border-slate-100 space-y-2">
                     <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 block">
-                      Specifications Summary
+                      Specifications
                     </span>
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
-                      <div>
-                        <span className="text-slate-400 text-[10px] block font-mono">TOTAL AREA</span>
-                        <span className="font-mono font-bold text-slate-800 text-xs">
+                    <div className="space-y-1.5 text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-500 font-medium">Total Area</span>
+                        <span className="font-mono font-bold text-slate-900">
                           {totalAreaSqM} m²{" "}
-                          <span className="text-[10px] font-normal text-slate-500">
+                          <span className="text-[11px] font-normal text-slate-400">
                             ({(totalAreaSqM * 10.76).toFixed(0)} sq.ft)
                           </span>
                         </span>
                       </div>
-                      <div>
-                        <span className="text-slate-400 text-[10px] block font-mono">POWER PROVISION</span>
-                        <span className="font-semibold text-slate-800 text-xs">
-                          {selectedStallObjects.some((s) => s.isBareSpace) ? "Direct Power" : "15A Socket"}
-                        </span>
-                      </div>
-                      <div className="col-span-2 pt-1 border-t border-slate-200/60 flex items-center justify-between text-xs">
-                        <span className="text-slate-400 font-mono text-[10px]">SPACE SCHEME:</span>
-                        <span className="font-semibold text-slate-700 text-[11px]">
+                      <div className="flex items-center justify-between pt-1 border-t border-slate-200/50">
+                        <span className="text-slate-500 font-medium">Space Scheme</span>
+                        <span className="font-semibold text-slate-800 text-right text-[11px]">
                           {selectedStallObjects.every((s) => s.isIrregular)
-                            ? "Irregular Bare Space (Charged per sq.m)"
+                            ? "Irregular Bare Space (Per m²)"
                             : selectedStallObjects.some((s) => s.isIrregular)
-                              ? "Mixed (Irregular Bare & Standard)"
+                              ? "Mixed (Irregular & Standard)"
                               : selectedStallObjects.every((s) => s.isBareSpace)
                                 ? "Bare Space (Raw Area)"
                                 : selectedStallObjects.some((s) => s.isBareSpace)
@@ -1807,12 +1809,12 @@ export default function StallBookingWizard() {
 
                   <div className="space-y-2 text-xs font-mono">
                     <div className="flex items-center justify-between text-slate-600">
-                      <span>Base Stall Tariff</span>
+                      <span className="font-sans font-medium text-slate-700">Base Stall Tariff</span>
                       <div className="text-right">
                         <span className="font-bold text-slate-900">
                           NPR {finalBasePriceNPR.toLocaleString()}
                         </span>
-                        <span className="text-[10px] text-slate-400 block">
+                        <span className="text-[10px] text-slate-400 block font-normal">
                           (${finalBasePriceUSD.toLocaleString()})
                         </span>
                       </div>
@@ -1828,7 +1830,7 @@ export default function StallBookingWizard() {
                           <span className="font-bold text-amber-900">
                             + NPR {totalPrimeSurchargeNPR.toLocaleString()}
                           </span>
-                          <span className="text-[10px] text-amber-700/80 block">
+                          <span className="text-[10px] text-amber-700/80 block font-normal">
                             (+${totalPrimeSurchargeUSD.toLocaleString()})
                           </span>
                         </div>
@@ -1836,12 +1838,12 @@ export default function StallBookingWizard() {
                     )}
 
                     <div className="flex items-center justify-between text-slate-600">
-                      <span>Govt. 13% VAT</span>
+                      <span className="font-sans font-medium text-slate-700">Govt. 13% VAT</span>
                       <div className="text-right">
                         <span className="font-bold text-slate-900">
                           + NPR {vatNPR.toLocaleString()}
                         </span>
-                        <span className="text-[10px] text-slate-400 block">
+                        <span className="text-[10px] text-slate-400 block font-normal">
                           (+${vatUSD.toLocaleString()})
                         </span>
                       </div>
