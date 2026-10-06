@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { DollarSign, Maximize2, Save, Sparkles } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { DollarSign, Maximize2, Save, Sparkles, Calculator, Check, ArrowRight } from "lucide-react";
 import { CanvasElement } from "../../../types";
 
 interface InspectorPriceAndSizeProps {
@@ -18,6 +18,81 @@ export function InspectorPriceAndSize({
   isSaving,
 }: InspectorPriceAndSizeProps) {
   const [resizeCanvasBox, setResizeCanvasBox] = useState(false);
+
+  // Per sq. meter rates
+  const currentSqm = primarySelected.sizeSqM || 1;
+  const initialRateNPR =
+    primarySelected.ratePerSqMNPR ??
+    (primarySelected.priceNPR && primarySelected.sizeSqM
+      ? Math.round(primarySelected.priceNPR / primarySelected.sizeSqM)
+      : 10500);
+  const initialRateUSD =
+    primarySelected.ratePerSqMUSD ??
+    (primarySelected.priceUSD && primarySelected.sizeSqM
+      ? Number((primarySelected.priceUSD / primarySelected.sizeSqM).toFixed(2))
+      : 83.33);
+
+  const [rateNPR, setRateNPR] = useState<number>(initialRateNPR);
+  const [rateUSD, setRateUSD] = useState<number>(initialRateUSD);
+
+  useEffect(() => {
+    const rNpr =
+      primarySelected.ratePerSqMNPR ??
+      (primarySelected.priceNPR && primarySelected.sizeSqM
+        ? Math.round(primarySelected.priceNPR / primarySelected.sizeSqM)
+        : 10500);
+    const rUsd =
+      primarySelected.ratePerSqMUSD ??
+      (primarySelected.priceUSD && primarySelected.sizeSqM
+        ? Number((primarySelected.priceUSD / primarySelected.sizeSqM).toFixed(2))
+        : 83.33);
+    setRateNPR(rNpr);
+    setRateUSD(rUsd);
+  }, [primarySelected.id, primarySelected.ratePerSqMNPR, primarySelected.ratePerSqMUSD]);
+
+  const isIrregular =
+    primarySelected.category === "Irregular Bare Space" ||
+    Boolean(primarySelected.isIrregular);
+
+  const calculatedTotalNPR = Math.round(currentSqm * rateNPR);
+  const calculatedTotalUSD = Math.round(currentSqm * rateUSD);
+
+  const handleApplyRateToPrice = (overrideNPR?: number, overrideUSD?: number) => {
+    const finalRateNPR = overrideNPR ?? rateNPR;
+    const finalRateUSD = overrideUSD ?? rateUSD;
+    const finalNPR = Math.round(currentSqm * finalRateNPR);
+    const finalUSD = Math.round(currentSqm * finalRateUSD);
+
+    updateSelectedBatch({
+      priceNPR: finalNPR,
+      priceUSD: finalUSD,
+      ratePerSqMNPR: finalRateNPR,
+      ratePerSqMUSD: finalRateUSD,
+      isIrregular: true,
+      category:
+        primarySelected.category === "Hollow Wall / Boundary" ||
+        primarySelected.category === "Zone / Functional Area" ||
+        primarySelected.category === "Irregular Bare Space"
+          ? "Irregular Bare Space"
+          : primarySelected.category,
+    });
+  };
+
+  const handleSetIrregularBareSpace = () => {
+    updateSelectedBatch({
+      category: "Irregular Bare Space",
+      isIrregular: true,
+      color: "#0D9488",
+      fillOpacity: 0.85,
+      borderColor: "#2DD4BF",
+      textColor: "#FFFFFF",
+      dimensions: primarySelected.dimensions || `${currentSqm} m² (Custom)`,
+      priceNPR: calculatedTotalNPR,
+      priceUSD: calculatedTotalUSD,
+      ratePerSqMNPR: rateNPR,
+      ratePerSqMUSD: rateUSD,
+    });
+  };
 
   return (
     <>
@@ -56,6 +131,121 @@ export function InspectorPriceAndSize({
           </div>
         </div>
 
+        {/* 1.1 PER SQ. METER AMOUNT (IRREGULAR BARE SPACE CALCULATOR) */}
+        <div className="p-3 rounded-xl bg-teal-500/10 dark:bg-teal-950/25 border border-teal-500/30 space-y-2.5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5 font-bold text-teal-900 dark:text-teal-300 text-xs">
+              <Calculator className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
+              <span>Rate Per Sq. Meter (Irregular Space)</span>
+            </div>
+            <span
+              className={`text-[9px] px-2 py-0.5 rounded-full font-mono font-bold uppercase ${
+                isIrregular
+                  ? "bg-teal-600 text-white"
+                  : "bg-teal-100 dark:bg-teal-900/60 text-teal-800 dark:text-teal-300"
+              }`}
+            >
+              {isIrregular ? "Irregular Space" : "Standard Space"}
+            </span>
+          </div>
+
+          <p className="text-[10px] text-teal-800 dark:text-teal-300/80 leading-tight">
+            Official tariff: Irregular size stalls are charged on actual footprint at <strong>NRs 10,500/m²</strong> (approx. <strong>$83.33/m²</strong>).
+          </p>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="text-[10px] text-teal-900 dark:text-teal-300 font-medium block mb-1">
+                Rate / m² (NPR)
+              </label>
+              <input
+                type="number"
+                step="500"
+                value={rateNPR}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  setRateNPR(val);
+                  updateSelectedBatch({ ratePerSqMNPR: val });
+                }}
+                className="w-full p-2 rounded-lg bg-white dark:bg-[#070B12] border border-teal-300 dark:border-teal-700 text-teal-700 dark:text-teal-300 font-mono font-bold text-xs focus:outline-none focus:border-teal-500"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] text-teal-900 dark:text-teal-300 font-medium block mb-1">
+                Rate / m² (USD $)
+              </label>
+              <input
+                type="number"
+                step="5"
+                value={rateUSD}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  setRateUSD(val);
+                  updateSelectedBatch({ ratePerSqMUSD: val });
+                }}
+                className="w-full p-2 rounded-lg bg-white dark:bg-[#070B12] border border-teal-300 dark:border-teal-700 text-teal-700 dark:text-teal-300 font-mono font-bold text-xs focus:outline-none focus:border-teal-500"
+              />
+            </div>
+          </div>
+
+          {/* Quick Per-SQM Tariff Presets */}
+          <div className="pt-1">
+            <span className="text-[9.5px] text-teal-800 dark:text-teal-400 font-medium block mb-1">
+              Official Rate Presets:
+            </span>
+            <div className="grid grid-cols-3 gap-1">
+              {[
+                { label: "Bare (10.5k)", npr: 10500, usd: 83.33 },
+                { label: "Prime (13.1k)", npr: 13125, usd: 104.17 },
+                { label: "Shell (20k)", npr: 20000, usd: 150 },
+              ].map((p) => (
+                <button
+                  key={p.label}
+                  type="button"
+                  onClick={() => {
+                    setRateNPR(p.npr);
+                    setRateUSD(p.usd);
+                    handleApplyRateToPrice(p.npr, p.usd);
+                  }}
+                  className="py-1 px-1.5 rounded bg-white dark:bg-slate-900 hover:bg-teal-50 dark:hover:bg-teal-900/40 border border-teal-200 dark:border-teal-800 text-[9.5px] font-mono text-teal-800 dark:text-teal-200 text-center transition-colors cursor-pointer truncate"
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Calculated Output & Apply Buttons */}
+          <div className="pt-2 border-t border-teal-500/20 space-y-2">
+            <div className="flex items-center justify-between text-[11px] font-mono font-bold text-teal-950 dark:text-teal-200">
+              <span>{currentSqm} m² × Rate:</span>
+              <span className="text-teal-700 dark:text-teal-300">
+                NPR {calculatedTotalNPR.toLocaleString()} (${calculatedTotalUSD.toLocaleString()})
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-1.5">
+              <button
+                type="button"
+                onClick={() => handleApplyRateToPrice()}
+                className="py-1.5 px-2 rounded-lg bg-teal-600 hover:bg-teal-500 text-white font-bold text-[10px] flex items-center justify-center gap-1 transition-all cursor-pointer shadow-xs"
+              >
+                <Check className="w-3 h-3" />
+                <span>Apply Rate × Area</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSetIrregularBareSpace}
+                className="py-1.5 px-2 rounded-lg bg-teal-100 hover:bg-teal-200 dark:bg-teal-900/60 dark:hover:bg-teal-800 text-teal-900 dark:text-teal-100 font-bold text-[10px] flex items-center justify-center gap-1 transition-all cursor-pointer border border-teal-300 dark:border-teal-700"
+              >
+                <ArrowRight className="w-3 h-3" />
+                <span>Set Irregular Space</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* Prime Location Toggle */}
         <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 space-y-1.5">
           <div className="flex items-center justify-between">
@@ -79,7 +269,9 @@ export function InspectorPriceAndSize({
           {primarySelected.isPrime && (
             <div className="pt-1.5 border-t border-amber-500/20 flex items-center justify-between text-[10px] font-mono font-bold text-amber-900 dark:text-amber-300">
               <span>+25% Surcharge:</span>
-              <span>NPR {Math.round((primarySelected.priceNPR || 0) * 0.25).toLocaleString()} ($ {Math.round((primarySelected.priceUSD || 0) * 0.25).toLocaleString()})</span>
+              <span>
+                NPR {Math.round((primarySelected.priceNPR || 0) * 0.25).toLocaleString()} ($ {Math.round((primarySelected.priceUSD || 0) * 0.25).toLocaleString()})
+              </span>
             </div>
           )}
         </div>
@@ -89,6 +281,7 @@ export function InspectorPriceAndSize({
           <span className="text-[10px] text-slate-500 dark:text-slate-400 block mb-1">Quick Price Tiers:</span>
           <div className="grid grid-cols-2 gap-1.5">
             {[
+              { label: "NPR 315k (30m² Irregular)", npr: 315000, usd: 2500 },
               { label: "NPR 378k (6×6 Space)", npr: 378000, usd: 3000 },
               { label: "NPR 180k (Shell 3×3)", npr: 180000, usd: 1350 },
               { label: "NPR 450k (5×6 Space)", npr: 450000, usd: 3400 },
@@ -132,6 +325,49 @@ export function InspectorPriceAndSize({
           <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
             {primarySelected.sizeSqM} sq.m ({primarySelected.sizeSqFt} sq.ft)
           </span>
+        </div>
+
+        {/* Direct Area (sq.m) & Dimension Label Input */}
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="text-[10px] text-slate-600 dark:text-slate-400 block mb-1">
+              Area (sq.m / m²)
+            </label>
+            <input
+              type="number"
+              step="1"
+              min="1"
+              value={primarySelected.sizeSqM || 0}
+              onChange={(e) => {
+                const sqm = Math.max(1, Number(e.target.value));
+                const sqft = Math.round(sqm * 10.764);
+                const updates: Partial<CanvasElement> = {
+                  sizeSqM: sqm,
+                  sizeSqFt: sqft,
+                };
+                if (isIrregular) {
+                  updates.priceNPR = Math.round(sqm * rateNPR);
+                  updates.priceUSD = Math.round(sqm * rateUSD);
+                  updates.ratePerSqMNPR = rateNPR;
+                  updates.ratePerSqMUSD = rateUSD;
+                }
+                updateSelectedBatch(updates);
+              }}
+              className="w-full p-2 rounded-lg bg-white dark:bg-[#070B12] border border-slate-200 dark:border-slate-700 text-sky-600 dark:text-sky-400 font-mono font-bold text-xs focus:outline-none focus:border-sky-500"
+            />
+          </div>
+          <div>
+            <label className="text-[10px] text-slate-600 dark:text-slate-400 block mb-1">
+              Dimensions Text
+            </label>
+            <input
+              type="text"
+              value={primarySelected.dimensions || ""}
+              onChange={(e) => updateSelectedBatch({ dimensions: e.target.value })}
+              placeholder="e.g. Custom m²"
+              className="w-full p-2 rounded-lg bg-white dark:bg-[#070B12] border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-mono font-semibold text-xs focus:outline-none focus:border-sky-500"
+            />
+          </div>
         </div>
 
         {/* Width & Height Pixel Sliders + Direct Number Inputs */}
@@ -202,6 +438,7 @@ export function InspectorPriceAndSize({
           </div>
           <div className="grid grid-cols-2 gap-1.5">
             {[
+              { label: "Irregular Bare (30m²)", w: 80, h: 80, sqm: 30, dim: "Custom m²", isIrr: true },
               { label: "3m × 3m (9 sq.m)", w: 45, h: 45, sqm: 9, dim: "3m × 3m" },
               { label: "6m × 6m (36 sq.m)", w: 90, h: 90, sqm: 36, dim: "6m × 6m" },
               { label: "10m × 7m (70 sq.m)", w: 140, h: 98, sqm: 70, dim: "10m × 7m" },
@@ -219,6 +456,20 @@ export function InspectorPriceAndSize({
                       sizeSqM: dim.sqm,
                       sizeSqFt: Math.round(dim.sqm * 10.764),
                       dimensions: dim.dim,
+                      ...(dim.isIrr
+                        ? {
+                            category: "Irregular Bare Space",
+                            isIrregular: true,
+                            priceNPR: Math.round(dim.sqm * rateNPR),
+                            priceUSD: Math.round(dim.sqm * rateUSD),
+                            ratePerSqMNPR: rateNPR,
+                            ratePerSqMUSD: rateUSD,
+                            color: "#0D9488",
+                            fillOpacity: 0.85,
+                            borderColor: "#2DD4BF",
+                            textColor: "#FFFFFF",
+                          }
+                        : {}),
                       ...(resizeCanvasBox ? { width: dim.w, height: dim.h } : {}),
                     })
                   }

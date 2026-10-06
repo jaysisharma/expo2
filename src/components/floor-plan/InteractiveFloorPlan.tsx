@@ -886,7 +886,12 @@ export default function InteractiveFloorPlan({
             <div className="hidden sm:block absolute top-4 left-4 z-40 pointer-events-none p-4 rounded-xl bg-slate-900/95 text-white backdrop-blur-md border border-white/20 shadow-2xl font-mono text-xs space-y-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-sans font-bold text-base text-white">
-                  STALL {stallNum} {isBareSpace ? "(Bare Space)" : ""}
+                  STALL {stallNum}{" "}
+                  {isBareSpace
+                    ? hoveredStall.category === "Irregular Bare Space" || hoveredStall.isIrregular
+                      ? "(Irregular Bare Space)"
+                      : "(Bare Space)"
+                    : ""}
                 </span>
                 {(() => {
                   const ov = boothOverrides[stallNum] || (hoveredStall.id && boothOverrides[hoveredStall.id]);
@@ -1018,7 +1023,13 @@ export default function InteractiveFloorPlan({
                     </span>
                   </div>
                   <div className="text-emerald-400 font-bold text-[11px] mt-0.5">
-                    {activeMobileStall.dimensions || "3m × 3m"} · {isBareSpace ? "Bare Space" : "Shell Scheme"} · {activeMobileStall.sizeSqM ?? 9} m² ({activeMobileStall.sizeSqFt ?? Math.round((activeMobileStall.sizeSqM ?? 9) * 10.76)} sq.ft)
+                    {activeMobileStall.dimensions || "3m × 3m"} ·{" "}
+                    {isBareSpace
+                      ? activeMobileStall.category === "Irregular Bare Space" || activeMobileStall.isIrregular
+                        ? "Irregular Bare Space"
+                        : "Bare Space"
+                      : "Shell Scheme"}{" "}
+                    · {activeMobileStall.sizeSqM ?? 9} m² ({activeMobileStall.sizeSqFt ?? Math.round((activeMobileStall.sizeSqM ?? 9) * 10.76)} sq.ft)
                   </div>
                 </div>
                 <button

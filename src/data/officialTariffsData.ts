@@ -171,4 +171,15 @@ export const SPACE_DETAILS: SpaceDetail[] = [
     rateUSD: "3,500.00",
     rateUSDNum: 3500,
   },
+  {
+    category: "Irregular Bare Space",
+    block: "Custom Space",
+    size: "Custom m² (Charged per sq.m)",
+    spaceType: "Open Space / Bare Space",
+    rateNPR: "10,500 / sq.m",
+    rateNPRNum: 10500,
+    rateUSD: "83.33 / sq.m",
+    rateUSDNum: 83.33,
+    notes: "Irregular size stalls are charged based on actual size. Prime stalls +25%.",
+  },
 ];
