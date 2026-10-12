@@ -281,7 +281,7 @@ export function Footer() {
         {/* Bottom Row: Simple Copyright Only */}
         <div className="pt-6 text-center text-xs text-slate-500">
           <p>
-            © 2027 Himalayan Green Energy Expo. All rights reserved.
+            © {new Date().getFullYear()} Himalayan Green Energy Expo. All rights reserved.
           </p>
         </div>
 

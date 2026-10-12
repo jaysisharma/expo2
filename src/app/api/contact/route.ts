@@ -426,7 +426,7 @@ Independent Power Producers' Association, Nepal (IPPAN) & Event Solution Pvt. Lt
                 Jointly Organized by <strong>Independent Power Producers&apos; Association, Nepal (IPPAN)</strong> &amp; <strong>Event Solution Pvt. Ltd.</strong>
               </p>
               <p style="margin: 4px 0 0 0;">
-                &copy; 2027 Himalayan Green Energy Expo. This is an automated email confirmation.
+                &copy; ${new Date().getFullYear()} Himalayan Green Energy Expo. This is an automated email confirmation.
               </p>
             </td>
           </tr>

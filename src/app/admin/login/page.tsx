@@ -184,7 +184,7 @@ export default function AdminLoginPage() {
 
       {/* Footer */}
       <footer className="relative z-10 w-full max-w-5xl mx-auto px-6 py-5 text-center text-xs text-slate-500 font-body">
-        <p>© 2027 Himalayan Green Energy Expo · Admin Portal</p>
+        <p>© {new Date().getFullYear()} Himalayan Green Energy Expo · Admin Portal</p>
       </footer>
     </div>
   );
