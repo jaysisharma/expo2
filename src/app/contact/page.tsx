@@ -12,7 +12,7 @@ import {
   Navigation,
   ExternalLink,
   Clock,
-  Compass,
+  Calendar,
   ArrowRight,
   MessageSquare,
 } from "lucide-react";
@@ -478,9 +478,6 @@ export default function ContactPage() {
                         subtitle: "Exhibition Road, Pradarshani Marg, Kathmandu 44600, Nepal",
                         dates: "17–19 January 2027 · Magh 3–5, 2083",
                         hours: "9:00 AM – 6:00 PM Daily",
-                        coordinates: "27.7019° N, 85.3180° E",
-                        access:
-                          "Central Kathmandu. Approx. 5.5 km from Tribhuvan International Airport (TIA). Walking distance from Ratna Park / Shahid Gate transport hubs.",
                         mapsUrl: "https://maps.google.com/?q=Bhrikutimandap+Exhibition+Hall+Kathmandu",
                         directionsUrl:
                           "https://www.google.com/maps/dir/?api=1&destination=Bhrikutimandap+Exhibition+Hall+Kathmandu",
@@ -494,9 +491,6 @@ export default function ContactPage() {
                         subtitle: "Jwagal, Ward No. 10, Lalitpur 44700, Bagmati Province, Nepal",
                         dates: "Year-Round Secretariat Operations",
                         hours: "Sunday – Friday: 9:00 AM – 6:00 PM NPT",
-                        coordinates: "27.6845° N, 85.3218° E",
-                        access:
-                          "Easily accessible via Ring Road / UN Park corridor and Shankhamul bridge. Reserved visitor parking available on premises.",
                         mapsUrl: "https://maps.google.com/?q=IPPAN+Jwagal+Lalitpur+Nepal",
                         directionsUrl:
                           "https://www.google.com/maps/dir/?api=1&destination=IPPAN+Jwagal+Lalitpur+Nepal",
@@ -524,18 +518,15 @@ export default function ContactPage() {
                         </p>
                       </div>
 
-                      <div className="space-y-1.5 border-t md:border-t-0 md:border-l border-slate-200 md:pl-4 pt-3 md:pt-0">
+                      <div className="space-y-2 border-t md:border-t-0 md:border-l border-slate-200 md:pl-4 pt-3 md:pt-0">
+                        <div className="flex items-start gap-2 text-slate-700">
+                          <Calendar className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                          <span className="font-semibold">{current.dates}</span>
+                        </div>
                         <div className="flex items-start gap-2 text-slate-600">
                           <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
                           <span>{current.hours}</span>
                         </div>
-                        <div className="flex items-start gap-2 text-slate-600">
-                          <Compass className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
-                          <span className="font-mono">{current.coordinates}</span>
-                        </div>
-                        <p className="text-[11px] text-slate-500 leading-relaxed pt-0.5">
-                          {current.access}
-                        </p>
                       </div>
 
                       <div className="flex flex-col justify-center gap-2 border-t md:border-t-0 md:border-l border-slate-200 md:pl-4 pt-3 md:pt-0">
