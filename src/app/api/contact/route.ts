@@ -290,8 +290,9 @@ EVENT DETAILS:
 • Dates: 17–19 January 2027 (Magh 3–5, 2083)
 • Venue: BHRIKUTIMANDAP, KATHMANDU, NEPAL
 • Direct Hotlines: +977-9703606348 / 9703606345
+• WhatsApp Support: +977 9851004985
 • Landline: 01-5268535, 4169175
-• Official Expo Email: info@himalayanenergyexpo.com | info@eventsolutionnepal.com.np
+• Official Expo Emails: info@himalayanenergyexpo.com | himalayangreenenergyexpo@gmail.com | info@eventsolutionnepal.com.np
 • Secretariat Location: IPPAN Secretariat, Jwagal, Lalitpur, Nepal
 • Website: https://www.higex.org
 
@@ -396,10 +397,13 @@ Independent Power Producers' Association, Nepal (IPPAN) & Event Solution Pvt. Lt
                   &bull; <strong>Hotlines:</strong> <a href="tel:+9779703606348" style="color: #007A5E; text-decoration: none;">+977-9703606348</a> | <a href="tel:+9779703606345" style="color: #007A5E; text-decoration: none;">9703606345</a>
                 </p>
                 <p style="margin: 0 0 4px 0;">
+                  &bull; <strong>WhatsApp Support:</strong> <a href="https://wa.me/9779851004985" style="color: #007A5E; text-decoration: none;">+977 9851004985</a>
+                </p>
+                <p style="margin: 0 0 4px 0;">
                   &bull; <strong>Landline:</strong> 01-5268535, 4169175
                 </p>
                 <p style="margin: 0 0 4px 0;">
-                  &bull; <strong>Official Emails:</strong> <a href="mailto:info@himalayanenergyexpo.com" style="color: #007A5E; text-decoration: none;">info@himalayanenergyexpo.com</a> | <a href="mailto:info@eventsolutionnepal.com.np" style="color: #007A5E; text-decoration: none;">info@eventsolutionnepal.com.np</a>
+                  &bull; <strong>Official Emails:</strong> <a href="mailto:info@himalayanenergyexpo.com" style="color: #007A5E; text-decoration: none;">info@himalayanenergyexpo.com</a> | <a href="mailto:himalayangreenenergyexpo@gmail.com" style="color: #007A5E; text-decoration: none;">himalayangreenenergyexpo@gmail.com</a> | <a href="mailto:info@eventsolutionnepal.com.np" style="color: #007A5E; text-decoration: none;">info@eventsolutionnepal.com.np</a>
                 </p>
                 <p style="margin: 0;">
                   &bull; <strong>Secretariat:</strong> IPPAN Office, Jwagal, Lalitpur, Nepal

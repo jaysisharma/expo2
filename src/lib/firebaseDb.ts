@@ -109,7 +109,16 @@ export async function getFirebaseBoothOverrides() {
 
 export async function setFirebaseBoothOverride(
   boothNumber: string,
-  data: { status?: string; exhibitorName?: string; priceUSD?: number; priceNPR?: number; isPrime?: boolean }
+  data: {
+    status?: string;
+    exhibitorName?: string;
+    priceUSD?: number;
+    priceNPR?: number;
+    isPrime?: boolean;
+    is72hHold?: boolean;
+    holdExpiresAt?: string;
+    bookingRef?: string;
+  }
 ) {
   try {
     const ref = doc(db, COLLECTIONS.BOOTHS, boothNumber);
@@ -122,6 +131,41 @@ export async function setFirebaseBoothOverride(
     return payload;
   } catch {
     return null;
+  }
+}
+
+// ----------------- SPONSORSHIP HOLDS & OVERRIDES -----------------
+export async function getFirebaseSponsorshipHolds(): Promise<Record<string, any> | null> {
+  try {
+    const ref = doc(db, COLLECTIONS.SETTINGS, "sponsorship_holds");
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+      return snap.data();
+    }
+    return {};
+  } catch {
+    return null;
+  }
+}
+
+export async function setFirebaseSponsorshipHold(packageId: string, holdData: any): Promise<boolean> {
+  try {
+    const ref = doc(db, COLLECTIONS.SETTINGS, "sponsorship_holds");
+    await setDoc(
+      ref,
+      {
+        [packageId]: {
+          ...holdData,
+          packageId,
+          updatedAt: new Date().toISOString(),
+        },
+      },
+      { merge: true }
+    );
+    return true;
+  } catch (error) {
+    console.warn("Firestore setFirebaseSponsorshipHold error:", error);
+    return false;
   }
 }
 

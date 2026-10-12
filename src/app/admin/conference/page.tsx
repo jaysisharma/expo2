@@ -136,7 +136,7 @@ export default function AdminConferencePage() {
       <div className="space-y-4">
         {daySessions.length === 0 ? (
           <div className="p-12 text-center text-slate-400 rounded-2xl bg-white border border-slate-200 text-xs shadow-xs">
-            No conference sessions scheduled for Day {selectedDay}. Click "+ Add Session" to create one.
+            No conference sessions scheduled for Day {selectedDay}. Click &quot;+ Add Session&quot; to create one.
           </div>
         ) : (
           daySessions.map((session) => (

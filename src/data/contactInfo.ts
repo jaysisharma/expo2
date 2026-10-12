@@ -8,8 +8,17 @@ export const CONTACT_DETAILS = {
   mobiles: [
     { display: '+977-9703606348', raw: '+9779703606348', label: 'Primary Hotline' },
     { display: '9703606345', raw: '+9779703606345', label: 'Help Desk' },
+    { display: '+977 9851004985', raw: '+9779851004985', label: 'WhatsApp / Support' },
   ],
   hotlineDisplay: '+977-9703606348 | 9703606345',
+
+  // WhatsApp Support
+  whatsapp: {
+    display: '+977 9851004985',
+    raw: '+9779851004985',
+    link: 'https://wa.me/9779851004985',
+    label: 'WhatsApp Support',
+  },
 
   // Landline Numbers
   landlines: [
@@ -32,10 +41,12 @@ export const CONTACT_DETAILS = {
   // Official Email Contacts
   emails: {
     expo: 'info@himalayanenergyexpo.com',
+    expoGmail: 'himalayangreenenergyexpo@gmail.com',
     eventSolution: 'info@eventsolutionnepal.com.np',
     ippanPrimary: 'info@ippan.org.np',
     ippanSecondary: 'ippan2001@gmail.com',
     ippanDisplay: 'info@ippan.org.np | ippan2001@gmail.com',
+    expoDisplay: 'info@himalayanenergyexpo.com | himalayangreenenergyexpo@gmail.com',
   },
 
   // Venue & Dates
@@ -94,6 +105,7 @@ export const CONTACT_DETAILS = {
 
   // Social Links
   socials: {
+    whatsapp: 'https://wa.me/9779851004985',
     linkedin: 'https://www.linkedin.com/company/ippan',
     facebook: 'https://www.facebook.com/ippan.org.np',
     youtube: 'https://www.youtube.com/@ippan-nepal',
@@ -108,3 +120,6 @@ export const NETWORKING_INTERNATIONAL_PRICE = CONTACT_DETAILS.networkingDinner.i
 export const GALA_VENUE = NETWORKING_VENUE;
 export const GALA_NATIONAL_PRICE = NETWORKING_NATIONAL_PRICE;
 export const GALA_INTERNATIONAL_PRICE = NETWORKING_INTERNATIONAL_PRICE;
+export const WHATSAPP_NUMBER = CONTACT_DETAILS.whatsapp.display;
+export const WHATSAPP_LINK = CONTACT_DETAILS.whatsapp.link;
+export const EXPO_GMAIL = CONTACT_DETAILS.emails.expoGmail;

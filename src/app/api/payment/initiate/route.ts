@@ -5,10 +5,21 @@ import nodemailer from "nodemailer";
 import fs from "fs/promises";
 import path from "path";
 
+import { Resend } from "resend";
+import {
+  setFirebaseBoothOverride,
+  setFirebaseSponsorshipHold,
+  addFirebaseInquiry,
+  getFirebaseFloorPlan,
+  saveFirebaseFloorPlan,
+} from "@/lib/firebaseDb";
+
 export const dynamic = "force-dynamic";
 
 const ROOT_ADMIN_DATA_PATH = path.join(process.cwd(), "data", "adminData.json");
 const SRC_ADMIN_DATA_PATH = path.join(process.cwd(), "src", "data", "adminData.json");
+const ROOT_FLOOR_PLAN_PATH = path.join(process.cwd(), "data", "savedCustomFloorPlan.json");
+const SRC_FLOOR_PLAN_PATH = path.join(process.cwd(), "src", "data", "savedCustomFloorPlan.json");
 
 async function getAdminData() {
   try {
@@ -51,6 +62,67 @@ function escapeHtml(str: string): string {
     .replace(/'/g, "&#039;");
 }
 
+async function sendBookingConfirmationEmail(params: {
+  toEmail: string;
+  subject: string;
+  htmlContent: string;
+  textContent: string;
+}) {
+  const { toEmail, subject, htmlContent, textContent } = params;
+  const fromName = process.env.SMTP_FROM_NAME || "Himalayan Green Energy Expo 2027";
+  const replyTo = "info@eventsolutionnepal.com.np";
+  let sent = false;
+
+  // 1. Try Primary SMTP (Nodemailer)
+  try {
+    const transporter = createTransporter();
+    const smtpUser = process.env.SMTP_USER;
+    if (transporter && smtpUser) {
+      await transporter.sendMail({
+        from: `"${fromName}" <${smtpUser}>`,
+        to: toEmail,
+        replyTo: `"Expo Secretariat" <${replyTo}>`,
+        subject,
+        text: textContent,
+        html: htmlContent,
+      });
+      sent = true;
+      console.log(`[stall-booking] Confirmation email sent via SMTP to ${toEmail}`);
+    }
+  } catch (err: any) {
+    console.warn("[stall-booking] SMTP send failed, attempting Resend fallback:", err?.message || err);
+  }
+
+  // 2. Resend Fallback
+  if (!sent && process.env.RESEND_API_KEY) {
+    try {
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      const rawSender = process.env.RESEND_FROM_EMAIL || "info@himalayanenergyexpo.com";
+      const cleanSender = rawSender.includes("<") ? rawSender : `"${fromName}" <${rawSender}>`;
+      
+      const { error } = await resend.emails.send({
+        from: cleanSender,
+        to: [toEmail],
+        replyTo,
+        subject,
+        text: textContent,
+        html: htmlContent,
+      });
+
+      if (error) {
+        console.warn("[stall-booking] Resend fallback error:", error.message);
+      } else {
+        sent = true;
+        console.log(`[stall-booking] Confirmation email sent via Resend fallback to ${toEmail}`);
+      }
+    } catch (rErr: any) {
+      console.warn("[stall-booking] Resend exception:", rErr?.message || rErr);
+    }
+  }
+
+  return sent;
+}
+
 async function saveAdminData(data: any) {
   const content = JSON.stringify(data, null, 2);
   try {
@@ -81,7 +153,10 @@ export async function POST(req: Request) {
       powerOption = "Standard 15A Included",
       industryCategory = "Turbines & Electro-Mechanical",
       specialRequirements = "",
-      paymentMethod = "khalti", // 'khalti' | 'fonepay' | 'bank'
+      paymentMethod = "khalti", // 'khalti' | 'fonepay' | 'bank' | 'hold_72h'
+      packageName,
+      packageType,
+      packagePerks = [],
     } = body;
 
     if (!email || !phone || !stallNumbers || stallNumbers.length === 0) {
@@ -112,6 +187,9 @@ export async function POST(req: Request) {
     const newBookingRecord = {
       id: orderId,
       stalls: stallNumbers,
+      packageName: packageName || (specialRequirements?.includes("Package:") ? specialRequirements.split("Package:")[1]?.split("|")[0]?.trim() : undefined),
+      packageType: packageType || (packageName ? "sponsor" : "stall"),
+      packagePerks,
       amountNPR: isHold72h ? 0 : Number(amountNPR) || 875000,
       amountUSD: isHold72h ? 0 : Number(amountUSD) || 6500,
       packageTariffNPR: Number(body.fullPackageAmountNPR) || Number(amountNPR) || 0,
@@ -142,10 +220,32 @@ export async function POST(req: Request) {
       adminData.stallBookings.unshift(newBookingRecord);
     }
 
-    // Mark stalls as Reserved or 72h Hold in boothOverrides
+    // 2. Mark package hold if applicable
+    const resolvedPackageId = body.packageId || (packageName?.toLowerCase().includes("title") || (stallNumbers.includes("A1") && stallNumbers.includes("A2")) ? "title-sponsor" : undefined);
+    if (!adminData.packageOverrides) adminData.packageOverrides = {};
+    if (resolvedPackageId && isHold72h) {
+      const pkgHoldData = {
+        packageId: resolvedPackageId,
+        packageName: packageName || "Title Sponsor (1)",
+        status: "72h Hold",
+        company: company || contactPerson,
+        contactPerson,
+        email,
+        phone,
+        bookingRef: orderId,
+        is72hHold: true,
+        holdExpiresAt,
+        stalls: stallNumbers,
+        updatedAt: new Date().toISOString(),
+      };
+      adminData.packageOverrides[resolvedPackageId] = pkgHoldData;
+      setFirebaseSponsorshipHold(resolvedPackageId, pkgHoldData).catch(() => {});
+    }
+
+    // 3. Mark stalls as Reserved or 72h Hold in boothOverrides
     if (!adminData.boothOverrides) adminData.boothOverrides = {};
     for (const stNum of stallNumbers) {
-      adminData.boothOverrides[stNum] = {
+      const overridePayload = {
         status: isHold72h ? "72h Hold" : "Reserved",
         exhibitorName: company || contactPerson,
         bookingRef: orderId,
@@ -153,12 +253,77 @@ export async function POST(req: Request) {
         holdExpiresAt,
         updatedAt: new Date().toISOString(),
       };
+      adminData.boothOverrides[stNum] = overridePayload;
+      setFirebaseBoothOverride(stNum, overridePayload).catch(() => {});
     }
 
-    // Log corresponding inquiry for admin leads
+    // 4. Sync stall status directly into floor plan designs (local and Firebase)
+    try {
+      let floorData: any = null;
+      try {
+        floorData = JSON.parse(await fs.readFile(ROOT_FLOOR_PLAN_PATH, "utf-8"));
+      } catch {
+        try {
+          floorData = JSON.parse(await fs.readFile(SRC_FLOOR_PLAN_PATH, "utf-8"));
+        } catch {}
+      }
+
+      if (floorData && Array.isArray(floorData.elements)) {
+        let changed = false;
+        floorData.elements = floorData.elements.map((el: any) => {
+          const matchNum = stallNumbers.find((s: string) =>
+            (el.number && el.number.trim().toLowerCase() === s.trim().toLowerCase()) ||
+            (el.id && el.id.trim().toLowerCase() === s.trim().toLowerCase())
+          );
+          if (matchNum) {
+            changed = true;
+            return {
+              ...el,
+              status: isHold72h ? "72h Hold" : "Reserved",
+              exhibitorName: company || contactPerson,
+            };
+          }
+          return el;
+        });
+
+        if (changed) {
+          const content = JSON.stringify(floorData, null, 2);
+          await fs.writeFile(ROOT_FLOOR_PLAN_PATH, content, "utf-8").catch(() => {});
+          await fs.writeFile(SRC_FLOOR_PLAN_PATH, content, "utf-8").catch(() => {});
+        }
+      }
+
+      getFirebaseFloorPlan().then((fbFloor) => {
+        if (fbFloor && Array.isArray(fbFloor.elements)) {
+          let fbChanged = false;
+          const updatedElements = fbFloor.elements.map((el: any) => {
+            const matchNum = stallNumbers.find((s: string) =>
+              (el.number && el.number.trim().toLowerCase() === s.trim().toLowerCase()) ||
+              (el.id && el.id.trim().toLowerCase() === s.trim().toLowerCase())
+            );
+            if (matchNum) {
+              fbChanged = true;
+              return {
+                ...el,
+                status: isHold72h ? "72h Hold" : "Reserved",
+                exhibitorName: company || contactPerson,
+              };
+            }
+            return el;
+          });
+          if (fbChanged) {
+            saveFirebaseFloorPlan({ ...fbFloor, elements: updatedElements }).catch(() => {});
+          }
+        }
+      }).catch(() => {});
+    } catch (e) {
+      console.warn("[payment/initiate] Failed to sync floor plan files:", e);
+    }
+
+    // 5. Log corresponding inquiry for admin leads
     if (!adminData.inquiries) adminData.inquiries = [];
     const uniqueInqSuffix = `${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
-    adminData.inquiries.unshift({
+    const newInquiryPayload = {
       id: `INQ-STALL-${orderId.replace(/[^0-9]/g, "") || "BOOK"}-${uniqueInqSuffix}`,
       name: contactPerson,
       email,
@@ -175,22 +340,44 @@ export async function POST(req: Request) {
       stallInterest: stallListStr,
       status: isHold72h ? "72h Hold" : "New",
       submittedAt: new Date().toISOString(),
-    });
+    };
+    adminData.inquiries.unshift(newInquiryPayload);
+    addFirebaseInquiry(newInquiryPayload).catch(() => {});
 
     await saveAdminData(adminData);
 
-    // Send automated email confirmation to exhibitor (auto-reply)
+    // Send automated email confirmation to exhibitor / sponsor (auto-reply)
     try {
-      const transporter = createTransporter();
-      if (transporter) {
-        const fromName = process.env.SMTP_FROM_NAME || "Himalayan Green Energy Expo 2027";
-        const smtpUser = process.env.SMTP_USER;
+      const isBankTransfer = paymentMethod === "bank";
+      const resolvedPackageName = packageName || (specialRequirements?.includes("Package:") ? specialRequirements.split("Package:")[1]?.split("|")[0]?.trim() : undefined);
+      const isSponsorTier = Boolean(resolvedPackageName && (packageType === "sponsor" || resolvedPackageName.toLowerCase().includes("sponsor") || resolvedPackageName.toLowerCase().includes("partner") || resolvedPackageName.toLowerCase().includes("supporter")));
+      const totalAmountNprNum = Number(body.fullPackageAmountNPR) || Number(amountNPR) || 0;
+      const totalAmountUsdNum = Number(body.fullPackageAmountUSD) || Number(amountUSD) || 0;
+      const formattedNPR = totalAmountNprNum.toLocaleString();
+      const formattedUSD = totalAmountUsdNum.toLocaleString();
 
-        const isBankTransfer = paymentMethod === "bank";
-        const formattedNPR = Number(amountNPR || 0).toLocaleString();
-        const formattedUSD = Number(amountUSD || 0).toLocaleString();
+      const bookingTypeLabel = isSponsorTier
+        ? `Official ${resolvedPackageName} Booking`
+        : `Exhibition Stall Reservation [${stallListStr}]`;
 
-        const emailHtml = `
+      const subjectLine = isHold72h
+        ? `[72-Hour Free Hold Confirmed] Ref: ${orderId} · ${resolvedPackageName || `Stall ${stallListStr}`} | Himalayan Green Energy Expo 2027`
+        : `${isSponsorTier ? `${resolvedPackageName} Confirmed` : "Stall Reservation Confirmed"} [Ref: ${orderId}] | Himalayan Green Energy Expo 2027`;
+
+      const perksHtml = Array.isArray(packagePerks) && packagePerks.length > 0
+        ? `
+        <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 14px 18px; margin: 16px 0;">
+          <div style="font-size: 11px; font-weight: 700; color: #15803d; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">
+            Included Sponsorship Deliverables &amp; Entitlements:
+          </div>
+          <ul style="margin: 0; padding-left: 18px; font-size: 12.5px; color: #166534; line-height: 1.65;">
+            ${packagePerks.map((p: string) => `<li>${escapeHtml(p)}</li>`).join("")}
+          </ul>
+        </div>
+        `
+        : "";
+
+      const emailHtml = `
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"></head>
@@ -202,10 +389,10 @@ export async function POST(req: Request) {
           <tr>
             <td style="background-color: #04281E; padding: 26px 32px; text-align: left; border-bottom: 3px solid #10b981;">
               <div style="font-size: 11px; font-weight: 700; color: #34d399; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px;">
-                Himalayan Green Energy Expo 2027 &bull; Exhibition Secretariat
+                Himalayan Green Energy Expo 2027 &bull; Organizing Secretariat
               </div>
               <h1 style="margin: 0; font-size: 20px; font-weight: 800; color: #ffffff;">
-                Exhibition Stall Reservation Acknowledgment
+                ${escapeHtml(bookingTypeLabel)}
               </h1>
               <p style="margin: 6px 0 0 0; font-size: 13px; color: #a7f3d0;">
                 Booking Reference: <code style="background-color: rgba(255,255,255,0.12); padding: 2px 6px; border-radius: 4px; font-family: monospace; color: #ffffff;">${escapeHtml(orderId)}</code>
@@ -218,23 +405,24 @@ export async function POST(req: Request) {
                 Dear <strong>${escapeHtml(primaryName)}</strong>,
               </p>
               <p style="font-size: 14px; color: #334155; line-height: 1.6;">
-                Thank you for reserving your exhibition space at the <strong>Himalayan Green Energy Expo 2027</strong>. Your provisional booth allocation has been received and registered.
+                Thank you for choosing to participate in the <strong>Himalayan Green Energy Expo 2027</strong>. Your reservation has been officially received and registered in our exhibition management system.
               </p>
               
               <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #10b981; border-radius: 8px; padding: 16px 20px; margin: 18px 0; font-size: 13px; line-height: 1.7;">
                 <strong>Reservation Summary:</strong><br/>
-                &bull; <strong>Allocated Stall(s):</strong> <span style="color: #047857; font-weight: 700;">${escapeHtml(stallListStr)}</span><br/>
-                &bull; <strong>Company / Exhibitor:</strong> ${escapeHtml(company || primaryName)}<br/>
+                ${resolvedPackageName ? `&bull; <strong>Sponsorship / Package:</strong> <span style="color: #047857; font-weight: 700;">${escapeHtml(resolvedPackageName)}</span><br/>` : ""}
+                &bull; <strong>Allocated Space / Stall(s):</strong> <span style="color: #047857; font-weight: 700;">${escapeHtml(stallListStr)}</span><br/>
+                &bull; <strong>Company / Organization:</strong> ${escapeHtml(company || primaryName)}<br/>
                 &bull; <strong>Fascia Board Name:</strong> ${escapeHtml(fasciaName || company || primaryName)}<br/>
                 &bull; <strong>Booth Type:</strong> ${escapeHtml(boothType)}<br/>
                 &bull; <strong>Industry Category:</strong> ${escapeHtml(industryCategory)}<br/>
-                &bull; <strong>Total Fee (incl. 13% VAT):</strong> ${
+                &bull; <strong>Package Tariff (incl. 13% VAT):</strong> ${
                   isHold72h
-                    ? `<span style="color: #047857; font-weight: 700;">NPR 0 / USD $0 (72-Hour Free Hold)</span> &bull; Full package tariff (NPR ${formattedNPR} / USD ${formattedUSD}) due within 72 hrs`
-                    : `NPR ${formattedNPR} / USD ${formattedUSD}`
+                    ? `<span style="color: #047857; font-weight: 700;">NPR 0 / USD $0 (72-Hour Free Hold)</span> &bull; Full package tariff: NPR ${formattedNPR} / USD $${formattedUSD}`
+                    : `NPR ${formattedNPR} / USD $${formattedUSD}`
                 }<br/>
                 &bull; <strong>Payment Method:</strong> ${
-                  isHold72h ? "72-HOUR FREE HOLD" : escapeHtml(paymentMethod.toUpperCase())
+                  isHold72h ? "72-HOUR FREE HOLD (NPR 0 Today)" : escapeHtml(paymentMethod.toUpperCase())
                 }<br/>
                 ${
                   isHold72h && holdExpiresAt
@@ -247,30 +435,34 @@ export async function POST(req: Request) {
                 &bull; <strong>Venue:</strong> BHRIKUTIMANDAP, KATHMANDU, NEPAL
               </div>
 
+              ${perksHtml}
+
               ${
                 isHold72h
                   ? `
               <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 16px 20px; margin: 18px 0; font-size: 13px; line-height: 1.7;">
-                <strong style="color: #065f46;">72-Hour Exclusivity Lock Active:</strong><br/>
-                Your selected reservation is held exclusively in your company&apos;s name for the next 72 hours at zero cost. No other organization can claim this allocation during your hold period.<br/><br/>
-                <strong>Next Steps:</strong> Our exhibition secretariat will provide your official corporate sponsorship contract. When ready to confirm, your finance department may wire remittance to the account below:<br/><br/>
-                &bull; <strong>Account Name:</strong> IPPAN - GREEN ENERGY EXPO<br/>
+                <strong style="color: #065f46;">72-Hour Free Hold Active (Zero Upfront Cost):</strong><br/>
+                Your reservation is held exclusively in your organization&apos;s name for the next 72 hours. No other enterprise can claim this allocation during your hold window.<br/><br/>
+                <strong>Next Steps:</strong> Our exhibition secretariat will provide your official corporate contract and pro-forma invoice. When ready to confirm, your accounts team may wire remittance to the official bank account below:<br/><br/>
+                &bull; <strong>Beneficiary:</strong> IPPAN - GREEN ENERGY EXPO<br/>
                 &bull; <strong>Bank Name:</strong> Nepal Investment Mega Bank (NIMB)<br/>
-                &bull; <strong>Account Number:</strong> 001001201928471<br/>
+                &bull; <strong>NPR Account Number:</strong> 001001201928471<br/>
+                &bull; <strong>USD Account Number:</strong> 001001201928482<br/>
                 &bull; <strong>Branch / SWIFT:</strong> Durbarmarg, Kathmandu / NIMBNPKA<br/>
-                &bull; <strong>Reference:</strong> Quote booking ID <code>${escapeHtml(orderId)}</code>
+                &bull; <strong>Wire Remarks:</strong> Please quote booking reference <code>${escapeHtml(orderId)}</code>
               </div>
               `
                   : isBankTransfer
                   ? `
               <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 16px 20px; margin: 18px 0; font-size: 13px; line-height: 1.7;">
                 <strong style="color: #065f46;">Bank Wire Remittance Instructions:</strong><br/>
-                Please deposit / wire the stall fees to the official IPPAN account below:<br/><br/>
-                &bull; <strong>Account Name:</strong> IPPAN - GREEN ENERGY EXPO<br/>
+                Please wire the fee to the official IPPAN account below:<br/><br/>
+                &bull; <strong>Beneficiary:</strong> IPPAN - GREEN ENERGY EXPO<br/>
                 &bull; <strong>Bank Name:</strong> Nepal Investment Mega Bank (NIMB)<br/>
-                &bull; <strong>Account Number:</strong> 001001201928471<br/>
+                &bull; <strong>NPR Account Number:</strong> 001001201928471<br/>
+                &bull; <strong>USD Account Number:</strong> 001001201928482<br/>
                 &bull; <strong>Branch / SWIFT:</strong> Durbarmarg, Kathmandu / NIMBNPKA<br/>
-                &bull; <strong>Wire Remarks:</strong> Please quote booking ID <code>${escapeHtml(orderId)}</code> and email the bank swift advice/voucher to <a href="mailto:expo@ippan.org.np" style="color: #047857; font-weight: 600;">expo@ippan.org.np</a>.
+                &bull; <strong>Wire Remarks:</strong> Quote booking ID <code>${escapeHtml(orderId)}</code> and email the bank swift advice/voucher to <a href="mailto:expo@ippan.org.np" style="color: #047857; font-weight: 600;">expo@ippan.org.np</a>.
               </div>
               `
                   : `
@@ -283,8 +475,9 @@ export async function POST(req: Request) {
               <div style="border-top: 1px solid #e2e8f0; padding-top: 16px; margin-top: 20px; font-size: 13px; color: #475569; line-height: 1.6;">
                 <strong>Secretariat Contact Details:</strong><br/>
                 &bull; Direct Hotlines: +977-9703606348 / 9703606345<br/>
+                &bull; WhatsApp Support: +977 9851004985<br/>
                 &bull; Landline: 01-5268535, 4169175<br/>
-                &bull; Email: <a href="mailto:info@himalayanenergyexpo.com" style="color: #007A5E; text-decoration: none;">info@himalayanenergyexpo.com</a> | <a href="mailto:info@eventsolutionnepal.com.np" style="color: #007A5E; text-decoration: none;">info@eventsolutionnepal.com.np</a><br/>
+                &bull; Email: <a href="mailto:info@himalayanenergyexpo.com" style="color: #007A5E; text-decoration: none;">info@himalayanenergyexpo.com</a> | <a href="mailto:himalayangreenenergyexpo@gmail.com" style="color: #007A5E; text-decoration: none;">himalayangreenenergyexpo@gmail.com</a> | <a href="mailto:info@eventsolutionnepal.com.np" style="color: #007A5E; text-decoration: none;">info@eventsolutionnepal.com.np</a><br/>
                 &bull; Address: IPPAN Secretariat, Jwagal, Lalitpur, Nepal<br/>
                 &bull; Website: <a href="https://www.higex.org" style="color: #007A5E; text-decoration: none;">www.higex.org</a>
               </div>
@@ -296,20 +489,49 @@ export async function POST(req: Request) {
   </table>
 </body>
 </html>
-        `;
+      `;
 
-        transporter.sendMail({
-          from: `"${fromName}" <${smtpUser}>`,
-          to: email,
-          replyTo: `"Expo Secretariat" <info@eventsolutionnepal.com.np>`,
-          subject: isHold72h
-            ? `[72-Hour Free Hold Confirmed] Ref: ${orderId} | Himalayan Green Energy Expo 2027`
-            : `Stall Reservation Confirmed [Ref: ${orderId}] | Himalayan Green Energy Expo 2027`,
-          html: emailHtml,
-        }).catch((err) => {
-          console.warn("[stall-booking] Auto-reply send error:", err?.message || err);
-        });
-      }
+      const textFallback = `
+${bookingTypeLabel}
+Himalayan Green Energy Expo 2027
+--------------------------------------------------
+Dear ${primaryName},
+
+Thank you for choosing to participate in Himalayan Green Energy Expo 2027.
+Your reservation has been received and registered.
+
+Booking Reference: ${orderId}
+${resolvedPackageName ? `Package: ${resolvedPackageName}\n` : ""}Allocated Space / Stalls: ${stallListStr}
+Organization: ${company || primaryName}
+Fascia Board Name: ${fasciaName || company || primaryName}
+Tariff: ${isHold72h ? `NPR 0 Today (72-Hour Free Hold) · Full tariff: NPR ${formattedNPR} / USD $${formattedUSD}` : `NPR ${formattedNPR} / USD $${formattedUSD}`}
+Payment Method: ${isHold72h ? "72-HOUR FREE HOLD" : paymentMethod.toUpperCase()}
+${isHold72h && holdExpiresAt ? `Hold Expiration: ${holdExpiresAt} (72 Hours)\n` : ""}Dates: 17–19 January 2027
+Venue: BHRIKUTIMANDAP, KATHMANDU, NEPAL
+
+Bank Details for Remittance:
+Beneficiary: IPPAN - GREEN ENERGY EXPO
+Bank: Nepal Investment Mega Bank (NIMB)
+NPR A/C: 001001201928471
+USD A/C: 001001201928482
+SWIFT: NIMBNPKA
+
+Secretariat Contacts:
+Hotlines: +977-9703606348 / 9703606345
+WhatsApp: +977 9851004985
+Emails: info@himalayanenergyexpo.com | himalayangreenenergyexpo@gmail.com | info@eventsolutionnepal.com.np
+Website: https://www.higex.org
+      `.trim();
+
+      // Trigger asynchronous background sending
+      sendBookingConfirmationEmail({
+        toEmail: email,
+        subject: subjectLine,
+        htmlContent: emailHtml,
+        textContent: textFallback,
+      }).catch((err) => {
+        console.warn("[stall-booking] Background email dispatch error:", err);
+      });
     } catch (e) {
       console.warn("[stall-booking] Email setup skipped:", e);
     }

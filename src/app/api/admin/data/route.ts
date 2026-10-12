@@ -27,21 +27,36 @@ import {
   saveFirebaseNews,
   getFirebaseCurrentPartners,
   saveFirebaseCurrentPartners,
+  getFirebaseSponsorshipHolds,
+  setFirebaseSponsorshipHold,
 } from "@/lib/firebaseDb";
 
 // In-memory store for serverless environments (Vercel)
 let memoryAdminData: any = null;
 
 async function getAdminData() {
+  // Read local file fallback data for merging
+  let localData: any = null;
+  try {
+    const raw = await fs.readFile(ROOT_ADMIN_DATA_PATH, "utf-8");
+    localData = JSON.parse(raw);
+  } catch {
+    try {
+      const raw = await fs.readFile(SRC_ADMIN_DATA_PATH, "utf-8");
+      localData = JSON.parse(raw);
+    } catch {}
+  }
+
   // Always try Firebase Firestore first — it's the persistent source of truth on Vercel
   try {
-    const [fbRegs, fbBooths, fbInqs, fbSettings, fbNews, fbPartners] = await Promise.all([
+    const [fbRegs, fbBooths, fbInqs, fbSettings, fbNews, fbPartners, fbSponsorHolds] = await Promise.all([
       getFirebaseRegistrations(),
       getFirebaseBoothOverrides(),
       getFirebaseInquiries(),
       getFirebaseSettings(),
       getFirebaseNews(),
       getFirebaseCurrentPartners(),
+      getFirebaseSponsorshipHolds(),
     ]);
 
     // Use Firebase data whenever the connection succeeds (even if arrays are empty)
@@ -54,10 +69,22 @@ async function getAdminData() {
         stallBookingsOpen: true,
       };
 
+      const mergedBoothOverrides = {
+        ...(localData?.boothOverrides || {}),
+        ...(fbBooths || {}),
+      };
+
+      const mergedPackageOverrides = {
+        ...(localData?.packageOverrides || {}),
+        ...(fbSponsorHolds || {}),
+      };
+
       memoryAdminData = {
         registrations: fbRegs || [],
         inquiries: fbInqs || [],
-        boothOverrides: fbBooths || {},
+        boothOverrides: mergedBoothOverrides,
+        packageOverrides: mergedPackageOverrides,
+        stallBookings: localData?.stallBookings || [],
         settings: fbSettings || defaultSettings,
         news: fbNews !== null ? fbNews : [],
         currentPartners: fbPartners !== null ? fbPartners : [],
@@ -436,6 +463,37 @@ export async function POST(req: Request) {
         data.boothOverrides = {};
         await saveAdminData(data);
         return NextResponse.json({ success: true, message: "All stalls reset to Available" });
+      }
+
+      case "update_package_hold": {
+        const { packageId, status, company, contactPerson, email, phone, holdExpiresAt, stalls } = payload;
+        if (!data.packageOverrides) data.packageOverrides = {};
+        if (status === "Available" || status === "released" || status === "delete") {
+          delete data.packageOverrides[packageId];
+          await Promise.all([
+            saveAdminData(data),
+            setFirebaseSponsorshipHold(packageId, { status: "Available", deleted: true }).catch(() => {}),
+          ]);
+          return NextResponse.json({ success: true, message: `Package ${packageId} hold released` });
+        } else {
+          const newHold = {
+            status: status || "72h Hold",
+            company: company || "",
+            contactPerson: contactPerson || "",
+            email: email || "",
+            phone: phone || "",
+            is72hHold: true,
+            holdExpiresAt: holdExpiresAt || new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString(),
+            stalls: stalls || [],
+            updatedAt: new Date().toISOString(),
+          };
+          data.packageOverrides[packageId] = newHold;
+          await Promise.all([
+            saveAdminData(data),
+            setFirebaseSponsorshipHold(packageId, newHold).catch(() => {}),
+          ]);
+          return NextResponse.json({ success: true, message: `Package ${packageId} hold updated`, data: newHold });
+        }
       }
 
       case "batch_update_booths": {

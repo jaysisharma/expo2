@@ -9,6 +9,7 @@ import {
   FileDown,
   Phone,
   Mail,
+  MessageSquare,
   Share2,
   ExternalLink,
   Sparkles,
@@ -255,11 +256,28 @@ export default function PressPage() {
               </div>
 
               <div className="flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
+                <MessageSquare className="w-4 h-4 text-[#25D366] shrink-0 mt-0.5" />
+                <div className="space-y-0.5">
+                  <div className="font-mono text-slate-400 text-[10px] uppercase">WHATSAPP SUPPORT</div>
+                  <a
+                    href="https://wa.me/9779851004985"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-white font-bold text-sm hover:text-[#25D366] transition-colors block"
+                  >
+                    +977 9851004985
+                  </a>
+                  <div className="text-slate-400 text-xs">Direct chat for rapid press queries</div>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
                 <Mail className="w-4 h-4 text-[#38BDF8] shrink-0 mt-0.5" />
                 <div className="space-y-0.5">
                   <div className="font-mono text-slate-400 text-[10px] uppercase">OFFICIAL EMAIL</div>
                   <div className="text-white font-medium">info@himalayanenergyexpo.com</div>
-                  <div className="text-slate-400 text-xs">info@ippan.org.np | ippan2001@gmail.com</div>
+                  <div className="text-slate-300 text-xs font-mono">himalayangreenenergyexpo@gmail.com</div>
+                  <div className="text-slate-400 text-xs pt-0.5">info@ippan.org.np | ippan2001@gmail.com</div>
                 </div>
               </div>
 

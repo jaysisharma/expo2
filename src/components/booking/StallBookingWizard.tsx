@@ -784,6 +784,9 @@ export default function StallBookingWizard() {
             boothType: resolvedBoothType,
             powerOption: "Standard 15A Included",
             industryCategory: resolvedIndustry,
+            packageName: selectedPackage && selectedPackage.id !== "custom-selection" ? selectedPackage.name : undefined,
+            packageType: selectedPackage ? selectedPackage.type : "stall",
+            packagePerks: selectedPackage && selectedPackage.perks ? selectedPackage.perks : [],
             specialRequirements:
               selectedPackage && selectedPackage.id !== "custom-selection"
                 ? `[${exhibitorOrigin.toUpperCase()} EXHIBITOR] ${paymentMethod === "hold_72h" ? "[72-HOUR FREE HOLD] " : ""}Package: ${selectedPackage.name} | Stalls: ${selectedBoothNumbers.join(", ")}`
@@ -1931,10 +1934,14 @@ export default function StallBookingWizard() {
                       +977-9703606348 / 9703606345
                     </a>
                   </div>
-                  <div className="flex items-center gap-1.5 text-slate-600 font-mono">
+                  <div className="flex flex-wrap items-center gap-1.5 text-slate-600 font-mono">
                     <Mail className="w-3 h-3 text-slate-400 shrink-0" />
                     <a href="mailto:info@himalayanenergyexpo.com" className="hover:text-emerald-700 hover:underline">
                       info@himalayanenergyexpo.com
+                    </a>
+                    <span className="text-slate-400">|</span>
+                    <a href="mailto:himalayangreenenergyexpo@gmail.com" className="hover:text-emerald-700 hover:underline">
+                      himalayangreenenergyexpo@gmail.com
                     </a>
                   </div>
                 </div>
@@ -2065,13 +2072,13 @@ export default function StallBookingWizard() {
                   </span>
                   <div className="flex items-center gap-2 flex-wrap">
                     <a
-                      href="https://wa.me/9779703606348?text=Hello%2C%20I%20am%20an%20international%20exhibitor%20inquiring%20about%20stall%20booking."
+                      href="https://wa.me/9779851004985?text=Hello%2C%20I%20am%20an%20international%20exhibitor%20inquiring%20about%20stall%20booking."
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#25D366] text-white text-xs font-semibold hover:bg-[#20ba59] transition-colors"
                     >
                       <MessageSquare className="w-3.5 h-3.5" />
-                      <span>WhatsApp (+977 9703606348)</span>
+                      <span>WhatsApp (+977 9851004985)</span>
                     </a>
                     <a
                       href="mailto:info@himalayanenergyexpo.com?subject=International%20Stall%20Booking%20Inquiry"
@@ -2440,6 +2447,15 @@ export default function StallBookingWizard() {
           <div className="inline-block p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-900 font-bold">
             REFERENCE ID: {bookingRef}
           </div>
+
+          {formData.email && (
+            <div className="max-w-md mx-auto p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 flex items-center justify-center gap-2">
+              <Mail className="w-4 h-4 text-emerald-700 shrink-0" />
+              <span>
+                A confirmation email with full booking details and bank wire info has been sent to <strong>{formData.email}</strong>.
+              </span>
+            </div>
+          )}
 
           {paymentMethod === "hold_72h" && (
             <div className="max-w-md mx-auto p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 space-y-1 font-mono text-center">

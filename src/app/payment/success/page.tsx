@@ -161,6 +161,14 @@ function PaymentSuccessContent() {
               </div>
             </div>
 
+            {/* Email Confirmation Notice */}
+            <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 flex items-center gap-2.5">
+              <Mail className="w-4 h-4 text-emerald-700 shrink-0" />
+              <span>
+                An official confirmation email containing full reservation details, banking instructions, and reference credentials has been sent to your registered email address.
+              </span>
+            </div>
+
             {/* Receipt Summary Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-5 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-mono">
               <div>

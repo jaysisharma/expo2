@@ -23,6 +23,7 @@ import {
   Zap,
   Phone,
   Mail,
+  MessageSquare,
   CreditCard,
   CheckCircle2,
   Landmark,
@@ -736,19 +737,48 @@ function BookGalaDinnerForm() {
                   </div>
                 </div>
 
+                {/* WhatsApp */}
+                <div className="flex items-start gap-2.5">
+                  <MessageSquare className="w-3.5 h-3.5 text-[#25D366] shrink-0 mt-0.5" />
+                  <div>
+                    <div className="text-[10px] font-mono uppercase tracking-wider text-slate-500">
+                      WhatsApp Support
+                    </div>
+                    <div className="text-white font-mono text-xs pt-0.5">
+                      <a
+                        href="https://wa.me/9779851004985"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:text-[#25D366] transition-colors inline-flex items-center gap-1.5"
+                      >
+                        <span>+977 9851004985</span>
+                        <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-sans">Chat</span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Expo Email */}
                 <div className="flex items-start gap-2.5">
                   <Mail className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
                   <div>
                     <div className="text-[10px] font-mono uppercase tracking-wider text-slate-500">
-                      Expo Email
+                      Expo Emails
                     </div>
-                    <a
-                      href="mailto:info@himalayanenergyexpo.com"
-                      className="text-white font-mono text-xs hover:text-emerald-400 transition-colors block pt-0.5"
-                    >
-                      info@himalayanenergyexpo.com
-                    </a>
+                    <div className="space-y-0.5 pt-0.5">
+                      <a
+                        href="mailto:info@himalayanenergyexpo.com"
+                        className="text-white font-mono text-xs hover:text-emerald-400 transition-colors block"
+                      >
+                        info@himalayanenergyexpo.com
+                      </a>
+                      <a
+                        href="mailto:himalayangreenenergyexpo@gmail.com"
+                        className="text-slate-300 font-mono text-[11px] hover:text-emerald-400 transition-colors block"
+                      >
+                        himalayangreenenergyexpo@gmail.com
+                      </a>
+                    </div>
                   </div>
                 </div>
               </div>

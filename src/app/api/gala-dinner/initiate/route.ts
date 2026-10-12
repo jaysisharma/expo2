@@ -206,7 +206,8 @@ export async function POST(req: Request) {
               <div style="border-top: 1px solid #e2e8f0; padding-top: 16px; margin-top: 16px; font-size: 13px; color: #475569; line-height: 1.6;">
                 <strong>Secretariat Inquiries:</strong><br/>
                 &bull; Hotlines: +977-9703606348 | +977-9703606345<br/>
-                &bull; Email: <a href="mailto:info@himalayanenergyexpo.com" style="color: #007A5E; text-decoration: none;">info@himalayanenergyexpo.com</a> | <a href="mailto:info@ippan.org.np" style="color: #007A5E; text-decoration: none;">info@ippan.org.np</a><br/>
+                &bull; WhatsApp: +977 9851004985<br/>
+                &bull; Email: <a href="mailto:info@himalayanenergyexpo.com" style="color: #007A5E; text-decoration: none;">info@himalayanenergyexpo.com</a> | <a href="mailto:himalayangreenenergyexpo@gmail.com" style="color: #007A5E; text-decoration: none;">himalayangreenenergyexpo@gmail.com</a> | <a href="mailto:info@ippan.org.np" style="color: #007A5E; text-decoration: none;">info@ippan.org.np</a><br/>
                 &bull; Website: <a href="https://www.higex.org" style="color: #007A5E; text-decoration: none;">www.higex.org</a>
               </div>
             </td>

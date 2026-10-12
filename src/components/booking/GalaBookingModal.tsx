@@ -19,6 +19,7 @@ import {
   Lock,
   Mail,
   Phone,
+  MessageSquare,
 } from 'lucide-react';
 
 interface GalaBookingModalProps {
@@ -419,6 +420,13 @@ export function GalaBookingModal({
                           <span>info@himalayanenergyexpo.com</span>
                         </a>
                         <a
+                          href="mailto:himalayangreenenergyexpo@gmail.com?subject=International%20Pass%20Reservation"
+                          className="text-emerald-400 hover:text-emerald-300 underline flex items-center gap-1.5"
+                        >
+                          <Mail className="w-3.5 h-3.5 shrink-0" />
+                          <span>himalayangreenenergyexpo@gmail.com</span>
+                        </a>
+                        <a
                           href="mailto:info@ippan.org.np?subject=International%20Pass%20Reservation"
                           className="text-emerald-400 hover:text-emerald-300 underline flex items-center gap-1.5"
                         >
@@ -430,9 +438,18 @@ export function GalaBookingModal({
 
                     <div className="space-y-1.5">
                       <span className="text-[10px] uppercase tracking-wider text-slate-400 block font-sans font-semibold">
-                        Mobile / Hotlines
+                        Mobile &amp; WhatsApp
                       </span>
                       <div className="flex flex-col gap-1.5">
+                        <a
+                          href="https://wa.me/9779851004985"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[#25D366] hover:underline flex items-center gap-1.5"
+                        >
+                          <MessageSquare className="w-3.5 h-3.5 shrink-0" />
+                          <span>WhatsApp: +977 9851004985</span>
+                        </a>
                         <a
                           href="tel:+9779703606348"
                           className="text-emerald-400 hover:text-emerald-300 underline flex items-center gap-1.5"

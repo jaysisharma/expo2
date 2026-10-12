@@ -14,6 +14,7 @@ import {
   Clock,
   Compass,
   ArrowRight,
+  MessageSquare,
 } from "lucide-react";
 
 export default function ContactPage() {
@@ -114,7 +115,13 @@ export default function ContactPage() {
                     >
                       info@himalayanenergyexpo.com
                     </a>
-                    <div className="text-xs text-slate-500 mt-1">
+                    <a
+                      href="mailto:himalayangreenenergyexpo@gmail.com"
+                      className="text-xs font-bold text-slate-700 hover:text-emerald-600 transition-colors block mt-0.5 font-mono"
+                    >
+                      himalayangreenenergyexpo@gmail.com
+                    </a>
+                    <div className="text-xs text-slate-500 mt-1.5">
                       <span className="font-medium text-slate-700">Event Solution:</span>{" "}
                       <a href="mailto:info@eventsolutionnepal.com.np" className="hover:text-emerald-600 underline font-mono">
                         info@eventsolutionnepal.com.np
@@ -126,6 +133,40 @@ export default function ContactPage() {
                       {" | "}
                       <a href="mailto:ippan2001@gmail.com" className="hover:text-emerald-600 underline">ippan2001@gmail.com</a>
                     </div>
+                  </div>
+                </div>
+
+                {/* Official WhatsApp Support */}
+                <div className="flex items-start gap-4 p-4 rounded-xl bg-emerald-50/60 border border-emerald-200/90 shadow-xs">
+                  <div className="w-10 h-10 rounded-lg bg-[#25D366] text-white flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
+                    <MessageSquare className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-emerald-800 uppercase tracking-wider block">
+                        Official WhatsApp
+                      </span>
+                      <a
+                        href="https://wa.me/9779851004985"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[10px] font-mono text-emerald-800 bg-emerald-100/90 hover:bg-emerald-200 px-2 py-0.5 rounded-full font-bold transition-colors inline-flex items-center gap-1"
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#25D366] animate-pulse" />
+                        Chat Now ↗
+                      </a>
+                    </div>
+                    <a
+                      href="https://wa.me/9779851004985"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm font-bold text-slate-900 hover:text-emerald-700 transition-colors block mt-0.5 font-mono"
+                    >
+                      +977 9851004985
+                    </a>
+                    <p className="text-[11px] text-slate-600 mt-0.5">
+                      Direct messaging for stall inquiries, delegations, and prompt assistance.
+                    </p>
                   </div>
                 </div>
 
@@ -145,6 +186,10 @@ export default function ContactPage() {
                       <span className="text-slate-400">|</span>
                       <a href="tel:+9779703606345" className="hover:text-emerald-600 transition-colors">
                         9703606345
+                      </a>
+                      <span className="text-slate-400">|</span>
+                      <a href="tel:+9779851004985" className="hover:text-emerald-600 transition-colors">
+                        +977 9851004985
                       </a>
                     </div>
                     <div className="text-xs text-slate-600 font-mono mt-1">
