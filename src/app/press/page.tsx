@@ -249,25 +249,20 @@ export default function PressPage() {
               <div className="flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
                 <Phone className="w-4 h-4 text-[#34D399] shrink-0 mt-0.5" />
                 <div className="space-y-0.5">
-                  <div className="font-mono text-slate-400 text-[10px] uppercase">MOBILE / HOTLINE</div>
+                  <div className="font-mono text-slate-400 text-[10px] uppercase">HOTLINES &amp; WHATSAPP</div>
                   <div className="text-white font-bold text-sm">+977-9703606348 / 9703606345</div>
+                  <div className="text-white text-xs pt-0.5 flex items-center gap-1.5 font-mono">
+                    <span className="text-slate-400">WhatsApp:</span>
+                    <a
+                      href="https://wa.me/9779851004985"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#25D366] hover:underline font-bold"
+                    >
+                      +977 9851004985
+                    </a>
+                  </div>
                   <div className="text-slate-400 text-xs">Landline: 01-5268535, 4169175</div>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
-                <MessageSquare className="w-4 h-4 text-[#25D366] shrink-0 mt-0.5" />
-                <div className="space-y-0.5">
-                  <div className="font-mono text-slate-400 text-[10px] uppercase">WHATSAPP SUPPORT</div>
-                  <a
-                    href="https://wa.me/9779851004985"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-white font-bold text-sm hover:text-[#25D366] transition-colors block"
-                  >
-                    +977 9851004985
-                  </a>
-                  <div className="text-slate-400 text-xs">Direct chat for rapid press queries</div>
                 </div>
               </div>
 

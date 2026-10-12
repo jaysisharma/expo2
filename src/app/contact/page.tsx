@@ -136,46 +136,12 @@ export default function ContactPage() {
                   </div>
                 </div>
 
-                {/* Official WhatsApp Support */}
-                <div className="flex items-start gap-4 p-4 rounded-xl bg-emerald-50/60 border border-emerald-200/90 shadow-xs">
-                  <div className="w-10 h-10 rounded-lg bg-[#25D366] text-white flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
-                    <MessageSquare className="w-5 h-5" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-emerald-800 uppercase tracking-wider block">
-                        Official WhatsApp
-                      </span>
-                      <a
-                        href="https://wa.me/9779851004985"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[10px] font-mono text-emerald-800 bg-emerald-100/90 hover:bg-emerald-200 px-2 py-0.5 rounded-full font-bold transition-colors inline-flex items-center gap-1"
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#25D366] animate-pulse" />
-                        Chat Now ↗
-                      </a>
-                    </div>
-                    <a
-                      href="https://wa.me/9779851004985"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm font-bold text-slate-900 hover:text-emerald-700 transition-colors block mt-0.5 font-mono"
-                    >
-                      +977 9851004985
-                    </a>
-                    <p className="text-[11px] text-slate-600 mt-0.5">
-                      Direct messaging for stall inquiries, delegations, and prompt assistance.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Direct Mobile Hotlines & Landlines */}
+                {/* Direct Mobile Hotlines, WhatsApp & Landlines */}
                 <div className="flex items-start gap-4 p-4 rounded-xl bg-white border border-slate-200 shadow-xs">
                   <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
                     <Phone className="w-5 h-5" />
                   </div>
-                  <div>
+                  <div className="flex-1 min-w-0">
                     <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">
                       Direct Hotlines &amp; Phones
                     </span>
@@ -187,17 +153,39 @@ export default function ContactPage() {
                       <a href="tel:+9779703606345" className="hover:text-emerald-600 transition-colors">
                         9703606345
                       </a>
-                      <span className="text-slate-400">|</span>
-                      <a href="tel:+9779851004985" className="hover:text-emerald-600 transition-colors">
-                        +977 9851004985
+                    </div>
+
+                    {/* WhatsApp inside Hotlines */}
+                    <div className="mt-2.5 pt-2.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold text-slate-600">WhatsApp:</span>
+                        <a
+                          href="https://wa.me/9779851004985"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs font-bold text-slate-900 hover:text-emerald-600 transition-colors font-mono inline-flex items-center gap-1.5"
+                        >
+                          <MessageSquare className="w-3.5 h-3.5 text-[#25D366]" />
+                          <span>+977 9851004985</span>
+                        </a>
+                      </div>
+                      <a
+                        href="https://wa.me/9779851004985"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[10px] font-mono text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded-full font-bold transition-colors inline-flex items-center gap-1"
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#25D366] animate-pulse" />
+                        Chat Now ↗
                       </a>
                     </div>
-                    <div className="text-xs text-slate-600 font-mono mt-1">
+
+                    <div className="text-xs text-slate-600 font-mono mt-2">
                       <span className="font-semibold text-slate-700">Landline:</span>{" "}
                       <a href="tel:+97715268535" className="hover:text-emerald-600">01-5268535</a>,{" "}
                       <a href="tel:+97714169175" className="hover:text-emerald-600">4169175</a>
                     </div>
-                    <p className="text-[11px] text-slate-500 mt-0.5">
+                    <p className="text-[11px] text-slate-500 mt-1">
                       Sunday – Friday, 9:00 AM – 6:00 PM NPT
                     </p>
                   </div>

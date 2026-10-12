@@ -164,41 +164,30 @@ export function Footer() {
             </h4>
             <div className="space-y-3 text-xs sm:text-sm">
               
-              {/* Mobile / Hotlines */}
+              {/* Mobile / Hotlines & WhatsApp */}
               <div className="flex items-start gap-2.5">
                 <Phone className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                 <div>
                   <div className="text-[10px] font-mono uppercase tracking-wider text-slate-400">
-                    Mobile / Hotlines
+                    Hotlines &amp; WhatsApp
                   </div>
-                  <div className="text-white font-mono text-xs sm:text-sm pt-0.5">
+                  <div className="text-white font-mono text-xs sm:text-sm pt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1">
                     <a href="tel:+9779703606348" className="hover:text-emerald-400 transition-colors">
                       +977-9703606348
                     </a>
-                    <span className="text-slate-600 mx-2">|</span>
+                    <span className="text-slate-600">|</span>
                     <a href="tel:+9779703606345" className="hover:text-emerald-400 transition-colors">
                       9703606345
                     </a>
-                  </div>
-                </div>
-              </div>
-
-              {/* WhatsApp Support */}
-              <div className="flex items-start gap-2.5">
-                <MessageSquare className="w-4 h-4 text-[#25D366] shrink-0 mt-0.5" />
-                <div>
-                  <div className="text-[10px] font-mono uppercase tracking-wider text-slate-400">
-                    WhatsApp Support
-                  </div>
-                  <div className="text-white font-mono text-xs sm:text-sm pt-0.5">
+                    <span className="text-slate-600">|</span>
                     <a
                       href="https://wa.me/9779851004985"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="hover:text-[#25D366] transition-colors inline-flex items-center gap-1.5"
+                      className="hover:text-[#25D366] transition-colors inline-flex items-center gap-1 text-[#25D366]"
                     >
+                      <MessageSquare className="w-3.5 h-3.5" />
                       <span>+977 9851004985</span>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-sans font-medium">Chat</span>
                     </a>
                   </div>
                 </div>

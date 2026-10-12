@@ -8,16 +8,16 @@ export const CONTACT_DETAILS = {
   mobiles: [
     { display: '+977-9703606348', raw: '+9779703606348', label: 'Primary Hotline' },
     { display: '9703606345', raw: '+9779703606345', label: 'Help Desk' },
-    { display: '+977 9851004985', raw: '+9779851004985', label: 'WhatsApp / Support' },
+    { display: '+977 9851004985', raw: '+9779851004985', label: 'WhatsApp' },
   ],
   hotlineDisplay: '+977-9703606348 | 9703606345',
 
-  // WhatsApp Support
+  // WhatsApp
   whatsapp: {
     display: '+977 9851004985',
     raw: '+9779851004985',
     link: 'https://wa.me/9779851004985',
-    label: 'WhatsApp Support',
+    label: 'WhatsApp',
   },
 
   // Landline Numbers
