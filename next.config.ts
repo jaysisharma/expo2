@@ -70,6 +70,10 @@ const nextConfig: NextConfig = {
             key: "Content-Type",
             value: "application/pdf",
           },
+          {
+            key: "Cache-Control",
+            value: "public, max-age=0, must-revalidate",
+          },
         ],
       },
       {
@@ -82,6 +86,10 @@ const nextConfig: NextConfig = {
           {
             key: "Content-Type",
             value: "application/pdf",
+          },
+          {
+            key: "Cache-Control",
+            value: "public, max-age=0, must-revalidate",
           },
         ],
       },
@@ -96,6 +104,10 @@ const nextConfig: NextConfig = {
             key: "Content-Type",
             value: "application/pdf",
           },
+          {
+            key: "Cache-Control",
+            value: "public, max-age=0, must-revalidate",
+          },
         ],
       },
       {
@@ -108,6 +120,10 @@ const nextConfig: NextConfig = {
           {
             key: "Content-Type",
             value: "application/pdf",
+          },
+          {
+            key: "Cache-Control",
+            value: "public, max-age=0, must-revalidate",
           },
         ],
       },
@@ -122,6 +138,27 @@ const nextConfig: NextConfig = {
             key: "Content-Type",
             value: "application/pdf",
           },
+          {
+            key: "Cache-Control",
+            value: "public, max-age=0, must-revalidate",
+          },
+        ],
+      },
+      {
+        source: "/form.pdf",
+        headers: [
+          {
+            key: "Content-Disposition",
+            value: 'attachment; filename="Himalayan-Expo-Stall-Booking-Form.pdf"',
+          },
+          {
+            key: "Content-Type",
+            value: "application/pdf",
+          },
+          {
+            key: "Cache-Control",
+            value: "public, max-age=0, must-revalidate",
+          },
         ],
       },
       {
@@ -135,6 +172,10 @@ const nextConfig: NextConfig = {
             key: "Content-Type",
             value: "application/pdf",
           },
+          {
+            key: "Cache-Control",
+            value: "public, max-age=0, must-revalidate",
+          },
         ],
       },
       {
@@ -147,6 +188,10 @@ const nextConfig: NextConfig = {
           {
             key: "Content-Type",
             value: "application/pdf",
+          },
+          {
+            key: "Cache-Control",
+            value: "public, max-age=0, must-revalidate",
           },
         ],
       },
