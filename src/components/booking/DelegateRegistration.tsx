@@ -206,14 +206,17 @@ export default function DelegateRegistration() {
           window.location.href = galaData.paymentUrl;
           return;
         }
+        if (galaData.success && galaData.redirectUrl) {
+          window.location.href = galaData.redirectUrl;
+          return;
+        }
+        throw new Error(galaData.error || "Payment gateway could not be initiated. Please try again.");
       }
 
       const resolvedPassType =
-        registrationRole === "gala"
-          ? `Networking Dinner Pass - Royal Tulip (${formData.delegateTier === "international" ? "USD 50" : "NPR 6,000"})`
-          : registrationRole === "visitor"
-            ? formData.passType
-            : `Exhibitor Delegate (${formData.stallNumber})`;
+        registrationRole === "visitor"
+          ? formData.passType
+          : `Exhibitor Delegate (${formData.stallNumber})`;
 
       await fetch("/api/admin/data", {
         method: "POST",
@@ -254,9 +257,7 @@ export default function DelegateRegistration() {
       // ── Send pass by email ────────────────────────────────────────
       setEmailSending(true);
       const resolvedRole =
-        registrationRole === "gala" ? "gala"
-          : registrationRole === "exhibitor" ? "exhibitor"
-            : "visitor";
+        registrationRole === "exhibitor" ? "exhibitor" : "visitor";
 
       try {
         await fetch("/api/send-pass", {
@@ -281,11 +282,13 @@ export default function DelegateRegistration() {
       } finally {
         setEmailSending(false);
       }
-    } catch (err) {
-      console.warn("Could not sync registration to server", err);
+
+      setIsSubmitted(true);
+    } catch (err: any) {
+      console.error("Registration error:", err);
+      setFormError(err.message || "Could not complete registration. Please try again.");
     } finally {
       setIsSubmitting(false);
-      setIsSubmitted(true);
     }
   };
 

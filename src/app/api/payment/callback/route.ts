@@ -135,7 +135,10 @@ export async function GET(request: Request) {
         transaction_id || verification.transaction_id
       );
 
-      const isGala = searchParams.get("type") === "gala" || purchase_order_id.startsWith("GALA-");
+      const isGala =
+        searchParams.get("type") === "gala" ||
+        purchase_order_id.startsWith("GALA-") ||
+        purchase_order_id.startsWith("HHE27-GALA");
       const successUrl = new URL(`/payment/success`, request.url);
       successUrl.searchParams.set("id", purchase_order_id);
       successUrl.searchParams.set("gateway", "khalti");

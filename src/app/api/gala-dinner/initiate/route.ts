@@ -234,16 +234,27 @@ export async function POST(req: Request) {
       console.warn("[gala-dinner] Email setup skipped:", e);
     }
 
+    const host = req.headers.get("x-forwarded-host") || req.headers.get("host");
+    const protocol = req.headers.get("x-forwarded-proto") || (host?.includes("localhost") ? "http" : "https");
+    const origin = req.headers.get("origin");
     const baseUrl =
+      origin ||
+      (host ? `${protocol}://${host}` : null) ||
       process.env.NEXT_PUBLIC_APP_URL ||
-      (process.env.NODE_ENV === 'development'
-        ? 'http://localhost:3000'
-        : 'https://himalayanenergyexpo.com');
+      (process.env.NODE_ENV === "development" ? "http://localhost:3000" : "https://www.higex.org");
+
+    const cleanCountry = (country || "").trim().toLowerCase();
+    const isDomestic =
+      cleanCountry === "nepal" ||
+      cleanCountry === "" ||
+      cleanCountry.includes("nepal") ||
+      cleanCountry.includes("ktm") ||
+      cleanCountry.includes("kathmandu");
 
     const isInternational =
-      passType === 'international' ||
-      (country && country.trim().toLowerCase() !== 'nepal') ||
-      paymentMethod === 'intl_card';
+      passType === "international" ||
+      (!isDomestic && cleanCountry !== "") ||
+      paymentMethod === "intl_card";
 
     // International delegates are strictly routed to bank wire / USD invoice
     // Online card checkout is currently under construction.

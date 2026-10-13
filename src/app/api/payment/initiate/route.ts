@@ -536,11 +536,14 @@ Website: https://www.higex.org
       console.warn("[stall-booking] Email setup skipped:", e);
     }
 
+    const host = req.headers.get("x-forwarded-host") || req.headers.get("host");
+    const protocol = req.headers.get("x-forwarded-proto") || (host?.includes("localhost") ? "http" : "https");
+    const origin = req.headers.get("origin");
     const baseUrl =
+      origin ||
+      (host ? `${protocol}://${host}` : null) ||
       process.env.NEXT_PUBLIC_APP_URL ||
-      (process.env.NODE_ENV === "development"
-        ? "http://localhost:3000"
-        : "https://himalayanenergyexpo.com");
+      (process.env.NODE_ENV === "development" ? "http://localhost:3000" : "https://www.higex.org");
 
     // 2. Handle 72-Hour Free Hold Routing (Zero Cost)
     if (isHold72h) {
@@ -559,9 +562,17 @@ Website: https://www.higex.org
       });
     }
 
+    const cleanCountry = (country || "").trim().toLowerCase();
+    const isDomestic =
+      cleanCountry === "nepal" ||
+      cleanCountry === "" ||
+      cleanCountry.includes("nepal") ||
+      cleanCountry.includes("ktm") ||
+      cleanCountry.includes("kathmandu");
+
     const isInternational =
-      (country && country.trim().toLowerCase() !== "nepal") ||
-      (specialRequirements && specialRequirements.toLowerCase().includes("international")) ||
+      (!isDomestic && cleanCountry !== "") ||
+      (specialRequirements && specialRequirements.toLowerCase().includes("[international exhibitor]")) ||
       paymentMethod === "intl_card" ||
       paymentMethod === "card";
 
