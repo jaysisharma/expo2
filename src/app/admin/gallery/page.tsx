@@ -522,6 +522,27 @@ export default function AdminGalleryPage() {
 
           <button
             onClick={() => {
+              if (
+                confirm(
+                  "Are you sure you want to clear all existing gallery photos? This will empty the gallery so you can start fresh with newly uploaded photos."
+                )
+              ) {
+                setItems([]);
+                try {
+                  localStorage.removeItem("expo_admin_gallery_items_v2");
+                } catch {}
+                saveFirebaseGallery([]).catch(() => {});
+                notify("All existing gallery photos cleared. Ready for fresh uploads!");
+              }
+            }}
+            className="px-3.5 py-2 rounded-xl bg-white hover:bg-rose-50 text-rose-600 hover:text-rose-700 text-xs font-medium border border-rose-200 shadow-2xs flex items-center gap-1.5 transition-colors cursor-pointer"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            <span>Clear Gallery</span>
+          </button>
+
+          <button
+            onClick={() => {
               const defaultCat =
                 selectedCategory !== "All"
                   ? selectedCategory

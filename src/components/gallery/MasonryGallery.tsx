@@ -8,7 +8,7 @@ import { videosData } from "@/data/videos";
 import { GalleryItem, VideoItem } from "@/lib/types";
 import ImageLightbox from "./ImageLightbox";
 import VideoModal from "./VideoModal";
-import { Play, Maximize2, LayoutGrid, Grid3X3, ArrowUpRight, Sparkles } from "lucide-react";
+import { Play, Maximize2, LayoutGrid, Grid3X3, ArrowUpRight, Sparkles, Images } from "lucide-react";
 
 type GalleryTab = "ALL" | "2024" | "2022" | "2019" | "2018" | "2027" | "VIDEOS";
 type LayoutMode = "bento" | "grid";
@@ -213,8 +213,33 @@ export default function MasonryGallery({ limit }: { limit?: number }) {
             exit={{ opacity: 0, transition: { duration: 0.2 } }}
             className="space-y-10"
           >
+            {displayedPhotos.length === 0 && (
+              <div className="py-20 text-center rounded-3xl bg-white border border-neutral-200/80 p-8 sm:p-12 space-y-4 max-w-xl mx-auto shadow-xs">
+                <div className="w-16 h-16 rounded-3xl bg-emerald-50 border border-emerald-200/80 text-[#007A5E] flex items-center justify-center mx-auto shadow-xs">
+                  <Images className="w-8 h-8" />
+                </div>
+                <div className="space-y-1.5">
+                  <h3 className="text-xl font-bold text-neutral-900 tracking-tight">
+                    {activeTab === "ALL" ? "No Photos Uploaded Yet" : `No Photos for ${activeTab}`}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-neutral-500 max-w-sm mx-auto leading-relaxed">
+                    Upload official high-resolution photographs from the admin gallery to display them here.
+                  </p>
+                </div>
+                <div className="pt-2">
+                  <a
+                    href="/admin/gallery"
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#04281E] hover:bg-[#063a2b] text-white text-xs font-mono font-bold uppercase tracking-wider transition-colors shadow-xs"
+                  >
+                    <span>Upload Photos</span>
+                    <ArrowUpRight className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+              </div>
+            )}
+
             {/* LAYOUT 2: AWWWARDS EDITORIAL BENTO MOSAIC */}
-            {layoutMode === "bento" && (
+            {displayedPhotos.length > 0 && layoutMode === "bento" && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                 {displayedPhotos.map((item, idx) => {
                   const isFeature = idx % 7 === 0 && idx !== 0;
@@ -267,7 +292,7 @@ export default function MasonryGallery({ limit }: { limit?: number }) {
             )}
 
             {/* LAYOUT 3: AWWWARDS CLEAN UNIFORM GRID */}
-            {layoutMode === "grid" && (
+            {displayedPhotos.length > 0 && layoutMode === "grid" && (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
                 {displayedPhotos.map((item, idx) => (
                   <motion.div
