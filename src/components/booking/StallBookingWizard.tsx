@@ -1631,7 +1631,7 @@ export default function StallBookingWizard() {
                   </span>
                 </div>
 
-                {/* Festival Season Notice: Automatic Booking in Halt */}
+                {/* Festival Season Notice: Manual Booking Required */}
                 <div className="p-4 bg-gradient-to-br from-amber-50 via-orange-50/70 to-amber-50 border-b border-amber-200/90 text-xs space-y-2">
                   <div className="flex items-center gap-2">
                     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500 text-white font-mono text-[10px] font-bold uppercase tracking-wider shadow-2xs">
@@ -1639,11 +1639,11 @@ export default function StallBookingWizard() {
                       <span>Festive Notice</span>
                     </span>
                     <span className="font-bold text-amber-950 text-xs">
-                      Automatic Booking in Halt
+                      Manual Booking Required
                     </span>
                   </div>
                   <p className="text-[11.5px] text-amber-900 leading-relaxed">
-                    For the festival season, our automatic online booking is currently in halt. Please contact manually on this email to confirm your stall reservation &amp; invoice:
+                    For the festival season, please contact us directly via email to confirm your stall reservation &amp; invoice:
                   </p>
                   <a
                     href={`mailto:Shrestha.anup101@gmail.com?subject=${encodeURIComponent(
@@ -1912,53 +1912,34 @@ export default function StallBookingWizard() {
                     </div>
                   )}
 
-                  {/* Action Buttons */}
+                  {/* Action Buttons: Direct Email Inquiry for Festival Season */}
                   <div className="pt-1 space-y-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setPaymentMethod(exhibitorOrigin === "international" ? "bank" : "khalti");
-                        handleNext();
-                      }}
-                      disabled={selectedBoothNumbers.length === 0}
-                      className={`w-full py-3 px-4 rounded-xl font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-sm ${selectedBoothNumbers.length === 0
-                        ? "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none"
-                        : "bg-[#218A59] hover:bg-[#186a43] text-white hover:shadow-md cursor-pointer"
-                        }`}
-                    >
-                      <span>
-                        {selectedBoothNumbers.length === 0
-                          ? "SELECT STALL TO CONTINUE"
-                          : isSponsorPackage
-                          ? `BOOK SPONSORSHIP DIRECTLY →`
-                          : `CONTINUE (${selectedBoothNumbers.length} STALL${selectedBoothNumbers.length > 1 ? "S" : ""}) →`}
-                      </span>
-                    </button>
-
-                    {/* FREE 72-HOUR HOLD BUTTON IN BOOKING SUMMARY */}
-                    {selectedBoothNumbers.length > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setPaymentMethod("hold_72h");
-                          handleNext();
-                        }}
-                        className="w-full py-2.5 px-4 rounded-xl font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all border-2 border-[#007A5E] bg-emerald-50 text-[#007A5E] hover:bg-emerald-100 hover:shadow-xs cursor-pointer"
+                    {selectedBoothNumbers.length > 0 ? (
+                      <a
+                        href={`mailto:Shrestha.anup101@gmail.com?subject=${encodeURIComponent(
+                          `Festival Season Stall Booking Inquiry (Stalls: ${selectedBoothNumbers.join(", ")}) - Expo 2027`
+                        )}&body=${encodeURIComponent(
+                          `Dear Secretariat,\n\nI would like to manually reserve the following stall(s) for Himalayan Green Energy Expo 2027 during the festival season:\n\nStalls: ${selectedBoothNumbers.join(", ")}\nTotal Area: ${totalAreaSqM} m²\nTariff: NPR ${totalWithVatNPR.toLocaleString()} / USD $${totalWithVatUSD.toLocaleString()}\n\nPlease share the booking confirmation & invoice details.\n\nThank you.`
+                        )}`}
+                        className="w-full py-3.5 px-4 rounded-xl font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-sm bg-[#007A5E] hover:bg-[#00664e] text-white hover:shadow-md cursor-pointer text-center"
                       >
-                        <Clock className="w-4 h-4 text-[#007A5E]" />
-                        <span>FREE 72-HOUR HOLD (NPR 0 TODAY)</span>
-                      </button>
+                        <Mail className="w-4 h-4 text-emerald-200 shrink-0" />
+                        <span>EMAIL TO RESERVE ({selectedBoothNumbers.length} STALL{selectedBoothNumbers.length > 1 ? "S" : ""})</span>
+                      </a>
+                    ) : (
+                      <div className="w-full py-3 px-4 rounded-xl font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 bg-slate-100 text-slate-400 text-center">
+                        <span>SELECT STALL ON FLOOR PLAN</span>
+                      </div>
                     )}
 
-                    {/* Manual Email Button for Festival Season */}
                     <a
                       href={`mailto:Shrestha.anup101@gmail.com?subject=${encodeURIComponent(
                         `Festival Season Stall Booking Inquiry (Stalls: ${selectedBoothNumbers.join(", ") || "General"}) - Expo 2027`
                       )}`}
-                      className="w-full py-2.5 px-3 rounded-xl font-mono text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all border border-amber-300 bg-amber-50/80 text-amber-900 hover:bg-amber-100 cursor-pointer text-center"
+                      className="w-full py-2.5 px-3 rounded-xl font-mono text-[11px] font-bold tracking-wider flex items-center justify-center gap-1.5 transition-all border border-amber-300 bg-amber-50/80 text-amber-900 hover:bg-amber-100 cursor-pointer text-center"
                     >
                       <Mail className="w-3.5 h-3.5 text-amber-700 shrink-0" />
-                      <span className="truncate">MANUAL INQUIRY: SHRESTHA.ANUP101@GMAIL.COM</span>
+                      <span className="truncate">Shrestha.anup101@gmail.com</span>
                     </a>
                   </div>
                 </div>
@@ -2339,11 +2320,11 @@ export default function StallBookingWizard() {
                 <span>Festive Season Notice</span>
               </span>
               <strong className="text-amber-950 font-bold">
-                Automatic Online Booking in Halt
+                Manual Reservation via Email
               </strong>
             </div>
             <p className="text-[11.5px] text-amber-900 leading-relaxed">
-              For the festival season, our automatic online stall booking &amp; instant payment processing are currently in halt. Please contact manually on this email to confirm your stall reservation, pro-forma invoice, or contract:
+              For the festival season, please contact us manually via email to confirm your stall reservation, pro-forma invoice, or contract:
             </p>
             <div className="flex flex-wrap items-center gap-3 pt-1">
               <a
