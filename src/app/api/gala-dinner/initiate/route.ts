@@ -76,6 +76,16 @@ export async function POST(req: Request) {
       );
     }
 
+    if (passType === 'international') {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Online USD 50 payment is coming soon. Please contact Shrestha.anup101@gmail.com for international registrations.',
+        },
+        { status: 400 }
+      );
+    }
+
     const qty = Math.max(1, parseInt(String(quantity), 10) || 1);
     const unitPriceNPR = passType === 'international' ? 6750 : 6000;
     const unitPriceUSD = passType === 'international' ? 50 : 45;

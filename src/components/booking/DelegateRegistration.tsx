@@ -9,6 +9,7 @@ import {
   ArrowRight,
   Store,
   Zap,
+  Mail,
 } from "lucide-react";
 import IDCardBadgePreview from "./IDCardBadgePreview";
 import type { BadgeConfig } from "./AdminBadgeDesigner";
@@ -173,6 +174,11 @@ export default function DelegateRegistration() {
       return;
     }
     setFieldErrors({});
+
+    if (registrationRole === "gala" && formData.delegateTier === "international") {
+      setFormError("USD 50 Online Payment gateway is coming soon. Online registration for this tier is temporarily disabled.");
+      return;
+    }
 
     setIsSubmitting(true);
     const prefix =
@@ -504,14 +510,23 @@ export default function DelegateRegistration() {
             </div>
 
             {formData.delegateTier === "international" && (
-              <div className="p-2.5 rounded-lg bg-amber-100/70 border border-amber-300/80 text-[11px] text-amber-950 space-y-0.5">
+              <div className="p-3 rounded-lg bg-amber-50 border border-amber-300 text-[11px] text-amber-950 space-y-1.5">
                 <div className="flex items-center gap-1.5 font-bold text-amber-900">
                   <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse shrink-0" />
-                  <span>Online USD Card Payment — Coming Soon</span>
+                  <span>Online USD 50 Payment — Coming Soon</span>
                 </div>
                 <p className="text-[10.5px] text-amber-800 leading-relaxed">
-                  Direct online card gateway for USD 50 is under construction. Reserve your pass now to receive your official USD SWIFT invoice &amp; wire details directly.
+                  Direct online checkout for USD 50 is under construction and registration for this tier is temporarily disabled. Please select <strong>National · NPR 6,000</strong> or contact the secretariat directly:
                 </p>
+                <div className="pt-0.5">
+                  <a
+                    href="mailto:Shrestha.anup101@gmail.com?subject=International%20Networking%20Dinner%20Inquiry%20(USD%2050)&body=Dear%20Secretariat%2C%0A%0AI%20would%20like%20to%20inquire%20about%20the%20International%20Networking%20Dinner%20Pass%20(USD%2050).%0A%0AThank%20you."
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-amber-900 hover:bg-amber-950 text-white font-mono text-[10.5px] font-bold shadow-2xs cursor-pointer"
+                  >
+                    <Mail className="w-3 h-3 text-amber-300" />
+                    <span>Inquire via Email: Shrestha.anup101@gmail.com</span>
+                  </a>
+                </div>
               </div>
             )}
           </div>
@@ -628,39 +643,61 @@ export default function DelegateRegistration() {
           </div>
         )}
 
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className={`w-full h-11 rounded-lg text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer pt-0.5 ${registrationRole === "gala"
-              ? formData.delegateTier === "international"
-                ? "bg-slate-800 hover:bg-slate-900 shadow-slate-950/20"
-                : "bg-[#5D2E8E] hover:bg-[#4E2477] shadow-purple-950/20"
-              : "bg-[#218A59] hover:bg-[#197047]"
-            }`}
-        >
-          <span>
-            {isSubmitting
-              ? registrationRole === "gala"
-                ? formData.delegateTier === "international"
-                  ? "Submitting Reservation..."
-                  : "Connecting to Khalti..."
-                : "Generating Badge..."
-              : registrationRole === "gala"
-                ? formData.delegateTier === "international"
-                  ? "USD 50 Online Payment (Coming Soon) · Reserve Pass"
-                  : "Pay with Khalti (NPR 6,000)"
-                : "Generate Entry Badge"}
-          </span>
-          <ArrowRight className="w-3.5 h-3.5" />
-        </button>
+        {registrationRole === "gala" && formData.delegateTier === "international" ? (
+          <div className="space-y-2">
+            <button
+              type="button"
+              disabled={true}
+              className="w-full h-11 rounded-lg bg-slate-200 text-slate-500 text-xs font-bold shadow-none flex items-center justify-center gap-2 cursor-not-allowed border border-slate-300"
+            >
+              <span>USD 50 Online Payment — Coming Soon (Disabled)</span>
+            </button>
+            <p className="text-[11px] text-slate-500 text-center leading-relaxed">
+              Online checkout for USD 50 is not yet active. Please select{" "}
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, delegateTier: "national" })}
+                className="font-bold underline text-emerald-700 hover:text-emerald-900 cursor-pointer"
+              >
+                National · NPR 6,000
+              </button>{" "}
+              or email{" "}
+              <a href="mailto:Shrestha.anup101@gmail.com" className="font-bold underline text-amber-900">
+                Shrestha.anup101@gmail.com
+              </a>
+              .
+            </p>
+          </div>
+        ) : (
+          <>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className={`w-full h-11 rounded-lg text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer pt-0.5 ${
+                registrationRole === "gala"
+                  ? "bg-[#5D2E8E] hover:bg-[#4E2477] shadow-purple-950/20"
+                  : "bg-[#218A59] hover:bg-[#197047]"
+              }`}
+            >
+              <span>
+                {isSubmitting
+                  ? registrationRole === "gala"
+                    ? "Connecting to Khalti..."
+                    : "Generating Badge..."
+                  : registrationRole === "gala"
+                    ? "Pay with Khalti (NPR 6,000)"
+                    : "Generate Entry Badge"}
+              </span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
 
-        <p className="text-[11px] text-slate-400 text-center">
-          {registrationRole === "gala"
-            ? formData.delegateTier === "international"
-              ? "Online card checkout coming soon · Official USD SWIFT wire invoice provided upon reservation"
-              : "Secure 256-bit SSL encrypted Khalti ePayment gateway for Royal Tulip Networking Banquet"
-            : "Instant digital QR pass · Complimentary access to BHRIKUTIMANDAP, KATHMANDU, NEPAL"}
-        </p>
+            <p className="text-[11px] text-slate-400 text-center">
+              {registrationRole === "gala"
+                ? "Secure 256-bit SSL encrypted Khalti ePayment gateway for Royal Tulip Networking Banquet"
+                : "Instant digital QR pass · Complimentary access to BHRIKUTIMANDAP, KATHMANDU, NEPAL"}
+            </p>
+          </>
+        )}
       </form>
     </div>
   );
