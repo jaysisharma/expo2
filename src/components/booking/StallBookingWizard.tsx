@@ -1631,6 +1631,33 @@ export default function StallBookingWizard() {
                   </span>
                 </div>
 
+                {/* Festival Season Notice: Automatic Booking in Halt */}
+                <div className="p-4 bg-gradient-to-br from-amber-50 via-orange-50/70 to-amber-50 border-b border-amber-200/90 text-xs space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500 text-white font-mono text-[10px] font-bold uppercase tracking-wider shadow-2xs">
+                      <Sparkles className="w-3 h-3" />
+                      <span>Festive Notice</span>
+                    </span>
+                    <span className="font-bold text-amber-950 text-xs">
+                      Automatic Booking in Halt
+                    </span>
+                  </div>
+                  <p className="text-[11.5px] text-amber-900 leading-relaxed">
+                    For the festival season, our automatic online booking is currently in halt. Please contact manually on this email to confirm your stall reservation &amp; invoice:
+                  </p>
+                  <a
+                    href={`mailto:Shrestha.anup101@gmail.com?subject=${encodeURIComponent(
+                      `Stall Booking Inquiry (Stalls: ${selectedBoothNumbers.join(", ") || "General"}) - Himalayan Green Energy Expo 2027`
+                    )}&body=${encodeURIComponent(
+                      `Dear Secretariat,\n\nI would like to manually reserve the following stall(s) for Himalayan Green Energy Expo 2027 during the festival season:\n\nStalls: ${selectedBoothNumbers.join(", ") || "Please advise"}\nTariff: NPR ${totalWithVatNPR.toLocaleString()} / USD $${totalWithVatUSD.toLocaleString()}\nCompany: ${formData.companyName || ""}\nContact Person: ${formData.contactPerson || ""}\nPhone: ${formData.phone || ""}\n\nPlease share the booking confirmation & invoice details.\n\nThank you.`
+                    )}`}
+                    className="flex items-center justify-center gap-2 w-full py-2.5 px-3 rounded-xl bg-amber-900 hover:bg-amber-950 text-amber-50 text-[11px] font-mono font-bold tracking-wide transition-all shadow-xs cursor-pointer"
+                  >
+                    <Mail className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+                    <span className="truncate">Shrestha.anup101@gmail.com</span>
+                  </a>
+                </div>
+
                 {/* Section 1: Selected Stalls List */}
                 <div className="p-4 sm:p-5 space-y-3">
                   <div className="flex items-center justify-between">
@@ -1922,6 +1949,17 @@ export default function StallBookingWizard() {
                         <span>FREE 72-HOUR HOLD (NPR 0 TODAY)</span>
                       </button>
                     )}
+
+                    {/* Manual Email Button for Festival Season */}
+                    <a
+                      href={`mailto:Shrestha.anup101@gmail.com?subject=${encodeURIComponent(
+                        `Festival Season Stall Booking Inquiry (Stalls: ${selectedBoothNumbers.join(", ") || "General"}) - Expo 2027`
+                      )}`}
+                      className="w-full py-2.5 px-3 rounded-xl font-mono text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all border border-amber-300 bg-amber-50/80 text-amber-900 hover:bg-amber-100 cursor-pointer text-center"
+                    >
+                      <Mail className="w-3.5 h-3.5 text-amber-700 shrink-0" />
+                      <span className="truncate">MANUAL INQUIRY: SHRESTHA.ANUP101@GMAIL.COM</span>
+                    </a>
                   </div>
                 </div>
 
@@ -1936,6 +1974,10 @@ export default function StallBookingWizard() {
                   </div>
                   <div className="flex flex-wrap items-center gap-1.5 text-slate-600 font-mono">
                     <Mail className="w-3 h-3 text-slate-400 shrink-0" />
+                    <a href="mailto:Shrestha.anup101@gmail.com" className="text-amber-800 font-bold hover:underline">
+                      Shrestha.anup101@gmail.com
+                    </a>
+                    <span className="text-slate-400">|</span>
                     <a href="mailto:info@himalayanenergyexpo.com" className="hover:text-emerald-700 hover:underline">
                       info@himalayanenergyexpo.com
                     </a>
@@ -2286,6 +2328,38 @@ export default function StallBookingWizard() {
               <div>
                 <span className="font-semibold text-slate-800">Phone:</span> {formData.phone}
               </div>
+            </div>
+          </div>
+
+          {/* Festive Season Notice in Step 3 Booking Summary */}
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-50 via-orange-50/60 to-amber-50 border border-amber-300/80 text-xs text-amber-950 space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500 text-white font-mono text-[10px] font-bold uppercase tracking-wider shadow-2xs">
+                <Sparkles className="w-3 h-3" />
+                <span>Festive Season Notice</span>
+              </span>
+              <strong className="text-amber-950 font-bold">
+                Automatic Online Booking in Halt
+              </strong>
+            </div>
+            <p className="text-[11.5px] text-amber-900 leading-relaxed">
+              For the festival season, our automatic online stall booking &amp; instant payment processing are currently in halt. Please contact manually on this email to confirm your stall reservation, pro-forma invoice, or contract:
+            </p>
+            <div className="flex flex-wrap items-center gap-3 pt-1">
+              <a
+                href={`mailto:Shrestha.anup101@gmail.com?subject=${encodeURIComponent(
+                  `Manual Stall Reservation [${selectedBoothNumbers.join(", ")}] - Himalayan Green Energy Expo 2027`
+                )}&body=${encodeURIComponent(
+                  `Dear Secretariat,\n\nI would like to manually confirm our stall reservation during the festival season:\n\nStalls: ${selectedBoothNumbers.join(", ")}\nTotal Payable: NPR ${totalWithVatNPR.toLocaleString()} / USD $${totalWithVatUSD.toLocaleString()}\nCompany: ${formData.companyName || ""}\nContact Person: ${formData.contactPerson || ""}\nPhone: ${formData.phone || ""}\nEmail: ${formData.email || ""}\n\nPlease issue the official pro-forma wire invoice.\n\nThank you.`
+                )}`}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-900 hover:bg-amber-950 text-amber-50 font-mono text-xs font-bold transition-all shadow-xs"
+              >
+                <Mail className="w-3.5 h-3.5 text-amber-300" />
+                <span>Shrestha.anup101@gmail.com</span>
+              </a>
+              <span className="text-xs font-mono text-amber-800">
+                Direct Hotlines: +977-9703606348 / 9703606345
+              </span>
             </div>
           </div>
 
