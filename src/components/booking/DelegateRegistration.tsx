@@ -491,14 +491,29 @@ export default function DelegateRegistration() {
               <button
                 type="button"
                 onClick={() => setFormData({ ...formData, delegateTier: "international" })}
-                className={`py-1.5 px-3 rounded-lg text-xs font-semibold border transition-all ${formData.delegateTier === "international"
+                className={`py-1.5 px-3 rounded-lg text-xs font-semibold border transition-all flex items-center justify-center gap-1.5 ${formData.delegateTier === "international"
                     ? "bg-white border-amber-500 text-amber-950 shadow-2xs"
                     : "bg-white/60 border-slate-200 text-slate-600 hover:border-slate-300"
                   }`}
               >
-                International · USD 50
+                <span>International · USD 50</span>
+                <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-900 uppercase tracking-wide border border-amber-200 shrink-0">
+                  Coming Soon
+                </span>
               </button>
             </div>
+
+            {formData.delegateTier === "international" && (
+              <div className="p-2.5 rounded-lg bg-amber-100/70 border border-amber-300/80 text-[11px] text-amber-950 space-y-0.5">
+                <div className="flex items-center gap-1.5 font-bold text-amber-900">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse shrink-0" />
+                  <span>Online USD Card Payment — Coming Soon</span>
+                </div>
+                <p className="text-[10.5px] text-amber-800 leading-relaxed">
+                  Direct online card gateway for USD 50 is under construction. Reserve your pass now to receive your official USD SWIFT invoice &amp; wire details directly.
+                </p>
+              </div>
+            )}
           </div>
         )}
 
@@ -617,17 +632,23 @@ export default function DelegateRegistration() {
           type="submit"
           disabled={isSubmitting}
           className={`w-full h-11 rounded-lg text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer pt-0.5 ${registrationRole === "gala"
-              ? "bg-[#5D2E8E] hover:bg-[#4E2477] shadow-purple-950/20"
+              ? formData.delegateTier === "international"
+                ? "bg-slate-800 hover:bg-slate-900 shadow-slate-950/20"
+                : "bg-[#5D2E8E] hover:bg-[#4E2477] shadow-purple-950/20"
               : "bg-[#218A59] hover:bg-[#197047]"
             }`}
         >
           <span>
             {isSubmitting
               ? registrationRole === "gala"
-                ? "Connecting to Khalti..."
+                ? formData.delegateTier === "international"
+                  ? "Submitting Reservation..."
+                  : "Connecting to Khalti..."
                 : "Generating Badge..."
               : registrationRole === "gala"
-                ? `Pay with Khalti (${formData.delegateTier === "international" ? "USD 50" : "NPR 6,000"})`
+                ? formData.delegateTier === "international"
+                  ? "USD 50 Online Payment (Coming Soon) · Reserve Pass"
+                  : "Pay with Khalti (NPR 6,000)"
                 : "Generate Entry Badge"}
           </span>
           <ArrowRight className="w-3.5 h-3.5" />
@@ -635,7 +656,9 @@ export default function DelegateRegistration() {
 
         <p className="text-[11px] text-slate-400 text-center">
           {registrationRole === "gala"
-            ? "Secure 256-bit SSL encrypted Khalti ePayment gateway for Royal Tulip Networking Banquet"
+            ? formData.delegateTier === "international"
+              ? "Online card checkout coming soon · Official USD SWIFT wire invoice provided upon reservation"
+              : "Secure 256-bit SSL encrypted Khalti ePayment gateway for Royal Tulip Networking Banquet"
             : "Instant digital QR pass · Complimentary access to BHRIKUTIMANDAP, KATHMANDU, NEPAL"}
         </p>
       </form>
