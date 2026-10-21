@@ -1,95 +1,72 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import fs from "fs/promises";
 import path from "path";
+import {
+  STAFF_COOKIE,
+  getStaffOrAdminSession,
+  isAuthConfigured,
+  sessionCookieOptions,
+  signSession,
+  tooManyLoginAttempts,
+} from "@/lib/session";
+import { verifyPassword } from "@/lib/passwords";
 
 export const dynamic = "force-dynamic";
 
 const ADMIN_STORE_PATH = path.join(process.cwd(), "data", "adminUsers.json");
-const STAFF_PASSCODE = process.env.STAFF_PASSCODE || "STAFF2027";
 
-// Default authorized staff accounts
-const DEFAULT_STAFF_ACCOUNTS: Record<
-  string,
-  { pass: string; name: string; role: string; gate: string }
-> = {
-  "staff@hydroexpo.org.np": {
-    pass: process.env.STAFF_PASSWORD || "staff2027",
-    name: "HIGEX Gate Marshall",
-    role: "Check-in Staff",
-    gate: "Main Gate (Hall A)",
-  },
-  "staff": {
-    pass: process.env.STAFF_PASSWORD || "staff2027",
-    name: "Expo Check-in Staff",
-    role: "Check-in Staff",
-    gate: "Registration Desk 1",
-  },
-  "admin": {
-    pass: process.env.ADMIN_PASSWORD || "expo2027admin",
-    name: "Expo Administrator",
-    role: "Super Admin",
-    gate: "Executive Desk",
-  },
-  "admin@hydroexpo.org.np": {
-    pass: process.env.ADMIN_PASSWORD || "expo2027admin",
-    name: "HIGEX Admin",
-    role: "Super Admin",
-    gate: "Executive Desk",
-  },
+// Gate passcode and staff passwords come only from the environment — no defaults.
+function envSecret(name: string) {
+  const value = (process.env[name] || "").trim();
+  return value.length >= 6 ? value : null;
+}
+
+const DEFAULT_STAFF_ACCOUNTS: Record<string, { passEnv: string; name: string; role: string; gate: string }> = {
+  "staff@hydroexpo.org.np": { passEnv: "STAFF_PASSWORD", name: "HIGEX Gate Marshall", role: "Check-in Staff", gate: "Main Gate (Hall A)" },
+  staff: { passEnv: "STAFF_PASSWORD", name: "Expo Check-in Staff", role: "Check-in Staff", gate: "Registration Desk 1" },
+  admin: { passEnv: "ADMIN_PASSWORD", name: "Expo Administrator", role: "Super Admin", gate: "Executive Desk" },
+  "admin@hydroexpo.org.np": { passEnv: "ADMIN_PASSWORD", name: "HIGEX Admin", role: "Super Admin", gate: "Executive Desk" },
 };
 
-import { createStaffToken, verifyStaffToken } from "@/lib/staffAuth";
-
-// GET: Check active staff session
-export async function GET() {
-  try {
-    const cookieStore = await cookies();
-    const staffToken = cookieStore.get("hhe_staff_token")?.value;
-    const adminToken = cookieStore.get("hhe_admin_token")?.value;
-
-    if (staffToken) {
-      const verified = verifyStaffToken(staffToken);
-      if (verified) {
-        return NextResponse.json({ authenticated: true, staff: verified });
-      }
-    }
-
-    if (adminToken) {
-      // Admin token also grants staff privileges
-      try {
-        const raw = Buffer.from(adminToken, "base64").toString("utf-8");
-        const parsed = JSON.parse(raw);
-        if (parsed.exp && parsed.exp > Date.now()) {
-          return NextResponse.json({
-            authenticated: true,
-            staff: {
-              email: parsed.email,
-              name: "HIGEX Administrator",
-              role: "Super Admin",
-              gate: "VIP / Admin Gate",
-            },
-          });
-        }
-      } catch {}
-    }
-
-    return NextResponse.json({ authenticated: false, staff: null });
-  } catch {
-    return NextResponse.json({ authenticated: false, staff: null });
-  }
+// GET: Check active staff session (an admin session also grants staff access)
+export async function GET(req: NextRequest) {
+  const session = await getStaffOrAdminSession(req);
+  if (!session) return NextResponse.json({ authenticated: false, staff: null });
+  return NextResponse.json({
+    authenticated: true,
+    staff: {
+      email: session.email,
+      name: session.name,
+      role: session.role,
+      gate: session.gate || "VIP / Admin Gate",
+    },
+  });
 }
 
 // POST: Staff Login (Supports email/password OR Gate Access Passcode)
 export async function POST(req: NextRequest) {
   try {
+    if (!isAuthConfigured()) {
+      return NextResponse.json(
+        { success: false, message: "Staff login is not configured on the server (AUTH_SECRET missing)." },
+        { status: 503 }
+      );
+    }
+    if (tooManyLoginAttempts(req)) {
+      return NextResponse.json(
+        { success: false, message: "Too many login attempts. Please wait 15 minutes and try again." },
+        { status: 429 }
+      );
+    }
+
     const body = await req.json();
     const { email, password, passcode, gate = "Main Entrance Hall A" } = body;
 
     let matchedStaff: { name: string; role: string; gate: string; email: string } | null = null;
 
-    // 1. Check quick gate passcode (e.g. STAFF2027)
-    if (passcode && (passcode.trim().toUpperCase() === STAFF_PASSCODE.toUpperCase() || passcode.trim() === "2027")) {
+    // 1. Check quick gate passcode (STAFF_PASSCODE env)
+    const gatePasscode = envSecret("STAFF_PASSCODE");
+    if (passcode && gatePasscode && verifyPassword(gatePasscode.toUpperCase(), passcode.trim().toUpperCase()).valid) {
       matchedStaff = {
         email: "gate.staff@hydroexpo.org.np",
         name: "Gate Marshal",
@@ -103,7 +80,8 @@ export async function POST(req: NextRequest) {
       const normalizedEmail = email.trim().toLowerCase();
       const defaultAccount = DEFAULT_STAFF_ACCOUNTS[normalizedEmail];
 
-      if (defaultAccount && defaultAccount.pass === password) {
+      const defaultPass = defaultAccount ? envSecret(defaultAccount.passEnv) : null;
+      if (defaultAccount && defaultPass && verifyPassword(defaultPass, password).valid) {
         matchedStaff = {
           email: normalizedEmail,
           name: defaultAccount.name,
@@ -116,7 +94,7 @@ export async function POST(req: NextRequest) {
           const raw = await fs.readFile(ADMIN_STORE_PATH, "utf-8");
           const adminUsers = JSON.parse(raw);
           const adminAcct = adminUsers[normalizedEmail];
-          if (adminAcct && adminAcct.pass === password) {
+          if (adminAcct && verifyPassword(adminAcct.pass, password).valid) {
             matchedStaff = {
               email: normalizedEmail,
               name: adminAcct.name || "Expo Administrator",
@@ -135,12 +113,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const token = createStaffToken(
-      matchedStaff.email,
-      matchedStaff.name,
-      matchedStaff.role,
-      matchedStaff.gate
-    );
+    const token = await signSession({ kind: "staff", ...matchedStaff });
 
     const response = NextResponse.json({
       success: true,
@@ -148,13 +121,7 @@ export async function POST(req: NextRequest) {
       staff: matchedStaff,
     });
 
-    response.cookies.set("hhe_staff_token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60, // 7 days
-      path: "/",
-    });
+    response.cookies.set(STAFF_COOKIE, token, sessionCookieOptions);
 
     return response;
   } catch (error) {
@@ -166,6 +133,6 @@ export async function POST(req: NextRequest) {
 // DELETE: Staff Logout
 export async function DELETE() {
   const response = NextResponse.json({ success: true, message: "Staff logged out." });
-  response.cookies.delete("hhe_staff_token");
+  response.cookies.delete(STAFF_COOKIE);
   return response;
 }

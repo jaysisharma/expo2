@@ -3,6 +3,9 @@ import { initializeKhaltiPayment } from '@/lib/khalti';
 import nodemailer from 'nodemailer';
 import fs from 'fs/promises';
 import path from 'path';
+import { attributionFields } from '@/lib/attribution';
+import { addFirebaseInquiry, addFirebaseRegistration } from '@/lib/firebaseDb';
+import { resolveNewOrderId } from '@/lib/orders';
 
 export const dynamic = 'force-dynamic';
 
@@ -99,7 +102,7 @@ export async function POST(req: Request) {
     const vatUSD = Math.round(subtotalUSD * vatRate);
     const totalAmountUSD = subtotalUSD + vatUSD;
 
-    const orderId = `GALA-2027-${Math.floor(100000 + Math.random() * 900000)}`;
+    const orderId = await resolveNewOrderId(null, 'GALA-2027');
 
     const adminData = await getAdminData();
     if (!adminData.registrations) adminData.registrations = [];
@@ -143,13 +146,16 @@ export async function POST(req: Request) {
       screenshotUrl: body.screenshotUrl || '',
       checkedIn: false,
       registeredAt: new Date().toISOString(),
+      ...attributionFields(req),
     };
 
     adminData.registrations.unshift(newRegistration);
+    // Firestore is the persistent store on Vercel (local files are reset on each deploy)
+    await addFirebaseRegistration(newRegistration).catch(() => null);
 
     // Also record lead in inquiries
     if (!adminData.inquiries) adminData.inquiries = [];
-    adminData.inquiries.unshift({
+    const dinnerInquiry = {
       id: `INQ-GALA-${orderId}`,
       name,
       email,
@@ -160,7 +166,10 @@ export async function POST(req: Request) {
       stallInterest: 'Networking Dinner (Royal Tulip)',
       status: 'New',
       submittedAt: new Date().toISOString(),
-    });
+      ...attributionFields(req),
+    };
+    adminData.inquiries.unshift(dinnerInquiry);
+    await addFirebaseInquiry(dinnerInquiry).catch(() => null);
 
     await saveAdminData(adminData);
 

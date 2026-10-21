@@ -3,6 +3,7 @@ import fs from "fs/promises";
 import path from "path";
 import nodemailer from "nodemailer";
 import { addFirebaseRegistration } from "@/lib/firebaseDb";
+import { attributionFields } from "@/lib/attribution";
 import { CONTACT_DETAILS } from "@/data/contactInfo";
 
 export const dynamic = "force-dynamic";
@@ -68,6 +69,7 @@ export async function POST(req: NextRequest) {
       interests: ["EV Rally Roadshow", vehicleType, vehicleMakeModel || ""].filter(Boolean),
       checkedIn: false,
       registeredAt: new Date().toISOString(),
+      ...attributionFields(req),
       metadata: {
         category: "ev_rally",
         vehicleType,

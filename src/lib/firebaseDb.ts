@@ -1,4 +1,8 @@
+// Server-only data layer. Uses the Firebase Admin SDK when FIREBASE_SERVICE_ACCOUNT is set
+// (see lib/firestoreServer.ts); never import this file from a "use client" component.
+import "server-only";
 import {
+  db,
   collection,
   doc,
   getDocs,
@@ -9,8 +13,9 @@ import {
   query,
   orderBy,
   limit,
-} from "firebase/firestore";
-import { db } from "./firebase";
+  where,
+  addDoc,
+} from "./firestoreServer";
 
 // Collection Names
 export const COLLECTIONS = {
@@ -22,6 +27,11 @@ export const COLLECTIONS = {
   EMAIL_CAMPAIGNS: "email_campaigns",
   NEWS: "news",
   PARTNERS: "current_partners",
+  TRAFFIC_VISITS: "traffic_visits",
+  CRAWLER_STATS: "crawler_stats",
+  FUNNEL_EVENTS: "funnel_events",
+  SHORT_LINKS: "short_links",
+  STALL_BOOKINGS: "stall_bookings",
 };
 
 // ----------------- REGISTRATIONS -----------------
@@ -68,6 +78,16 @@ export async function addFirebaseRegistration(regData: any) {
   } catch (error) {
     console.warn("Firestore addRegistration error:", error);
     return null;
+  }
+}
+
+export async function updateFirebaseRegistration(regId: string, patch: Record<string, any>): Promise<boolean> {
+  try {
+    await setDoc(doc(db, COLLECTIONS.REGISTRATIONS, regId), { ...patch, updatedAt: new Date().toISOString() }, { merge: true });
+    return true;
+  } catch (error) {
+    console.warn("Firestore updateRegistration error:", error);
+    return false;
   }
 }
 
@@ -495,3 +515,156 @@ export async function saveFirebaseFloorPlan(data: any): Promise<boolean> {
 }
 
 
+
+// ----------------- TRAFFIC SOURCES -----------------
+export async function addFirebaseTrafficVisit(visit: Record<string, any>): Promise<boolean> {
+  try {
+    await addDoc(collection(db, COLLECTIONS.TRAFFIC_VISITS), visit);
+    return true;
+  } catch (error) {
+    console.warn("Firestore addTrafficVisit error:", error);
+    return false;
+  }
+}
+
+export async function getFirebaseTrafficVisits(sinceISO: string, max = 10000): Promise<any[] | null> {
+  try {
+    const q = query(
+      collection(db, COLLECTIONS.TRAFFIC_VISITS),
+      where("ts", ">=", sinceISO),
+      orderBy("ts", "desc"),
+      limit(max)
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  } catch (error) {
+    console.warn("Firestore getTrafficVisits error:", error);
+    return null;
+  }
+}
+
+// Daily per-crawler counters written by middleware (see lib/crawlerLog.ts)
+export async function getFirebaseCrawlerStats(sinceDate: string): Promise<any[] | null> {
+  try {
+    const q = query(collection(db, COLLECTIONS.CRAWLER_STATS), where("date", ">=", sinceDate), limit(5000));
+    const snap = await getDocs(q);
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  } catch (error) {
+    console.warn("Firestore getCrawlerStats error:", error);
+    return null;
+  }
+}
+
+// Funnel events (form start / submit, payment result) written by /api/track
+export async function addFirebaseFunnelEvent(event: Record<string, any>): Promise<boolean> {
+  try {
+    await addDoc(collection(db, COLLECTIONS.FUNNEL_EVENTS), event);
+    return true;
+  } catch (error) {
+    console.warn("Firestore addFunnelEvent error:", error);
+    return false;
+  }
+}
+
+export async function getFirebaseFunnelEvents(sinceISO: string, max = 20000): Promise<any[] | null> {
+  try {
+    const q = query(
+      collection(db, COLLECTIONS.FUNNEL_EVENTS),
+      where("ts", ">=", sinceISO),
+      orderBy("ts", "desc"),
+      limit(max)
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  } catch (error) {
+    console.warn("Firestore getFunnelEvents error:", error);
+    return null;
+  }
+}
+
+// ----------------- SHORT LINKS (/go/:code) -----------------
+export interface ShortLink {
+  code: string;
+  path: string;
+  source: string;
+  medium: string;
+  campaign: string;
+  clicks: number;
+  createdAt: string;
+  createdBy?: string;
+}
+
+export async function getFirebaseShortLinks(): Promise<ShortLink[] | null> {
+  try {
+    const snap = await getDocs(query(collection(db, COLLECTIONS.SHORT_LINKS), orderBy("createdAt", "desc"), limit(500)));
+    return snap.docs.map((d) => d.data() as ShortLink);
+  } catch (error) {
+    console.warn("Firestore getShortLinks error:", error);
+    return null;
+  }
+}
+
+export async function getFirebaseShortLink(code: string): Promise<ShortLink | null> {
+  try {
+    const snap = await getDoc(doc(db, COLLECTIONS.SHORT_LINKS, code));
+    return snap.exists() ? (snap.data() as ShortLink) : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function saveFirebaseShortLink(link: ShortLink): Promise<boolean> {
+  try {
+    await setDoc(doc(db, COLLECTIONS.SHORT_LINKS, link.code), link);
+    return true;
+  } catch (error) {
+    console.warn("Firestore saveShortLink error:", error);
+    return false;
+  }
+}
+
+export async function deleteFirebaseShortLink(code: string): Promise<boolean> {
+  try {
+    await deleteDoc(doc(db, COLLECTIONS.SHORT_LINKS, code));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function recordFirebaseShortLinkClick(link: ShortLink): Promise<void> {
+  try {
+    // Read-modify-write is fine here: an occasional lost count under heavy concurrency doesn't matter
+    await setDoc(doc(db, COLLECTIONS.SHORT_LINKS, link.code), { clicks: (link.clicks || 0) + 1, lastClickAt: new Date().toISOString() }, { merge: true });
+  } catch {}
+}
+
+// ----------------- STALL / SPONSOR BOOKINGS -----------------
+export async function saveFirebaseStallBooking(booking: Record<string, any>): Promise<boolean> {
+  try {
+    await setDoc(doc(db, COLLECTIONS.STALL_BOOKINGS, booking.id), { ...booking, updatedAt: new Date().toISOString() }, { merge: true });
+    return true;
+  } catch (error) {
+    console.warn("Firestore saveStallBooking error:", error);
+    return false;
+  }
+}
+
+export async function getFirebaseStallBooking(id: string): Promise<any | null> {
+  try {
+    const snap = await getDoc(doc(db, COLLECTIONS.STALL_BOOKINGS, id));
+    return snap.exists() ? snap.data() : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function getFirebaseStallBookings(): Promise<any[] | null> {
+  try {
+    const snap = await getDocs(query(collection(db, COLLECTIONS.STALL_BOOKINGS), orderBy("createdAt", "desc"), limit(500)));
+    return snap.docs.map((d) => d.data());
+  } catch (error) {
+    console.warn("Firestore getStallBookings error:", error);
+    return null;
+  }
+}

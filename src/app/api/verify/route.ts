@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getStaffOrAdminSession } from "@/lib/session";
 import fs from "fs";
 import path from "path";
 import { getFirebaseRegistrationById, toggleFirebaseCheckin } from "@/lib/firebaseDb";
@@ -226,10 +227,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     // Only authorized staff or admin can mark check-ins
-    const staffCookie = req.cookies.get("hhe_staff_token")?.value;
-    const adminCookie = req.cookies.get("hhe_admin_token")?.value;
-
-    if (!staffCookie && !adminCookie) {
+    if (!(await getStaffOrAdminSession(req))) {
       return NextResponse.json(
         { success: false, message: "Unauthorized. Only verified staff can check in attendees." },
         { status: 401 }

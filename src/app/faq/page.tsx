@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import FAQAccordion from "@/components/faq/FAQAccordion";
 import Link from "next/link";
 import { ArrowRight, HelpCircle, Mail, Phone, MessageSquare } from "lucide-react";
+import { JsonLd } from "@/components/seo/StructuredData";
+import { faqsData } from "@/data/faqs";
 
 export const metadata: Metadata = {
   title: "Frequently Asked Questions (FAQ) | Himalayan Green Energy Expo 2027",
@@ -13,6 +15,18 @@ export const metadata: Metadata = {
 export default function FAQPage() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-900 flex flex-col">
+      {/* FAQ rich results in Google — same questions as the accordion below */}
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: faqsData.map((f) => ({
+            "@type": "Question",
+            name: f.question,
+            acceptedAnswer: { "@type": "Answer", text: f.answer },
+          })),
+        }}
+      />
       {/* =========================================================================
           01: SIMPLE HEADER WITH BACKGROUND COLOR (GREEN THEME)
          ========================================================================= */}

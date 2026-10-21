@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import fs from "fs/promises";
 import path from "path";
 import {
   getFirebaseRegistrations,
   toggleFirebaseCheckin,
 } from "@/lib/firebaseDb";
-import { verifyStaffToken } from "@/lib/staffAuth";
+import { getStaffOrAdminSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
@@ -44,32 +43,8 @@ async function saveAdminData(data: any) {
   } catch {}
 }
 
-async function getAuthorizedStaff() {
-  const cookieStore = await cookies();
-  const staffToken = cookieStore.get("hhe_staff_token")?.value;
-  const adminToken = cookieStore.get("hhe_admin_token")?.value;
-
-  if (staffToken) {
-    const staff = verifyStaffToken(staffToken);
-    if (staff) return staff;
-  }
-
-  if (adminToken) {
-    try {
-      const raw = Buffer.from(adminToken, "base64").toString("utf-8");
-      const parsed = JSON.parse(raw);
-      if (parsed.exp && parsed.exp > Date.now()) {
-        return {
-          name: "Admin Officer",
-          role: "Super Admin",
-          gate: "VIP / Admin Gate",
-          email: parsed.email,
-        };
-      }
-    } catch {}
-  }
-
-  return null;
+async function getAuthorizedStaff(req: NextRequest) {
+  return getStaffOrAdminSession(req);
 }
 
 function extractPassId(input: string): string {
@@ -118,7 +93,7 @@ function extractPassId(input: string): string {
 
 // GET: Summary statistics and registrations list
 export async function GET(req: NextRequest) {
-  const staff = await getAuthorizedStaff();
+  const staff = await getAuthorizedStaff(req);
   if (!staff) {
     return NextResponse.json({ success: false, message: "Unauthorized. Staff login required." }, { status: 401 });
   }
@@ -178,7 +153,7 @@ export async function GET(req: NextRequest) {
 
 // POST: Verify and Check In Attendee
 export async function POST(req: NextRequest) {
-  const staff = await getAuthorizedStaff();
+  const staff = await getAuthorizedStaff(req);
   if (!staff) {
     return NextResponse.json({ success: false, message: "Unauthorized. Staff login required." }, { status: 401 });
   }
@@ -263,7 +238,7 @@ export async function POST(req: NextRequest) {
 
 // PUT: Undo / Toggle Check-in status
 export async function PUT(req: NextRequest) {
-  const staff = await getAuthorizedStaff();
+  const staff = await getAuthorizedStaff(req);
   if (!staff) {
     return NextResponse.json({ success: false, message: "Unauthorized." }, { status: 401 });
   }

@@ -18,7 +18,6 @@ interface AdminAuthContextType {
   login: (email: string, pass: string) => Promise<boolean>;
   register: (name: string, email: string, pass: string, organization?: string) => Promise<{ success: boolean; message?: string }>;
   logout: () => Promise<void>;
-  quickDemoLogin: () => Promise<void>;
   checkSession: () => Promise<void>;
 }
 
@@ -29,7 +28,6 @@ const AdminAuthContext = createContext<AdminAuthContextType>({
   login: async () => false,
   register: async () => ({ success: false }),
   logout: async () => {},
-  quickDemoLogin: async () => {},
   checkSession: async () => {},
 });
 
@@ -83,17 +81,11 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
           localStorage.setItem("hhe_admin_session", JSON.stringify(data.user));
         } catch {}
       } else {
-        const stored = typeof window !== "undefined" ? localStorage.getItem("hhe_admin_session") : null;
-        if (stored) {
-          try {
-            const parsed = JSON.parse(stored);
-            setUser(parsed);
-          } catch {
-            setUser(null);
-          }
-        } else {
-          setUser(null);
-        }
+        // The server is the source of truth: an expired or invalid session clears the cached one
+        setUser(null);
+        try {
+          localStorage.removeItem("hhe_admin_session");
+        } catch {}
       }
     } catch (e) {
       console.warn("Backend auth verification fallback:", e);
@@ -160,22 +152,14 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
 
       const data = await res.json();
 
-      if (res.ok && data.success && data.user) {
-        setUser(data.user);
-        try {
-          localStorage.setItem("hhe_admin_session", JSON.stringify(data.user));
-        } catch {}
-        return { success: true };
+      // Creating an account keeps the current Super Admin signed in
+      if (res.ok && data.success) {
+        return { success: true, message: data.message };
       }
       return { success: false, message: data.message || "Registration failed" };
     } catch (error) {
       return { success: false, message: "Unable to connect to server" };
     }
-  };
-
-  const quickDemoLogin = async () => {
-    await login("admin@hydroexpo.org.np", "expo2027admin");
-    router.push("/admin/dashboard");
   };
 
   const logout = async () => {
@@ -205,7 +189,6 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
         login,
         register,
         logout,
-        quickDemoLogin,
         checkSession,
       }}
     >

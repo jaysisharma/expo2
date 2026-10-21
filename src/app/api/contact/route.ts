@@ -3,6 +3,7 @@ import nodemailer from "nodemailer";
 import fs from "fs/promises";
 import path from "path";
 import { addFirebaseInquiry } from "@/lib/firebaseDb";
+import { attributionFields } from "@/lib/attribution";
 import { CONTACT_DETAILS } from "@/data/contactInfo";
 
 export const dynamic = "force-dynamic";
@@ -112,6 +113,7 @@ export async function POST(req: NextRequest) {
       stallInterest: "",
       status: "New",
       submittedAt: timestamp,
+      ...attributionFields(req),
     };
 
     await Promise.all([

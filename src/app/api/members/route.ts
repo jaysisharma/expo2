@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
+import { getAdminSession } from "@/lib/session";
 import { speakersData } from "@/data/speakers";
 import { eventSolutionTeam } from "@/data/eventSolutionTeam";
-import { getFirebaseMembers } from "@/lib/firebaseDb";
+import { getFirebaseMembers, saveFirebaseMembers } from "@/lib/firebaseDb";
 
 export const dynamic = "force-dynamic";
 
@@ -31,7 +32,13 @@ const staticMembers = [
   })),
 ];
 
-export async function GET() {
+export async function GET(req: Request) {
+  // ?raw=1 returns exactly what is stored (null when nothing saved yet) — used by the admin editor
+  if (new URL(req.url).searchParams.get("raw") === "1") {
+    const stored = await getFirebaseMembers();
+    return NextResponse.json({ success: true, members: stored }, { headers: { "Cache-Control": "no-store" } });
+  }
+
   try {
     const fbMembers = await getFirebaseMembers();
     if (fbMembers && fbMembers.length > 0) {
@@ -48,4 +55,17 @@ export async function GET() {
     { success: true, members: staticMembers, source: "static" },
     { headers: { "Cache-Control": "no-store, no-cache, must-revalidate" } }
   );
+}
+
+// POST: admin-only save of the full members list
+export async function POST(req: Request) {
+  if (!(await getAdminSession(req))) {
+    return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
+  }
+  const body = await req.json().catch(() => null);
+  if (!Array.isArray(body?.members)) {
+    return NextResponse.json({ success: false, message: "Expected an array of members" }, { status: 400 });
+  }
+  const ok = await saveFirebaseMembers(body.members);
+  return NextResponse.json({ success: ok }, { status: ok ? 200 : 500 });
 }

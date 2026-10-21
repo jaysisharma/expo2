@@ -30,7 +30,7 @@ import {
   Film,
 } from "lucide-react";
 import { galleryData as initialGallery } from "@/data/gallery";
-import { saveFirebaseGallery, getFirebaseGallery } from "@/lib/firebaseDb";
+import { saveFirebaseGallery, getFirebaseGallery } from "@/lib/contentApi";
 import { GalleryItem } from "@/lib/types";
 import { ImageUploadField } from "@/components/admin/ImageUploadField";
 import { compressImage } from "@/lib/imageCompression";

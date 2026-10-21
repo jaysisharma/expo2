@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, Suspense } from "react";
+import { trackFunnel } from "@/lib/funnel";
 import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
@@ -182,6 +183,7 @@ function BookGalaDinnerForm() {
 
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || "Booking failed.");
+      trackFunnel("dinner", "submit");
 
       if (paymentMethod === "khalti" && data.paymentUrl) {
         window.location.href = data.paymentUrl;
@@ -240,7 +242,7 @@ function BookGalaDinnerForm() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} onFocusCapture={() => trackFunnel("dinner", "start")}>
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
 
             {/* ── LEFT (3/5) ─────────────────────────────────────────── */}

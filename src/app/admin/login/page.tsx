@@ -16,8 +16,8 @@ import {
 import { useAdminAuth } from "@/components/admin/AdminAuthContext";
 
 function AdminLoginForm() {
-  const [email, setEmail] = useState("admin@hydroexpo.org.np");
-  const [password, setPassword] = useState("expo2027admin");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);

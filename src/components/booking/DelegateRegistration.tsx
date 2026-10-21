@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { trackFunnel } from "@/lib/funnel";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import confetti from "canvas-confetti";
@@ -208,6 +209,7 @@ export default function DelegateRegistration() {
           }),
         });
         const galaData = await galaRes.json();
+        if (galaData.success) trackFunnel("dinner", "submit");
         if (galaData.success && galaData.paymentUrl) {
           window.location.href = galaData.paymentUrl;
           return;
@@ -224,13 +226,12 @@ export default function DelegateRegistration() {
           ? formData.passType
           : `Exhibitor Delegate (${formData.stallNumber})`;
 
-      await fetch("/api/admin/data", {
+      const regRes = await fetch("/api/admin/data", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "add_registration",
           payload: {
-            id: generatedId,
             name: formData.name,
             email: formData.email,
             phone: formData.phone,
@@ -243,6 +244,14 @@ export default function DelegateRegistration() {
           },
         }),
       });
+      const regJson = await regRes.json().catch(() => null);
+      if (!regRes.ok || !regJson?.success || !regJson.data?.id) {
+        throw new Error(regJson?.message || "Could not complete registration. Please try again.");
+      }
+      // The server assigns the pass ID
+      const passId: string = regJson.data.id;
+      trackFunnel("registration", "submit");
+      setDelegateId(passId);
 
       // ── Remember attendee profile for instant 1-click downloads ──────────
       try {
@@ -269,18 +278,8 @@ export default function DelegateRegistration() {
         await fetch("/api/send-pass", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: formData.name,
-            email: formData.email,
-            organization: formData.organization,
-            jobTitle: formData.jobTitle,
-            stallNumber: registrationRole === "exhibitor" ? formData.stallNumber : "",
-            country: formData.country,
-            phone: formData.phone,
-            passId: generatedId,
-            passType: resolvedPassType,
-            role: resolvedRole,
-          }),
+          // The server looks up the registration and emails the pass to its stored address
+          body: JSON.stringify({ passId, role: resolvedRole }),
         });
       } catch (emailErr) {
         console.warn("Pass email failed", emailErr);
@@ -380,7 +379,11 @@ export default function DelegateRegistration() {
 
   return (
     <div className="w-full bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-xs">
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form
+        onSubmit={handleSubmit}
+        onFocusCapture={() => trackFunnel(registrationRole === "gala" ? "dinner" : "registration", "start")}
+        className="space-y-5"
+      >
         {/* Pass Type Switcher: Visitor vs Networking Dinner vs EV Rally */}
         <div>
           <label className="block text-xs font-semibold text-slate-700 mb-2">

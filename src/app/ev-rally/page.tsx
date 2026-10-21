@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { trackFunnel } from "@/lib/funnel";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -73,6 +74,7 @@ export default function EVRallyPage() {
 
       const json = await res.json();
       if (json.success && json.rallyId) {
+        trackFunnel("ev_rally", "submit");
         setRegisteredId(json.rallyId);
         try {
           confetti({
@@ -207,6 +209,7 @@ export default function EVRallyPage() {
             /* ── Registration Form ── */
             <form
               onSubmit={handleSubmit}
+              onFocusCapture={() => trackFunnel("ev_rally", "start")}
               className="bg-white rounded-3xl border border-slate-200/90 shadow-lg p-6 sm:p-10 space-y-8"
             >
               {/* Form Intro */}

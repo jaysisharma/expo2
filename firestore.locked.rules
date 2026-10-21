@@ -1,0 +1,26 @@
+rules_version = '2';
+
+// Locked-down rules. Deploy ONLY after FIREBASE_SERVICE_ACCOUNT is set on the live site:
+// the server then uses the Firebase Admin SDK, which is not affected by these rules.
+//
+//   cp firestore.locked.rules firestore.rules && firebase deploy --only firestore:rules
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Nobody can read or write directly with the public web API key
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Exception: middleware logs crawler hits with the public key (it can't use the Admin SDK).
+    // Only daily counter documents with these exact fields are allowed; no reads.
+    match /crawler_stats/{statId} {
+      allow create, update: if request.resource.data.keys().hasOnly(['bot', 'category', 'date', 'lastPath', 'lastSeen', 'hits', 'paths'])
+        && request.resource.data.bot is string && request.resource.data.bot.size() <= 60
+        && request.resource.data.category in ['search', 'ai', 'social', 'seo', 'other']
+        && request.resource.data.date is string && request.resource.data.date.size() == 10
+        && request.resource.data.hits is int
+        && request.resource.data.paths is map && request.resource.data.paths.size() <= 500;
+    }
+  }
+}

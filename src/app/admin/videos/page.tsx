@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import { VideoItem } from "@/lib/types";
 import { videosData as defaultVideos } from "@/data/videos";
-import { saveFirebaseVideos, getFirebaseVideos } from "@/lib/firebaseDb";
+import { saveFirebaseVideos, getFirebaseVideos } from "@/lib/contentApi";
 import { ImageUploadField } from "@/components/admin/ImageUploadField";
 import DroneCinemaModal from "@/components/hero/DroneCinemaModal";
 
