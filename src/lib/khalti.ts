@@ -174,12 +174,8 @@ export async function verifyKhaltiPayment(pidx: string): Promise<KhaltiVerifyRes
 
     return data as KhaltiVerifyResponse;
   } catch (err: any) {
-    console.warn('Khalti Verify API fallback:', err?.message || err);
-    return {
-      pidx,
-      total_amount: 0,
-      status: 'Completed',
-      transaction_id: `FALLBACK_${Date.now()}`,
-    };
+    // A failed or unknown lookup must never count as a completed payment
+    console.warn('Khalti Verify API error:', err?.message || err);
+    throw new Error('Could not verify the Khalti payment');
   }
 }
