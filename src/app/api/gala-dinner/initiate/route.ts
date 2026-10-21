@@ -4,7 +4,7 @@ import nodemailer from 'nodemailer';
 import fs from 'fs/promises';
 import path from 'path';
 import { attributionFields } from '@/lib/attribution';
-import { addFirebaseInquiry, addFirebaseRegistration } from '@/lib/firebaseDb';
+import { addFirebaseInquiry, addFirebaseRegistration, updateFirebaseRegistration } from '@/lib/firebaseDb';
 import { resolveNewOrderId } from '@/lib/orders';
 
 export const dynamic = 'force-dynamic';
@@ -320,6 +320,8 @@ export async function POST(req: Request) {
           ],
         });
 
+        // Remember which Khalti checkout belongs to this order (checked in the callback)
+        await updateFirebaseRegistration(orderId, { khaltiPidx: khaltiResponse.pidx });
         return NextResponse.json({
           success: true,
           orderId,

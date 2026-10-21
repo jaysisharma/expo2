@@ -639,6 +639,8 @@ Website: https://www.higex.org
           },
         });
 
+        // Remember which Khalti checkout belongs to this booking (checked in the callback)
+        await saveStallBooking({ id: orderId, khaltiPidx: khaltiResponse.pidx });
         return NextResponse.json({
           success: true,
           bookingId: orderId,

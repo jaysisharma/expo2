@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { verifyKhaltiPayment } from "@/lib/khalti";
-import { expectedAmountPaisa, markOrderPaymentStatus } from "@/lib/orders";
+import { expectedAmountPaisa, findOrder, markOrderPaymentStatus } from "@/lib/orders";
 
 export const dynamic = "force-dynamic";
 
@@ -23,22 +23,22 @@ export async function GET(request: Request) {
     const verification = await verifyKhaltiPayment(pidx);
     console.log("Khalti Verification Result:", verification);
 
-    // A real Khalti payment for a smaller amount (e.g. from another order) must not confirm this one
-    const expected = await expectedAmountPaisa(purchase_order_id);
-    const underpaid =
-      process.env.NODE_ENV !== "development" &&
-      expected !== null &&
-      Number(verification.total_amount) < expected;
-    if (expected === null) {
-      console.warn(`[payment/callback] No stored amount for ${purchase_order_id}; could not check the paid amount`);
+    // Anyone can open this URL, so a payment only confirms the order when it is the Khalti
+    // payment started for this order (pidx saved at checkout) and covers the stored amount.
+    const isDev = process.env.NODE_ENV === "development";
+    const [expected, order] = await Promise.all([expectedAmountPaisa(purchase_order_id), findOrder(purchase_order_id)]);
+    const expectedPidx = order?.record?.khaltiPidx;
+    const problems: string[] = [];
+    if (!isDev) {
+      if (expected === null) problems.push("no stored amount for this order");
+      else if (Number(verification.total_amount) < expected) problems.push(`paid ${verification.total_amount}, expected ${expected}`);
+      if (expectedPidx && expectedPidx !== pidx) problems.push("payment belongs to a different checkout");
     }
-    if (underpaid) {
-      console.error(
-        `[payment/callback] Amount mismatch for ${purchase_order_id}: paid ${verification.total_amount}, expected ${expected}`
-      );
+    if (problems.length) {
+      console.error(`[payment/callback] Not confirming ${purchase_order_id}: ${problems.join("; ")}`);
     }
 
-    if (verification.status === "Completed" && !underpaid) {
+    if (verification.status === "Completed" && problems.length === 0) {
       await markOrderPaymentStatus(
         purchase_order_id,
         "PAID",
