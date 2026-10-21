@@ -74,10 +74,11 @@ export function encryptPassToken(payload: PassSecurityPayload): string {
  * PASS_SECRET_KEY_PREVIOUS values so passes issued before a key change keep working.
  */
 function candidateKeys(): Buffer[] {
-  const secrets = [
-    process.env.PASS_SECRET_KEY,
-    ...(process.env.PASS_SECRET_KEY_PREVIOUS || "").split(",").map((s) => s.trim()),
-  ].filter((s): s is string => !!s && s.length >= 16);
+  const current = process.env.PASS_SECRET_KEY;
+  // Previous keys only verify passes that were already issued, so any length is accepted
+  // (the key used before this change was shorter than the 16-character minimum for new keys).
+  const previous = (process.env.PASS_SECRET_KEY_PREVIOUS || "").split(",").map((s) => s.trim()).filter(Boolean);
+  const secrets = [...(isUsableSecret(current) ? [current] : []), ...previous];
   if (!IS_PRODUCTION) secrets.push(...PUBLIC_LEGACY_SECRETS);
   return Array.from(new Set(secrets)).map(deriveKey);
 }
