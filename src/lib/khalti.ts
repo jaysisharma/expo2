@@ -6,6 +6,10 @@
 const KHALTI_SECRET_KEY = process.env.KHALTI_SECRET_KEY;
 const KHALTI_BASE_URL = process.env.KHALTI_BASE_URL || 'https://khalti.com/api/v2';
 
+// The simulated checkout portal and verification shortcuts below mark payments as
+// paid without any money moving, so they are only allowed in local development.
+const ALLOW_SIMULATED_PAYMENTS = process.env.NODE_ENV === 'development';
+
 export interface KhaltiCustomerInfo {
   name: string;
   email: string;
@@ -106,7 +110,11 @@ export async function initializeKhaltiPayment(
     }
   }
 
-  // Hosted Khalti Checkout Portal (Guarantees user always sees payment gateway)
+  if (!ALLOW_SIMULATED_PAYMENTS) {
+    throw new Error('Khalti payment is temporarily unavailable. Please choose bank transfer, or try again later.');
+  }
+
+  // Simulated checkout portal (local development only)
   const simulatedPidx = `KHALTI_${Date.now()}_${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
   
   const checkoutUrl = new URL('/payment/khalti-checkout', appUrl);
@@ -128,8 +136,8 @@ export async function initializeKhaltiPayment(
 export async function verifyKhaltiPayment(pidx: string): Promise<KhaltiVerifyResponse> {
   if (!pidx) throw new Error('Missing pidx');
 
-  // If generated via hosted checkout portal or simulated
-  if (pidx.startsWith('KHALTI_') || pidx.startsWith('KHALTI_CHECKOUT_') || pidx.startsWith('KHALTI_DEV_')) {
+  // If generated via the simulated checkout portal (local development only)
+  if (ALLOW_SIMULATED_PAYMENTS && pidx.startsWith('KHALTI_') || pidx.startsWith('KHALTI_CHECKOUT_') || pidx.startsWith('KHALTI_DEV_')) {
     return {
       pidx,
       total_amount: 0,
@@ -139,6 +147,7 @@ export async function verifyKhaltiPayment(pidx: string): Promise<KhaltiVerifyRes
   }
 
   if (!KHALTI_SECRET_KEY || KHALTI_SECRET_KEY.trim() === '') {
+    if (!ALLOW_SIMULATED_PAYMENTS) throw new Error('KHALTI_SECRET_KEY is not configured');
     return {
       pidx,
       total_amount: 0,

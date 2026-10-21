@@ -14,6 +14,7 @@ import {
   Printer,
   Mail,
 } from "lucide-react";
+import { sourceLabel } from "@/lib/attribution";
 import IDCardBadgePreview from "@/components/booking/IDCardBadgePreview";
 import { BadgeConfig } from "@/components/booking/AdminBadgeDesigner";
 
@@ -23,6 +24,7 @@ export default function AdminRegistrationsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPassType, setSelectedPassType] = useState("All");
   const [selectedStatus, setSelectedStatus] = useState("All");
+  const [selectedSource, setSelectedSource] = useState("All");
   const [previewingAttendee, setPreviewingAttendee] = useState<any | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [badgeTemplates, setBadgeTemplates] = useState<{ visitor?: BadgeConfig; exhibitor?: BadgeConfig }>({});
@@ -108,6 +110,10 @@ export default function AdminRegistrationsPage() {
 
 
   const registrations = data?.registrations || [];
+  // Traffic sources present in the data, for the source filter
+  const sourceOptions: string[] = Array.from(
+    new Set(registrations.map((r: any) => r.trafficSource || "unknown"))
+  ).sort() as string[];
 
   const filteredRegistrations = registrations.filter((reg: any) => {
     const matchesPass =
@@ -117,10 +123,12 @@ export default function AdminRegistrationsPage() {
       (selectedPassType === "VIP" && reg.passType?.includes("VIP")) ||
       (selectedPassType === "EV Rally" && (reg.passType?.includes("EV Rally") || reg.id?.startsWith("EVR-")));
 
+    const matchesSource = selectedSource === "All" || (reg.trafficSource || "unknown") === selectedSource;
+
     const matchesStatus =
-      selectedStatus === "All" ||
+      matchesSource && (selectedStatus === "All" ||
       (selectedStatus === "Checked-in" && reg.checkedIn) ||
-      (selectedStatus === "Pending" && !reg.checkedIn);
+      (selectedStatus === "Pending" && !reg.checkedIn));
 
     const q = searchQuery.toLowerCase().trim();
     const matchesSearch =
@@ -235,7 +243,10 @@ export default function AdminRegistrationsPage() {
   };
 
   const exportCSV = () => {
-    const headers = ["Badge ID", "Full Name", "Email", "Phone", "Organization", "Job Title", "Pass Type", "Stall", "Checked In"];
+    const headers = [
+      "Badge ID", "Full Name", "Email", "Phone", "Organization", "Job Title", "Pass Type", "Stall", "Country",
+      "Checked In", "Registered At", "Source", "Medium", "Campaign",
+    ];
     const rows = filteredRegistrations.map((r: any) => [
       r.id,
       r.name,
@@ -245,19 +256,30 @@ export default function AdminRegistrationsPage() {
       r.jobTitle || "",
       r.passType,
       r.stallNumber || "—",
+      r.country || "",
       r.checkedIn ? "Yes" : "No",
+      r.registeredAt || "",
+      r.trafficSource ? sourceLabel(r.trafficSource) : "Unknown",
+      r.trafficMedium || "",
+      r.trafficCampaign || "",
     ]);
 
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      [headers.join(","), ...rows.map((e: any) => e.map((val: any) => `"${val}"`).join(","))].join("\n");
-    const encodedUri = encodeURI(csvContent);
+    // Quote every cell, double embedded quotes, and neutralise values Excel would run as formulas
+    const cell = (val: unknown) => {
+      let s = val === null || val === undefined ? "" : String(val);
+      if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
+      return `"${s.replace(/"/g, '""')}"`;
+    };
+    const csv = [headers, ...rows].map((row: unknown[]) => row.map(cell).join(",")).join("\r\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `Attendees_${Date.now()}.csv`);
+    link.href = url;
+    link.download = `Attendees_${new Date().toISOString().slice(0, 10)}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -348,7 +370,20 @@ export default function AdminRegistrationsPage() {
           ))}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <select
+            value={selectedSource}
+            onChange={(e) => setSelectedSource(e.target.value)}
+            className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-xs font-medium text-slate-700 focus:outline-none focus:border-[#218A59] shadow-xs cursor-pointer"
+          >
+            <option value="All">All Sources</option>
+            {sourceOptions.map((s) => (
+              <option key={s} value={s}>
+                {s === "unknown" ? "Unknown (before tracking)" : sourceLabel(s)}
+              </option>
+            ))}
+          </select>
+
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
@@ -383,6 +418,7 @@ export default function AdminRegistrationsPage() {
                 <th className="p-3.5 font-bold">Organization</th>
                 <th className="p-3.5 font-bold">Pass Type</th>
                 <th className="p-3.5 font-bold">Contact</th>
+                <th className="p-3.5 font-bold">Source</th>
                 <th className="p-3.5 font-bold text-center">Status</th>
                 <th className="p-3.5 font-bold text-right">Action</th>
               </tr>
@@ -390,7 +426,7 @@ export default function AdminRegistrationsPage() {
             <tbody className="divide-y divide-slate-100">
               {isLoading ? (
                 <tr>
-                  <td colSpan={7} className="p-10 text-center">
+                  <td colSpan={8} className="p-10 text-center">
                     <div className="flex flex-col items-center gap-2 text-slate-400">
                       <div className="w-5 h-5 rounded-full border-2 border-slate-300 border-t-[#218A59] animate-spin" />
                       <span className="text-xs">Loading registrations...</span>
@@ -399,7 +435,7 @@ export default function AdminRegistrationsPage() {
                 </tr>
               ) : filteredRegistrations.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="p-10 text-center">
+                  <td colSpan={8} className="p-10 text-center">
                     <div className="flex flex-col items-center gap-2">
                       <span className="text-2xl">👤</span>
                       <p className="text-sm font-medium text-slate-700">No attendees found</p>
@@ -428,6 +464,16 @@ export default function AdminRegistrationsPage() {
                     <td className="p-3.5 text-slate-600 text-[11px]">
                       <div>{reg.email}</div>
                       <div className="font-mono text-slate-400 text-[10px]">{reg.phone}</div>
+                    </td>
+                    <td className="p-3.5 text-[11px] text-slate-700 whitespace-nowrap">
+                      {reg.trafficSource ? (
+                        <>
+                          <div className="font-medium">{sourceLabel(reg.trafficSource)}</div>
+                          {reg.trafficCampaign && <div className="text-[10px] text-slate-400">{reg.trafficCampaign}</div>}
+                        </>
+                      ) : (
+                        <span className="text-slate-400">—</span>
+                      )}
                     </td>
                     <td className="p-3.5 text-center">
                       <button

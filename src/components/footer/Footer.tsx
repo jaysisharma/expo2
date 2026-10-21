@@ -10,6 +10,7 @@ import {
   MessageSquare,
 } from 'lucide-react';
 import { CONTACT_DETAILS } from '@/data/contactInfo';
+import { openCookieSettings } from '@/lib/consent';
 
 export function Footer() {
   return (
@@ -278,11 +279,25 @@ export function Footer() {
 
         </div>
 
-        {/* Bottom Row: Simple Copyright Only */}
-        <div className="pt-6 text-center text-xs text-slate-500">
+        {/* Bottom Row: Copyright & Legal */}
+        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
           <p>
             © {new Date().getFullYear()} Himalayan Green Energy Expo. All rights reserved.
           </p>
+          <nav aria-label="Legal" className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+            <Link href="/privacy-policy" className="hover:text-emerald-400 transition-colors">
+              Privacy Policy
+            </Link>
+            <Link href="/terms" className="hover:text-emerald-400 transition-colors">
+              Terms &amp; Conditions
+            </Link>
+            <Link href="/cookie-policy" className="hover:text-emerald-400 transition-colors">
+              Cookie Policy
+            </Link>
+            <button type="button" onClick={openCookieSettings} className="hover:text-emerald-400 transition-colors cursor-pointer">
+              Cookie Settings
+            </button>
+          </nav>
         </div>
 
       </div>

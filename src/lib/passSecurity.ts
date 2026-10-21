@@ -1,11 +1,28 @@
 import crypto from "crypto";
 
-const PASS_SECRET =
-  process.env.PASS_SECRET_KEY ||
-  "himalayan-green-energy-expo-2027-secret-key-32bytes-salt";
+// These strings were published in the (public) source code, so anyone could forge passes with them.
+// They are only used in local development, never in production.
+const PUBLIC_LEGACY_SECRETS = [
+  "ippan-green-energy-expo-2027-aes256gcm-secure-token-vault-key",
+  "himalayan-green-energy-expo-2027-secret-key-32bytes-salt",
+];
+const IS_PRODUCTION = process.env.NODE_ENV === "production";
 
-// Derive a fixed 32-byte key using SHA-256
-const ENCRYPTION_KEY = crypto.createHash("sha256").update(PASS_SECRET).digest();
+function deriveKey(secret: string) {
+  return crypto.createHash("sha256").update(secret).digest();
+}
+
+function isUsableSecret(secret: string | undefined): secret is string {
+  return !!secret && secret.length >= 16 && !(IS_PRODUCTION && PUBLIC_LEGACY_SECRETS.includes(secret));
+}
+
+/** Key used to issue new passes: PASS_SECRET_KEY (required in production). */
+function currentKey(): Buffer {
+  const secret = process.env.PASS_SECRET_KEY;
+  if (isUsableSecret(secret)) return deriveKey(secret);
+  if (!IS_PRODUCTION) return deriveKey(PUBLIC_LEGACY_SECRETS[0]);
+  throw new Error("PASS_SECRET_KEY is missing or is a publicly known value — set a new random secret");
+}
 
 export interface PassSecurityPayload {
   id: string;
@@ -27,7 +44,7 @@ export interface PassSecurityPayload {
  */
 export function encryptPassToken(payload: PassSecurityPayload): string {
   const iv = crypto.randomBytes(12);
-  const cipher = crypto.createCipheriv("aes-256-gcm", ENCRYPTION_KEY, iv);
+  const cipher = crypto.createCipheriv("aes-256-gcm", currentKey(), iv);
 
   const dataToEncrypt = JSON.stringify({
     ...payload,
@@ -52,19 +69,18 @@ export function encryptPassToken(payload: PassSecurityPayload): string {
     .replace(/=+$/, "");
 }
 
-const CANDIDATE_SECRETS = Array.from(
-  new Set(
-    [
-      process.env.PASS_SECRET_KEY,
-      "ippan-green-energy-expo-2027-aes256gcm-secure-token-vault-key",
-      "himalayan-green-energy-expo-2027-secret-key-32bytes-salt",
-    ].filter(Boolean) as string[]
-  )
-);
-
-const CANDIDATE_KEYS = CANDIDATE_SECRETS.map((secret) =>
-  crypto.createHash("sha256").update(secret).digest()
-);
+/**
+ * Keys accepted when verifying a pass: the current key, plus any comma-separated
+ * PASS_SECRET_KEY_PREVIOUS values so passes issued before a key change keep working.
+ */
+function candidateKeys(): Buffer[] {
+  const secrets = [
+    process.env.PASS_SECRET_KEY,
+    ...(process.env.PASS_SECRET_KEY_PREVIOUS || "").split(",").map((s) => s.trim()),
+  ].filter((s): s is string => !!s && s.length >= 16);
+  if (!IS_PRODUCTION) secrets.push(...PUBLIC_LEGACY_SECRETS);
+  return Array.from(new Set(secrets)).map(deriveKey);
+}
 
 /**
  * Decrypts and cryptographically verifies an anti-counterfeit pass token.
@@ -87,7 +103,7 @@ export function decryptPassToken(token: string): PassSecurityPayload | null {
     const tag = buffer.subarray(12, 28);
     const encrypted = buffer.subarray(28);
 
-    for (const key of CANDIDATE_KEYS) {
+    for (const key of candidateKeys()) {
       try {
         const decipher = crypto.createDecipheriv("aes-256-gcm", key, iv);
         decipher.setAuthTag(tag);
@@ -118,7 +134,7 @@ export function decryptPassToken(token: string): PassSecurityPayload | null {
  */
 export function generateSecurityChecksum(passId: string): string {
   const hash = crypto
-    .createHmac("sha256", ENCRYPTION_KEY)
+    .createHmac("sha256", currentKey())
     .update(passId.trim().toUpperCase())
     .digest("hex");
   return `${hash.substring(0, 4).toUpperCase()}-${hash.substring(4, 8).toUpperCase()}`;

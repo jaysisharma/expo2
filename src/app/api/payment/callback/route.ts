@@ -1,112 +1,8 @@
 import { NextResponse } from "next/server";
 import { verifyKhaltiPayment } from "@/lib/khalti";
-import fs from "fs/promises";
-import path from "path";
+import { expectedAmountPaisa, markOrderPaymentStatus } from "@/lib/orders";
 
 export const dynamic = "force-dynamic";
-
-const ROOT_ADMIN_DATA_PATH = path.join(process.cwd(), "data", "adminData.json");
-const SRC_ADMIN_DATA_PATH = path.join(process.cwd(), "src", "data", "adminData.json");
-const ROOT_FLOOR_PATH = path.join(process.cwd(), "data", "savedCustomFloorPlan.json");
-const SRC_FLOOR_PATH = path.join(process.cwd(), "src", "data", "savedCustomFloorPlan.json");
-
-async function syncBookingAndStallStatus(
-  orderId: string,
-  paymentStatus: "PAID" | "FAILED",
-  pidx?: string,
-  transactionId?: string
-) {
-  try {
-    let adminData: any = null;
-    try {
-      const raw = await fs.readFile(ROOT_ADMIN_DATA_PATH, "utf-8");
-      adminData = JSON.parse(raw);
-    } catch {
-      try {
-        const raw = await fs.readFile(SRC_ADMIN_DATA_PATH, "utf-8");
-        adminData = JSON.parse(raw);
-      } catch {}
-    }
-
-    if (adminData) {
-      const booking = (adminData.stallBookings || []).find((b: any) => b.id === orderId);
-      if (booking) {
-        booking.paymentStatus = paymentStatus;
-        booking.bookingStatus = paymentStatus === "PAID" ? "Confirmed" : "Failed";
-        booking.pidx = pidx || booking.pidx;
-        booking.transactionId = transactionId || booking.transactionId;
-        booking.paidAt = new Date().toISOString();
-
-        if (paymentStatus === "PAID" && Array.isArray(booking.stalls)) {
-          if (!adminData.boothOverrides) adminData.boothOverrides = {};
-          for (const sNum of booking.stalls) {
-            adminData.boothOverrides[sNum] = {
-              status: "Booked",
-              exhibitorName: booking.company || booking.contactPerson || "Confirmed Exhibitor",
-              bookingRef: orderId,
-              updatedAt: new Date().toISOString(),
-            };
-          }
-        }
-      }
-
-      // Also check if this is a Gala Dinner registration or delegate pass
-      const registration = (adminData.registrations || []).find((r: any) => r.id === orderId);
-      if (registration) {
-        registration.paymentStatus = paymentStatus;
-        registration.status = paymentStatus === "PAID" ? "Confirmed" : "Failed";
-        registration.pidx = pidx || registration.pidx;
-        registration.transactionId = transactionId || registration.transactionId;
-        registration.paidAt = new Date().toISOString();
-      }
-
-      const content = JSON.stringify(adminData, null, 2);
-      try {
-        await fs.writeFile(ROOT_ADMIN_DATA_PATH, content, "utf-8");
-      } catch {}
-      try {
-        await fs.writeFile(SRC_ADMIN_DATA_PATH, content, "utf-8");
-      } catch {}
-    }
-
-    // Also update saved floor plan elements if matching
-    if (paymentStatus === "PAID") {
-      let floorData: any = null;
-      try {
-        const raw = await fs.readFile(ROOT_FLOOR_PATH, "utf-8");
-        floorData = JSON.parse(raw);
-      } catch {
-        try {
-          const raw = await fs.readFile(SRC_FLOOR_PATH, "utf-8");
-          floorData = JSON.parse(raw);
-        } catch {}
-      }
-
-      if (floorData && Array.isArray(floorData.elements)) {
-        const booking = (adminData?.stallBookings || []).find((b: any) => b.id === orderId);
-        const bookedStalls: string[] = booking?.stalls || [];
-
-        floorData.elements = floorData.elements.map((el: any) => {
-          const elNum = el.number || el.id;
-          if (bookedStalls.includes(elNum)) {
-            return { ...el, status: "Booked" };
-          }
-          return el;
-        });
-
-        const floorContent = JSON.stringify(floorData, null, 2);
-        try {
-          await fs.writeFile(ROOT_FLOOR_PATH, floorContent, "utf-8");
-        } catch {}
-        try {
-          await fs.writeFile(SRC_FLOOR_PATH, floorContent, "utf-8");
-        } catch {}
-      }
-    }
-  } catch (err) {
-    console.error("Error syncing stall booking callback:", err);
-  }
-}
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -127,8 +23,23 @@ export async function GET(request: Request) {
     const verification = await verifyKhaltiPayment(pidx);
     console.log("Khalti Verification Result:", verification);
 
-    if (verification.status === "Completed") {
-      await syncBookingAndStallStatus(
+    // A real Khalti payment for a smaller amount (e.g. from another order) must not confirm this one
+    const expected = await expectedAmountPaisa(purchase_order_id);
+    const underpaid =
+      process.env.NODE_ENV !== "development" &&
+      expected !== null &&
+      Number(verification.total_amount) < expected;
+    if (expected === null) {
+      console.warn(`[payment/callback] No stored amount for ${purchase_order_id}; could not check the paid amount`);
+    }
+    if (underpaid) {
+      console.error(
+        `[payment/callback] Amount mismatch for ${purchase_order_id}: paid ${verification.total_amount}, expected ${expected}`
+      );
+    }
+
+    if (verification.status === "Completed" && !underpaid) {
+      await markOrderPaymentStatus(
         purchase_order_id,
         "PAID",
         pidx,
@@ -154,7 +65,7 @@ export async function GET(request: Request) {
 
       return NextResponse.redirect(successUrl);
     } else {
-      await syncBookingAndStallStatus(purchase_order_id, "FAILED", pidx);
+      await markOrderPaymentStatus(purchase_order_id, "FAILED", pidx);
       return NextResponse.redirect(
         new URL(
           `/payment/failed?id=${encodeURIComponent(purchase_order_id)}&gateway=khalti&reason=${encodeURIComponent(

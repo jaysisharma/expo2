@@ -1,6 +1,7 @@
 "use client";
 
-import React, { Suspense } from "react";
+import React, { Suspense, useEffect } from "react";
+import { trackFunnel } from "@/lib/funnel";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -16,6 +17,9 @@ import {
 
 function PaymentFailedContent() {
   const searchParams = useSearchParams();
+  useEffect(() => {
+    trackFunnel("payment", "failed");
+  }, []);
   const id = searchParams.get("id");
   const reason = searchParams.get("reason") || searchParams.get("error") || "Transaction could not be completed";
   const gateway = searchParams.get("gateway") || "payment gateway";

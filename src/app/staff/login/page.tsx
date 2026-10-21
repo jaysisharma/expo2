@@ -174,16 +174,6 @@ function StaffLoginForm() {
                     className="w-full pl-8 pr-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-400 focus:bg-white font-mono text-sm tracking-wider uppercase transition-colors"
                   />
                 </div>
-                <div className="flex items-center justify-between text-[11px] text-slate-500 pt-0.5">
-                  <span>Default Passcode:</span>
-                  <button
-                    type="button"
-                    onClick={() => setPasscode("STAFF2027")}
-                    className="text-emerald-700 font-mono font-bold hover:underline cursor-pointer"
-                  >
-                    Auto-fill: STAFF2027
-                  </button>
-                </div>
               </div>
             ) : (
               <div className="space-y-3">

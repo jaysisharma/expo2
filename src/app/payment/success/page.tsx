@@ -1,6 +1,7 @@
 "use client";
 
 import React, { Suspense, useEffect } from "react";
+import { trackFunnel } from "@/lib/funnel";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import confetti from "canvas-confetti";
@@ -17,7 +18,6 @@ import {
   Phone,
   FileText,
   CreditCard,
-  QrCode,
   Landmark,
   Clock,
   Copy,
@@ -56,6 +56,10 @@ function PaymentSuccessContent() {
   )}`;
 
   useEffect(() => {
+    trackFunnel("payment", "success");
+  }, []);
+
+  useEffect(() => {
     confetti({
       particleCount: 120,
       spread: 80,
@@ -66,7 +70,6 @@ function PaymentSuccessContent() {
 
   const isBank = gateway.toLowerCase() === "bank";
   const isKhalti = gateway.toLowerCase() === "khalti";
-  const isFonepay = gateway.toLowerCase() === "fonepay";
   const isHold72h =
     gateway.toLowerCase() === "hold_72h" ||
     searchParams.get("hold") === "72h" ||
@@ -144,12 +147,6 @@ function PaymentSuccessContent() {
                   <>
                     <CreditCard className="w-4 h-4 text-[#5D2E8E]" />
                     <span>Paid via Khalti ePayment</span>
-                  </>
-                )}
-                {isFonepay && !isHold72h && (
-                  <>
-                    <QrCode className="w-4 h-4 text-[#D92525]" />
-                    <span>Paid via Fonepay Direct</span>
                   </>
                 )}
                 {isBank && !isHold72h && (

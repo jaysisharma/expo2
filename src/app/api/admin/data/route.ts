@@ -4,6 +4,8 @@ import path from "path";
 import { boothsData } from "@/data/booths";
 import { exhibitorsData } from "@/data/exhibitors";
 import { speakersData } from "@/data/speakers";
+import { attributionFields } from "@/lib/attribution";
+import { getAdminSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +31,7 @@ import {
   saveFirebaseCurrentPartners,
   getFirebaseSponsorshipHolds,
   setFirebaseSponsorshipHold,
+  getFirebaseStallBookings,
 } from "@/lib/firebaseDb";
 
 // In-memory store for serverless environments (Vercel)
@@ -49,7 +52,7 @@ async function getAdminData() {
 
   // Always try Firebase Firestore first — it's the persistent source of truth on Vercel
   try {
-    const [fbRegs, fbBooths, fbInqs, fbSettings, fbNews, fbPartners, fbSponsorHolds] = await Promise.all([
+    const [fbRegs, fbBooths, fbInqs, fbSettings, fbNews, fbPartners, fbSponsorHolds, fbStallBookings] = await Promise.all([
       getFirebaseRegistrations(),
       getFirebaseBoothOverrides(),
       getFirebaseInquiries(),
@@ -57,6 +60,7 @@ async function getAdminData() {
       getFirebaseNews(),
       getFirebaseCurrentPartners(),
       getFirebaseSponsorshipHolds(),
+      getFirebaseStallBookings(),
     ]);
 
     // Use Firebase data whenever the connection succeeds (even if arrays are empty)
@@ -84,7 +88,7 @@ async function getAdminData() {
         inquiries: fbInqs || [],
         boothOverrides: mergedBoothOverrides,
         packageOverrides: mergedPackageOverrides,
-        stallBookings: localData?.stallBookings || [],
+        stallBookings: fbStallBookings && fbStallBookings.length ? fbStallBookings : localData?.stallBookings || [],
         settings: fbSettings || defaultSettings,
         news: fbNews !== null ? fbNews : [],
         currentPartners: fbPartners !== null ? fbPartners : [],
@@ -153,11 +157,41 @@ async function saveAdminData(data: any) {
   return saveQueue;
 }
 
+// Pass types the public registration form may create without payment
+function publicPassType(requested: unknown) {
+  const value = typeof requested === "string" ? requested.trim() : "";
+  if (/^Exhibitor Delegate \([^()]{1,80}\)$/.test(value)) return value;
+  return "Trade Visitor";
+}
+
 export async function GET(req: Request) {
   try {
     const url = new URL(req.url);
     const scope = url.searchParams.get("scope");
+    const isAdmin = !!(await getAdminSession(req));
+
+    if (!isAdmin && scope === "stats") {
+      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
+    }
+
     const data = await getAdminData();
+
+    // Public pages (news, floor plan, stall booking) only get non-personal data
+    if (!isAdmin) {
+      return NextResponse.json(
+        {
+          success: true,
+          data: {
+            news: data.news || [],
+            boothOverrides: data.boothOverrides || {},
+            packageOverrides: data.packageOverrides || {},
+            settings: data.settings || {},
+            currentPartners: data.currentPartners || [],
+          },
+        },
+        { headers: { "Cache-Control": "no-store, no-cache, must-revalidate" } }
+      );
+    }
 
     if (scope === "stats") {
       const mergedBooths = boothsData.map((b) => {
@@ -344,12 +378,24 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { action, payload } = body;
+    const isAdmin = !!(await getAdminSession(req));
+
+    // Visitors may only create their own free registration; everything else needs an admin login
+    if (!isAdmin && action !== "add_registration") {
+      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
+    }
+
     const data = await getAdminData();
 
     switch (action) {
       case "add_registration": {
+        if (!isAdmin && (!payload?.name || !payload?.email)) {
+          return NextResponse.json({ success: false, message: "Name and email are required" }, { status: 400 });
+        }
+        const publicPrefix = String(payload?.passType || "").startsWith("Exhibitor Delegate") ? "HHE27-EX" : "HHE27";
         const newReg = {
-          id: payload.id || `HHE26-${Math.floor(100000 + Math.random() * 900000)}`,
+          // Visitors can't choose their ID (that would let them overwrite someone else's registration)
+          id: isAdmin && payload.id ? payload.id : `${isAdmin ? "HHE26" : publicPrefix}-${Math.floor(100000 + Math.random() * 900000)}`,
           name: payload.name,
           email: payload.email,
           phone: payload.phone,
@@ -357,10 +403,15 @@ export async function POST(req: Request) {
           jobTitle: payload.jobTitle || "",
           stallNumber: payload.stallNumber || "",
           country: payload.country || "Nepal",
-          passType: payload.passType ? payload.passType.replace(/\s*\(Free\)/i, "").trim() : "Trade Visitor",
+          passType: !isAdmin
+            ? publicPassType(payload.passType)
+            : payload.passType
+            ? payload.passType.replace(/\s*\(Free\)/i, "").trim()
+            : "Trade Visitor",
           interests: payload.interests || [],
           checkedIn: false,
           registeredAt: new Date().toISOString(),
+          ...attributionFields(req),
         };
         data.registrations.unshift(newReg);
         await Promise.all([

@@ -26,6 +26,7 @@ import {
   QrCode,
   Mail,
   Film,
+  Share2,
 } from "lucide-react";
 import { useAdminAuth } from "./AdminAuthContext";
 
@@ -60,6 +61,7 @@ export default function AdminSidebar({
       group: "Overview",
       items: [
         { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
+        { label: "Traffic Sources", href: "/admin/traffic", icon: Share2 },
       ],
     },
     {

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { trackFunnel } from "@/lib/funnel";
 import Link from "next/link";
 import {
   Mail,
@@ -47,6 +48,7 @@ export default function ContactPage() {
         throw new Error(data.message || "Failed to send message. Please try again.");
       }
 
+      trackFunnel("contact", "submit");
       setSubmitted(true);
     } catch (err: any) {
       console.warn("Could not submit contact inquiry", err);
@@ -295,7 +297,7 @@ export default function ContactPage() {
                     </div>
                   </div>
                 ) : (
-                  <form onSubmit={handleSubmit} className="space-y-4">
+                  <form onSubmit={handleSubmit} onFocusCapture={() => trackFunnel("contact", "start")} className="space-y-4">
                     <div>
                       <h2 className="text-xl font-bold text-slate-900">
                         Send a Message

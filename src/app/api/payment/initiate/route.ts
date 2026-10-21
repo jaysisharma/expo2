@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { initializeKhaltiPayment } from "@/lib/khalti";
-import { generateFonepayUrl } from "@/lib/fonepay";
 import nodemailer from "nodemailer";
 import fs from "fs/promises";
 import path from "path";
@@ -13,6 +12,9 @@ import {
   getFirebaseFloorPlan,
   saveFirebaseFloorPlan,
 } from "@/lib/firebaseDb";
+import { attributionFields } from "@/lib/attribution";
+import { resolveNewOrderId, saveStallBooking } from "@/lib/orders";
+import { quoteBookingOnServer } from "@/lib/stallPricingServer";
 
 export const dynamic = "force-dynamic";
 
@@ -141,8 +143,6 @@ export async function POST(req: Request) {
     const {
       bookingId,
       stallNumbers = [],
-      amountNPR,
-      amountUSD,
       contactPerson,
       email,
       phone,
@@ -153,7 +153,7 @@ export async function POST(req: Request) {
       powerOption = "Standard 15A Included",
       industryCategory = "Turbines & Electro-Mechanical",
       specialRequirements = "",
-      paymentMethod = "khalti", // 'khalti' | 'fonepay' | 'bank' | 'hold_72h'
+      paymentMethod = "khalti", // 'khalti' | 'bank' | 'hold_72h'
       packageName,
       packageType,
       packagePerks = [],
@@ -165,10 +165,26 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
+    if (!Array.isArray(stallNumbers) || stallNumbers.length > 20 || stallNumbers.some((s: unknown) => typeof s !== "string" || s.length > 20)) {
+      return NextResponse.json({ success: false, error: "Invalid stall selection" }, { status: 400 });
+    }
 
-    const orderId =
-      bookingId ||
-      `HHE26-STALL-${Math.floor(100000 + Math.random() * 900000)}`;
+    // The price is recalculated from the admin-configured floor plan / stall prices —
+    // amounts sent by the browser are ignored so they can't be lowered.
+    let quote;
+    try {
+      quote = await quoteBookingOnServer(stallNumbers, body.packageId);
+    } catch (e: any) {
+      return NextResponse.json({ success: false, error: e?.message || "Invalid package selection" }, { status: 400 });
+    }
+    const isHoldRequest = paymentMethod === "hold_72h" || Boolean(body.isHold72h);
+    const amountNPR = isHoldRequest ? 0 : quote.totalWithVatNPR;
+    const amountUSD = isHoldRequest ? 0 : quote.totalWithVatUSD;
+    if (Number(body.amountNPR) !== amountNPR) {
+      console.warn(`[payment/initiate] Client amount ${body.amountNPR} differs from server price ${amountNPR} for ${stallNumbers.join(",")}`);
+    }
+
+    const orderId = await resolveNewOrderId(bookingId, "HHE26-STALL");
 
     const stallListStr = Array.isArray(stallNumbers) ? stallNumbers.join(", ") : String(stallNumbers);
     const primaryName = contactPerson || company || "Exhibitor Applicant";
@@ -190,10 +206,12 @@ export async function POST(req: Request) {
       packageName: packageName || (specialRequirements?.includes("Package:") ? specialRequirements.split("Package:")[1]?.split("|")[0]?.trim() : undefined),
       packageType: packageType || (packageName ? "sponsor" : "stall"),
       packagePerks,
-      amountNPR: isHold72h ? 0 : Number(amountNPR) || 875000,
-      amountUSD: isHold72h ? 0 : Number(amountUSD) || 6500,
-      packageTariffNPR: Number(body.fullPackageAmountNPR) || Number(amountNPR) || 0,
-      packageTariffUSD: Number(body.fullPackageAmountUSD) || Number(amountUSD) || 0,
+      amountNPR,
+      amountUSD,
+      packageTariffNPR: quote.totalWithVatNPR,
+      packageTariffUSD: quote.totalWithVatUSD,
+      vatNPR: quote.vatNPR,
+      vatUSD: quote.vatUSD,
       company: company || contactPerson,
       contactPerson,
       email,
@@ -219,6 +237,8 @@ export async function POST(req: Request) {
     } else {
       adminData.stallBookings.unshift(newBookingRecord);
     }
+    // Firestore is the persistent store on Vercel (local files are reset on each deploy)
+    await saveStallBooking({ ...newBookingRecord, ...attributionFields(req) });
 
     // 2. Mark package hold if applicable
     const resolvedPackageId = body.packageId || (packageName?.toLowerCase().includes("title") || (stallNumbers.includes("A1") && stallNumbers.includes("A2")) ? "title-sponsor" : undefined);
@@ -340,6 +360,7 @@ export async function POST(req: Request) {
       stallInterest: stallListStr,
       status: isHold72h ? "72h Hold" : "New",
       submittedAt: new Date().toISOString(),
+      ...attributionFields(req),
     };
     adminData.inquiries.unshift(newInquiryPayload);
     addFirebaseInquiry(newInquiryPayload).catch(() => {});
@@ -351,8 +372,8 @@ export async function POST(req: Request) {
       const isBankTransfer = paymentMethod === "bank";
       const resolvedPackageName = packageName || (specialRequirements?.includes("Package:") ? specialRequirements.split("Package:")[1]?.split("|")[0]?.trim() : undefined);
       const isSponsorTier = Boolean(resolvedPackageName && (packageType === "sponsor" || resolvedPackageName.toLowerCase().includes("sponsor") || resolvedPackageName.toLowerCase().includes("partner") || resolvedPackageName.toLowerCase().includes("supporter")));
-      const totalAmountNprNum = Number(body.fullPackageAmountNPR) || Number(amountNPR) || 0;
-      const totalAmountUsdNum = Number(body.fullPackageAmountUSD) || Number(amountUSD) || 0;
+      const totalAmountNprNum = quote.totalWithVatNPR;
+      const totalAmountUsdNum = quote.totalWithVatUSD;
       const formattedNPR = totalAmountNprNum.toLocaleString();
       const formattedUSD = totalAmountUsdNum.toLocaleString();
 
@@ -608,7 +629,7 @@ Website: https://www.higex.org
         const khaltiResponse = await initializeKhaltiPayment({
           return_url: returnUrl,
           website_url: baseUrl,
-          amount: Math.round((Number(amountNPR) || 875000) * 100), // Rs to Paisa
+          amount: Math.round(amountNPR * 100), // Rs to Paisa
           purchase_order_id: orderId,
           purchase_order_name: `Stall Booking (${stallListStr}) - Expo 2027`,
           customer_info: {
@@ -631,37 +652,6 @@ Website: https://www.higex.org
           {
             success: false,
             error: err.message || "Failed to initialize Khalti payment gateway.",
-          },
-          { status: 500 }
-        );
-      }
-    }
-
-    if (effectivePaymentMethod === "fonepay") {
-      try {
-        const returnUrl = `${baseUrl}/api/payment/fonepay-callback?order_id=${encodeURIComponent(
-          orderId
-        )}&stalls=${encodeURIComponent(stallListStr)}`;
-
-        const fonepayUrl = generateFonepayUrl({
-          amount: Number(amountNPR) || 875000,
-          purchase_order_id: orderId,
-          purchase_order_name: `Expo Stall ${stallListStr}`,
-          return_url: returnUrl,
-        });
-
-        return NextResponse.json({
-          success: true,
-          bookingId: orderId,
-          paymentMethod: "fonepay",
-          paymentUrl: fonepayUrl,
-        });
-      } catch (err: any) {
-        console.error("Fonepay generation error:", err);
-        return NextResponse.json(
-          {
-            success: false,
-            error: err.message || "Failed to generate Fonepay payment URL.",
           },
           { status: 500 }
         );

@@ -26,13 +26,15 @@ function AdminRegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   const { isAuthenticated, isLoading, register } = useAdminAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading && isAuthenticated) {
-      router.replace("/admin/dashboard");
+    // Only a signed-in Super Admin can create accounts
+    if (!isLoading && !isAuthenticated) {
+      router.replace("/admin/login?from=%2Fadmin%2Fregister");
     }
   }, [isAuthenticated, isLoading, router]);
 
@@ -52,17 +54,23 @@ function AdminRegisterForm() {
       return;
     }
 
-    if (password.length < 6) {
-      setErrorMsg("Password must be at least 6 characters.");
+    if (password.length < 8) {
+      setErrorMsg("Password must be at least 8 characters.");
       return;
     }
 
     setIsSubmitting(true);
+    setSuccessMsg(null);
 
     try {
       const result = await register(name, email, password, organization);
       if (result.success) {
-        window.location.href = "/admin/dashboard";
+        setSuccessMsg(`Account created for ${emailTrimmed}. They can now sign in.`);
+        setName("");
+        setEmail("");
+        setOrganization("");
+        setPassword("");
+        setConfirmPassword("");
       } else {
         setErrorMsg(result.message || "Registration failed. Please try again.");
       }
@@ -84,11 +92,20 @@ function AdminRegisterForm() {
           Create Account
         </h1>
         <p className="text-xs text-slate-500 font-sans mt-1">
-          Create an account to manage the event
+          Super Admins can add a new organiser account here
         </p>
       </div>
 
       {/* Error Message */}
+      {successMsg && (
+        <div
+          role="status"
+          className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium"
+        >
+          {successMsg}
+        </div>
+      )}
+
       {errorMsg && (
         <div
           role="alert"
@@ -233,12 +250,11 @@ function AdminRegisterForm() {
 
       {/* Link back to Sign In */}
       <div className="mt-5 pt-4 border-t border-slate-100 text-center text-xs text-slate-600">
-        Already have an account?{" "}
         <Link
-          href="/admin/login"
+          href="/admin/dashboard"
           className="font-bold text-[#218A59] hover:text-[#1B7249] hover:underline"
         >
-          Sign in here
+          Back to dashboard
         </Link>
       </div>
     </div>

@@ -9,6 +9,8 @@ import SmoothScrollProvider from "@/components/providers/SmoothScrollProvider";
 import WelcomeExpoModal from "@/components/modals/WelcomeExpoModal";
 import PdfDownloadModal from "@/components/modals/PdfDownloadModal";
 import HydroLoadingScreen from "@/components/ui/HydroLoadingScreen";
+import TrafficSourceTracker from "@/components/analytics/TrafficSourceTracker";
+import CookieConsentBanner from "@/components/analytics/CookieConsentBanner";
 
 export default function AppLayoutClient({
   children,
@@ -31,12 +33,14 @@ export default function AppLayoutClient({
 
   return (
     <SmoothScrollProvider>
+      <TrafficSourceTracker />
       <HydroLoadingScreen />
       <Navbar />
       <div className="flex-grow w-full">{children}</div>
       <Footer />
       <WelcomeExpoModal />
       <PdfDownloadModal />
+      <CookieConsentBanner />
     </SmoothScrollProvider>
   );
 }

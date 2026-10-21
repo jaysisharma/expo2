@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { trackFunnel } from "@/lib/funnel";
 import { useSearchParams, useRouter } from "next/navigation";
-import { boothsData } from "@/data/booths";
-import { officialStalls, OfficialStall } from "@/data/officialFloorPlanData";
+import { officialStalls } from "@/data/officialFloorPlanData";
 import savedFloorPlanFallback from "@/data/savedCustomFloorPlan.json";
 import InteractiveFloorPlan from "@/components/floor-plan/InteractiveFloorPlan";
 import confetti from "canvas-confetti";
@@ -50,220 +50,9 @@ import {
   Clock,
 } from "lucide-react";
 
-export interface StallPackage {
-  id: string;
-  name: string;
-  type: "sponsor" | "stall" | "custom";
-  badge?: string;
-  priceNPR: number;
-  priceUSD: number;
-  priceDisplayNPR: string;
-  priceDisplayUSD: string;
-  spaceDescription: string;
-  spaceCount: number;
-  spaceType: "bare" | "standard" | "any";
-  preferredStalls: string[];
-  perks: string[];
-}
-
-export const PARTICIPATION_PACKAGES: StallPackage[] = [
-  {
-    id: "title-sponsor",
-    name: "Title Sponsor (1)",
-    type: "sponsor",
-    badge: "Flagship",
-    priceNPR: 5000000,
-    priceUSD: 35000,
-    priceDisplayNPR: "NRs 50,00,000/-",
-    priceDisplayUSD: "USD $35,000.00",
-    spaceDescription: "6M X 6M X 2 (2 Bare Space Stalls · 72m²)",
-    spaceCount: 2,
-    spaceType: "bare",
-    preferredStalls: ["A1", "A2"],
-    perks: [
-      "2 Bare Space Stalls (6M X 6M X 2)",
-      "5 Promotional Display Areas (6FT X 4FT X 5)",
-      "50 Inauguration Invitation Passes",
-      "25 Networking Dinner Passes",
-      "20 Exhibitor Passes",
-      "500 Normal Passes",
-    ],
-  },
-  {
-    id: "in-association-with",
-    name: "In Association With (1)",
-    type: "sponsor",
-    badge: "Principal",
-    priceNPR: 3500000,
-    priceUSD: 25000,
-    priceDisplayNPR: "NRs 35,00,000/-",
-    priceDisplayUSD: "USD $25,000.00",
-    spaceDescription: "6M X 6M X 1 (1 Bare Space Stall · 36m²)",
-    spaceCount: 1,
-    spaceType: "bare",
-    preferredStalls: ["A1"],
-    perks: [
-      "1 Bare Space Stall (6M X 6M X 1)",
-      "4 Promotional Display Areas (6FT X 4FT X 4)",
-      "50 Inauguration Invitation Passes",
-      "20 Networking Dinner Passes",
-      "20 Exhibitor Passes",
-      "300 Normal Passes",
-    ],
-  },
-  {
-    id: "powered-by",
-    name: "Powered By (1)",
-    type: "sponsor",
-    badge: "Major",
-    priceNPR: 2700000,
-    priceUSD: 20000,
-    priceDisplayNPR: "NRs 27,00,000/-",
-    priceDisplayUSD: "USD $20,000.00",
-    spaceDescription: "6M X 6M X 1 (1 Bare Space Stall · 36m²)",
-    spaceCount: 1,
-    spaceType: "bare",
-    preferredStalls: ["A2"],
-    perks: [
-      "1 Bare Space Stall (6M X 6M X 1)",
-      "3 Promotional Display Areas (6FT X 4FT X 3)",
-      "40 Inauguration Invitation Passes",
-      "15 Networking Dinner Passes",
-      "20 Exhibitor Passes",
-      "200 Normal Passes",
-    ],
-  },
-  {
-    id: "sponsor",
-    name: "Sponsor",
-    type: "sponsor",
-    priceNPR: 1500000,
-    priceUSD: 10000,
-    priceDisplayNPR: "NRs 15,00,000/-",
-    priceDisplayUSD: "USD $10,000.00",
-    spaceDescription: "6M X 6M X 1 (1 Bare Space Stall · 36m²)",
-    spaceCount: 1,
-    spaceType: "bare",
-    preferredStalls: ["A3"],
-    perks: [
-      "1 Bare Space Stall (6M X 6M X 1)",
-      "3 Promotional Display Areas (6FT X 4FT X 3)",
-      "20 Inauguration Invitation Passes",
-      "8 Networking Dinner Passes",
-      "20 Exhibitor Passes",
-      "150 Normal Passes",
-    ],
-  },
-  {
-    id: "official-partner",
-    name: "Official Partner",
-    type: "sponsor",
-    priceNPR: 1300000,
-    priceUSD: 9000,
-    priceDisplayNPR: "NRs 13,00,000/-",
-    priceDisplayUSD: "USD $9,000.00",
-    spaceDescription: "6M X 6M X 1 (1 Bare Space Stall · 36m²)",
-    spaceCount: 1,
-    spaceType: "bare",
-    preferredStalls: ["A4"],
-    perks: [
-      "1 Bare Space Stall (6M X 6M X 1)",
-      "2 Promotional Display Areas (6FT X 4FT X 2)",
-      "20 Inauguration Invitation Passes",
-      "5 Networking Dinner Passes",
-      "20 Exhibitor Passes",
-      "120 Normal Passes",
-    ],
-  },
-  {
-    id: "co-sponsor",
-    name: "Co-Sponsor",
-    type: "sponsor",
-    badge: undefined,
-    priceNPR: 1000000,
-    priceUSD: 7000,
-    priceDisplayNPR: "NRs 10,00,000/-",
-    priceDisplayUSD: "USD $7,000.00",
-    spaceDescription: "6M X 6M X 1 (1 Bare Space Stall · 36m²)",
-    spaceCount: 1,
-    spaceType: "bare",
-    preferredStalls: ["A26"],
-    perks: [
-      "1 Bare Space Stall (6M X 6M X 1)",
-      "2 Promotional Display Areas (6FT X 4FT X 2)",
-      "20 Inauguration Invitation Passes",
-      "5 Networking Dinner Passes",
-      "20 Exhibitor Passes",
-      "100 Normal Passes",
-    ],
-  },
-  {
-    id: "supporter",
-    name: "Supporter",
-    type: "sponsor",
-    priceNPR: 650000,
-    priceUSD: 5000,
-    priceDisplayNPR: "NRs 6,50,000/-",
-    priceDisplayUSD: "USD $5,000.00",
-    spaceDescription: "6M X 6M X 1 (1 Bare Space Stall · 36m²)",
-    spaceCount: 1,
-    spaceType: "bare",
-    preferredStalls: ["A27"],
-    perks: [
-      "1 Bare Space Stall (6M X 6M X 1)",
-      "1 Promotional Display Area (6FT X 4FT X 1)",
-      "20 Inauguration Invitation Passes",
-      "3 Networking Dinner Passes",
-      "20 Exhibitor Passes",
-      "50 Normal Passes",
-    ],
-  },
-  {
-    id: "standard-stall",
-    name: "Standard Stall (3m × 3m)",
-    type: "stall",
-    badge: "Built Stall",
-    priceNPR: 180000,
-    priceUSD: 1350,
-    priceDisplayNPR: "NPR 85,000 – 1,80,000",
-    priceDisplayUSD: "USD $700 – $1,350",
-    spaceDescription: "3M × 3M Built Stall (B1–B22, H1–H8)",
-    spaceCount: 1,
-    spaceType: "standard",
-    preferredStalls: ["B1"],
-    perks: ["Pre-built partition walls", "1 Table, 2 Chairs", "15A Power socket", "Spotlights"],
-  },
-  {
-    id: "bare-space-stall",
-    name: "Bare Space Stall (Custom)",
-    type: "stall",
-    badge: "Raw Space",
-    priceNPR: 450000,
-    priceUSD: 3500,
-    priceDisplayNPR: "From NPR 3,78,000",
-    priceDisplayUSD: "From USD $3,000",
-    spaceDescription: "6M × 6M or 10M × 7M Raw Space (Block A / Block C)",
-    spaceCount: 1,
-    spaceType: "bare",
-    preferredStalls: ["A1"],
-    perks: ["Marked floor space for custom fabrication", "Direct 3-Phase power available", "Ideal for machinery & heavy demos"],
-  },
-  {
-    id: "custom-selection",
-    name: "Custom Map Selection",
-    type: "custom",
-    badge: "Flexible",
-    priceNPR: 0,
-    priceUSD: 0,
-    priceDisplayNPR: "Per Selected Stall(s)",
-    priceDisplayUSD: "Per Selected Stall(s)",
-    spaceDescription: "Select any stalls directly on the interactive floor plan",
-    spaceCount: 0,
-    spaceType: "any",
-    preferredStalls: [],
-    perks: ["Complete flexibility", "Multi-stall combinations", "Direct real-time floor plan picking"],
-  },
-];
+import { PARTICIPATION_PACKAGES, type StallPackage } from "@/data/participationPackages";
+import { quoteBooking, resolveStall, isActualStall } from "@/lib/stallPricing";
+export { PARTICIPATION_PACKAGES, type StallPackage };
 
 export default function StallBookingWizard() {
   const router = useRouter();
@@ -282,6 +71,10 @@ export default function StallBookingWizard() {
     searchParams.get("mode") === "hold";
 
   const [step, setStep] = useState(1);
+  // Funnel: moving past stall selection counts as starting a booking
+  useEffect(() => {
+    if (step >= 2) trackFunnel("stall_booking", "start");
+  }, [step]);
   const [selectedBoothNumbers, setSelectedBoothNumbers] = useState<string[]>([]);
   const [selectedPackageId, setSelectedPackageId] = useState<string>("custom-selection");
   const [packageFilter, setPackageFilter] = useState<"all" | "sponsor" | "stall" | "custom">("all");
@@ -355,138 +148,9 @@ export default function StallBookingWizard() {
     loadAdminFloorPlan();
   }, []);
 
-  // Helper to filter valid exhibition stalls
-  const isActualStall = (el: any) => {
-    if (el.type === "text" || el.type === "line" || el.type === "arc" || el.type === "pencil") return false;
-    if (el.category === "Hollow Wall / Boundary" || el.category === "Boundary Wall" || el.category === "Curved Wall") return false;
-    if (el.category === "Zone / Functional Area" || el.type === "zone") return false;
-    if (el.number === "WALL" || el.number === "CURVE" || el.number === "OUTLINE" || !el.number) return false;
-    return true;
-  };
-
-  // Helper to resolve exact stall metadata (prioritizing Admin Studio configuration)
-  const findStall = (num: string) => {
-    const cleanNum = (num || "").trim().toLowerCase();
-    const custom = elements.find(
-      (el: any) =>
-        isActualStall(el) &&
-        ((el.number && el.number.toLowerCase() === cleanNum) ||
-          (el.id && el.id.toLowerCase() === cleanNum))
-    ) || elements.find(
-      (el: any) =>
-        (el.number && el.number.toLowerCase() === cleanNum) ||
-        (el.id && el.id.toLowerCase() === cleanNum)
-    );
-    const official = officialStalls.find(
-      (s) => s.id.toLowerCase() === cleanNum || s.number.toLowerCase() === cleanNum
-    );
-    const fallback = boothsData.find((b) => b.number.toLowerCase() === cleanNum);
-
-    const number = custom?.number || official?.number || fallback?.number || num;
-    const category = custom?.category || official?.category || fallback?.type || "Standard Exhibition Stall";
-    const dimensions = custom?.dimensions || official?.dimensions || fallback?.dimensions || "3m × 3m";
-    const sizeSqM = Number(custom?.sizeSqM ?? official?.sizeSqM ?? fallback?.sizeSqM ?? 9);
-    const sizeSqFt = Number(custom?.sizeSqFt ?? official?.sizeSqFt ?? Math.round(sizeSqM * 10.76));
-
-    const override =
-      boothOverrides[cleanNum] ||
-      boothOverrides[number?.toLowerCase()] ||
-      (custom?.id && boothOverrides[custom.id]);
-
-    const isPrime =
-      override?.isPrime !== undefined
-        ? Boolean(override.isPrime)
-        : custom?.isPrime !== undefined
-          ? Boolean(custom.isPrime)
-          : Boolean(fallback?.isPrime);
-
-    let basePriceNPR = 180000;
-    if (override?.priceNPR !== undefined && override?.priceNPR !== null && !isNaN(Number(override.priceNPR))) {
-      basePriceNPR = Number(override.priceNPR);
-    } else if (custom?.priceNPR !== undefined && custom?.priceNPR !== null && !isNaN(Number(custom.priceNPR))) {
-      basePriceNPR = Number(custom.priceNPR);
-    } else if (official?.priceNPR !== undefined && !isNaN(Number(official.priceNPR))) {
-      basePriceNPR = Number(official.priceNPR);
-    } else if (fallback?.priceNPR !== undefined && !isNaN(Number(fallback.priceNPR))) {
-      basePriceNPR = Number(fallback.priceNPR);
-    }
-
-    let basePriceUSD = 1350;
-    if (override?.priceUSD !== undefined && override?.priceUSD !== null && !isNaN(Number(override.priceUSD))) {
-      basePriceUSD = Number(override.priceUSD);
-    } else if (custom?.priceUSD !== undefined && custom?.priceUSD !== null && !isNaN(Number(custom.priceUSD))) {
-      basePriceUSD = Number(custom.priceUSD);
-    } else if (official?.priceUSD !== undefined && !isNaN(Number(official.priceUSD))) {
-      basePriceUSD = Number(official.priceUSD);
-    } else if (fallback?.priceUSD !== undefined && !isNaN(Number(fallback.priceUSD))) {
-      basePriceUSD = Number(fallback.priceUSD);
-    }
-
-    const primeSurchargeRate = (primeSurchargePercent || 25) / 100;
-    const primeSurchargeNPR = isPrime ? Math.round(basePriceNPR * primeSurchargeRate) : 0;
-    const primeSurchargeUSD = isPrime ? Math.round(basePriceUSD * primeSurchargeRate) : 0;
-    const priceNPR = basePriceNPR + primeSurchargeNPR;
-    const priceUSD = basePriceUSD + primeSurchargeUSD;
-
-    const block = custom?.block || official?.block || fallback?.hall || (number ? `Block ${number.charAt(0).toUpperCase()}` : "Main Pavilion");
-    const status = custom?.status || official?.status || fallback?.status || "Available";
-
-    // Rule: B1–B22 and H1–H8 are standard stalls (do not write Shell Scheme). All other stalls are Bare Space!
-    const upper = (number || "").trim().toUpperCase();
-    const bMatch = upper.match(/^B(\d+)$/);
-    const isB = Boolean(bMatch && parseInt(bMatch[1], 10) >= 1 && parseInt(bMatch[1], 10) <= 22);
-    const hMatch = upper.match(/^H(\d+)$/);
-    const isH = Boolean(hMatch && parseInt(hMatch[1], 10) >= 1 && parseInt(hMatch[1], 10) <= 8);
-    const isBareSpace = !isB && !isH;
-
-    // Detect Irregular Bare Space (custom footprint charged per sq.m)
-    const isIrregular = Boolean(
-      custom?.isIrregular ||
-      custom?.category === "Irregular Bare Space" ||
-      (custom?.dimensions && custom.dimensions.toLowerCase().includes("custom")) ||
-      (category && category.toLowerCase().includes("irregular")) ||
-      upper.startsWith("IRR")
-    );
-
-    const ratePerSqMNPR = Number(
-      custom?.ratePerSqMNPR ||
-      (basePriceNPR && sizeSqM ? Math.round(basePriceNPR / sizeSqM) : 10500)
-    );
-    const ratePerSqMUSD = Number(
-      custom?.ratePerSqMUSD ||
-      (basePriceUSD && sizeSqM ? Number((basePriceUSD / sizeSqM).toFixed(2)) : 83.33)
-    );
-
-    const displayName = isIrregular
-      ? `STALL ${number} (Irregular Bare Space)`
-      : isBareSpace
-        ? `STALL ${number} (Bare Space)`
-        : `STALL ${number}`;
-
-    return {
-      number,
-      displayName,
-      spaceType: isIrregular ? "Irregular Bare Space" : isBareSpace ? "Bare Space" : "",
-      isBareSpace,
-      isIrregular,
-      ratePerSqMNPR,
-      ratePerSqMUSD,
-      isPrime,
-      block,
-      dimensions,
-      sizeSqM,
-      sizeSqFt,
-      basePriceNPR,
-      basePriceUSD,
-      primeSurchargeNPR,
-      primeSurchargeUSD,
-      priceNPR,
-      priceUSD,
-      category: isIrregular ? "Irregular Bare Space" : isBareSpace ? `${dimensions} Bare Space` : category,
-      status,
-      powerIncluded: custom?.powerIncluded || official?.powerIncluded || (isBareSpace ? "Direct Power Provision" : "Standard 15A Included"),
-    };
-  };
+  // Stall details & price — shared with the server so the charged amount matches what's shown
+  const pricingInputs = { elements, boothOverrides, primeSurchargePercent };
+  const findStall = (num: string) => resolveStall(num, pricingInputs);
 
   // Aggregate selected stalls metadata using Admin-configured details
   const selectedStallObjects = selectedBoothNumbers.map(findStall);
@@ -514,37 +178,20 @@ export default function StallBookingWizard() {
     }
   }, [queryHold]);
 
-  const totalAreaSqM = selectedStallObjects.reduce((acc, curr) => acc + (curr.sizeSqM || 0), 0);
-  const rawBasePriceNPR = selectedStallObjects.reduce((acc, curr) => acc + (curr.basePriceNPR || 0), 0);
-  const rawBasePriceUSD = selectedStallObjects.reduce((acc, curr) => acc + (curr.basePriceUSD || 0), 0);
-  const totalPrimeSurchargeNPR = selectedStallObjects.reduce((acc, curr) => acc + (curr.primeSurchargeNPR || 0), 0);
-  const totalPrimeSurchargeUSD = selectedStallObjects.reduce((acc, curr) => acc + (curr.primeSurchargeUSD || 0), 0);
-  const rawTotalPriceNPR = selectedStallObjects.reduce((acc, curr) => acc + (curr.priceNPR || 0), 0);
-  const rawTotalPriceUSD = selectedStallObjects.reduce((acc, curr) => acc + (curr.priceUSD || 0), 0);
-  const hasPrimeStalls = selectedStallObjects.some((s) => s.isPrime);
-
-  const finalPriceNPR = isSponsorPackage && selectedPackage
-    ? selectedPackage.priceNPR
-    : rawTotalPriceNPR;
-
-  const finalPriceUSD = isSponsorPackage && selectedPackage
-    ? selectedPackage.priceUSD
-    : rawTotalPriceUSD;
-
-  const finalBasePriceNPR = isSponsorPackage && selectedPackage
-    ? selectedPackage.priceNPR
-    : rawBasePriceNPR;
-
-  const finalBasePriceUSD = isSponsorPackage && selectedPackage
-    ? selectedPackage.priceUSD
-    : rawBasePriceUSD;
-
-  // 13% Government VAT
-  const vatRate = 0.13;
-  const vatNPR = Math.round(finalPriceNPR * vatRate);
-  const vatUSD = Math.round(finalPriceUSD * vatRate);
-  const totalWithVatNPR = finalPriceNPR + vatNPR;
-  const totalWithVatUSD = finalPriceUSD + vatUSD;
+  const {
+    totalAreaSqM,
+    totalPrimeSurchargeNPR,
+    totalPrimeSurchargeUSD,
+    hasPrimeStalls,
+    finalPriceNPR,
+    finalPriceUSD,
+    finalBasePriceNPR,
+    finalBasePriceUSD,
+    vatNPR,
+    vatUSD,
+    totalWithVatNPR,
+    totalWithVatUSD,
+  } = quoteBooking(selectedBoothNumbers, isSponsorPackage ? selectedPackageId : null, pricingInputs);
 
   // Reference & smooth auto-scroll helper to jump directly to stall selection
   const stallSelectionRef = useRef<HTMLDivElement>(null);
@@ -766,6 +413,7 @@ export default function StallBookingWizard() {
           body: JSON.stringify({
             bookingId: ref,
             stallNumbers: selectedBoothNumbers,
+            packageId: selectedPackageId,
             amountNPR: paymentMethod === "hold_72h" ? 0 : totalWithVatNPR,
             amountUSD: paymentMethod === "hold_72h" ? 0 : totalWithVatUSD,
             fullPackageAmountNPR: totalWithVatNPR,
@@ -798,6 +446,7 @@ export default function StallBookingWizard() {
 
         const data = await response.json();
 
+        if (response.ok && data.success) trackFunnel("stall_booking", "submit");
         if (!response.ok || !data.success) {
           throw new Error(data.error || "Failed to initialize booking and payment.");
         }
@@ -824,7 +473,7 @@ export default function StallBookingWizard() {
           return;
         }
 
-        // If redirect URL returned (Khalti or Fonepay gateway redirect for domestic)
+        // If redirect URL returned (Khalti gateway redirect for domestic)
         if (data.paymentUrl) {
           window.location.href = data.paymentUrl;
           return;
@@ -2033,7 +1682,7 @@ export default function StallBookingWizard() {
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-600 font-normal leading-relaxed">
-                    Companies registered in Nepal. Payments settled in NPR via Khalti, Fonepay QR, or Local Bank Wire.
+                    Companies registered in Nepal. Payments settled in NPR via Khalti or Local Bank Wire.
                   </p>
                 </div>
               </button>

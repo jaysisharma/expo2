@@ -23,7 +23,7 @@ import {
 import { speakersData as initialIPPANMembers } from "@/data/speakers";
 import { eventSolutionTeam as initialEventSolutionTeam } from "@/data/eventSolutionTeam";
 import { ImageUploadField } from "@/components/admin/ImageUploadField";
-import { saveFirebaseMembers, getFirebaseMembers } from "@/lib/firebaseDb";
+import { saveFirebaseMembers, getFirebaseMembers } from "@/lib/contentApi";
 
 export interface UnifiedMember {
   id: string;

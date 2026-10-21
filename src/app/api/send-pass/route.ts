@@ -7,6 +7,24 @@ import path from "path";
 import * as opentype from "opentype.js";
 import { encryptPassToken, generateSecurityChecksum } from "@/lib/passSecurity";
 import { getEmbeddedFont, NOTO_SANS_BASE64 } from "@/lib/badgeFont";
+import { getFirebaseRegistrationById } from "@/lib/firebaseDb";
+import { getAdminSession } from "@/lib/session";
+
+// Visitors can only trigger the email shortly after registering (admins can resend any time)
+const PUBLIC_SEND_WINDOW_MS = 30 * 60 * 1000;
+
+async function findRegistration(passId: string): Promise<any | null> {
+  const fromFirebase = await getFirebaseRegistrationById(passId);
+  if (fromFirebase) return fromFirebase;
+  for (const p of [path.join(process.cwd(), "data", "adminData.json"), path.join(process.cwd(), "src", "data", "adminData.json")]) {
+    try {
+      const local = JSON.parse(fs.readFileSync(p, "utf-8"));
+      const match = (local.registrations || []).find((r: any) => r.id === passId);
+      if (match) return match;
+    } catch {}
+  }
+  return null;
+}
 
 export const dynamic = "force-dynamic";
 
@@ -512,16 +530,28 @@ function buildEmailHtml(opts: {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, email, organization, jobTitle, stallNumber, country, phone, passId, passType, role } = body;
+    const passId = typeof body.passId === "string" ? body.passId.trim() : "";
+    if (!passId) {
+      return NextResponse.json({ success: false, message: "Missing passId." }, { status: 400 });
+    }
 
-    if (!email || !name || !passId) {
+    // Pass details always come from the stored registration, never from the request,
+    // so nobody can mint a pass for a name / pass type they didn't register with.
+    const registration = await findRegistration(passId);
+    if (!registration?.email || !registration?.name) {
+      return NextResponse.json({ success: false, message: "Registration not found." }, { status: 404 });
+    }
+    const isAdmin = !!(await getAdminSession(req));
+    const registeredAt = new Date(registration.registeredAt || 0).getTime();
+    if (!isAdmin && Date.now() - registeredAt > PUBLIC_SEND_WINDOW_MS) {
       return NextResponse.json(
-        { success: false, message: "Missing required fields: email, name, or passId." },
-        { status: 400 }
+        { success: false, message: "Please contact the organisers to have your pass re-sent." },
+        { status: 403 }
       );
     }
 
-    const resolvedRole = role || "visitor";
+    const { name, email, organization, jobTitle, stallNumber, country, phone, passType } = registration;
+    const resolvedRole = String(passType || "").toLowerCase().includes("exhibitor") ? "exhibitor" : "visitor";
 
     // Determine public or request URL dynamically
     const reqHost = req.headers.get("x-forwarded-host") || req.headers.get("host") || "";
