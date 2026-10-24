@@ -33,8 +33,8 @@ export default function CookieConsentBanner() {
         <Cookie className="w-5 h-5 text-[#34D399] shrink-0 mt-0.5" />
         <div className="space-y-3">
           <p className="text-xs sm:text-sm text-emerald-50/90 leading-relaxed">
-            We use essential cookies to run this site. With your permission we also use an analytics cookie to
-            understand which channels (e.g. Facebook, Google) bring visitors to the Expo. See our{" "}
+            We use cookies that this site needs to work. With your permission, we&rsquo;d also like to use one
+            optional cookie to see how visitors find the Expo, such as through Facebook or Google. Read our{" "}
             <Link href="/cookie-policy" className="underline text-[#34D399] hover:text-white">
               Cookie Policy
             </Link>{" "}
@@ -49,13 +49,13 @@ export default function CookieConsentBanner() {
               onClick={() => choose("accepted")}
               className="px-4 py-2 rounded-lg bg-[#007A5E] hover:bg-[#005C42] text-white text-xs font-bold transition-colors cursor-pointer"
             >
-              Accept analytics
+              Accept all
             </button>
             <button
               onClick={() => choose("declined")}
               className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-colors cursor-pointer"
             >
-              Essential only
+              Necessary only
             </button>
           </div>
         </div>

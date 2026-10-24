@@ -60,7 +60,7 @@ export default function CookiePolicyPage() {
           heading: "Anonymous visit counts",
           body: (
             <p>
-              Even if you choose &ldquo;Essential only&rdquo;, we count page visits anonymously: the referring website, landing page,
+              Even if you choose &ldquo;Necessary only&rdquo;, we count page visits anonymously: the referring website, landing page,
               device type and country. We also count, anonymously, when a form is started or submitted and whether a payment
               succeeded, so we can find steps that are confusing. No cookie is set and nothing is stored that identifies you or
               links one visit to another.
@@ -90,7 +90,7 @@ export default function CookiePolicyPage() {
           body: (
             <>
               <p>
-                You can change your choice at any time. Choosing &ldquo;Essential only&rdquo; deletes the analytics cookie. You can
+                You can change your choice at any time. Choosing &ldquo;Necessary only&rdquo; deletes the analytics cookie. You can
                 also block or delete cookies in your browser settings.
               </p>
               <CookieSettingsButton />

@@ -171,17 +171,17 @@ export interface FAQItem {
 
 export interface SponsorCategory {
   tier:
-    | "Government & Patron"
-    | "Country & International Partners"
-    | "Apex Endorsing Bodies & Chambers"
-    | "Strategic Global OEMs & Technology"
-    | "Official Hospitality & Enterprise Partners"
-    | "Strategic Partners"
-    | "Platinum Sponsors"
-    | "Gold Sponsors"
-    | "Knowledge & Technical Partners"
-    | "Media & Global Network"
-    | string;
+  | "Government & Patron"
+  | "Country & International Partners"
+  | "Apex Endorsing Bodies & Chambers"
+  | "Strategic Global OEMs & Technology"
+  | "Official Hospitality & Enterprise Partners"
+  | "Strategic Partners"
+  | "Platinum Sponsors"
+  | "Gold Sponsors"
+  | "Knowledge & Technical Partners"
+  | "Media & Global Network"
+  | string;
   description: string;
   sponsors: {
     name: string;
