@@ -1,5 +1,11 @@
 import { NextResponse } from "next/server";
-import { syncSheetRowsToDb, pushStallToGoogleSheet, SheetStallItem } from "@/lib/googleSheetSync";
+import {
+  syncSheetRowsToDb,
+  pushStallToGoogleSheet,
+  getAllStallsForSheet,
+  pushAllStallsToGoogleSheet,
+  SheetStallItem,
+} from "@/lib/googleSheetSync";
 import { getFirebaseBoothOverrides, getFirebaseSettings, updateFirebaseSettings } from "@/lib/firebaseDb";
 import { boothsData } from "@/data/booths";
 
@@ -20,6 +26,16 @@ export async function POST(req: Request) {
     if (action === "save_webhook_url" && webhookUrl) {
       await updateFirebaseSettings({ googleSheetsWebhookUrl: webhookUrl }).catch(() => {});
       return NextResponse.json({ success: true, message: "Webhook URL saved successfully" });
+    }
+
+    // Push all 91 stalls into Google Sheet
+    if (action === "push_all_to_sheet" || action === "populate_sheet") {
+      try {
+        const result = await pushAllStallsToGoogleSheet(webhookUrl);
+        return NextResponse.json(result);
+      } catch (err: any) {
+        return NextResponse.json({ success: false, error: err.message }, { status: 400 });
+      }
     }
 
     // Case 1: Fetch directly from Google Apps Script webhook URL and sync
@@ -92,6 +108,24 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const action = searchParams.get("action");
   const passedUrl = searchParams.get("url");
+
+  // Return all 91 stalls with live status for Google Sheet population
+  if (action === "get_all_stalls" || action === "export_all") {
+    try {
+      const stalls = await getAllStallsForSheet();
+      return NextResponse.json(
+        { success: true, count: stalls.length, stalls },
+        {
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+          },
+        }
+      );
+    } catch (e: any) {
+      return NextResponse.json({ success: false, error: e.message }, { status: 500 });
+    }
+  }
 
   // If user requests a pull from Google Sheet
   if (action === "pull") {

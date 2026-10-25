@@ -63,6 +63,7 @@ export default function AdminStallsPage() {
   // Google Sheet Sync Modal & State
   const [showSheetModal, setShowSheetModal] = useState(false);
   const [isSyncingSheet, setIsSyncingSheet] = useState(false);
+  const [isPopulatingSheet, setIsPopulatingSheet] = useState(false);
   const [sheetWebhookUrl, setSheetWebhookUrl] = useState("");
   const [copiedScript, setCopiedScript] = useState(false);
 
@@ -439,6 +440,35 @@ export default function AdminStallsPage() {
       setShowSheetModal(true);
     } finally {
       setIsSyncingSheet(false);
+    }
+  };
+
+  const handlePopulateGoogleSheet = async (overrideUrl?: string) => {
+    const urlToUse = (overrideUrl || sheetWebhookUrl || "").trim();
+    if (!urlToUse) {
+      notify("Please paste and save your Google Apps Script Web App URL first", "error");
+      return;
+    }
+    setIsPopulatingSheet(true);
+    try {
+      const res = await fetch("/api/stalls/sync-sheet", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "push_all_to_sheet",
+          webhookUrl: urlToUse,
+        }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        notify(`Success! Populated all ${json.count || 91} stalls into your Google Sheet!`, "success");
+      } else {
+        notify(json.error || "Failed to populate stalls into Google Sheet", "error");
+      }
+    } catch (err: any) {
+      notify(err.message || "Failed to connect to Google Sheet", "error");
+    } finally {
+      setIsPopulatingSheet(false);
     }
   };
 
@@ -1429,8 +1459,30 @@ export default function AdminStallsPage() {
               </div>
             </div>
 
+            {/* Quick Populate Feature Card */}
+            <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="space-y-0.5">
+                <div className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Auto-Populate All 91 Stalls</span>
+                </div>
+                <p className="text-[11px] text-emerald-800 leading-snug">
+                  Automatically writes all 91 stalls (C1–C16, B1–B22, A1–A46, H1–H8, F1–F2) with live statuses &amp; companies into your Google Sheet!
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => handlePopulateGoogleSheet(sheetWebhookUrl)}
+                disabled={isPopulatingSheet || !sheetWebhookUrl.trim()}
+                className="px-3.5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shrink-0 disabled:opacity-50 shadow-xs transition-colors"
+              >
+                {isPopulatingSheet ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <FileSpreadsheet className="w-3.5 h-3.5" />}
+                <span>{isPopulatingSheet ? "Populating Sheet..." : "Populate 91 Stalls to Sheet"}</span>
+              </button>
+            </div>
+
             {/* Action Buttons */}
-            <div className="flex items-center justify-between pt-2">
+            <div className="flex items-center justify-between pt-1">
               <button
                 type="button"
                 onClick={() => {
@@ -1457,18 +1509,18 @@ export default function AdminStallsPage() {
                   type="button"
                   onClick={() => handleSyncGoogleSheet(sheetWebhookUrl)}
                   disabled={isSyncingSheet || !sheetWebhookUrl.trim()}
-                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer disabled:opacity-50"
+                  className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer disabled:opacity-50"
                 >
                   {isSyncingSheet ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
-                  <span>{isSyncingSheet ? "Syncing..." : "Sync Stalls Now"}</span>
+                  <span>{isSyncingSheet ? "Syncing..." : "Sync Sheet to DB"}</span>
                 </button>
               </div>
             </div>
 
-            {/* 3 Step Quick Guide */}
+            {/* 4 Step Quick Guide */}
             <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-2 text-slate-600">
               <span className="font-bold text-slate-800 block text-[11px] uppercase tracking-wider">
-                1-Minute Setup Instructions (100% Free):
+                How It Works &amp; Setup (100% Free):
               </span>
               <ol className="list-decimal list-inside space-y-1.5 text-[11px] leading-relaxed">
                 <li>
@@ -1478,7 +1530,10 @@ export default function AdminStallsPage() {
                   Click <strong>&quot;Copy Google Apps Script&quot;</strong> button above, delete whatever is in the script editor, paste this code, and click <strong>Save</strong>.
                 </li>
                 <li>
-                  Click <strong>Deploy</strong> &rarr; <strong>New deployment</strong>, select <strong>Web app</strong>, set <em>Who has access</em> to <strong>Anyone</strong>, and click <strong>Deploy</strong>. Copy the generated Web App URL and paste it into the field above!
+                  Click <strong>Deploy</strong> &rarr; <strong>New deployment</strong> (or Manage deployments &rarr; Edit), select <strong>Web app</strong>, set <em>Who has access</em> to <strong>Anyone</strong>, and click <strong>Deploy</strong>. Copy and paste the Web App URL above!
+                </li>
+                <li>
+                  Click <strong>&quot;Populate 91 Stalls to Sheet&quot;</strong> above, or in Google Sheets click <strong>⚡ Expo Stall Sync &rarr; 📥 Populate All 91 Stalls to Sheet</strong>.
                 </li>
               </ol>
             </div>
@@ -1501,7 +1556,9 @@ function onOpen() {
   try {
     SpreadsheetApp.getUi()
       .createMenu("⚡ Expo Stall Sync")
-      .addItem("Sync to Website Database", "pushAllStallsToWebsite")
+      .addItem("📥 Populate All 91 Stalls to Sheet", "pullAllStallsFromWebsite")
+      .addSeparator()
+      .addItem("📤 Sync Sheet to Website", "pushAllStallsToWebsite")
       .addToUi();
   } catch (e) {
     Logger.log("onOpen error: " + e.toString());
@@ -1514,6 +1571,104 @@ function showAlert(msg) {
     SpreadsheetApp.getUi().alert(msg);
   } catch (e) {
     Logger.log(msg);
+  }
+}
+
+function normalizeStallNo(val) {
+  if (!val) return "";
+  var cleaned = String(val).trim().toUpperCase().replace(/[\\s\\-_#]/g, "");
+  var m = cleaned.match(/^([A-Z]+)0*(\\d+)$/);
+  if (m) {
+    return m[1] + parseInt(m[2], 10);
+  }
+  return cleaned;
+}
+
+function ensureSheetHeaders(sheet) {
+  var currentFirst = sheet.getRange(1, 1, 1, 5).getValues()[0];
+  if (!currentFirst[0] || String(currentFirst[0]).trim() === "") {
+    var headerRange = sheet.getRange(1, 1, 1, 5);
+    headerRange.setValues([["Stall No", "Status", "Company Name", "Booked Date", "Contact"]]);
+    headerRange.setFontWeight("bold");
+    headerRange.setBackground("#064e3b");
+    headerRange.setFontColor("#ffffff");
+    sheet.setFrozenRows(1);
+    sheet.setColumnWidth(1, 100);
+    sheet.setColumnWidth(2, 120);
+    sheet.setColumnWidth(3, 240);
+    sheet.setColumnWidth(4, 130);
+    sheet.setColumnWidth(5, 180);
+  }
+}
+
+/** Pull all 91 stalls from website database and populate into Google Sheet */
+function pullAllStallsFromWebsite() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  ensureSheetHeaders(sheet);
+
+  try {
+    var res = UrlFetchApp.fetch(WEBSITE_SYNC_URL + "?action=get_all_stalls", {
+      method: "get",
+      followRedirects: true,
+      muteHttpExceptions: true
+    });
+    var text = res.getContentText();
+    var code = res.getResponseCode();
+
+    if (code !== 200) {
+      showAlert("Server returned HTTP " + code + ": " + text.slice(0, 150));
+      return;
+    }
+
+    var json = JSON.parse(text);
+    if (!json.success || !Array.isArray(json.stalls)) {
+      showAlert("Could not fetch stalls: " + (json.error || "Unknown"));
+      return;
+    }
+
+    // Preserve any existing local edits in the sheet
+    var existingData = sheet.getDataRange().getValues();
+    var existingMap = {};
+    for (var i = 1; i < existingData.length; i++) {
+      var sNo = normalizeStallNo(existingData[i][0]);
+      if (sNo) {
+        existingMap[sNo] = {
+          status: existingData[i][1] || "Available",
+          company: existingData[i][2] || "",
+          date: existingData[i][3] || "",
+          contact: existingData[i][4] || ""
+        };
+      }
+    }
+
+    var rows = [];
+    for (var k = 0; k < json.stalls.length; k++) {
+      var item = json.stalls[k];
+      var sNo = String(item.stallNo || "").trim();
+      var canon = normalizeStallNo(sNo);
+      var ex = existingMap[canon] || {};
+
+      var status = item.status || ex.status || "Available";
+      var company = item.companyName || (status !== "Available" ? ex.company : "") || "";
+      var date = item.bookedDate || ex.date || "";
+      var contact = item.contact || ex.contact || "";
+
+      rows.push([sNo, status, company, date, contact]);
+    }
+
+    // Clear old rows from row 2 downwards
+    if (sheet.getLastRow() > 1) {
+      sheet.getRange(2, 1, sheet.getLastRow() - 1, 5).clearContent();
+    }
+
+    // Write all stalls in batch
+    if (rows.length > 0) {
+      sheet.getRange(2, 1, rows.length, 5).setValues(rows);
+    }
+
+    showAlert("Success! Populated all " + rows.length + " stalls into your Google Sheet.");
+  } catch (err) {
+    showAlert("Error: " + err.toString());
   }
 }
 
@@ -1600,21 +1755,70 @@ function doGet(e) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-/** Called by Website whenever a stall is booked online */
+/** Called by Website whenever a stall is booked online or populated in bulk */
 function doPost(e) {
   try {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
     var payload = JSON.parse(e.postData.contents);
+
+    // Case A: Bulk populate all stalls from website
+    if (payload.action === "populate_all" && Array.isArray(payload.stalls)) {
+      ensureSheetHeaders(sheet);
+
+      var existingData = sheet.getDataRange().getValues();
+      var existingMap = {};
+      for (var i = 1; i < existingData.length; i++) {
+        var sNo = normalizeStallNo(existingData[i][0]);
+        if (sNo) {
+          existingMap[sNo] = {
+            status: existingData[i][1] || "Available",
+            company: existingData[i][2] || "",
+            date: existingData[i][3] || "",
+            contact: existingData[i][4] || ""
+          };
+        }
+      }
+
+      var rows = [];
+      for (var k = 0; k < payload.stalls.length; k++) {
+        var item = payload.stalls[k];
+        var sNo = String(item.stallNo || "").trim();
+        var canon = normalizeStallNo(sNo);
+        var ex = existingMap[canon] || {};
+
+        var status = item.status || ex.status || "Available";
+        var company = item.companyName || (status !== "Available" ? ex.company : "") || "";
+        var date = item.bookedDate || ex.date || "";
+        var contact = item.contact || ex.contact || "";
+
+        rows.push([sNo, status, company, date, contact]);
+      }
+
+      if (sheet.getLastRow() > 1) {
+        sheet.getRange(2, 1, sheet.getLastRow() - 1, 5).clearContent();
+      }
+
+      if (rows.length > 0) {
+        sheet.getRange(2, 1, rows.length, 5).setValues(rows);
+      }
+
+      return ContentService.createTextOutput(JSON.stringify({ success: true, count: rows.length }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // Case B: Single stall update
     var stallNo = String(payload.stallNo || "").trim().toUpperCase();
     if (!stallNo) {
       return ContentService.createTextOutput(JSON.stringify({ success: false, error: "Missing stallNo" }))
         .setMimeType(ContentService.MimeType.JSON);
     }
     
+    ensureSheetHeaders(sheet);
     var data = sheet.getDataRange().getValues();
+    var canonicalTarget = normalizeStallNo(stallNo);
     var rowIndex = -1;
     for (var i = 1; i < data.length; i++) {
-      if (String(data[i][0] || "").trim().toUpperCase() === stallNo) {
+      if (normalizeStallNo(data[i][0]) === canonicalTarget || String(data[i][0] || "").trim().toUpperCase() === stallNo) {
         rowIndex = i + 1; // 1-indexed
         break;
       }

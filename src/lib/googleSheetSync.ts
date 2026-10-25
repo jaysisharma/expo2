@@ -5,7 +5,10 @@ import {
   getFirebaseBoothOverrides,
   getFirebaseFloorPlan,
   saveFirebaseFloorPlan,
+  getFirebaseSettings,
 } from "./firebaseDb";
+import { boothsData, extractBoothsFromElements } from "@/data/booths";
+import { Booth } from "./types";
 
 const ROOT_ADMIN_DATA_PATH = path.join(process.cwd(), "data", "adminData.json");
 const SRC_ADMIN_DATA_PATH = path.join(process.cwd(), "src", "data", "adminData.json");
@@ -50,7 +53,11 @@ export function normalizeStallStatus(raw: string | undefined): "Available" | "Re
 
 /** Push single stall change to Google Apps Script webhook (if configured) */
 export async function pushStallToGoogleSheet(item: SheetStallItem) {
-  const webhookUrl = process.env.GOOGLE_SHEETS_WEBHOOK_URL;
+  let webhookUrl = process.env.GOOGLE_SHEETS_WEBHOOK_URL;
+  if (!webhookUrl) {
+    const settings = await getFirebaseSettings().catch(() => null);
+    webhookUrl = settings?.googleSheetsWebhookUrl;
+  }
   if (!webhookUrl) return;
 
   try {
@@ -195,4 +202,120 @@ export async function syncSheetRowsToDb(rows: SheetStallItem[]) {
     updatedStalls,
     timestamp: now,
   };
+}
+
+/**
+ * Loads all stalls (all 91 stalls from floor plan / boothsData),
+ * merges live status and exhibitor data from Firestore and local overrides,
+ * and returns canonical SheetStallItem array in floor-plan order.
+ */
+export async function getAllStallsForSheet(): Promise<SheetStallItem[]> {
+  // 1. Get floor plan elements
+  let floorPlan: any = null;
+  try {
+    floorPlan = await getFirebaseFloorPlan();
+  } catch {}
+  if (!floorPlan || !Array.isArray(floorPlan.elements) || floorPlan.elements.length === 0) {
+    try {
+      floorPlan = JSON.parse(await fs.readFile(ROOT_FLOOR_PATH, "utf-8"));
+    } catch {
+      try {
+        floorPlan = JSON.parse(await fs.readFile(SRC_FLOOR_PATH, "utf-8"));
+      } catch {}
+    }
+  }
+
+  // 2. Extract booths from elements, or fallback to boothsData
+  let booths: Booth[] = [];
+  if (floorPlan && Array.isArray(floorPlan.elements) && floorPlan.elements.length > 0) {
+    booths = extractBoothsFromElements(floorPlan.elements);
+  }
+  if (!booths || booths.length === 0) {
+    booths = boothsData;
+  }
+
+  // 3. Get admin overrides and firebase overrides
+  let adminOverrides: Record<string, any> = {};
+  try {
+    const adminData = JSON.parse(await fs.readFile(ROOT_ADMIN_DATA_PATH, "utf-8"));
+    adminOverrides = adminData?.boothOverrides || {};
+  } catch {
+    try {
+      const adminData = JSON.parse(await fs.readFile(SRC_ADMIN_DATA_PATH, "utf-8"));
+      adminOverrides = adminData?.boothOverrides || {};
+    } catch {}
+  }
+
+  let fbOverrides: Record<string, any> = {};
+  try {
+    fbOverrides = (await getFirebaseBoothOverrides()) || {};
+  } catch {}
+
+  // 4. Map each booth to sheet format
+  return booths.map((b) => {
+    const canonical = normalizeStallNumber(b.number);
+    const raw = b.number.trim().toUpperCase();
+    const zeroPadded = raw.replace(/^([A-Z]+)(\d)$/, "$10$2");
+
+    const override =
+      fbOverrides[canonical] ||
+      fbOverrides[raw] ||
+      fbOverrides[zeroPadded] ||
+      adminOverrides[canonical] ||
+      adminOverrides[raw] ||
+      adminOverrides[zeroPadded] ||
+      {};
+
+    const status = normalizeStallStatus(override.status || b.status);
+    const companyName = status === "Available" ? "" : (override.exhibitorName || b.exhibitorName || "");
+    const bookedDate = override.bookedDate || "";
+    const contact = override.contact || "";
+
+    return {
+      stallNo: b.number,
+      status,
+      companyName,
+      bookedDate,
+      contact,
+    };
+  });
+}
+
+/** Push all 91 stalls into Google Sheet Web App */
+export async function pushAllStallsToGoogleSheet(passedWebhookUrl?: string) {
+  let webhookUrl = passedWebhookUrl || process.env.GOOGLE_SHEETS_WEBHOOK_URL;
+  if (!webhookUrl) {
+    const settings = await getFirebaseSettings().catch(() => null);
+    webhookUrl = settings?.googleSheetsWebhookUrl;
+  }
+  if (!webhookUrl) {
+    throw new Error("Google Sheets Webhook URL is not configured. Please paste your Apps Script URL first.");
+  }
+
+  const stalls = await getAllStallsForSheet();
+
+  const res = await fetch(webhookUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      action: "populate_all",
+      stalls,
+    }),
+    redirect: "follow",
+  });
+
+  const text = await res.text();
+  let json: any;
+  try {
+    json = JSON.parse(text);
+  } catch {
+    if (text.includes("ServiceLogin") || text.includes("<!DOCTYPE") || text.includes("<html")) {
+      throw new Error(
+        "Google access restricted: In Apps Script, click Deploy -> Manage deployments -> Edit (pencil icon), set 'Who has access' to 'Anyone', and click Deploy."
+      );
+    }
+    throw new Error("Invalid response from Google Apps Script: " + text.slice(0, 100));
+  }
+
+  return { success: true, count: stalls.length, response: json };
 }
