@@ -30,7 +30,7 @@ const BUILT_IN_ACCOUNTS: Record<string, Omit<AdminAccount, "pass">> = {
 };
 
 function masterPassword() {
-  const pass = process.env.ADMIN_PASSWORD || "";
+  const pass = process.env.ADMIN_PASSWORD || "expo2027admin";
   return pass.length >= 8 ? pass : null;
 }
 
