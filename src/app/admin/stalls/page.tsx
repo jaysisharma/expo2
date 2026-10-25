@@ -1549,10 +1549,26 @@ export default function AdminStallsPage() {
 const GOOGLE_APPS_SCRIPT_TEMPLATE = `// ============================================================================
 // HIMALAYAN GREEN ENERGY EXPO 2027 - GOOGLE SHEET STALL SYNC (100% FREE)
 // ============================================================================
-// Columns: A: Stall No | B: Status | C: Company Name | D: Booked Date | E: Contact
+// Columns (11):
+// A: Stall # | B: Hall / Zone | C: Size (m²) | D: Dimensions | E: Size & Type
+// F: Assigned Exhibitor | G: Price (USD) | H: Price (NPR) | I: Status | J: Booked Date | K: Contact
 
 const WEBSITE_SYNC_URL = "https://www.himalayanenergyexpo.com/api/stalls/sync-sheet";
 const SYNC_SECRET = "expo2_secret_sync_2027";
+
+const HEADERS = [
+  "Stall #",
+  "Hall / Zone",
+  "Size (m²)",
+  "Dimensions",
+  "Size & Type",
+  "Assigned Exhibitor",
+  "Price (USD)",
+  "Price (NPR)",
+  "Status",
+  "Booked Date",
+  "Contact"
+];
 
 function onOpen() {
   try {
@@ -1586,20 +1602,69 @@ function normalizeStallNo(val) {
   return cleaned;
 }
 
+function detectColumnIndexes(headerRow) {
+  var map = {
+    stallCol: 0,
+    hallCol: 1,
+    sizeCol: 2,
+    dimCol: 3,
+    typeCol: 4,
+    exhibitorCol: 5,
+    priceUsdCol: 6,
+    priceNprCol: 7,
+    statusCol: 8,
+    dateCol: 9,
+    contactCol: 10
+  };
+
+  if (!headerRow || headerRow.length <= 1) return map;
+
+  for (var c = 0; c < headerRow.length; c++) {
+    var h = String(headerRow[c] || "").trim().toLowerCase();
+    if (h.indexOf("stall") !== -1 || h === "booth" || h === "no") map.stallCol = c;
+    else if (h.indexOf("hall") !== -1 || h.indexOf("zone") !== -1) map.hallCol = c;
+    else if (h.indexOf("size (m²)") !== -1 || h.indexOf("sqm") !== -1 || h === "size") map.sizeCol = c;
+    else if (h.indexOf("dimension") !== -1) map.dimCol = c;
+    else if (h.indexOf("type") !== -1) map.typeCol = c;
+    else if (h.indexOf("exhibitor") !== -1 || h.indexOf("company") !== -1 || h.indexOf("client") !== -1) map.exhibitorCol = c;
+    else if (h.indexOf("usd") !== -1) map.priceUsdCol = c;
+    else if (h.indexOf("npr") !== -1) map.priceNprCol = c;
+    else if (h.indexOf("status") !== -1) map.statusCol = c;
+    else if (h.indexOf("date") !== -1) map.dateCol = c;
+    else if (h.indexOf("contact") !== -1 || h.indexOf("phone") !== -1 || h.indexOf("email") !== -1) map.contactCol = c;
+  }
+
+  // Fallback for 5-column format
+  if (headerRow.length <= 6 && map.statusCol === 8) {
+    map.statusCol = 1;
+    map.exhibitorCol = 2;
+    map.dateCol = 3;
+    map.contactCol = 4;
+  }
+
+  return map;
+}
+
 function ensureSheetHeaders(sheet) {
-  var currentFirst = sheet.getRange(1, 1, 1, 5).getValues()[0];
+  var currentFirst = sheet.getRange(1, 1, 1, 11).getValues()[0];
   if (!currentFirst[0] || String(currentFirst[0]).trim() === "") {
-    var headerRange = sheet.getRange(1, 1, 1, 5);
-    headerRange.setValues([["Stall No", "Status", "Company Name", "Booked Date", "Contact"]]);
+    var headerRange = sheet.getRange(1, 1, 1, 11);
+    headerRange.setValues([HEADERS]);
     headerRange.setFontWeight("bold");
     headerRange.setBackground("#064e3b");
     headerRange.setFontColor("#ffffff");
     sheet.setFrozenRows(1);
-    sheet.setColumnWidth(1, 100);
+    sheet.setColumnWidth(1, 80);
     sheet.setColumnWidth(2, 120);
-    sheet.setColumnWidth(3, 240);
-    sheet.setColumnWidth(4, 130);
+    sheet.setColumnWidth(3, 80);
+    sheet.setColumnWidth(4, 110);
     sheet.setColumnWidth(5, 180);
+    sheet.setColumnWidth(6, 200);
+    sheet.setColumnWidth(7, 100);
+    sheet.setColumnWidth(8, 120);
+    sheet.setColumnWidth(9, 100);
+    sheet.setColumnWidth(10, 120);
+    sheet.setColumnWidth(11, 160);
   }
 }
 
@@ -1630,15 +1695,16 @@ function pullAllStallsFromWebsite() {
 
     // Preserve any existing local edits in the sheet
     var existingData = sheet.getDataRange().getValues();
+    var colMap = detectColumnIndexes(existingData[0]);
     var existingMap = {};
     for (var i = 1; i < existingData.length; i++) {
-      var sNo = normalizeStallNo(existingData[i][0]);
+      var sNo = normalizeStallNo(existingData[i][colMap.stallCol]);
       if (sNo) {
         existingMap[sNo] = {
-          status: existingData[i][1] || "Available",
-          company: existingData[i][2] || "",
-          date: existingData[i][3] || "",
-          contact: existingData[i][4] || ""
+          status: existingData[i][colMap.statusCol] || "Available",
+          company: existingData[i][colMap.exhibitorCol] || "",
+          date: existingData[i][colMap.dateCol] || "",
+          contact: existingData[i][colMap.contactCol] || ""
         };
       }
     }
@@ -1651,21 +1717,35 @@ function pullAllStallsFromWebsite() {
       var ex = existingMap[canon] || {};
 
       var status = item.status || ex.status || "Available";
-      var company = item.companyName || (status !== "Available" ? ex.company : "") || "";
+      var company = (item.companyName && item.companyName !== "Unassigned")
+        ? item.companyName
+        : (ex.company && ex.company !== "Unassigned" ? ex.company : "Unassigned");
       var date = item.bookedDate || ex.date || "";
       var contact = item.contact || ex.contact || "";
 
-      rows.push([sNo, status, company, date, contact]);
+      rows.push([
+        sNo,
+        item.hall || "",
+        item.sizeSqM || "",
+        item.dimensions || "",
+        item.sizeType || "",
+        company,
+        item.priceUSD || "",
+        item.priceNPR || "",
+        status,
+        date,
+        contact
+      ]);
     }
 
     // Clear old rows from row 2 downwards
     if (sheet.getLastRow() > 1) {
-      sheet.getRange(2, 1, sheet.getLastRow() - 1, 5).clearContent();
+      sheet.getRange(2, 1, sheet.getLastRow() - 1, 11).clearContent();
     }
 
     // Write all stalls in batch
     if (rows.length > 0) {
-      sheet.getRange(2, 1, rows.length, 5).setValues(rows);
+      sheet.getRange(2, 1, rows.length, 11).setValues(rows);
     }
 
     showAlert("Success! Populated all " + rows.length + " stalls into your Google Sheet.");
@@ -1683,16 +1763,17 @@ function pushAllStallsToWebsite() {
     return;
   }
   
+  var colMap = detectColumnIndexes(data[0]);
   var rows = [];
   for (var i = 1; i < data.length; i++) {
-    var stallNo = String(data[i][0] || "").trim();
+    var stallNo = String(data[i][colMap.stallCol] || "").trim();
     if (!stallNo) continue;
     rows.push({
       stallNo: stallNo,
-      status: String(data[i][1] || "Available").trim(),
-      companyName: String(data[i][2] || "").trim(),
-      bookedDate: String(data[i][3] || "").trim(),
-      contact: String(data[i][4] || "").trim()
+      status: String(data[i][colMap.statusCol] || "Available").trim(),
+      companyName: String(data[i][colMap.exhibitorCol] || "").trim(),
+      bookedDate: String(data[i][colMap.dateCol] || "").trim(),
+      contact: String(data[i][colMap.contactCol] || "").trim()
     });
   }
 
@@ -1741,16 +1822,22 @@ function pushAllStallsToWebsite() {
 function doGet(e) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   var data = sheet.getDataRange().getValues();
+  if (data.length <= 1) {
+    return ContentService.createTextOutput(JSON.stringify({ success: true, count: 0, rows: [] }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  var colMap = detectColumnIndexes(data[0]);
   var rows = [];
   for (var i = 1; i < data.length; i++) {
-    var stallNo = String(data[i][0] || "").trim();
+    var stallNo = String(data[i][colMap.stallCol] || "").trim();
     if (!stallNo) continue;
     rows.push({
       stallNo: stallNo,
-      status: String(data[i][1] || "Available").trim(),
-      companyName: String(data[i][2] || "").trim(),
-      bookedDate: String(data[i][3] || "").trim(),
-      contact: String(data[i][4] || "").trim()
+      status: String(data[i][colMap.statusCol] || "Available").trim(),
+      companyName: String(data[i][colMap.exhibitorCol] || "").trim(),
+      bookedDate: String(data[i][colMap.dateCol] || "").trim(),
+      contact: String(data[i][colMap.contactCol] || "").trim()
     });
   }
   return ContentService.createTextOutput(JSON.stringify({ success: true, count: rows.length, rows: rows }))
@@ -1768,15 +1855,16 @@ function doPost(e) {
       ensureSheetHeaders(sheet);
 
       var existingData = sheet.getDataRange().getValues();
+      var colMap = detectColumnIndexes(existingData[0]);
       var existingMap = {};
       for (var i = 1; i < existingData.length; i++) {
-        var sNo = normalizeStallNo(existingData[i][0]);
+        var sNo = normalizeStallNo(existingData[i][colMap.stallCol]);
         if (sNo) {
           existingMap[sNo] = {
-            status: existingData[i][1] || "Available",
-            company: existingData[i][2] || "",
-            date: existingData[i][3] || "",
-            contact: existingData[i][4] || ""
+            status: existingData[i][colMap.statusCol] || "Available",
+            company: existingData[i][colMap.exhibitorCol] || "",
+            date: existingData[i][colMap.dateCol] || "",
+            contact: existingData[i][colMap.contactCol] || ""
           };
         }
       }
@@ -1789,19 +1877,33 @@ function doPost(e) {
         var ex = existingMap[canon] || {};
 
         var status = item.status || ex.status || "Available";
-        var company = item.companyName || (status !== "Available" ? ex.company : "") || "";
+        var company = (item.companyName && item.companyName !== "Unassigned")
+          ? item.companyName
+          : (ex.company && ex.company !== "Unassigned" ? ex.company : "Unassigned");
         var date = item.bookedDate || ex.date || "";
         var contact = item.contact || ex.contact || "";
 
-        rows.push([sNo, status, company, date, contact]);
+        rows.push([
+          sNo,
+          item.hall || "",
+          item.sizeSqM || "",
+          item.dimensions || "",
+          item.sizeType || "",
+          company,
+          item.priceUSD || "",
+          item.priceNPR || "",
+          status,
+          date,
+          contact
+        ]);
       }
 
       if (sheet.getLastRow() > 1) {
-        sheet.getRange(2, 1, sheet.getLastRow() - 1, 5).clearContent();
+        sheet.getRange(2, 1, sheet.getLastRow() - 1, 11).clearContent();
       }
 
       if (rows.length > 0) {
-        sheet.getRange(2, 1, rows.length, 5).setValues(rows);
+        sheet.getRange(2, 1, rows.length, 11).setValues(rows);
       }
 
       return ContentService.createTextOutput(JSON.stringify({ success: true, count: rows.length }))
@@ -1817,10 +1919,11 @@ function doPost(e) {
     
     ensureSheetHeaders(sheet);
     var data = sheet.getDataRange().getValues();
+    var colMap = detectColumnIndexes(data[0]);
     var canonicalTarget = normalizeStallNo(stallNo);
     var rowIndex = -1;
     for (var i = 1; i < data.length; i++) {
-      if (normalizeStallNo(data[i][0]) === canonicalTarget || String(data[i][0] || "").trim().toUpperCase() === stallNo) {
+      if (normalizeStallNo(data[i][colMap.stallCol]) === canonicalTarget || String(data[i][colMap.stallCol] || "").trim().toUpperCase() === stallNo) {
         rowIndex = i + 1; // 1-indexed
         break;
       }
@@ -1832,12 +1935,18 @@ function doPost(e) {
     var contact = payload.contact || "";
 
     if (rowIndex > 0) {
-      sheet.getRange(rowIndex, 2).setValue(status);
-      sheet.getRange(rowIndex, 3).setValue(company);
-      sheet.getRange(rowIndex, 4).setValue(date);
-      if (contact) sheet.getRange(rowIndex, 5).setValue(contact);
+      sheet.getRange(rowIndex, colMap.statusCol + 1).setValue(status);
+      sheet.getRange(rowIndex, colMap.exhibitorCol + 1).setValue(company);
+      sheet.getRange(rowIndex, colMap.dateCol + 1).setValue(date);
+      if (contact) sheet.getRange(rowIndex, colMap.contactCol + 1).setValue(contact);
     } else {
-      sheet.appendRow([stallNo, status, company, date, contact]);
+      var newRow = new Array(Math.max(11, data[0].length)).fill("");
+      newRow[colMap.stallCol] = stallNo;
+      newRow[colMap.statusCol] = status;
+      newRow[colMap.exhibitorCol] = company;
+      newRow[colMap.dateCol] = date;
+      newRow[colMap.contactCol] = contact;
+      sheet.appendRow(newRow);
     }
 
     return ContentService.createTextOutput(JSON.stringify({ success: true, stallNo: stallNo, status: status }))

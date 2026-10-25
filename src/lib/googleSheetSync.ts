@@ -17,8 +17,14 @@ const SRC_FLOOR_PATH = path.join(process.cwd(), "src", "data", "savedCustomFloor
 
 export interface SheetStallItem {
   stallNo: string;
-  status: "Available" | "Reserved" | "Booked" | string;
+  hall?: string;
+  sizeSqM?: number;
+  dimensions?: string;
+  sizeType?: string;
   companyName?: string;
+  priceUSD?: string;
+  priceNPR?: string;
+  status: "Available" | "Reserved" | "Booked" | string;
   bookedDate?: string;
   contact?: string;
 }
@@ -120,8 +126,13 @@ export async function syncSheetRowsToDb(rows: SheetStallItem[]) {
     if (!rawStallNo) continue;
 
     const canonicalStallNo = normalizeStallNumber(rawStallNo);
-    const normalizedStatus = normalizeStallStatus(row.status);
-    const exhibitor = normalizedStatus === "Available" ? "" : (row.companyName || "").trim();
+    const rawCompany = (row.companyName || "").trim();
+    const isUnassigned = !rawCompany || rawCompany.toLowerCase() === "unassigned";
+    let normalizedStatus = normalizeStallStatus(row.status);
+    if (!isUnassigned && normalizedStatus === "Available") {
+      normalizedStatus = "Reserved";
+    }
+    const exhibitor = isUnassigned ? "" : rawCompany;
 
     const overridePayload = {
       status: normalizedStatus,
@@ -267,14 +278,31 @@ export async function getAllStallsForSheet(): Promise<SheetStallItem[]> {
       {};
 
     const status = normalizeStallStatus(override.status || b.status);
-    const companyName = status === "Available" ? "" : (override.exhibitorName || b.exhibitorName || "");
+    const exhibitor = (override.exhibitorName || b.exhibitorName || "").trim();
+    const companyName = exhibitor && exhibitor.toLowerCase() !== "unassigned" ? exhibitor : "Unassigned";
     const bookedDate = override.bookedDate || "";
     const contact = override.contact || "";
 
+    const usdVal = Number(override.priceUSD !== undefined ? override.priceUSD : b.priceUSD || 0);
+    const nprVal = Number(override.priceNPR !== undefined ? override.priceNPR : Math.round(usdVal * 154));
+    const formattedUSD = "$" + usdVal.toLocaleString("en-US");
+    const formattedNPR = "NPR " + nprVal.toLocaleString("en-US");
+
+    let sizeType = b.type || "Space";
+    if (b.isPrime && !sizeType.includes("PRIME")) {
+      sizeType = `${sizeType} — ★ PRIME (+25%)`;
+    }
+
     return {
       stallNo: b.number,
-      status,
+      hall: b.hall || "Block A",
+      sizeSqM: b.sizeSqM || 36,
+      dimensions: b.dimensions || "6m × 6m",
+      sizeType,
       companyName,
+      priceUSD: formattedUSD,
+      priceNPR: formattedNPR,
+      status,
       bookedDate,
       contact,
     };
