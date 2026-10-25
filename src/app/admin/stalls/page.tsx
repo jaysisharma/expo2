@@ -403,7 +403,7 @@ export default function AdminStallsPage() {
       b.status,
       b.exhibitorName || "—",
       b.priceUSD,
-      Math.round(b.priceUSD * exchangeRate),
+      b.priceNPR || Math.round(b.priceUSD * exchangeRate),
     ]);
 
     const csvContent =
@@ -918,8 +918,8 @@ export default function AdminStallsPage() {
                       {/* Price */}
                       <td className="py-3 px-3 font-mono">
                         <span className="font-medium text-slate-800">{formatCurrencyUSD(booth.priceUSD)}</span>
-                        <span className="text-[10px] text-slate-400 block font-sans">
-                          ≈ {formatCurrencyNPR(booth.priceUSD * exchangeRate)}
+                        <span className="text-[10px] text-slate-500 font-medium block font-sans">
+                          {formatCurrencyNPR(booth.priceNPR || Math.round(booth.priceUSD * exchangeRate))}
                         </span>
                       </td>
 
@@ -1290,7 +1290,6 @@ export default function AdminStallsPage() {
                     onChange={(e) => {
                       const usd = Number(e.target.value);
                       setModalPriceUSD(usd);
-                      setModalPriceNPR(Math.round(usd * exchangeRate));
                     }}
                     placeholder="USD"
                     className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono font-bold text-xs focus:outline-none focus:border-[#218A59] focus:bg-white"

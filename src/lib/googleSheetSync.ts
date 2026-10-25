@@ -283,8 +283,18 @@ export async function getAllStallsForSheet(): Promise<SheetStallItem[]> {
     const bookedDate = override.bookedDate || "";
     const contact = override.contact || "";
 
-    const usdVal = Number(override.priceUSD !== undefined ? override.priceUSD : b.priceUSD || 0);
-    const nprVal = Number(override.priceNPR !== undefined ? override.priceNPR : Math.round(usdVal * 154));
+    const usdVal = Number(
+      override.priceUSD !== undefined && override.priceUSD !== null
+        ? override.priceUSD
+        : b.priceUSD || 0
+    );
+    const nprVal = Number(
+      override.priceNPR !== undefined && override.priceNPR !== null
+        ? override.priceNPR
+        : b.priceNPR !== undefined && b.priceNPR !== null && Number(b.priceNPR) > 0
+        ? b.priceNPR
+        : Math.round(usdVal * 134.5)
+    );
     const formattedUSD = "$" + usdVal.toLocaleString("en-US");
     const formattedNPR = "NPR " + nprVal.toLocaleString("en-US");
 
