@@ -225,35 +225,39 @@ export default function InteractiveFloorPlan({
     loadFloorPlan();
   }, []);
 
-  // Filter stall elements (ONLY rectangular stalls, never polygons and never boundary outlines)
-  const stallElements = elements.filter(
-    (el) =>
-      el.type !== "polygon" &&
-      (!el.points || el.points.length < 3) &&
-      el.category !== "Hollow Wall / Boundary" &&
-      el.category !== "Zone / Functional Area" &&
-      el.color !== "transparent" &&
-      el.fillOpacity !== 0 &&
-      (el.type === "stall" || el.type === "custom-shape" || !el.type)
-  );
-
-  // Drawing elements (lines, arcs, pencil strokes, text labels, circles, walls, boundary polygons, zone boxes, and outlines)
-  const drawingElements = elements.filter(
-    (el) =>
+  // Helper to check if an element is an interactive stall
+  const isStallElement = (el: any) => {
+    if (!el) return false;
+    if (
+      el.category === "Hollow Wall / Boundary" ||
+      el.category === "Boundary Wall" ||
+      el.category === "Curved Wall" ||
+      el.category === "Zone / Functional Area" ||
+      el.type === "zone" ||
       el.type === "line" ||
       el.type === "pencil" ||
       el.type === "arc" ||
       el.type === "text" ||
-      el.type === "circle" ||
-      el.type === "wall" ||
-      el.type === "polygon" ||
-      el.type === "zone" ||
-      el.category === "Hollow Wall / Boundary" ||
-      el.category === "Zone / Functional Area" ||
-      el.color === "transparent" ||
-      el.fillOpacity === 0 ||
-      Boolean(el.points && el.points.length >= 3)
-  );
+      el.type === "wall"
+    ) {
+      return false;
+    }
+    if (el.color === "transparent" || el.color === "none" || el.fillOpacity === 0) {
+      return false;
+    }
+    if (!el.number || typeof el.number !== "string") return false;
+    const num = el.number.trim().toUpperCase();
+    if (num.startsWith("BLOCK") || num.startsWith("WALL") || num.startsWith("OUTLINE") || num.startsWith("CURVE")) {
+      return false;
+    }
+    return true;
+  };
+
+  // Filter stall elements (interactive stalls)
+  const stallElements = elements.filter(isStallElement);
+
+  // Drawing elements (lines, arcs, pencil strokes, text labels, circles, walls, boundary outlines, zone boxes)
+  const drawingElements = elements.filter((el) => !isStallElement(el));
 
   const getPencilPathData = (points: { x: number; y: number }[]): string => {
     if (!points || points.length === 0) return "";

@@ -15,6 +15,8 @@ export function extractBoothsFromElements(elements: any[]): Booth[] {
     if (!el) return false;
     if (
       el.category === "Hollow Wall / Boundary" ||
+      el.category === "Boundary Wall" ||
+      el.category === "Curved Wall" ||
       el.category === "Zone / Functional Area" ||
       el.type === "zone"
     )
@@ -26,10 +28,9 @@ export function extractBoothsFromElements(elements: any[]): Booth[] {
       el.type === "pencil" ||
       el.type === "arc" ||
       el.type === "text" ||
-      el.type === "polygon"
+      el.type === "wall"
     )
       return false;
-    if (el.points && el.points.length >= 3) return false;
     if (!el.number || typeof el.number !== "string") return false;
     const num = el.number.trim().toUpperCase();
     if (
