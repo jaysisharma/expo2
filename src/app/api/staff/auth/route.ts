@@ -10,6 +10,7 @@ import {
   tooManyLoginAttempts,
 } from "@/lib/session";
 import { verifyPassword } from "@/lib/passwords";
+import { getFirebaseAdminAccounts } from "@/lib/firebaseDb";
 
 export const dynamic = "force-dynamic";
 
@@ -89,11 +90,14 @@ export async function POST(req: NextRequest) {
           gate: defaultAccount.gate,
         };
       } else {
-        // Also check adminUsers.json
+        // Also check admin accounts (Firestore + adminUsers.json)
         try {
-          const raw = await fs.readFile(ADMIN_STORE_PATH, "utf-8");
-          const adminUsers = JSON.parse(raw);
-          const adminAcct = adminUsers[normalizedEmail];
+          const fbUsers = await getFirebaseAdminAccounts();
+          let adminAcct = fbUsers?.[normalizedEmail];
+          if (!adminAcct) {
+            const raw = await fs.readFile(ADMIN_STORE_PATH, "utf-8");
+            adminAcct = JSON.parse(raw)[normalizedEmail];
+          }
           if (adminAcct && verifyPassword(adminAcct.pass, password).valid) {
             matchedStaff = {
               email: normalizedEmail,

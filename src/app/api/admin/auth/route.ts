@@ -11,6 +11,7 @@ import {
   tooManyLoginAttempts,
 } from "@/lib/session";
 import { hashPassword, verifyPassword } from "@/lib/passwords";
+import { getFirebaseAdminAccounts, saveFirebaseAdminAccounts } from "@/lib/firebaseDb";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +36,13 @@ function masterPassword() {
 
 async function loadStoredUsers(): Promise<Record<string, AdminAccount>> {
   try {
+    const fbUsers = await getFirebaseAdminAccounts();
+    if (fbUsers && Object.keys(fbUsers).length > 0) {
+      return fbUsers as Record<string, AdminAccount>;
+    }
+  } catch {}
+
+  try {
     return JSON.parse(await fs.readFile(ADMIN_STORE_PATH, "utf-8"));
   } catch {
     return {};
@@ -42,6 +50,9 @@ async function loadStoredUsers(): Promise<Record<string, AdminAccount>> {
 }
 
 async function saveStoredUsers(users: Record<string, AdminAccount>) {
+  try {
+    await saveFirebaseAdminAccounts(users);
+  } catch {}
   try {
     await fs.mkdir(path.dirname(ADMIN_STORE_PATH), { recursive: true });
     await fs.writeFile(ADMIN_STORE_PATH, JSON.stringify(users, null, 2), "utf-8");
@@ -88,6 +99,81 @@ export async function POST(req: Request) {
         { success: false, message: "Admin login is not configured on the server (AUTH_SECRET missing)." },
         { status: 503 }
       );
+    }
+
+    // CHANGE PASSWORD — allows logged-in admin to update their own password
+    if (action === "change_password") {
+      const session = await getAdminSession(req);
+      if (!session) {
+        return NextResponse.json(
+          { success: false, message: "Unauthorized. Please log in first." },
+          { status: 401 }
+        );
+      }
+
+      const { currentPassword, newPassword, confirmPassword } = body;
+      const cleanCurrent = (currentPassword || "").trim();
+      const cleanNew = (newPassword || "").trim();
+      const cleanConfirm = (confirmPassword || "").trim();
+
+      if (!cleanCurrent || !cleanNew) {
+        return NextResponse.json(
+          { success: false, message: "Current password and new password are required." },
+          { status: 400 }
+        );
+      }
+      if (cleanNew !== cleanConfirm) {
+        return NextResponse.json(
+          { success: false, message: "New passwords do not match." },
+          { status: 400 }
+        );
+      }
+      if (cleanNew.length < 8) {
+        return NextResponse.json(
+          { success: false, message: "New password must be at least 8 characters long." },
+          { status: 400 }
+        );
+      }
+
+      const cleanEmail = session.email.toLowerCase().trim();
+      const users = await loadStoredUsers();
+      const stored = users[cleanEmail];
+
+      let isCurrentValid = false;
+      if (stored) {
+        isCurrentValid = verifyPassword(stored.pass, cleanCurrent).valid;
+      } else if (BUILT_IN_ACCOUNTS[cleanEmail]) {
+        const master = masterPassword();
+        if (master) {
+          isCurrentValid = verifyPassword(master, cleanCurrent).valid;
+        }
+      }
+
+      if (!isCurrentValid) {
+        return NextResponse.json(
+          { success: false, message: "Incorrect current password." },
+          { status: 400 }
+        );
+      }
+
+      // Update password hash
+      const accountData = stored || {
+        name: session.name || BUILT_IN_ACCOUNTS[cleanEmail]?.name || "Administrator",
+        role: (session.role as AdminRole) || "Super Admin",
+        org: session.org || "Himalayan Green Energy Expo Team",
+      };
+
+      users[cleanEmail] = {
+        ...accountData,
+        pass: hashPassword(cleanNew),
+      };
+
+      await saveStoredUsers(users);
+
+      return NextResponse.json({
+        success: true,
+        message: "Password changed successfully! Your new password is now active.",
+      });
     }
 
     // CREATE ADMIN ACCOUNT — only an existing Super Admin can do this

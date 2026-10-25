@@ -269,6 +269,37 @@ export async function updateFirebaseSettings(settingsData: any) {
   }
 }
 
+// ----------------- ADMIN ACCOUNTS -----------------
+export async function getFirebaseAdminAccounts(): Promise<Record<string, any> | null> {
+  try {
+    const ref = doc(db, COLLECTIONS.SETTINGS, "admin_accounts");
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+      return (snap.data()?.accounts as Record<string, any>) || {};
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+export async function saveFirebaseAdminAccounts(accounts: Record<string, any>): Promise<boolean> {
+  try {
+    const ref = doc(db, COLLECTIONS.SETTINGS, "admin_accounts");
+    await setDoc(
+      ref,
+      {
+        accounts,
+        updatedAt: new Date().toISOString(),
+      },
+      { merge: true }
+    );
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 // ----------------- BADGE TEMPLATES -----------------
 export async function getFirebaseBadgeTemplates() {
   try {
