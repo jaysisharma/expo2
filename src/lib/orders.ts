@@ -12,6 +12,7 @@ import {
   setFirebaseBoothOverride,
   updateFirebaseRegistration,
 } from "./firebaseDb";
+import { pushStallToGoogleSheet } from "./googleSheetSync";
 
 const ADMIN_DATA_PATHS = [
   path.join(process.cwd(), "data", "adminData.json"),
@@ -130,6 +131,16 @@ export async function markOrderPaymentStatus(
           ),
         });
       }
+      // Async push to Google Sheet if configured
+      stalls.forEach((s) => {
+        pushStallToGoogleSheet({
+          stallNo: s,
+          status: "Booked",
+          companyName: exhibitorName,
+          bookedDate: now.slice(0, 10),
+          contact: order.record.phone || order.record.email || "",
+        }).catch(() => {});
+      });
     }
   } else {
     await updateFirebaseRegistration(orderId, { ...patch, status: paymentStatus === "PAID" ? "Confirmed" : "Failed" });

@@ -33,6 +33,7 @@ import {
   setFirebaseSponsorshipHold,
   getFirebaseStallBookings,
 } from "@/lib/firebaseDb";
+import { pushStallToGoogleSheet } from "@/lib/googleSheetSync";
 
 // In-memory store for serverless environments (Vercel)
 let memoryAdminData: any = null;
@@ -471,6 +472,13 @@ export async function POST(req: Request) {
             ...(parsedIsPrime !== undefined ? { isPrime: parsedIsPrime } : {}),
           }).catch(() => {}),
         ]);
+
+        // Push update to Google Sheet in background
+        pushStallToGoogleSheet({
+          stallNo: boothNumber,
+          status,
+          companyName: exhibitorName,
+        }).catch(() => {});
 
         // Also sync price, status, and isPrime to savedCustomFloorPlan.json
         try {

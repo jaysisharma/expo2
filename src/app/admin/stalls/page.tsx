@@ -19,6 +19,9 @@ import {
   Loader2,
   Sparkles,
   Plus,
+  FileSpreadsheet,
+  RefreshCw,
+  Copy,
 } from "lucide-react";
 import { boothsData, extractBoothsFromElements } from "@/data/booths";
 import { Booth } from "@/lib/types";
@@ -57,6 +60,12 @@ export default function AdminStallsPage() {
   const [showResetModal, setShowResetModal] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
 
+  // Google Sheet Sync Modal & State
+  const [showSheetModal, setShowSheetModal] = useState(false);
+  const [isSyncingSheet, setIsSyncingSheet] = useState(false);
+  const [sheetWebhookUrl, setSheetWebhookUrl] = useState("");
+  const [copiedScript, setCopiedScript] = useState(false);
+
   // Toast
   const [toastMsg, setToastMsg] = useState<{ text: string; type?: "success" | "error" } | null>(null);
 
@@ -93,6 +102,12 @@ export default function AdminStallsPage() {
 
   useEffect(() => {
     fetchBoothsData();
+    fetch("/api/stalls/sync-sheet")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.webhookUrl) setSheetWebhookUrl(d.webhookUrl);
+      })
+      .catch(() => {});
   }, []);
 
   const exchangeRate = data?.settings?.currencyRateUSD_NPR || 134.5;
@@ -398,6 +413,48 @@ export default function AdminStallsPage() {
     notify("Stall inventory exported to CSV");
   };
 
+  const handleSyncGoogleSheet = async (overrideUrl?: string) => {
+    setIsSyncingSheet(true);
+    try {
+      const urlToUse = overrideUrl || sheetWebhookUrl;
+      const endpoint =
+        "/api/stalls/sync-sheet?action=pull" + (urlToUse ? `&url=${encodeURIComponent(urlToUse)}` : "");
+      const res = await fetch(endpoint);
+      const json = await res.json();
+      if (json.success) {
+        notify(`Synced ${json.count || 0} stalls from Google Sheet!`);
+        setShowSheetModal(false);
+        fetchBoothsData();
+      } else {
+        notify(json.error || "Please configure your Google Apps Script Webhook URL first", "error");
+        setShowSheetModal(true);
+      }
+    } catch {
+      notify("Failed to connect to Google Sheet", "error");
+      setShowSheetModal(true);
+    } finally {
+      setIsSyncingSheet(false);
+    }
+  };
+
+  const handleSaveWebhookUrl = async (url: string) => {
+    if (!url.trim()) return;
+    try {
+      const res = await fetch("/api/stalls/sync-sheet", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "save_webhook_url", webhookUrl: url.trim() }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setSheetWebhookUrl(url.trim());
+        notify("Google Apps Script Webhook URL saved!");
+      }
+    } catch {
+      notify("Failed to save Webhook URL", "error");
+    }
+  };
+
   return (
     <div className="space-y-5 font-sans">
       {/* Toast Alert */}
@@ -458,6 +515,20 @@ export default function AdminStallsPage() {
               <span>Reset All</span>
             </button>
           )}
+
+          <button
+            onClick={() => handleSyncGoogleSheet()}
+            disabled={isSyncingSheet}
+            className="px-3.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+            title="Sync stall booking statuses from Google Sheet"
+          >
+            {isSyncingSheet ? (
+              <RefreshCw className="w-3.5 h-3.5 text-emerald-700 animate-spin" />
+            ) : (
+              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-700" />
+            )}
+            <span>{isSyncingSheet ? "Syncing Sheet..." : "Sync Google Sheet"}</span>
+          </button>
 
           <button
             onClick={exportCSV}
@@ -1291,6 +1362,250 @@ export default function AdminStallsPage() {
           </div>
         </div>
       )}
+      {/* Google Sheet Sync Modal */}
+      {showSheetModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-2xl bg-white rounded-2xl p-6 shadow-2xl space-y-4 border border-slate-200 animate-in fade-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-start justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                  <FileSpreadsheet className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">Google Sheet Stall Sync</h3>
+                  <p className="text-xs text-slate-500">
+                    Connect your live spreadsheet to sync booked/reserved stalls with the website and floor plan.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowSheetModal(false)}
+                className="w-7 h-7 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Current Sheet Link */}
+            <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200 flex items-center justify-between">
+              <div>
+                <span className="text-[10px] font-mono uppercase text-emerald-800 font-bold block">Connected Google Sheet</span>
+                <span className="text-xs text-emerald-950 font-medium">Stall Booking Tracking Sheet</span>
+              </div>
+              <a
+                href="https://docs.google.com/spreadsheets/d/1nG2uJ3TDNseKGNTyldxnii8Fm6DuuIN1nIOIXQX2RVc/edit?gid=0#gid=0"
+                target="_blank"
+                rel="noreferrer"
+                className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors"
+              >
+                <span>Open Sheet</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            </div>
+
+            {/* Webhook Input */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700">Google Apps Script Web App URL</label>
+              <div className="flex gap-2">
+                <input
+                  type="url"
+                  value={sheetWebhookUrl}
+                  onChange={(e) => setSheetWebhookUrl(e.target.value)}
+                  placeholder="https://script.google.com/macros/s/.../exec"
+                  className="flex-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-800 focus:outline-none focus:border-emerald-600 focus:bg-white"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleSaveWebhookUrl(sheetWebhookUrl)}
+                  className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold cursor-pointer shrink-0"
+                >
+                  Save URL
+                </button>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center justify-between pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(GOOGLE_APPS_SCRIPT_TEMPLATE);
+                  setCopiedScript(true);
+                  setTimeout(() => setCopiedScript(false), 2500);
+                  notify("Google Apps Script code copied to clipboard!");
+                }}
+                className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium flex items-center gap-1.5 cursor-pointer"
+              >
+                {copiedScript ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{copiedScript ? "Copied Script Code!" : "Copy Google Apps Script"}</span>
+              </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowSheetModal(false)}
+                  className="px-3 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 text-xs font-medium cursor-pointer"
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSyncGoogleSheet(sheetWebhookUrl)}
+                  disabled={isSyncingSheet || !sheetWebhookUrl.trim()}
+                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer disabled:opacity-50"
+                >
+                  {isSyncingSheet ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                  <span>{isSyncingSheet ? "Syncing..." : "Sync Stalls Now"}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* 3 Step Quick Guide */}
+            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-2 text-slate-600">
+              <span className="font-bold text-slate-800 block text-[11px] uppercase tracking-wider">
+                1-Minute Setup Instructions (100% Free):
+              </span>
+              <ol className="list-decimal list-inside space-y-1.5 text-[11px] leading-relaxed">
+                <li>
+                  Open your <a href="https://docs.google.com/spreadsheets/d/1nG2uJ3TDNseKGNTyldxnii8Fm6DuuIN1nIOIXQX2RVc/edit" target="_blank" rel="noreferrer" className="text-emerald-700 underline font-semibold">Google Sheet</a>, click <strong>Extensions</strong> &rarr; <strong>Apps Script</strong>.
+                </li>
+                <li>
+                  Click <strong>&quot;Copy Google Apps Script&quot;</strong> button above, delete whatever is in the script editor, paste this code, and click <strong>Save</strong>.
+                </li>
+                <li>
+                  Click <strong>Deploy</strong> &rarr; <strong>New deployment</strong>, select <strong>Web app</strong>, set <em>Who has access</em> to <strong>Anyone</strong>, and click <strong>Deploy</strong>. Copy the generated Web App URL and paste it into the field above!
+                </li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
+const GOOGLE_APPS_SCRIPT_TEMPLATE = `// ============================================================================
+// HIMALAYAN GREEN ENERGY EXPO 2027 - GOOGLE SHEET STALL SYNC (100% FREE)
+// ============================================================================
+// Columns: A: Stall No | B: Status | C: Company Name | D: Booked Date | E: Contact
+
+const WEBSITE_SYNC_URL = "https://www.himalayanenergyexpo.com/api/stalls/sync-sheet";
+const SYNC_SECRET = "expo2_secret_sync_2027";
+
+function onOpen() {
+  SpreadsheetApp.getUi()
+    .createMenu("⚡ Expo Stall Sync")
+    .addItem("Sync to Website Database", "pushAllStallsToWebsite")
+    .addToUi();
+}
+
+/** Push all rows from Google Sheet to the Website Database */
+function pushAllStallsToWebsite() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var data = sheet.getDataRange().getValues();
+  if (data.length <= 1) {
+    SpreadsheetApp.getUi().alert("No stall data found in sheet.");
+    return;
+  }
+  
+  var rows = [];
+  for (var i = 1; i < data.length; i++) {
+    var stallNo = String(data[i][0] || "").trim();
+    if (!stallNo) continue;
+    rows.push({
+      stallNo: stallNo,
+      status: String(data[i][1] || "Available").trim(),
+      companyName: String(data[i][2] || "").trim(),
+      bookedDate: String(data[i][3] || "").trim(),
+      contact: String(data[i][4] || "").trim()
+    });
+  }
+
+  var options = {
+    method: "post",
+    contentType: "application/json",
+    payload: JSON.stringify({ secret: SYNC_SECRET, rows: rows }),
+    followRedirects: true,
+    muteHttpExceptions: true
+  };
+
+  try {
+    var res = UrlFetchApp.fetch(WEBSITE_SYNC_URL, options);
+    var code = res.getResponseCode();
+    if (code !== 200) {
+      SpreadsheetApp.getUi().alert("Server returned status " + code + ". Make sure the latest code has been pushed/deployed to Vercel.");
+      return;
+    }
+    var json = JSON.parse(res.getContentText());
+    if (json.success) {
+      SpreadsheetApp.getUi().alert("Success! Synced " + json.count + " stalls to the website & floor plan.");
+    } else {
+      SpreadsheetApp.getUi().alert("Sync error: " + (json.error || "Unknown"));
+    }
+  } catch (err) {
+    SpreadsheetApp.getUi().alert("Error: " + err.toString());
+  }
+}
+
+/** Called by Website to return all rows from Google Sheet as JSON */
+function doGet(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var data = sheet.getDataRange().getValues();
+  var rows = [];
+  for (var i = 1; i < data.length; i++) {
+    var stallNo = String(data[i][0] || "").trim();
+    if (!stallNo) continue;
+    rows.push({
+      stallNo: stallNo,
+      status: String(data[i][1] || "Available").trim(),
+      companyName: String(data[i][2] || "").trim(),
+      bookedDate: String(data[i][3] || "").trim(),
+      contact: String(data[i][4] || "").trim()
+    });
+  }
+  return ContentService.createTextOutput(JSON.stringify({ success: true, count: rows.length, rows: rows }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+/** Called by Website whenever a stall is booked online */
+function doPost(e) {
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    var payload = JSON.parse(e.postData.contents);
+    var stallNo = String(payload.stallNo || "").trim().toUpperCase();
+    if (!stallNo) {
+      return ContentService.createTextOutput(JSON.stringify({ success: false, error: "Missing stallNo" }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    var data = sheet.getDataRange().getValues();
+    var rowIndex = -1;
+    for (var i = 1; i < data.length; i++) {
+      if (String(data[i][0] || "").trim().toUpperCase() === stallNo) {
+        rowIndex = i + 1; // 1-indexed
+        break;
+      }
+    }
+    
+    var status = payload.status || "Booked";
+    var company = payload.companyName || "";
+    var date = payload.bookedDate || Utilities.formatDate(new Date(), "GMT+5:45", "yyyy-MM-dd");
+    var contact = payload.contact || "";
+
+    if (rowIndex > 0) {
+      sheet.getRange(rowIndex, 2).setValue(status);
+      sheet.getRange(rowIndex, 3).setValue(company);
+      sheet.getRange(rowIndex, 4).setValue(date);
+      if (contact) sheet.getRange(rowIndex, 5).setValue(contact);
+    } else {
+      sheet.appendRow([stallNo, status, company, date, contact]);
+    }
+
+    return ContentService.createTextOutput(JSON.stringify({ success: true, stallNo: stallNo, status: status }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ success: false, error: err.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+`;
