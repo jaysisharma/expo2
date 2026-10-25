@@ -124,7 +124,12 @@ export default function AdminStallsPage() {
 
   const mergedBooths: Booth[] = useMemo(() => {
     return baseBooths.map((b) => {
-      const override = data?.boothOverrides?.[b.number];
+      const zeroPadded = b.number.replace(/^([A-Za-z]+)(\d)$/, "$10$2");
+      const strippedZero = b.number.replace(/^([A-Za-z]+)0+(\d+)$/, "$1$2");
+      const override =
+        data?.boothOverrides?.[b.number] ||
+        data?.boothOverrides?.[zeroPadded] ||
+        data?.boothOverrides?.[strippedZero];
       return override
         ? {
             ...b,

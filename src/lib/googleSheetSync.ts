@@ -20,6 +20,21 @@ export interface SheetStallItem {
   contact?: string;
 }
 
+/**
+ * Normalizes stall number formats so:
+ * "A01", "A-01", "A-1", "a1", "A 1" -> all become canonical "A1"
+ */
+export function normalizeStallNumber(raw: string): string {
+  if (!raw) return "";
+  const cleaned = raw.trim().toUpperCase().replace(/[\s-_#]/g, "");
+  // Match prefix letter(s) and numbers: e.g. "A01" -> letter "A", number "01" -> "A1"
+  const match = cleaned.match(/^([A-Z]+)0*(\d+)$/);
+  if (match) {
+    return `${match[1]}${parseInt(match[2], 10)}`;
+  }
+  return cleaned;
+}
+
 /** Normalize status string to standard "Available" | "Reserved" | "Booked" */
 export function normalizeStallStatus(raw: string | undefined): "Available" | "Reserved" | "Booked" {
   if (!raw) return "Available";
@@ -44,7 +59,7 @@ export async function pushStallToGoogleSheet(item: SheetStallItem) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         action: "update_stall",
-        stallNo: item.stallNo.trim(),
+        stallNo: normalizeStallNumber(item.stallNo),
         status: normalizeStallStatus(item.status),
         companyName: item.companyName || "",
         bookedDate: item.bookedDate || new Date().toISOString().slice(0, 10),
@@ -94,15 +109,14 @@ export async function syncSheetRowsToDb(rows: SheetStallItem[]) {
   // 3. Process each row
   for (const row of rows) {
     if (!row.stallNo || typeof row.stallNo !== "string") continue;
-    const stallNo = row.stallNo.trim().toUpperCase();
-    if (!stallNo) continue;
+    const rawStallNo = row.stallNo.trim().toUpperCase();
+    if (!rawStallNo) continue;
 
+    const canonicalStallNo = normalizeStallNumber(rawStallNo);
     const normalizedStatus = normalizeStallStatus(row.status);
     const exhibitor = normalizedStatus === "Available" ? "" : (row.companyName || "").trim();
 
-    // Local adminData override
-    adminData.boothOverrides[stallNo] = {
-      ...(adminData.boothOverrides[stallNo] || {}),
+    const overridePayload = {
       status: normalizedStatus,
       exhibitorName: exhibitor,
       contact: row.contact || "",
@@ -111,16 +125,37 @@ export async function syncSheetRowsToDb(rows: SheetStallItem[]) {
       syncedFrom: "GoogleSheets",
     };
 
-    // Firebase Firestore override
-    await setFirebaseBoothOverride(stallNo, {
+    // Save under canonical (e.g. A1) AND original raw (e.g. A01)
+    adminData.boothOverrides[canonicalStallNo] = {
+      ...(adminData.boothOverrides[canonicalStallNo] || {}),
+      ...overridePayload,
+    };
+    if (rawStallNo !== canonicalStallNo) {
+      adminData.boothOverrides[rawStallNo] = {
+        ...(adminData.boothOverrides[rawStallNo] || {}),
+        ...overridePayload,
+      };
+    }
+
+    // Firebase Firestore overrides
+    await setFirebaseBoothOverride(canonicalStallNo, {
       status: normalizedStatus,
       exhibitorName: exhibitor,
     }).catch(() => {});
 
+    if (rawStallNo !== canonicalStallNo) {
+      await setFirebaseBoothOverride(rawStallNo, {
+        status: normalizedStatus,
+        exhibitorName: exhibitor,
+      }).catch(() => {});
+    }
+
     // Update floor plan elements if present
     if (floorPlan && Array.isArray(floorPlan.elements)) {
       floorPlan.elements = floorPlan.elements.map((el: any) => {
-        if (el?.number && el.number.trim().toUpperCase() === stallNo) {
+        const elNum = el?.number ? el.number.trim().toUpperCase() : "";
+        const elNorm = normalizeStallNumber(elNum);
+        if (elNum === canonicalStallNo || elNorm === canonicalStallNo || elNum === rawStallNo) {
           return {
             ...el,
             status: normalizedStatus,
@@ -131,7 +166,7 @@ export async function syncSheetRowsToDb(rows: SheetStallItem[]) {
       });
     }
 
-    updatedStalls.push(stallNo);
+    updatedStalls.push(canonicalStallNo);
   }
 
   // 4. Save back local files
