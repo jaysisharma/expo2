@@ -462,6 +462,8 @@ export default function AdminStallsPage() {
       const json = await res.json();
       if (json.success) {
         notify(`Success! Populated all ${json.count || 91} stalls into your Google Sheet!`, "success");
+        setShowSheetModal(false);
+        fetchBoothsData();
       } else {
         notify(json.error || "Failed to populate stalls into Google Sheet", "error");
       }
