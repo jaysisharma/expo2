@@ -1498,10 +1498,23 @@ const WEBSITE_SYNC_URL = "https://www.himalayanenergyexpo.com/api/stalls/sync-sh
 const SYNC_SECRET = "expo2_secret_sync_2027";
 
 function onOpen() {
-  SpreadsheetApp.getUi()
-    .createMenu("⚡ Expo Stall Sync")
-    .addItem("Sync to Website Database", "pushAllStallsToWebsite")
-    .addToUi();
+  try {
+    SpreadsheetApp.getUi()
+      .createMenu("⚡ Expo Stall Sync")
+      .addItem("Sync to Website Database", "pushAllStallsToWebsite")
+      .addToUi();
+  } catch (e) {
+    Logger.log("onOpen error: " + e.toString());
+  }
+}
+
+/** Safe alert that works both inside Google Sheet and in the script editor */
+function showAlert(msg) {
+  try {
+    SpreadsheetApp.getUi().alert(msg);
+  } catch (e) {
+    Logger.log(msg);
+  }
 }
 
 /** Push all rows from Google Sheet to the Website Database */
@@ -1509,7 +1522,7 @@ function pushAllStallsToWebsite() {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   var data = sheet.getDataRange().getValues();
   if (data.length <= 1) {
-    SpreadsheetApp.getUi().alert("No stall data found in sheet.");
+    showAlert("No stall data found in sheet.");
     return;
   }
   
@@ -1526,6 +1539,11 @@ function pushAllStallsToWebsite() {
     });
   }
 
+  if (rows.length === 0) {
+    showAlert("No stall rows found to sync.");
+    return;
+  }
+
   var options = {
     method: "post",
     contentType: "application/json",
@@ -1536,19 +1554,29 @@ function pushAllStallsToWebsite() {
 
   try {
     var res = UrlFetchApp.fetch(WEBSITE_SYNC_URL, options);
+    var text = res.getContentText();
     var code = res.getResponseCode();
+
     if (code !== 200) {
-      SpreadsheetApp.getUi().alert("Server returned status " + code + ". Make sure the latest code has been pushed/deployed to Vercel.");
+      showAlert("Server returned HTTP " + code + ": " + text.slice(0, 150));
       return;
     }
-    var json = JSON.parse(res.getContentText());
+
+    var json;
+    try {
+      json = JSON.parse(text);
+    } catch (parseErr) {
+      showAlert("Response was not JSON: " + text.slice(0, 150));
+      return;
+    }
+
     if (json.success) {
-      SpreadsheetApp.getUi().alert("Success! Synced " + json.count + " stalls to the website & floor plan.");
+      showAlert("Success! Synced " + (json.count || 0) + " stalls to the website & floor plan.");
     } else {
-      SpreadsheetApp.getUi().alert("Sync error: " + (json.error || "Unknown"));
+      showAlert("Sync error: " + (json.error || "Unknown"));
     }
   } catch (err) {
-    SpreadsheetApp.getUi().alert("Error: " + err.toString());
+    showAlert("Error: " + err.toString());
   }
 }
 
