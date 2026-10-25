@@ -38,14 +38,27 @@ export async function POST(req: Request) {
       }
 
       const res = await fetch(targetUrl, { redirect: "follow" });
-      if (!res.ok) {
+      const text = await res.text();
+      let sheetJson: any;
+      try {
+        sheetJson = JSON.parse(text);
+      } catch {
+        if (text.includes("ServiceLogin") || text.includes("<!DOCTYPE") || text.includes("<html")) {
+          return NextResponse.json(
+            {
+              success: false,
+              error:
+                "Google access restricted: In Apps Script, click Deploy -> Manage deployments -> Edit (pencil icon), set 'Who has access' to 'Anyone', and click Deploy.",
+            },
+            { status: 403 }
+          );
+        }
         return NextResponse.json(
-          { success: false, error: `Failed to fetch from sheet: HTTP ${res.status}` },
+          { success: false, error: "Invalid response from Google: " + text.slice(0, 100) },
           { status: 502 }
         );
       }
 
-      const sheetJson = await res.json();
       const sheetRows: SheetStallItem[] = Array.isArray(sheetJson)
         ? sheetJson
         : sheetJson.rows || sheetJson.data || [];
@@ -97,7 +110,27 @@ export async function GET(req: Request) {
 
     try {
       const res = await fetch(webhookUrl, { redirect: "follow" });
-      const sheetJson = await res.json();
+      const text = await res.text();
+      let sheetJson: any;
+      try {
+        sheetJson = JSON.parse(text);
+      } catch {
+        if (text.includes("ServiceLogin") || text.includes("<!DOCTYPE") || text.includes("<html")) {
+          return NextResponse.json(
+            {
+              success: false,
+              error:
+                "Google access restricted: In Apps Script, click Deploy -> Manage deployments -> Edit (pencil icon), set 'Who has access' to 'Anyone', and click Deploy.",
+            },
+            { status: 403 }
+          );
+        }
+        return NextResponse.json(
+          { success: false, error: "Invalid response from Google: " + text.slice(0, 100) },
+          { status: 502 }
+        );
+      }
+
       const sheetRows: SheetStallItem[] = Array.isArray(sheetJson)
         ? sheetJson
         : sheetJson.rows || sheetJson.data || [];
