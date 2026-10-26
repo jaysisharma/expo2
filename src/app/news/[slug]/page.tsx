@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import { NewsImage } from "@/components/news/NewsImage";
 import { getFirebaseNews } from "@/lib/firebaseDb";
+import { JsonLd } from "@/components/seo/StructuredData";
+import { SITE_URL } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 
@@ -87,9 +89,35 @@ export default async function SingleNewsPage({ params }: { params: Promise<{ slu
   }
 
   const sourceLabel = article.sourceName || "Media Release";
+  const published = new Date(article.publishedAt || article.date);
+  const modified = new Date(article.updatedAt || article.publishedAt || article.date);
+  const articleUrl = `${SITE_URL}/news/${encodeURIComponent(article.slug || article.id)}`;
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-900 flex flex-col">
+      {/* NewsArticle data so Google and AI assistants can cite this article */}
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "NewsArticle",
+          headline: article.title,
+          description: article.summary,
+          url: articleUrl,
+          mainEntityOfPage: articleUrl,
+          image: article.image
+            ? [article.image.startsWith("http") ? article.image : `${SITE_URL}${article.image}`]
+            : [`${SITE_URL}/opengraph-image`],
+          ...(isNaN(published.getTime()) ? {} : { datePublished: published.toISOString() }),
+          ...(isNaN(modified.getTime()) ? {} : { dateModified: modified.toISOString() }),
+          author: { "@type": "Organization", name: article.sourceName || "Himalayan Green Energy Expo" },
+          publisher: {
+            "@type": "Organization",
+            name: "Himalayan Green Energy Expo",
+            logo: { "@type": "ImageObject", url: `${SITE_URL}/images/logo.webp` },
+          },
+          ...(article.sourceUrl ? { isBasedOn: article.sourceUrl } : {}),
+        }}
+      />
       {/* Header */}
       <div className="bg-[#04281E] text-white pt-32 sm:pt-36 pb-12 sm:pb-16 px-4 sm:px-6 lg:px-8 border-b border-emerald-500/20">
         <div className="max-w-4xl mx-auto">

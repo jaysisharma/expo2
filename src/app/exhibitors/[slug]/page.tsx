@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { exhibitorsData } from "@/data/exhibitors";
+import { JsonLd } from "@/components/seo/StructuredData";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { ArrowLeft, ArrowRight, MapPin, Globe, Mail, Check, Store } from "lucide-react";
 
 export async function generateStaticParams() {
@@ -21,6 +23,20 @@ export default async function SingleExhibitorPage({ params }: { params: Promise<
 
   return (
     <div className="pt-10 sm:pt-14 pb-24 bg-hydro-light text-slate-900 min-h-screen">
+      {/* Organization data so search engines and AI assistants link the company to the Expo */}
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: exhibitor.name,
+          description: exhibitor.description || exhibitor.tagline,
+          url: exhibitor.website || `${SITE_URL}/exhibitors/${exhibitor.slug}`,
+          ...(exhibitor.logo ? { logo: exhibitor.logo.startsWith("http") ? exhibitor.logo : `${SITE_URL}${exhibitor.logo}` } : {}),
+          ...(exhibitor.contactEmail ? { email: exhibitor.contactEmail } : {}),
+          address: { "@type": "PostalAddress", addressCountry: exhibitor.countryCode },
+          subjectOf: { "@type": "ExhibitionEvent", name: SITE_NAME, url: SITE_URL },
+        }}
+      />
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-12">
         {/* Breadcrumbs */}
         <div className="mb-8">

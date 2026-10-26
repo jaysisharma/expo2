@@ -105,6 +105,14 @@ export async function middleware(request: NextRequest, event: NextFetchEvent) {
 }
 
 export const config = {
-  // All page routes (crawler logging + auth) and API routes; Next.js assets and files with extensions are skipped
-  matcher: ["/api/:path*", "/((?!api|_next/static|_next/image|.*\\..*).*)"],
+  // All page routes (crawler logging + auth) and API routes; Next.js assets and files with extensions are skipped,
+  // except the crawler files below so robots, sitemap and llms.txt fetches show up in the crawler stats
+  matcher: [
+    "/api/:path*",
+    "/((?!api|_next/static|_next/image|.*\\..*).*)",
+    "/robots.txt",
+    "/sitemap.xml",
+    "/llms.txt",
+    "/llms-full.txt",
+  ],
 };

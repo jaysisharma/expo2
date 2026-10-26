@@ -9,6 +9,7 @@ import { buildTrafficSummary, FUNNEL_LABELS, withinDays } from "@/lib/trafficSum
 import ShortLinksPanel from "@/components/admin/ShortLinksPanel";
 
 const RANGES = [7, 30, 90] as const;
+const CRAWLER_FILES = ["/llms.txt", "/llms-full.txt", "/robots.txt", "/sitemap.xml"];
 
 export default function AdminTrafficPage() {
   const [days, setDays] = useState<number>(30);
@@ -95,6 +96,21 @@ export default function AdminTrafficPage() {
     return Object.entries(groups).sort((a, b) => b[1].hits - a[1].hits);
   }, [summary]);
   const totalCrawlerHits = summary.crawlers.reduce((n, c) => n + c.hits, 0);
+  // How often bots fetched the files written for them (robots.txt, sitemap, llms.txt)
+  const crawlerFileRows = useMemo(
+    () =>
+      CRAWLER_FILES.map((file) => {
+        let all = 0;
+        let ai = 0;
+        crawlers.forEach((c) => {
+          const n = Number(c.paths?.[file]) || 0;
+          all += n;
+          if (c.category === "ai") ai += n;
+        });
+        return { file, all, ai };
+      }),
+    [crawlers]
+  );
 
   const ruleInsights = useMemo(() => ruleBasedInsights(summary), [summary]);
   const shownInsights = aiInsights || ruleInsights;
@@ -445,6 +461,19 @@ export default function AdminTrafficPage() {
             ))}
           </div>
         )}
+        <div className="px-4 py-3 border-t border-slate-100 space-y-2">
+          <span className="text-xs font-bold text-slate-800">Crawler files</span>
+          <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+            {crawlerFileRows.map((r) => (
+              <li key={r.file} className="flex items-center justify-between gap-2 text-[11px] text-slate-600">
+                <span className="font-mono truncate">{r.file}</span>
+                <span className="font-mono whitespace-nowrap">
+                  {r.all.toLocaleString()} <span className="text-slate-400">({r.ai.toLocaleString()} AI)</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
 
       {/* UTM link builder */}

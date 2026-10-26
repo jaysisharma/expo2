@@ -174,9 +174,10 @@ export function Hero() {
           </button>
         </div>
 
-        {/* ── 2. TOP-LEFT PATRONS BLOCK (Directly Below Navigation Bar) ─────── */}
+        {/* ── 2. TOP-LEFT PATRON BLOCK (Directly Below Navigation Bar) ─────── */}
         <div className="relative z-10 w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 pt-8 sm:pt-9 lg:pt-10 animate-in fade-in slide-in-from-top-3 duration-700">
-          <div className="inline-flex flex-col items-start select-none max-w-full sm:max-w-xl">
+          {/* On phones, keep clear of the fixed organizer card on the right (116px wide) */}
+          <div className="inline-flex flex-col items-start select-none max-w-full max-sm:pr-[124px] sm:max-w-xl">
             {/* Label with Green Accent Line */}
             <div className="flex items-center gap-2 sm:gap-2.5">
               <span
@@ -184,12 +185,12 @@ export function Hero() {
                 aria-hidden="true"
               />
               <span className="text-[12px] sm:text-[13px] lg:text-[14px] font-bold text-white uppercase tracking-[0.16em] font-sans drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">
-                PATRONS
+                PATRON
               </span>
             </div>
 
             {/* Government Emblem & Ministry Name */}
-            <div className="mt-2 sm:mt-2.5 flex items-center gap-3 sm:gap-3.5">
+            <div className="mt-2 sm:mt-2.5 flex items-center gap-2.5 sm:gap-3.5">
               <div className="relative shrink-0">
                 <Image
                   src="/images/nepal_emblem_transparent.png"
@@ -197,14 +198,14 @@ export function Hero() {
                   width={64}
                   height={56}
                   priority
-                  className="h-11 sm:h-12 lg:h-14 w-auto object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)]"
+                  className="h-10 sm:h-12 lg:h-14 w-auto object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)]"
                 />
               </div>
               <div className="flex flex-col justify-center text-white font-inter-tight">
-                <span className="text-[15px] sm:text-[16px] lg:text-[18px] font-bold leading-tight tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
+                <span className="text-[14px] sm:text-[16px] lg:text-[18px] font-bold leading-tight tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
                   Government of Nepal
                 </span>
-                <span className="text-[12.5px] sm:text-[14px] lg:text-[16px] font-bold text-white/95 leading-tight tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)] mt-0.5 sm:mt-1">
+                <span className="text-[12px] sm:text-[14px] lg:text-[16px] font-bold text-white/95 leading-snug sm:leading-tight tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)] mt-0.5 sm:mt-1">
                   Ministry of Energy, Water Resources and Irrigation
                 </span>
               </div>

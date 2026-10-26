@@ -7,7 +7,7 @@ import {
   getFirebaseFunnelEvents,
 } from "@/lib/firebaseDb";
 import { detectCrawler } from "@/lib/crawlers";
-import { getAdminSession } from "@/lib/session";
+import { getAdminSession, getStaffOrAdminSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +29,8 @@ export async function POST(req: NextRequest) {
   try {
     const ua = req.headers.get("user-agent") || "";
     if (detectCrawler(ua)) return NextResponse.json({ success: true, skipped: "bot" });
+    // Logged-in admins and staff browsing or testing the site aren't real visitors
+    if (await getStaffOrAdminSession(req)) return NextResponse.json({ success: true, skipped: "team" });
 
     const body = await req.json().catch(() => ({}));
 
