@@ -6,7 +6,12 @@ import {
   pushAllStallsToGoogleSheet,
   SheetStallItem,
 } from "@/lib/googleSheetSync";
-import { getFirebaseBoothOverrides, getFirebaseSettings, updateFirebaseSettings } from "@/lib/firebaseDb";
+import {
+  getFirebaseBoothOverrides,
+  getFirebaseSettings,
+  updateFirebaseSettings,
+  clearAllFirebaseBoothOverrides,
+} from "@/lib/firebaseDb";
 import { boothsData } from "@/data/booths";
 
 export const dynamic = "force-dynamic";
@@ -20,6 +25,12 @@ export async function POST(req: Request) {
     const expectedSecret = process.env.GOOGLE_SHEET_SYNC_SECRET || "expo2_secret_sync_2027";
     if (secret && secret !== expectedSecret) {
       return NextResponse.json({ success: false, error: "Unauthorized: Invalid secret" }, { status: 401 });
+    }
+
+    // Reset all stalls override in Firestore
+    if (action === "reset_all_stalls") {
+      await clearAllFirebaseBoothOverrides();
+      return NextResponse.json({ success: true, message: "All stalls reset in database" });
     }
 
     // Save webhook URL if provided

@@ -19,6 +19,7 @@ import {
   deleteFirebaseRegistration,
   getFirebaseBoothOverrides,
   setFirebaseBoothOverride,
+  clearAllFirebaseBoothOverrides,
   getFirebaseInquiries,
   addFirebaseInquiry,
   updateFirebaseInquiryStatus,
@@ -520,7 +521,11 @@ export async function POST(req: Request) {
 
       case "reset_all_booths": {
         data.boothOverrides = {};
-        await saveAdminData(data);
+        memoryAdminData = null;
+        await Promise.all([
+          saveAdminData(data),
+          clearAllFirebaseBoothOverrides().catch((err) => console.error("Firestore reset error:", err)),
+        ]);
         return NextResponse.json({ success: true, message: "All stalls reset to Available" });
       }
 

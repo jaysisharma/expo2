@@ -1250,7 +1250,7 @@
       "priceUSD": 3000,
       "type": "stall",
       "number": "A42",
-      "status": "Booked",
+      "status": "Available",
       "height": 30,
       "x": 120,
       "sizeSqFt": 387,

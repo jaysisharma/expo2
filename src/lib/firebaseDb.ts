@@ -154,6 +154,49 @@ export async function setFirebaseBoothOverride(
   }
 }
 
+export async function deleteFirebaseBoothOverride(boothNumber: string): Promise<boolean> {
+  try {
+    const ref = doc(db, COLLECTIONS.BOOTHS, boothNumber);
+    await deleteDoc(ref);
+    return true;
+  } catch (error) {
+    console.warn("Firestore deleteBoothOverride error:", error);
+    return false;
+  }
+}
+
+export async function clearAllFirebaseBoothOverrides(): Promise<boolean> {
+  try {
+    const snap = await getDocs(collection(db, COLLECTIONS.BOOTHS));
+    if (snap && snap.docs && snap.docs.length > 0) {
+      await Promise.all(
+        snap.docs.map(async (d) => {
+          try {
+            await deleteDoc(doc(db, COLLECTIONS.BOOTHS, d.id));
+          } catch {
+            try {
+              await setDoc(
+                doc(db, COLLECTIONS.BOOTHS, d.id),
+                {
+                  boothNumber: d.id,
+                  status: "Available",
+                  exhibitorName: "",
+                  updatedAt: new Date().toISOString(),
+                },
+                { merge: true }
+              );
+            } catch {}
+          }
+        })
+      );
+    }
+    return true;
+  } catch (error) {
+    console.warn("Firestore clearAllFirebaseBoothOverrides error:", error);
+    return false;
+  }
+}
+
 // ----------------- SPONSORSHIP HOLDS & OVERRIDES -----------------
 export async function getFirebaseSponsorshipHolds(): Promise<Record<string, any> | null> {
   try {
