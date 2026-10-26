@@ -55,7 +55,7 @@ export function Hero() {
       {/* ── 1. CINEMATIC FULL-WIDTH HERO SECTION ───────────────────────────── */}
       <section
         id="hero-section"
-        className="relative w-full min-h-[85vh] lg:min-h-[88vh] flex flex-col justify-end overflow-hidden"
+        className="relative w-full min-h-[85vh] lg:min-h-[88vh] flex flex-col justify-between overflow-hidden"
       >
         {/* Full-bleed High-Definition Drone Hydro Background Video */}
         <div className="absolute inset-0 w-full h-full pointer-events-none select-none z-0 overflow-hidden bg-slate-950">
@@ -87,41 +87,14 @@ export function Hero() {
           className="absolute inset-0 bg-gradient-to-r from-[#071322]/95 via-[#071322]/45 via-45% to-transparent z-[2] pointer-events-none"
         />
 
-        {/* ── STICKY TOP-RIGHT DOCK: PATRON & ORGANIZERS (Attached Fully to Right Edge) ── */}
+        {/* ── STICKY TOP-RIGHT ORGANIZER CARD (Attached Fully to Right Edge) ── */}
         <div
-          className={`fixed top-20 sm:top-24 right-0 z-40 select-none transition-all duration-300 ${isPastHero ? 'max-sm:opacity-0 max-sm:pointer-events-none max-sm:translate-x-full' : 'max-sm:opacity-100 max-sm:translate-x-0'
+          className={`fixed top-24 sm:top-28 right-0 z-40 select-none transition-all duration-300 ${isPastHero ? 'max-sm:opacity-0 max-sm:pointer-events-none max-sm:translate-x-full' : 'max-sm:opacity-100 max-sm:translate-x-0'
             }`}
         >
-          <div className="w-[136px] sm:w-[152px] bg-white rounded-l-2xl rounded-r-none shadow-[-5px_10px_25px_rgba(0,0,0,0.25)] p-2.5 sm:p-3 flex flex-col items-center text-center border-y border-l border-slate-200/90">
-            {/* Header: Patron */}
-            <div className="text-[11px] sm:text-[12px] font-bold text-slate-800 leading-snug pb-1 mb-1.5 border-b border-slate-200/80 w-full text-center tracking-tight uppercase">
-              Patron
-            </div>
-
-            {/* Nepal Ministry Government Emblem Banner */}
-            <a
-              href="https://moewri.gov.np"
-              target="_blank"
-              rel="noopener noreferrer"
-              title="Ministry of Energy, Water Resources and Irrigation — Government of Nepal"
-              className="group block w-full text-center transition-opacity hover:opacity-90 py-0.5"
-            >
-              <div className="relative h-[38px] sm:h-[44px] w-full flex items-center justify-center">
-                <Image
-                  src="/Nepal%20Ministry%20Government%20Emblem%20Banner.png"
-                  alt="Government of Nepal - Ministry of Energy, Water Resources and Irrigation"
-                  fill
-                  className="object-contain transition-transform group-hover:scale-105"
-                  priority
-                />
-              </div>
-            </a>
-
-            {/* Subtle Divider */}
-            <div className="w-full border-t border-slate-200/80 my-2" />
-
+          <div className="w-[116px] sm:w-[132px] bg-white rounded-l-2xl rounded-r-none shadow-[-5px_10px_25px_rgba(0,0,0,0.25)] p-2.5 sm:p-3 flex flex-col items-center text-center border-y border-l border-slate-200/90">
             {/* Header: Jointly Organized */}
-            <div className="text-[10.5px] sm:text-[11.5px] font-bold text-slate-800 leading-snug pb-1 mb-1.5 border-b border-slate-200/80 w-full text-center tracking-tight">
+            <div className="text-[11.5px] sm:text-[13px] font-bold text-slate-800 leading-snug pb-1.5 mb-2 border-b border-slate-200/80 w-full text-center tracking-tight">
               Jointly Organized by
             </div>
 
@@ -131,7 +104,7 @@ export function Hero() {
               target="_blank"
               rel="noopener noreferrer"
               title="IPPAN - Independent Power Producers' Association, Nepal"
-              className="group block w-full text-center transition-opacity hover:opacity-90 py-0.5"
+              className="group block w-full text-center transition-opacity hover:opacity-90 py-1"
             >
               <div className="relative h-7 sm:h-8 w-full flex items-center justify-center">
                 <Image
@@ -144,9 +117,9 @@ export function Hero() {
             </a>
 
             {/* Divider with & */}
-            <div className="relative w-full py-1 flex items-center justify-center my-0.5">
+            <div className="relative w-full py-1.5 flex items-center justify-center my-0.5">
               <div className="w-full border-t border-slate-200/80" />
-              <span className="absolute px-2 bg-white text-[10px] sm:text-[11px] font-bold text-slate-500 font-mono">
+              <span className="absolute px-2 bg-white text-[11px] sm:text-xs font-bold text-slate-500 font-mono">
                 &amp;
               </span>
             </div>
@@ -157,9 +130,9 @@ export function Hero() {
               target="_blank"
               rel="noopener noreferrer"
               title="Event Solution Nepal"
-              className="group block w-full text-center transition-opacity hover:opacity-90 py-0.5"
+              className="group block w-full text-center transition-opacity hover:opacity-90 py-1"
             >
-              <div className="relative h-[32px] sm:h-[38px] w-full flex items-center justify-center">
+              <div className="relative h-[34px] sm:h-[40px] w-full flex items-center justify-center">
                 <Image
                   src="/images/event_solution_vector.svg"
                   alt="Event Solution"
@@ -172,7 +145,7 @@ export function Hero() {
         </div>
 
         {/* ── RIGHT-SIDE VERTICAL FLOATING PLAY PILL (Matching Mockup) ────── */}
-        <div className="absolute top-[370px] sm:top-[390px] lg:top-[410px] right-3 sm:right-4 z-20">
+        <div className="absolute top-64 sm:top-72 lg:top-76 right-3 sm:right-4 z-20">
           <button
             type="button"
             onClick={() => setIsVideoOpen(true)}
@@ -201,8 +174,46 @@ export function Hero() {
           </button>
         </div>
 
-        {/* ── 2. HERO FOREGROUND CONTENT (Anchored to Bottom-Left) ─────────── */}
-        <div className="relative z-10 w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 mt-auto pt-24 sm:pt-32 pb-10 sm:pb-14 lg:pb-16 flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+        {/* ── 2. TOP-LEFT PATRONS BLOCK (Directly Below Navigation Bar) ─────── */}
+        <div className="relative z-10 w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 pt-8 sm:pt-9 lg:pt-10 animate-in fade-in slide-in-from-top-3 duration-700">
+          <div className="inline-flex flex-col items-start select-none max-w-full sm:max-w-xl">
+            {/* Label with Green Accent Line */}
+            <div className="flex items-center gap-2 sm:gap-2.5">
+              <span
+                className="w-5 sm:w-6 h-[2px] bg-[#00E599] rounded-full shrink-0 shadow-[0_0_8px_rgba(0,229,153,0.5)]"
+                aria-hidden="true"
+              />
+              <span className="text-[12px] sm:text-[13px] lg:text-[14px] font-bold text-white uppercase tracking-[0.16em] font-sans drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">
+                PATRONS
+              </span>
+            </div>
+
+            {/* Government Emblem & Ministry Name */}
+            <div className="mt-2 sm:mt-2.5 flex items-center gap-3 sm:gap-3.5">
+              <div className="relative shrink-0">
+                <Image
+                  src="/images/nepal_emblem_transparent.png"
+                  alt="Government of Nepal Emblem"
+                  width={64}
+                  height={56}
+                  priority
+                  className="h-11 sm:h-12 lg:h-14 w-auto object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)]"
+                />
+              </div>
+              <div className="flex flex-col justify-center text-white font-inter-tight">
+                <span className="text-[15px] sm:text-[16px] lg:text-[18px] font-bold leading-tight tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
+                  Government of Nepal
+                </span>
+                <span className="text-[12.5px] sm:text-[14px] lg:text-[16px] font-bold text-white/95 leading-tight tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)] mt-0.5 sm:mt-1">
+                  Ministry of Energy, Water Resources and Irrigation
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── 3. HERO FOREGROUND CONTENT (Anchored to Bottom-Left) ─────────── */}
+        <div className="relative z-10 w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 mt-auto pt-14 sm:pt-20 lg:pt-24 pb-10 sm:pb-14 lg:pb-16 flex flex-col lg:flex-row lg:items-end justify-between gap-8">
           {/* Left Column: Anchored Bottom-Left */}
           <div className="w-full max-w-2xl text-left space-y-4 sm:space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* Main Headline */}
@@ -324,7 +335,7 @@ export function Hero() {
         </div>
       </section>
 
-      {/* ── 3. CINEMATIC DRONE FILM & PAST EDITIONS GLIMPSE POPUP MODAL ──────── */}
+      {/* ── 4. CINEMATIC DRONE FILM & PAST EDITIONS GLIMPSE POPUP MODAL ──────── */}
       <DroneCinemaModal
         isOpen={isVideoOpen}
         onClose={() => setIsVideoOpen(false)}
