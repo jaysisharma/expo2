@@ -87,14 +87,41 @@ export function Hero() {
           className="absolute inset-0 bg-gradient-to-r from-[#071322]/95 via-[#071322]/45 via-45% to-transparent z-[2] pointer-events-none"
         />
 
-        {/* ── STICKY TOP-RIGHT ORGANIZER CARD (Attached Fully to Right Edge) ── */}
+        {/* ── STICKY TOP-RIGHT DOCK: PATRON & ORGANIZERS (Attached Fully to Right Edge) ── */}
         <div
-          className={`fixed top-24 sm:top-28 right-0 z-40 select-none transition-all duration-300 ${isPastHero ? 'max-sm:opacity-0 max-sm:pointer-events-none max-sm:translate-x-full' : 'max-sm:opacity-100 max-sm:translate-x-0'
+          className={`fixed top-20 sm:top-24 right-0 z-40 select-none transition-all duration-300 ${isPastHero ? 'max-sm:opacity-0 max-sm:pointer-events-none max-sm:translate-x-full' : 'max-sm:opacity-100 max-sm:translate-x-0'
             }`}
         >
-          <div className="w-[116px] sm:w-[132px] bg-white rounded-l-2xl rounded-r-none shadow-[-5px_10px_25px_rgba(0,0,0,0.25)] p-2.5 sm:p-3 flex flex-col items-center text-center border-y border-l border-slate-200/90">
+          <div className="w-[136px] sm:w-[152px] bg-white rounded-l-2xl rounded-r-none shadow-[-5px_10px_25px_rgba(0,0,0,0.25)] p-2.5 sm:p-3 flex flex-col items-center text-center border-y border-l border-slate-200/90">
+            {/* Header: Patron */}
+            <div className="text-[11px] sm:text-[12px] font-bold text-slate-800 leading-snug pb-1 mb-1.5 border-b border-slate-200/80 w-full text-center tracking-tight uppercase">
+              Patron
+            </div>
+
+            {/* Nepal Ministry Government Emblem Banner */}
+            <a
+              href="https://moewri.gov.np"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Ministry of Energy, Water Resources and Irrigation — Government of Nepal"
+              className="group block w-full text-center transition-opacity hover:opacity-90 py-0.5"
+            >
+              <div className="relative h-[38px] sm:h-[44px] w-full flex items-center justify-center">
+                <Image
+                  src="/Nepal%20Ministry%20Government%20Emblem%20Banner.png"
+                  alt="Government of Nepal - Ministry of Energy, Water Resources and Irrigation"
+                  fill
+                  className="object-contain transition-transform group-hover:scale-105"
+                  priority
+                />
+              </div>
+            </a>
+
+            {/* Subtle Divider */}
+            <div className="w-full border-t border-slate-200/80 my-2" />
+
             {/* Header: Jointly Organized */}
-            <div className="text-[11.5px] sm:text-[13px] font-bold text-slate-800 leading-snug pb-1.5 mb-2 border-b border-slate-200/80 w-full text-center tracking-tight">
+            <div className="text-[10.5px] sm:text-[11.5px] font-bold text-slate-800 leading-snug pb-1 mb-1.5 border-b border-slate-200/80 w-full text-center tracking-tight">
               Jointly Organized by
             </div>
 
@@ -104,7 +131,7 @@ export function Hero() {
               target="_blank"
               rel="noopener noreferrer"
               title="IPPAN - Independent Power Producers' Association, Nepal"
-              className="group block w-full text-center transition-opacity hover:opacity-90 py-1"
+              className="group block w-full text-center transition-opacity hover:opacity-90 py-0.5"
             >
               <div className="relative h-7 sm:h-8 w-full flex items-center justify-center">
                 <Image
@@ -117,9 +144,9 @@ export function Hero() {
             </a>
 
             {/* Divider with & */}
-            <div className="relative w-full py-1.5 flex items-center justify-center my-0.5">
+            <div className="relative w-full py-1 flex items-center justify-center my-0.5">
               <div className="w-full border-t border-slate-200/80" />
-              <span className="absolute px-2 bg-white text-[11px] sm:text-xs font-bold text-slate-500 font-mono">
+              <span className="absolute px-2 bg-white text-[10px] sm:text-[11px] font-bold text-slate-500 font-mono">
                 &amp;
               </span>
             </div>
@@ -130,9 +157,9 @@ export function Hero() {
               target="_blank"
               rel="noopener noreferrer"
               title="Event Solution Nepal"
-              className="group block w-full text-center transition-opacity hover:opacity-90 py-1"
+              className="group block w-full text-center transition-opacity hover:opacity-90 py-0.5"
             >
-              <div className="relative h-[34px] sm:h-[40px] w-full flex items-center justify-center">
+              <div className="relative h-[32px] sm:h-[38px] w-full flex items-center justify-center">
                 <Image
                   src="/images/event_solution_vector.svg"
                   alt="Event Solution"
@@ -145,7 +172,7 @@ export function Hero() {
         </div>
 
         {/* ── RIGHT-SIDE VERTICAL FLOATING PLAY PILL (Matching Mockup) ────── */}
-        <div className="absolute top-64 sm:top-72 lg:top-76 right-3 sm:right-4 z-20">
+        <div className="absolute top-[370px] sm:top-[390px] lg:top-[410px] right-3 sm:right-4 z-20">
           <button
             type="button"
             onClick={() => setIsVideoOpen(true)}
