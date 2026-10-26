@@ -6,11 +6,14 @@ import {
   pushAllStallsToGoogleSheet,
   SheetStallItem,
 } from "@/lib/googleSheetSync";
+import fs from "fs/promises";
+import path from "path";
 import {
   getFirebaseBoothOverrides,
   getFirebaseSettings,
   updateFirebaseSettings,
   clearAllFirebaseBoothOverrides,
+  saveFirebaseFloorPlan,
 } from "@/lib/firebaseDb";
 import { boothsData } from "@/data/booths";
 
@@ -31,6 +34,23 @@ export async function POST(req: Request) {
     if (action === "reset_all_stalls") {
       await clearAllFirebaseBoothOverrides();
       return NextResponse.json({ success: true, message: "All stalls reset in database" });
+    }
+
+    // Synchronize savedCustomFloorPlan.json to Firestore
+    if (action === "sync_floor_plan_from_file") {
+      const ROOT_FLOOR_PATH = path.join(process.cwd(), "data", "savedCustomFloorPlan.json");
+      const SRC_FLOOR_PATH = path.join(process.cwd(), "src", "data", "savedCustomFloorPlan.json");
+      let fpData: any = null;
+      try {
+        fpData = JSON.parse(await fs.readFile(ROOT_FLOOR_PATH, "utf-8"));
+      } catch {
+        fpData = JSON.parse(await fs.readFile(SRC_FLOOR_PATH, "utf-8"));
+      }
+      if (fpData) {
+        await saveFirebaseFloorPlan(fpData);
+        return NextResponse.json({ success: true, message: "Floor plan synchronized to Firestore", elementsCount: fpData.elements?.length });
+      }
+      return NextResponse.json({ success: false, error: "Floor plan file not found" }, { status: 404 });
     }
 
     // Save webhook URL if provided

@@ -105,8 +105,8 @@ export function CanvasElementRenderer({
       {elements.map((el) => {
         const isSelected = selectedIds.includes(el.id);
 
-        // 1. Stall / Rectangle
-        if (el.type === "stall" || el.type === "zone") {
+        // 1. Stall / Rectangle (only when not a multi-point polygon)
+        if ((el.type === "stall" || el.type === "zone") && (!el.points || el.points.length < 3)) {
           const isOutline =
             el.color === "transparent" ||
             el.color === "none" ||
@@ -364,7 +364,7 @@ export function CanvasElementRenderer({
         }
 
         // 6. Polygon / Multi-Point Shape Stall
-        if (el.type === "polygon" && el.points && el.points.length >= 3) {
+        if ((el.type === "polygon" || (el.points && el.points.length >= 3)) && el.points && el.points.length >= 3) {
           const pointsString = el.points.map((p) => `${p.x},${p.y}`).join(" ");
           const centerX = el.x + el.width / 2;
           const centerY = el.y + el.height / 2;

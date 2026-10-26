@@ -928,7 +928,7 @@
       "rotation": 0,
       "borderRadius": 4,
       "y": 278,
-      "type": "stall",
+      "type": "polygon",
       "id": "POLY_1789602898442",
       "height": 50,
       "status": "Available",
@@ -983,7 +983,7 @@
       "strokeWidth": 2,
       "fillOpacity": 0.85,
       "sizeSqFt": 388,
-      "type": "stall"
+      "type": "polygon"
     },
     {
       "width": 30,
@@ -1809,7 +1809,7 @@
       "width": 40,
       "number": "A4",
       "priceNPR": 378000,
-      "type": "stall",
+      "type": "polygon",
       "strokeWidth": 2,
       "fillOpacity": 0.85,
       "height": 60,
@@ -1858,7 +1858,7 @@
           "x": 180
         }
       ],
-      "type": "stall",
+      "type": "polygon",
       "category": "6m × 6m Space"
     },
     {
