@@ -253,11 +253,17 @@ export default function InteractiveFloorPlan({
     return true;
   };
 
+  // Helper to check if an element is a polygon (custom boundary with points)
+  const isPolygonElement = (el: any) =>
+    (el.type === "polygon" || (Array.isArray(el.points) && el.points.length >= 3)) &&
+    Array.isArray(el.points) &&
+    el.points.length >= 3;
+
   // Filter stall elements (interactive stalls)
   const stallElements = elements.filter(isStallElement);
 
-  // Drawing elements (lines, arcs, pencil strokes, text labels, circles, walls, boundary outlines, zone boxes)
-  const drawingElements = elements.filter((el) => !isStallElement(el));
+  // Drawing elements (lines, arcs, pencil strokes, text labels, circles, walls, boundary outlines, zone boxes, and polygon stalls)
+  const drawingElements = elements.filter((el) => !isStallElement(el) || isPolygonElement(el));
 
   const getPencilPathData = (points: { x: number; y: number }[]): string => {
     if (!points || points.length === 0) return "";
@@ -506,10 +512,10 @@ export default function InteractiveFloorPlan({
               } bg-[size:20px_20px]`}
             />
 
-            {/* SVG Drawing Layer for Lines, Arcs, Pencil Strokes, Text Labels & Shapes */}
+            {/* SVG Drawing Layer for Lines, Arcs, Pencil Strokes, Text Labels, Shapes & Polygon Stalls */}
             <svg
               viewBox={`0 0 ${canvasWidth} ${canvasHeight}`}
-              className="absolute inset-0 w-full h-full pointer-events-none z-10"
+              className="absolute inset-0 w-full h-full pointer-events-none z-20"
             >
               {drawingElements.map((el) => {
                 // 1. Straight Line / Wall
@@ -610,7 +616,7 @@ export default function InteractiveFloorPlan({
                 }
 
                 // 6. Polygon (Boundary Outline, Functional Zone, or Bookable Polygon Stall)
-                if ((el.type === "polygon" || (el.points && el.points.length >= 3)) && el.points) {
+                if (isPolygonElement(el) && el.points) {
                   const pointsStr = el.points.map((p: any) => `${p.x},${p.y}`).join(" ");
                   const isOutline =
                     el.category === "Hollow Wall / Boundary" ||
@@ -626,70 +632,118 @@ export default function InteractiveFloorPlan({
                       (el.number && !el.number.startsWith("WALL") && !el.number.startsWith("OUTLINE")));
 
                   const stallNumber = el.number || el.id;
+                  const override = boothOverrides[stallNumber] || (el.id && boothOverrides[el.id]);
+                  const effectiveStatus = override?.status || el.status;
+                  const isPrime = Boolean(override?.isPrime ?? el.isPrime);
+                  const isBooked = effectiveStatus === "Booked";
+                  const isReserved = effectiveStatus === "Reserved";
                   const isSelected = isBookable && selectedStalls.some((s) => s.toLowerCase() === stallNumber.toLowerCase() || (el.id && s.toLowerCase() === el.id.toLowerCase()));
                   const isHovered = isBookable && hoveredStall?.id === el.id;
+
+                  const q = searchQuery.toLowerCase().trim();
+                  const isMatchSearch =
+                    q !== "" &&
+                    (stallNumber.toLowerCase().includes(q) ||
+                      (el.category && el.category.toLowerCase().includes(q)));
+
+                  const fillColor = isOutline
+                    ? "none"
+                    : isSelected
+                    ? "#10B981"
+                    : isBooked
+                    ? "#475569"
+                    : isReserved
+                    ? "#F59E0B"
+                    : isHovered
+                    ? "#38BDF8"
+                    : el.color === "transparent" || el.color === "none"
+                    ? "none"
+                    : el.color || "#0284C7";
+
+                  const strokeColor = isOutline
+                    ? el.borderColor || "#38BDF8"
+                    : isMatchSearch
+                    ? "#FACC15"
+                    : isSelected
+                    ? "#34D399"
+                    : isHovered
+                    ? "#FFFFFF"
+                    : isPrime && !isBooked
+                    ? "#F59E0B"
+                    : el.borderColor || "#38BDF8";
+
+                  const strokeW = isOutline
+                    ? el.strokeWidth || 2
+                    : isMatchSearch
+                    ? (el.strokeWidth || 2) + 3
+                    : isSelected
+                    ? 3
+                    : isHovered
+                    ? 2.5
+                    : isPrime
+                    ? 2.5
+                    : el.strokeWidth || 2;
+
+                  const polyCenterX =
+                    el.points && el.points.length >= 3
+                      ? el.points.reduce((sum: number, p: any) => sum + p.x, 0) / el.points.length
+                      : el.x + el.width / 2;
+                  const polyCenterY =
+                    el.points && el.points.length >= 3
+                      ? el.points.reduce((sum: number, p: any) => sum + p.y, 0) / el.points.length
+                      : el.y + el.height / 2;
+                  const textCenterX = polyCenterX + (el.textOffsetX || 0);
+                  const textCenterY = polyCenterY + (el.textOffsetY || 0);
 
                   return (
                     <g
                       key={el.id}
-                      className={isBookable ? "cursor-pointer pointer-events-auto" : ""}
+                      className={isBookable ? `cursor-pointer pointer-events-auto ${isBooked ? "cursor-not-allowed opacity-60" : "transition-transform hover:opacity-90"}` : ""}
+                      style={{ pointerEvents: isBookable ? "auto" : undefined, cursor: isBookable ? (isBooked ? "not-allowed" : "pointer") : "default" }}
                       onClick={() => isBookable && toggleStall(el)}
                       onMouseEnter={() => {
-                        if (typeof window !== "undefined" && window.innerWidth >= 768) {
-                          isBookable && setHoveredStall(el);
+                        if (typeof window !== "undefined" && window.innerWidth >= 768 && isBookable) {
+                          setHoveredStall(el);
                         }
                       }}
                       onMouseLeave={() => {
-                        if (typeof window !== "undefined" && window.innerWidth >= 768) {
-                          isBookable && setHoveredStall(null);
+                        if (typeof window !== "undefined" && window.innerWidth >= 768 && isBookable) {
+                          setHoveredStall(null);
                         }
                       }}
                     >
                       <polygon
                         points={pointsStr}
-                        fill={
-                          isOutline
-                            ? "none"
-                            : isSelected
-                            ? "#10B981"
-                            : isHovered
-                            ? "#38BDF8"
-                            : el.color === "transparent" || el.color === "none"
-                            ? "none"
-                            : el.color || "#0284C7"
-                        }
+                        fill={fillColor}
                         fillOpacity={
                           isOutline
                             ? 0
                             : isSelected
-                            ? 0.9
+                            ? 0.95
+                            : isBooked
+                            ? 0.6
                             : isHovered
-                            ? 0.85
+                            ? 0.9
                             : el.fillOpacity ?? (isZone ? 0.45 : 0.85)
                         }
-                        stroke={
-                          isOutline
-                            ? el.borderColor || "#38BDF8"
-                            : isSelected
-                            ? "#34D399"
-                            : isHovered
-                            ? "#FFFFFF"
-                            : el.borderColor || "#38BDF8"
-                        }
-                        strokeWidth={isOutline ? el.strokeWidth || 2 : isSelected ? 3 : isHovered ? 2.5 : el.strokeWidth || 2}
+                        stroke={strokeColor}
+                        strokeWidth={strokeW}
                         strokeLinejoin="round"
                         strokeLinecap="round"
-                        pointerEvents={isOutline ? "none" : undefined}
+                        style={{
+                          pointerEvents: isOutline ? "none" : isBookable ? "auto" : undefined,
+                          cursor: isBookable ? (isBooked ? "not-allowed" : "pointer") : "default",
+                        }}
                       />
                       {el.number && !isOutline && (
                         <text
-                          x={el.x + el.width / 2 + (el.textOffsetX || 0)}
-                          y={el.y + el.height / 2 + (el.textOffsetY || 0)}
+                          x={textCenterX}
+                          y={textCenterY - (el.dimensions && el.width >= 50 && el.height >= 40 ? 5 : 0)}
                           textAnchor="middle"
                           dominantBaseline="central"
                           transform={
                             el.textRotation
-                              ? `rotate(${el.textRotation}, ${el.x + el.width / 2 + (el.textOffsetX || 0)}, ${el.y + el.height / 2 + (el.textOffsetY || 0)})`
+                              ? `rotate(${el.textRotation}, ${textCenterX}, ${textCenterY})`
                               : undefined
                           }
                           fill={el.textColor || "#FFFFFF"}
@@ -698,7 +752,28 @@ export default function InteractiveFloorPlan({
                           fontFamily={isZone ? "sans-serif" : "monospace"}
                           className="select-none pointer-events-none drop-shadow-md"
                         >
-                          {isSelected ? `✓ ${stallNumber}` : stallNumber}
+                          {isSelected ? `✓ ${stallNumber}` : isPrime ? `★ ${stallNumber}` : stallNumber}
+                        </text>
+                      )}
+                      {el.number && !isOutline && el.dimensions && el.width >= 50 && el.height >= 40 && (
+                        <text
+                          x={textCenterX}
+                          y={textCenterY + 7}
+                          textAnchor="middle"
+                          dominantBaseline="central"
+                          transform={
+                            el.textRotation
+                              ? `rotate(${el.textRotation}, ${textCenterX}, ${textCenterY})`
+                              : undefined
+                          }
+                          fill={el.textColor || "#FFFFFF"}
+                          fillOpacity={0.8}
+                          fontSize={Math.max(6.5, Math.round((el.fontSize || 10) * 0.72))}
+                          fontWeight="normal"
+                          fontFamily="sans-serif"
+                          className="select-none pointer-events-none drop-shadow-sm"
+                        >
+                          {el.dimensions}
                         </text>
                       )}
                     </g>
@@ -769,8 +844,8 @@ export default function InteractiveFloorPlan({
               })}
             </svg>
 
-            {/* Render All Custom Drawn Stalls */}
-            {stallElements.map((el) => {
+            {/* Render Rectangular Custom Drawn Stalls (multi-point polygon stalls are rendered in the SVG layer) */}
+            {stallElements.filter((el) => !isPolygonElement(el)).map((el) => {
               const stallNumber = el.number || el.id;
               const override = boothOverrides[stallNumber] || (el.id && boothOverrides[el.id]);
               const effectiveStatus = override?.status || el.status;
