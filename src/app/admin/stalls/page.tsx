@@ -1742,6 +1742,12 @@ function pullAllStallsFromWebsite() {
       sheet.getRange(2, 1, sheet.getLastRow() - 1, 11).clearContent();
     }
 
+    // Ensure sheet has enough rows for all stalls
+    var requiredRows = rows.length + 1;
+    if (sheet.getMaxRows() < requiredRows) {
+      sheet.insertRowsAfter(sheet.getMaxRows(), requiredRows - sheet.getMaxRows());
+    }
+
     // Write all stalls in batch
     if (rows.length > 0) {
       sheet.getRange(2, 1, rows.length, 11).setValues(rows);
@@ -1899,6 +1905,11 @@ function doPost(e) {
 
       if (sheet.getLastRow() > 1) {
         sheet.getRange(2, 1, sheet.getLastRow() - 1, 11).clearContent();
+      }
+
+      var requiredRows = rows.length + 1;
+      if (sheet.getMaxRows() < requiredRows) {
+        sheet.insertRowsAfter(sheet.getMaxRows(), requiredRows - sheet.getMaxRows());
       }
 
       if (rows.length > 0) {
