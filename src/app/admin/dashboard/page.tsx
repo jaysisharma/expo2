@@ -5,37 +5,70 @@ import Link from "next/link";
 import {
   Store,
   Users,
-  Building2,
   MessageSquare,
   ArrowRight,
   RefreshCw,
   CheckCircle2,
   Clock,
-  ExternalLink,
   ChevronRight,
-  DollarSign,
   MapPin,
   CalendarDays,
   Award,
-  Search,
   Check,
   ShieldCheck,
   Newspaper,
   Layers,
   Settings,
+  Building2,
+  Plus,
+  Mail,
+  BarChart3,
+  AlertCircle,
+  FileSpreadsheet,
+  Wallet,
 } from "lucide-react";
-import { boothsData } from "@/data/booths";
 import { exhibitorsData } from "@/data/exhibitors";
-import { speakersData } from "@/data/speakers";
 import { conferenceSessionsData } from "@/data/conference";
 import { sponsorsData } from "@/data/sponsors";
-import { formatCurrencyUSD, formatCurrencyNPR } from "@/lib/utils";
+import { formatCurrencyNPR } from "@/lib/utils";
+import { EVENT } from "@/lib/site";
+import {
+  STATUS_STYLES,
+  mergeBoothOverrides,
+  resolveBooths,
+  summarizeInventory,
+} from "@/lib/stallInventory";
+
+type ActivityKind = "registration" | "inquiry" | "booking";
+type ActivityTab = "all" | ActivityKind;
+
+interface ActivityItem {
+  kind: ActivityKind;
+  id: string;
+  at: string;
+  raw: any;
+}
+
+const timeAgo = (iso: string) => {
+  const t = new Date(iso).getTime();
+  if (!t) return "";
+  const mins = Math.round((Date.now() - t) / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.round(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.round(hours / 24);
+  if (days < 30) return `${days}d ago`;
+  return new Date(iso).toLocaleDateString([], { day: "numeric", month: "short" });
+};
 
 export default function AdminDashboardPage() {
   const [data, setData] = useState<any>(null);
+  const [floorPlanElements, setFloorPlanElements] = useState<any[]>([]);
+  const [memberCount, setMemberCount] = useState<number | null>(null);
+  const [sheetConnected, setSheetConnected] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [activityTab, setActivityTab] = useState<"all" | "registrations" | "inquiries">("all");
-  const [activitySearch, setActivitySearch] = useState("");
+  const [activityTab, setActivityTab] = useState<ActivityTab>("all");
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [lastRefreshed, setLastRefreshed] = useState<Date>(new Date());
   const [actionInProgress, setActionInProgress] = useState<string | null>(null);
@@ -49,13 +82,20 @@ export default function AdminDashboardPage() {
   const fetchDashboardData = useCallback(async (showLoading = true) => {
     if (showLoading) setIsLoading(true);
     try {
-      const res = await fetch("/api/admin/data?t=" + Date.now(), {
-        cache: "no-store",
-      });
-      const json = await res.json();
+      const [adminRes, floorRes] = await Promise.all([
+        fetch("/api/admin/data?t=" + Date.now(), { cache: "no-store" }),
+        fetch("/api/floor-plan/save?t=" + Date.now(), { cache: "no-store" }).catch(() => null),
+      ]);
+      const json = await adminRes.json();
       if (json.success) {
         setData(json.data);
         setLastRefreshed(new Date());
+      }
+      if (floorRes && floorRes.ok) {
+        const floorJson = await floorRes.json();
+        if (Array.isArray(floorJson?.data?.elements) && floorJson.data.elements.length > 0) {
+          setFloorPlanElements(floorJson.data.elements);
+        }
       }
     } catch (err) {
       console.warn("Failed to fetch admin data", err);
@@ -66,210 +106,179 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     fetchDashboardData(true);
+    fetch("/api/members", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d) => setMemberCount(Array.isArray(d?.members) ? d.members.length : null))
+      .catch(() => {});
+    fetch("/api/stalls/sync-sheet")
+      .then((r) => r.json())
+      .then((d) => setSheetConnected(Boolean(d?.configured)))
+      .catch(() => setSheetConnected(null));
   }, [fetchDashboardData]);
 
-  // Auto-refresh interval (20s)
+  // Auto-refresh every 20s
   useEffect(() => {
     if (!autoRefresh) return;
-    const timer = setInterval(() => {
-      fetchDashboardData(false);
-    }, 20000);
+    const timer = setInterval(() => fetchDashboardData(false), 20000);
     return () => clearInterval(timer);
   }, [autoRefresh, fetchDashboardData]);
 
-  // Merged Booths calculation
-  const mergedBooths = useMemo(() => {
-    return boothsData.map((b) => {
-      const override = data?.boothOverrides?.[b.number];
-      return override ? { ...b, ...override } : b;
-    });
-  }, [data?.boothOverrides]);
+  // Stalls: same inventory and prices as the Stalls page
+  const primePct = data?.settings?.primeStallSurchargePercent ?? 25;
+  const booths = useMemo(
+    () => mergeBoothOverrides(floorPlanElements, data?.boothOverrides),
+    [floorPlanElements, data?.boothOverrides]
+  );
+  const stalls = useMemo(
+    () => summarizeInventory(booths, resolveBooths(booths, floorPlanElements, data?.boothOverrides, primePct)),
+    [booths, floorPlanElements, data?.boothOverrides, primePct]
+  );
 
-  const bookedCount = mergedBooths.filter((b) => b.status === "Booked").length;
-  const reservedCount = mergedBooths.filter((b) => b.status === "Reserved").length;
-  const availableCount = mergedBooths.filter((b) => b.status === "Available").length;
-  const totalStalls = mergedBooths.length || 1;
-  const bookedPct = Math.round((bookedCount / totalStalls) * 100);
-  const reservedPct = Math.round((reservedCount / totalStalls) * 100);
-  const occupancyPct = Math.min(100, bookedPct + reservedPct);
-
-  // Financial calculations
-  const exchangeRate = data?.settings?.currencyRateUSD_NPR || 134.5;
-  const bookedRevenueUSD = mergedBooths
-    .filter((b) => b.status === "Booked")
-    .reduce((sum, b) => sum + (b.priceUSD || 2500), 0);
-  const reservedRevenueUSD = mergedBooths
-    .filter((b) => b.status === "Reserved")
-    .reduce((sum, b) => sum + (b.priceUSD || 2500), 0);
-
-  // Registrations & Inquiries
   const registrations = useMemo(() => data?.registrations || [], [data?.registrations]);
   const inquiries = useMemo(() => data?.inquiries || [], [data?.inquiries]);
+  const stallBookings = useMemo(() => data?.stallBookings || [], [data?.stallBookings]);
   const checkedInCount = registrations.filter((r: any) => r.checkedIn).length;
-  const checkInRate = registrations.length
-    ? Math.round((checkedInCount / registrations.length) * 100)
-    : 0;
-  const pendingInquiries = inquiries.filter((i: any) => i.status === "New").length;
-  const totalNews = data?.news?.length ?? 0;
+  const checkInRate = registrations.length ? Math.round((checkedInCount / registrations.length) * 100) : 0;
+  const newInquiries = inquiries.filter((i: any) => i.status === "New").length;
+  const pendingPayments = stallBookings.filter((b: any) => /pending|initiated/i.test(`${b.paymentStatus || b.status || ""}`)).length;
+  const sponsorCount = (Array.isArray(data?.sponsors) && data.sponsors.length ? data.sponsors : sponsorsData).reduce(
+    (acc: number, cat: any) => acc + (cat.sponsors?.length || 0),
+    0
+  );
 
-  // Hall specific calculations
-  const hallA = useMemo(() => {
-    const booths = mergedBooths.filter(
-      (b) => b.hall?.includes("A") || b.number.startsWith("A")
-    );
-    const booked = booths.filter((b) => b.status === "Booked").length;
-    const reserved = booths.filter((b) => b.status === "Reserved").length;
-    return {
-      total: booths.length,
-      booked,
-      reserved,
-      available: booths.filter((b) => b.status === "Available").length,
-      pct: Math.round(((booked + reserved) / (booths.length || 1)) * 100),
-    };
-  }, [mergedBooths]);
+  const daysToEvent = Math.ceil((new Date(EVENT.startDate).getTime() - Date.now()) / 86400000);
 
-  const hallB = useMemo(() => {
-    const booths = mergedBooths.filter(
-      (b) => b.hall?.includes("B") || b.number.startsWith("B")
-    );
-    const booked = booths.filter((b) => b.status === "Booked").length;
-    const reserved = booths.filter((b) => b.status === "Reserved").length;
-    return {
-      total: booths.length,
-      booked,
-      reserved,
-      available: booths.filter((b) => b.status === "Available").length,
-      pct: Math.round(((booked + reserved) / (booths.length || 1)) * 100),
-    };
-  }, [mergedBooths]);
+  // Newest first across registrations, inquiries and online stall bookings
+  const activity: ActivityItem[] = useMemo(() => {
+    const items: ActivityItem[] = [
+      ...registrations.map((r: any) => ({ kind: "registration" as const, id: r.id, at: r.registeredAt || r.updatedAt || "", raw: r })),
+      ...inquiries.map((i: any) => ({ kind: "inquiry" as const, id: i.id, at: i.submittedAt || "", raw: i })),
+      ...stallBookings.map((b: any) => ({ kind: "booking" as const, id: b.id, at: b.createdAt || b.updatedAt || "", raw: b })),
+    ];
+    return items.sort((a, b) => (b.at || "").localeCompare(a.at || ""));
+  }, [registrations, inquiries, stallBookings]);
+  const visibleActivity = activity.filter((a) => activityTab === "all" || a.kind === activityTab).slice(0, 8);
 
-  const hallC = useMemo(() => {
-    const booths = mergedBooths.filter(
-      (b) => b.hall?.includes("C") || b.number.startsWith("C")
-    );
-    const booked = booths.filter((b) => b.status === "Booked").length;
-    const reserved = booths.filter((b) => b.status === "Reserved").length;
-    return {
-      total: booths.length,
-      booked,
-      reserved,
-      available: booths.filter((b) => b.status === "Available").length,
-      pct: Math.round(((booked + reserved) / (booths.length || 1)) * 100),
-    };
-  }, [mergedBooths]);
-
-  const outdoor = useMemo(() => {
-    const booths = mergedBooths.filter(
-      (b) =>
-        b.hall?.includes("Outdoor") ||
-        b.hall?.includes("Special") ||
-        b.number.startsWith("H") ||
-        b.number.startsWith("F") ||
-        b.number.startsWith("OUT")
-    );
-    const booked = booths.filter((b) => b.status === "Booked").length;
-    const reserved = booths.filter((b) => b.status === "Reserved").length;
-    return {
-      total: booths.length,
-      booked,
-      reserved,
-      available: booths.filter((b) => b.status === "Available").length,
-      pct: Math.round(((booked + reserved) / (booths.length || 1)) * 100),
-    };
-  }, [mergedBooths]);
-
-  // Handle live toggle check-in
   const handleToggleCheckin = async (regId: string, currentCheckedIn: boolean) => {
     setActionInProgress(regId);
     try {
       const res = await fetch("/api/admin/data", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "update_registration",
-          payload: { id: regId, checkedIn: !currentCheckedIn },
-        }),
+        body: JSON.stringify({ action: "update_registration", payload: { id: regId, checkedIn: !currentCheckedIn } }),
       });
       const json = await res.json();
       if (json.success) {
-        setData((prev: any) => {
-          if (!prev) return prev;
-          return {
-            ...prev,
-            registrations: prev.registrations.map((r: any) =>
-              r.id === regId ? { ...r, checkedIn: !currentCheckedIn } : r
-            ),
-          };
-        });
-        notify(`Registration ${regId} ${!currentCheckedIn ? "Checked In" : "Unmarked"}`);
+        setData((prev: any) =>
+          prev
+            ? {
+                ...prev,
+                registrations: prev.registrations.map((r: any) =>
+                  r.id === regId ? { ...r, checkedIn: !currentCheckedIn } : r
+                ),
+              }
+            : prev
+        );
+        notify(`${!currentCheckedIn ? "Checked in" : "Check-in removed"}`);
       }
     } catch {
-      notify("Failed to update status");
+      notify("Failed to update check-in");
     } finally {
       setActionInProgress(null);
     }
   };
 
-  // Handle live update inquiry
   const handleUpdateInquiry = async (inquiryId: string, newStatus: string) => {
     setActionInProgress(inquiryId);
     try {
       const res = await fetch("/api/admin/data", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "update_inquiry",
-          payload: { id: inquiryId, status: newStatus },
-        }),
+        body: JSON.stringify({ action: "update_inquiry", payload: { id: inquiryId, status: newStatus } }),
       });
       const json = await res.json();
       if (json.success) {
-        setData((prev: any) => {
-          if (!prev) return prev;
-          return {
-            ...prev,
-            inquiries: prev.inquiries.map((i: any) =>
-              i.id === inquiryId ? { ...i, status: newStatus } : i
-            ),
-          };
-        });
-        notify(`Inquiry updated to ${newStatus}`);
+        setData((prev: any) =>
+          prev
+            ? { ...prev, inquiries: prev.inquiries.map((i: any) => (i.id === inquiryId ? { ...i, status: newStatus } : i)) }
+            : prev
+        );
+        notify(`Inquiry marked ${newStatus}`);
       }
     } catch {
-      notify("Failed to update inquiry status");
+      notify("Failed to update inquiry");
     } finally {
       setActionInProgress(null);
     }
   };
 
-  // Filtered Activity Items
-  const filteredRegistrations = useMemo(() => {
-    const q = activitySearch.toLowerCase().trim();
-    if (!q) return registrations;
-    return registrations.filter(
-      (r: any) =>
-        r.name?.toLowerCase().includes(q) ||
-        r.organization?.toLowerCase().includes(q) ||
-        r.id?.toLowerCase().includes(q) ||
-        r.passType?.toLowerCase().includes(q)
-    );
-  }, [registrations, activitySearch]);
+  const attention = [
+    newInquiries > 0 && {
+      key: "inquiries",
+      href: "/admin/inquiries",
+      icon: MessageSquare,
+      text: `${newInquiries} new ${newInquiries === 1 ? "inquiry" : "inquiries"} waiting for a reply`,
+    },
+    pendingPayments > 0 && {
+      key: "payments",
+      href: "/admin/stalls",
+      icon: Wallet,
+      text: `${pendingPayments} online stall ${pendingPayments === 1 ? "payment is" : "payments are"} still pending`,
+    },
+    stalls.reserved > 0 && {
+      key: "reserved",
+      href: "/admin/stalls",
+      icon: Clock,
+      text: `${stalls.reserved} reserved ${stalls.reserved === 1 ? "stall" : "stalls"} not yet confirmed`,
+    },
+    sheetConnected === false && {
+      key: "sheet",
+      href: "/admin/stalls",
+      icon: FileSpreadsheet,
+      text: "Google Sheet is not connected",
+    },
+  ].filter(Boolean) as { key: string; href: string; icon: React.ElementType; text: string }[];
 
-  const filteredInquiries = useMemo(() => {
-    const q = activitySearch.toLowerCase().trim();
-    if (!q) return inquiries;
-    return inquiries.filter(
-      (i: any) =>
-        i.company?.toLowerCase().includes(q) ||
-        i.name?.toLowerCase().includes(q) ||
-        i.subject?.toLowerCase().includes(q) ||
-        i.id?.toLowerCase().includes(q)
-    );
-  }, [inquiries, activitySearch]);
+  const kpis = [
+    {
+      label: "Stall occupancy",
+      value: `${stalls.occupancyPct}%`,
+      sub: `${stalls.booked + stalls.reserved} of ${stalls.total} stalls taken`,
+      href: "/admin/stalls",
+      icon: Store,
+      bar: (
+        <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden flex">
+          <div className={STATUS_STYLES.Booked.bar} style={{ width: `${(stalls.booked / (stalls.total || 1)) * 100}%` }} />
+          <div className={STATUS_STYLES.Reserved.bar} style={{ width: `${(stalls.reserved / (stalls.total || 1)) * 100}%` }} />
+        </div>
+      ),
+    },
+    {
+      label: "Booked value",
+      value: formatCurrencyNPR(stalls.bookedValueNPR),
+      sub: `+ ${formatCurrencyNPR(stalls.reservedValueNPR)} reserved · before VAT`,
+      href: "/admin/stalls",
+      icon: Wallet,
+    },
+    {
+      label: "Registrations",
+      value: String(registrations.length),
+      sub: registrations.length ? `${checkedInCount} checked in (${checkInRate}%)` : "No registrations yet",
+      href: "/admin/registrations",
+      icon: Users,
+    },
+    {
+      label: "Inquiries",
+      value: String(inquiries.length),
+      sub: newInquiries ? `${newInquiries} new` : inquiries.length ? "All handled" : "No inquiries yet",
+      href: "/admin/inquiries",
+      icon: MessageSquare,
+      alert: newInquiries > 0,
+    },
+  ];
 
   return (
-    <div className="space-y-6 font-sans">
-      {/* Toast Alert */}
+    <div className="space-y-5 font-sans">
       {toastMessage && (
         <div className="fixed top-4 right-4 z-50 px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs font-medium shadow-xl flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
           <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
@@ -278,642 +287,334 @@ export default function AdminDashboardPage() {
       )}
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-            Dashboard
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Real-time overview of stalls, registrations, finances, and inquiries.
-          </p>
-        </div>
-
-        {/* Clean Controls */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setAutoRefresh(!autoRefresh)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors cursor-pointer flex items-center gap-1.5 ${
-              autoRefresh
-                ? "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
-                : "bg-white text-slate-400 border-slate-200 hover:text-slate-600"
-            }`}
-            title="Toggle automatic 20s data refresh"
-          >
-            <span
-              className={`w-1.5 h-1.5 rounded-full ${
-                autoRefresh ? "bg-emerald-500 animate-pulse" : "bg-slate-300"
-              }`}
-            />
-            <span>{autoRefresh ? "Auto-refresh: On" : "Auto-refresh: Off"}</span>
-          </button>
-
-          <button
-            onClick={() => fetchDashboardData(true)}
-            disabled={isLoading}
-            className="p-1.5 sm:px-3 sm:py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-medium shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
-            title="Refresh dashboard metrics"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 text-slate-600 ${isLoading ? "animate-spin" : ""}`} />
-            <span className="hidden sm:inline">Refresh</span>
-          </button>
-        </div>
-      </div>
-
-      {/* 4 Key Performance Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: Stall Occupancy */}
-        <Link
-          href="/admin/stalls"
-          className="p-4 rounded-xl bg-white border border-slate-200 hover:border-slate-300 shadow-xs transition-all group block"
-        >
-          <div className="flex items-center justify-between text-slate-500 text-xs">
-            <span className="font-medium text-[11px] uppercase tracking-wider text-slate-500 font-mono">
-              Stall Occupancy
-            </span>
-            <Store className="w-4 h-4 text-slate-400 group-hover:text-[#218A59] transition-colors" />
-          </div>
-          <div className="mt-2.5 flex items-baseline justify-between">
-            <span className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
-              {occupancyPct}%
-            </span>
-            <span className="text-xs font-medium text-slate-500 font-mono">
-              {bookedCount + reservedCount} / {totalStalls}
-            </span>
-          </div>
-          <div className="w-full h-1.5 bg-slate-100 rounded-full mt-2.5 overflow-hidden flex">
-            <div style={{ width: `${bookedPct}%` }} className="bg-[#218A59]" />
-            <div style={{ width: `${reservedPct}%` }} className="bg-amber-400" />
-          </div>
-          <div className="mt-2 flex items-center justify-between text-[11px] text-slate-500">
-            <span>{bookedCount} booked</span>
-            <span className="text-[#218A59] font-medium">{availableCount} available</span>
-          </div>
-        </Link>
-
-        {/* Card 2: Confirmed Revenue */}
-        <div className="p-4 rounded-xl bg-white border border-slate-200 shadow-xs">
-          <div className="flex items-center justify-between text-slate-500 text-xs">
-            <span className="font-medium text-[11px] uppercase tracking-wider text-slate-500 font-mono">
-              Confirmed Revenue
-            </span>
-            <DollarSign className="w-4 h-4 text-slate-400" />
-          </div>
-          <div className="mt-2.5">
-            <span className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
-              {formatCurrencyUSD(bookedRevenueUSD)}
-            </span>
-          </div>
-          <div className="w-full h-1.5 bg-slate-100 rounded-full mt-2.5 overflow-hidden">
-            <div style={{ width: `${bookedPct}%` }} className="bg-emerald-600 h-full" />
-          </div>
-          <div className="mt-2 flex items-center justify-between text-[11px] text-slate-500">
-            <span>≈ {formatCurrencyNPR(bookedRevenueUSD * exchangeRate)}</span>
-            <span className="text-amber-600 font-medium">+{formatCurrencyUSD(reservedRevenueUSD)} res</span>
-          </div>
-        </div>
-
-        {/* Card 3: Registered Attendees */}
-        <Link
-          href="/admin/registrations"
-          className="p-4 rounded-xl bg-white border border-slate-200 hover:border-slate-300 shadow-xs transition-all group block"
-        >
-          <div className="flex items-center justify-between text-slate-500 text-xs">
-            <span className="font-medium text-[11px] uppercase tracking-wider text-slate-500 font-mono">
-              Registered Attendees
-            </span>
-            <Users className="w-4 h-4 text-slate-400 group-hover:text-[#234679] transition-colors" />
-          </div>
-          <div className="mt-2.5 flex items-baseline justify-between">
-            <span className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
-              {registrations.length}
-            </span>
-            <span className="text-xs font-medium text-emerald-600 font-mono">
-              {checkInRate}% checked-in
-            </span>
-          </div>
-          <div className="w-full h-1.5 bg-slate-100 rounded-full mt-2.5 overflow-hidden">
-            <div style={{ width: `${checkInRate}%` }} className="bg-[#234679] h-full" />
-          </div>
-          <div className="mt-2 flex items-center justify-between text-[11px] text-slate-500">
-            <span>{checkedInCount} verified badges</span>
-            <span>{registrations.length - checkedInCount} pending</span>
-          </div>
-        </Link>
-
-        {/* Card 4: Inquiries & Leads */}
-        <Link
-          href="/admin/inquiries"
-          className="p-4 rounded-xl bg-white border border-slate-200 hover:border-slate-300 shadow-xs transition-all group block"
-        >
-          <div className="flex items-center justify-between text-slate-500 text-xs">
-            <span className="font-medium text-[11px] uppercase tracking-wider text-slate-500 font-mono">
-              Inquiries & Leads
-            </span>
-            <MessageSquare className="w-4 h-4 text-slate-400 group-hover:text-amber-600 transition-colors" />
-          </div>
-          <div className="mt-2.5 flex items-baseline justify-between">
-            <span className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
-              {inquiries.length}
-            </span>
-            {pendingInquiries > 0 ? (
-              <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200">
-                {pendingInquiries} new
-              </span>
-            ) : (
-              <span className="text-[11px] font-medium text-emerald-600">
-                All resolved
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">Dashboard</h1>
+            {daysToEvent > 0 && (
+              <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                <CalendarDays className="w-3 h-3" />
+                {daysToEvent} days to the expo
               </span>
             )}
           </div>
-          <div className="w-full h-1.5 bg-slate-100 rounded-full mt-2.5 overflow-hidden">
-            <div
-              style={{
-                width: `${inquiries.length ? Math.round(((inquiries.length - pendingInquiries) / inquiries.length) * 100) : 100}%`,
-              }}
-              className="bg-amber-500 h-full"
-            />
-          </div>
-          <div className="mt-2 flex items-center justify-between text-[11px] text-slate-500">
-            <span>{inquiries.filter((i: any) => i.status === "Resolved").length} resolved</span>
-            <span className="text-slate-400 font-mono text-[10px]">Response desk</span>
-          </div>
-        </Link>
+          <p className="text-xs text-slate-500 mt-0.5">
+            {data?.settings?.eventDates || "17–19 January 2027"} · {data?.settings?.venue || "Bhrikutimandap, Kathmandu"}
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 text-xs">
+          <span className="text-[11px] text-slate-400 hidden sm:inline">
+            Updated {lastRefreshed.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+          </span>
+          <button
+            onClick={() => setAutoRefresh(!autoRefresh)}
+            className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 font-medium flex items-center gap-1.5 cursor-pointer"
+            title="Refresh automatically every 20 seconds"
+          >
+            <span className={`w-1.5 h-1.5 rounded-full ${autoRefresh ? "bg-emerald-500 animate-pulse" : "bg-slate-300"}`} />
+            <span>{autoRefresh ? "Live" : "Paused"}</span>
+          </button>
+          <button
+            onClick={() => fetchDashboardData(true)}
+            disabled={isLoading}
+            className="p-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 cursor-pointer disabled:opacity-50"
+            title="Refresh now"
+            aria-label="Refresh now"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
+          </button>
+        </div>
       </div>
 
-      {/* Main 2-Column Content Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        {/* Left Column (7 cols): Venue Space + Recent Activity */}
-        <div className="lg:col-span-7 space-y-5">
-          {/* Hall & Space Breakdown */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-xs p-4 sm:p-5">
-            <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <Store className="w-4 h-4 text-[#218A59]" />
-                <h3 className="font-semibold text-sm text-slate-900">
-                  Hall & Venue Allocation
-                </h3>
-              </div>
-              <div className="flex items-center gap-3 text-xs">
-                <Link
-                  href="/admin/floor-plan"
-                  className="text-slate-500 hover:text-slate-900 flex items-center gap-1 font-medium transition-colors"
-                >
-                  <span>Floor Plan</span>
-                  <ExternalLink className="w-3 h-3" />
-                </Link>
-                <Link
-                  href="/admin/stalls"
-                  className="text-[#218A59] hover:underline flex items-center gap-1 font-medium"
-                >
-                  <span>Manage</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
-              </div>
-            </div>
-
-            {/* Hall Rows */}
-            <div className="mt-4 space-y-3.5">
-              {/* Hall A */}
-              <div className="p-3 rounded-lg bg-slate-50 border border-slate-100">
-                <div className="flex items-center justify-between text-xs mb-1.5">
-                  <span className="font-semibold text-slate-800">
-                    Hall A · Turbines & Heavy OEM
-                  </span>
-                  <span className="font-mono text-[11px] font-semibold text-slate-600">
-                    {hallA.booked + hallA.reserved} / {hallA.total} stalls ({hallA.pct}%)
-                  </span>
-                </div>
-                <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                  <div style={{ width: `${hallA.pct}%` }} className="bg-[#218A59] h-full" />
-                </div>
-                <div className="mt-1.5 flex items-center justify-between text-[11px] text-slate-500">
-                  <span>{hallA.booked} booked · {hallA.reserved} reserved</span>
-                  <span className="text-[#218A59] font-medium">{hallA.available} open</span>
-                </div>
-              </div>
-
-              {/* Hall B */}
-              <div className="p-3 rounded-lg bg-slate-50 border border-slate-100">
-                <div className="flex items-center justify-between text-xs mb-1.5">
-                  <span className="font-semibold text-slate-800">
-                    Hall B · Electrical, Grid & Storage
-                  </span>
-                  <span className="font-mono text-[11px] font-semibold text-slate-600">
-                    {hallB.booked + hallB.reserved} / {hallB.total} stalls ({hallB.pct}%)
-                  </span>
-                </div>
-                <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                  <div style={{ width: `${hallB.pct}%` }} className="bg-[#234679] h-full" />
-                </div>
-                <div className="mt-1.5 flex items-center justify-between text-[11px] text-slate-500">
-                  <span>{hallB.booked} booked · {hallB.reserved} reserved</span>
-                  <span className="text-[#234679] font-medium">{hallB.available} open</span>
-                </div>
-              </div>
-
-              {/* Hall C / Block C */}
-              <div className="p-3 rounded-lg bg-slate-50 border border-slate-100">
-                <div className="flex items-center justify-between text-xs mb-1.5">
-                  <span className="font-semibold text-slate-800">
-                    Block C · Bare Space Pavilion
-                  </span>
-                  <span className="font-mono text-[11px] font-semibold text-slate-600">
-                    {hallC.booked + hallC.reserved} / {hallC.total} stalls ({hallC.pct}%)
-                  </span>
-                </div>
-                <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                  <div style={{ width: `${hallC.pct}%` }} className="bg-cyan-600 h-full" />
-                </div>
-                <div className="mt-1.5 flex items-center justify-between text-[11px] text-slate-500">
-                  <span>{hallC.booked} booked · {hallC.reserved} reserved</span>
-                  <span className="text-cyan-600 font-medium">{hallC.available} open</span>
-                </div>
-              </div>
-
-              {/* Outdoor */}
-              <div className="p-3 rounded-lg bg-slate-50 border border-slate-100">
-                <div className="flex items-center justify-between text-xs mb-1.5">
-                  <span className="font-semibold text-slate-800">
-                    Outdoor & Special · Hydro & Food Arena
-                  </span>
-                  <span className="font-mono text-[11px] font-semibold text-slate-600">
-                    {outdoor.booked + outdoor.reserved} / {outdoor.total} stalls ({outdoor.pct}%)
-                  </span>
-                </div>
-                <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                  <div style={{ width: `${outdoor.pct}%` }} className="bg-amber-500 h-full" />
-                </div>
-                <div className="mt-1.5 flex items-center justify-between text-[11px] text-slate-500">
-                  <span>{outdoor.booked} booked · {outdoor.reserved} reserved</span>
-                  <span className="text-amber-600 font-medium">{outdoor.available} open</span>
-                </div>
-              </div>
-            </div>
+      {/* Needs attention */}
+      {attention.length > 0 && (
+        <div className="p-3 rounded-xl bg-amber-50/70 border border-amber-200 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+          <span className="flex items-center gap-1.5 text-xs font-bold text-amber-900 shrink-0">
+            <AlertCircle className="w-4 h-4" />
+            Needs attention
+          </span>
+          <div className="flex flex-wrap gap-2">
+            {attention.map(({ key, href, icon: Icon, text }) => (
+              <Link
+                key={key}
+                href={href}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border border-amber-200 hover:border-amber-400 text-[11px] font-medium text-amber-950 transition-colors"
+              >
+                <Icon className="w-3.5 h-3.5 text-amber-600" />
+                {text}
+                <ChevronRight className="w-3 h-3 text-amber-500" />
+              </Link>
+            ))}
           </div>
+        </div>
+      )}
 
-          {/* Recent Activity List */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-xs p-4 sm:p-5">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-slate-600" />
-                <h3 className="font-semibold text-sm text-slate-900">
-                  Recent Activity
-                </h3>
-              </div>
+      {/* KPIs */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        {kpis.map(({ label, value, sub, href, icon: Icon, bar, alert }) => (
+          <Link
+            key={label}
+            href={href}
+            className="p-4 rounded-xl bg-white border border-slate-200 hover:border-slate-300 shadow-xs transition-colors group"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500">{label}</span>
+              <Icon className="w-4 h-4 text-slate-300 group-hover:text-[#218A59] transition-colors" />
+            </div>
+            <div className="mt-2 text-2xl font-bold text-slate-900 tracking-tight">{isLoading && !data ? "—" : value}</div>
+            {bar && <div className="mt-2">{bar}</div>}
+            <div className={`mt-1.5 text-[11px] ${alert ? "text-rose-600 font-semibold" : "text-slate-500"}`}>{sub}</div>
+          </Link>
+        ))}
+      </div>
 
-              {/* Segmented Filter & Search */}
-              <div className="flex items-center gap-2">
-                <div className="relative">
-                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                  <input
-                    type="text"
-                    placeholder="Filter..."
-                    value={activitySearch}
-                    onChange={(e) => setActivitySearch(e.target.value)}
-                    className="pl-7 pr-2 py-1 text-xs rounded-lg bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#218A59] focus:bg-white w-28 sm:w-36"
-                  />
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        {/* Left: stalls by block + activity */}
+        <div className="lg:col-span-8 space-y-5">
+          <section className="bg-white rounded-xl border border-slate-200 shadow-xs p-4 sm:p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-semibold text-sm text-slate-900">Stalls by block</h2>
+              <Link href="/admin/stalls" className="text-xs text-[#218A59] hover:underline flex items-center gap-1 font-medium">
+                Manage stalls <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+            <div className="space-y-3">
+              {stalls.blocks.map((b) => (
+                <div key={b.block}>
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span className="font-semibold text-slate-800">{b.block}</span>
+                    <span className="text-[11px] text-slate-500 font-mono">
+                      {b.booked} booked · {b.reserved} reserved · {b.available} open
+                    </span>
+                  </div>
+                  <div className="h-2 rounded-full bg-slate-100 overflow-hidden flex">
+                    <div className={STATUS_STYLES.Booked.bar} style={{ width: `${(b.booked / b.total) * 100}%` }} />
+                    <div className={STATUS_STYLES.Reserved.bar} style={{ width: `${(b.reserved / b.total) * 100}%` }} />
+                  </div>
                 </div>
+              ))}
+            </div>
+            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-4 text-[11px] text-slate-500">
+              {(["Booked", "Reserved", "Available"] as const).map((st) => (
+                <span key={st} className="flex items-center gap-1.5">
+                  <span className={`w-2 h-2 rounded-full ${STATUS_STYLES[st].dot}`} /> {st}
+                </span>
+              ))}
+            </div>
+          </section>
 
-                <div className="flex items-center p-0.5 rounded-lg bg-slate-100 border border-slate-200">
+          <section className="bg-white rounded-xl border border-slate-200 shadow-xs p-4 sm:p-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
+              <h2 className="font-semibold text-sm text-slate-900">Recent activity</h2>
+              <div className="flex items-center p-0.5 rounded-lg bg-slate-100 border border-slate-200 self-start">
+                {(
+                  [
+                    ["all", "All"],
+                    ["registration", "Registrations"],
+                    ["inquiry", "Inquiries"],
+                    ["booking", "Stall orders"],
+                  ] as const
+                ).map(([tab, label]) => (
                   <button
-                    onClick={() => setActivityTab("all")}
+                    key={tab}
+                    onClick={() => setActivityTab(tab)}
                     className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors cursor-pointer ${
-                      activityTab === "all"
-                        ? "bg-white text-slate-900 shadow-xs font-semibold"
-                        : "text-slate-500 hover:text-slate-800"
+                      activityTab === tab ? "bg-white text-slate-900 shadow-xs font-semibold" : "text-slate-500 hover:text-slate-800"
                     }`}
                   >
-                    All
+                    {label}
                   </button>
-                  <button
-                    onClick={() => setActivityTab("registrations")}
-                    className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors cursor-pointer ${
-                      activityTab === "registrations"
-                        ? "bg-white text-slate-900 shadow-xs font-semibold"
-                        : "text-slate-500 hover:text-slate-800"
-                    }`}
-                  >
-                    Attendees
-                  </button>
-                  <button
-                    onClick={() => setActivityTab("inquiries")}
-                    className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors cursor-pointer ${
-                      activityTab === "inquiries"
-                        ? "bg-white text-slate-900 shadow-xs font-semibold"
-                        : "text-slate-500 hover:text-slate-800"
-                    }`}
-                  >
-                    Inquiries
-                  </button>
-                </div>
+                ))}
               </div>
             </div>
 
-            {/* List */}
-            <div className="divide-y divide-slate-100 text-xs mt-1">
-              {/* Attendee rows */}
-              {(activityTab === "all" || activityTab === "registrations") &&
-                filteredRegistrations.slice(0, activityTab === "registrations" ? 8 : 4).map((reg: any) => (
-                  <div
-                    key={reg.id}
-                    className="py-3 flex items-center justify-between gap-3 hover:bg-slate-50/70 transition-colors px-1 rounded-lg"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-slate-900 truncate">
-                          {reg.name}
-                        </span>
-                        <span className="text-[10px] font-medium px-2 py-0.2 rounded-full bg-slate-100 text-slate-600 shrink-0">
-                          {reg.passType?.replace(/\(Free\)/, "").trim() || "Visitor"}
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-slate-500 truncate mt-0.5">
-                        {reg.organization || "Independent"} · {reg.country || "Nepal"}
+            <div className="divide-y divide-slate-100 text-xs">
+              {visibleActivity.length === 0 && (
+                <div className="py-10 text-center text-slate-400">Nothing here yet.</div>
+              )}
+              {visibleActivity.map(({ kind, id, at, raw }) => (
+                <div key={`${kind}-${id}`} className="py-3 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                        kind === "registration"
+                          ? "bg-blue-50 text-[#234679]"
+                          : kind === "inquiry"
+                          ? "bg-amber-50 text-amber-700"
+                          : "bg-emerald-50 text-emerald-700"
+                      }`}
+                    >
+                      {kind === "registration" ? (
+                        <Users className="w-4 h-4" />
+                      ) : kind === "inquiry" ? (
+                        <MessageSquare className="w-4 h-4" />
+                      ) : (
+                        <Store className="w-4 h-4" />
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-slate-900 truncate">
+                        {kind === "registration"
+                          ? raw.name
+                          : kind === "inquiry"
+                          ? raw.company || raw.name
+                          : raw.companyName || raw.contactPerson || raw.name || "Stall order"}
+                      </p>
+                      <p className="text-[11px] text-slate-500 truncate">
+                        {kind === "registration"
+                          ? `${raw.passType?.replace(/\(Free\)/, "").trim() || "Visitor"} · ${raw.organization || "Independent"}`
+                          : kind === "inquiry"
+                          ? `${raw.subject || "Inquiry"}${raw.stallInterest ? ` · Stall ${raw.stallInterest}` : ""}`
+                          : `Stall ${[].concat(raw.stalls || raw.stallNumbers || raw.boothNumber || []).join(", ") || "—"} · ${
+                              raw.paymentStatus || raw.status || "Pending"
+                            }`}
+                        {at ? ` · ${timeAgo(at)}` : ""}
                       </p>
                     </div>
+                  </div>
 
-                    <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {kind === "registration" && (
                       <button
-                        onClick={() => handleToggleCheckin(reg.id, reg.checkedIn)}
-                        disabled={actionInProgress === reg.id}
-                        className={`px-2.5 py-1 rounded-lg text-[10px] font-medium transition-colors cursor-pointer flex items-center gap-1 border ${
-                          reg.checkedIn
+                        onClick={() => handleToggleCheckin(raw.id, raw.checkedIn)}
+                        disabled={actionInProgress === raw.id}
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-medium border flex items-center gap-1 cursor-pointer transition-colors ${
+                          raw.checkedIn
                             ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
                             : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
                         }`}
-                        title="Toggle attendee check-in status"
                       >
-                        {actionInProgress === reg.id ? (
+                        {actionInProgress === raw.id ? (
                           <RefreshCw className="w-3 h-3 animate-spin" />
-                        ) : reg.checkedIn ? (
-                          <Check className="w-3 h-3 text-emerald-600" />
+                        ) : raw.checkedIn ? (
+                          <Check className="w-3 h-3" />
                         ) : (
                           <Clock className="w-3 h-3 text-slate-400" />
                         )}
-                        <span>{reg.checkedIn ? "Checked In" : "Check In"}</span>
+                        {raw.checkedIn ? "Checked in" : "Check in"}
                       </button>
-                    </div>
-                  </div>
-                ))}
-
-              {/* Inquiry rows */}
-              {(activityTab === "all" || activityTab === "inquiries") &&
-                filteredInquiries.slice(0, activityTab === "inquiries" ? 8 : 3).map((inq: any) => (
-                  <div
-                    key={inq.id}
-                    className="py-3 flex items-center justify-between gap-3 hover:bg-slate-50/70 transition-colors px-1 rounded-lg"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-slate-900 truncate">
-                          {inq.company || inq.name}
-                        </span>
-                        <span className="text-[10px] font-medium px-2 py-0.2 rounded-full bg-slate-100 text-slate-600 shrink-0">
-                          Inquiry
-                        </span>
-                        {inq.stallInterest && (
-                          <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-50 text-amber-700 font-mono">
-                            Stall {inq.stallInterest}
-                          </span>
+                    )}
+                    {kind === "inquiry" && (
+                      <>
+                        {raw.status === "New" && (
+                          <button
+                            onClick={() => handleUpdateInquiry(raw.id, "In Progress")}
+                            disabled={actionInProgress === raw.id}
+                            className="px-2 py-1 rounded-lg text-[11px] font-medium bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 cursor-pointer"
+                          >
+                            Start
+                          </button>
                         )}
-                      </div>
-                      <p className="text-[11px] text-slate-500 truncate mt-0.5">
-                        {inq.subject}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      {inq.status === "New" && (
-                        <button
-                          onClick={() => handleUpdateInquiry(inq.id, "In Progress")}
-                          disabled={actionInProgress === inq.id}
-                          className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-colors cursor-pointer"
+                        {raw.status === "In Progress" && (
+                          <button
+                            onClick={() => handleUpdateInquiry(raw.id, "Resolved")}
+                            disabled={actionInProgress === raw.id}
+                            className="px-2 py-1 rounded-lg text-[11px] font-medium bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 cursor-pointer"
+                          >
+                            Resolve
+                          </button>
+                        )}
+                        <span
+                          className={`text-[10px] px-2 py-0.5 rounded-md font-semibold border ${
+                            raw.status === "New"
+                              ? "bg-rose-50 text-rose-700 border-rose-200"
+                              : raw.status === "In Progress"
+                              ? "bg-amber-50 text-amber-700 border-amber-200"
+                              : "bg-emerald-50 text-emerald-700 border-emerald-200"
+                          }`}
                         >
-                          Review
-                        </button>
-                      )}
-                      {inq.status === "In Progress" && (
-                        <button
-                          onClick={() => handleUpdateInquiry(inq.id, "Resolved")}
-                          disabled={actionInProgress === inq.id}
-                          className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-colors cursor-pointer"
-                        >
-                          Resolve
-                        </button>
-                      )}
-                      <span
-                        className={`text-[10px] px-2 py-0.5 rounded-md font-medium ${
-                          inq.status === "New"
-                            ? "bg-rose-50 text-rose-700 border border-rose-200"
-                            : inq.status === "In Progress"
-                            ? "bg-amber-50 text-amber-700 border border-amber-200"
-                            : "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                        }`}
-                      >
-                        {inq.status}
-                      </span>
-                    </div>
+                          {raw.status}
+                        </span>
+                      </>
+                    )}
                   </div>
-                ))}
-
-              {filteredRegistrations.length === 0 && filteredInquiries.length === 0 && (
-                <div className="py-8 text-center text-slate-400 text-xs">
-                  No activity found matching your criteria.
                 </div>
-              )}
+              ))}
             </div>
 
-            {/* Footer */}
-            <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-              <span className="text-[11px] text-slate-400">
-                Synced at {lastRefreshed.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-              </span>
-              <div className="flex items-center gap-4 text-[11px] font-medium">
-                <Link
-                  href="/admin/registrations"
-                  className="text-slate-600 hover:text-slate-900 transition-colors"
-                >
-                  All Attendees →
-                </Link>
-                <Link
-                  href="/admin/inquiries"
-                  className="text-slate-600 hover:text-slate-900 transition-colors"
-                >
-                  All Inquiries →
-                </Link>
-              </div>
+            <div className="pt-3 mt-1 border-t border-slate-100 flex items-center justify-end gap-4 text-[11px] font-medium">
+              <Link href="/admin/registrations" className="text-slate-600 hover:text-slate-900">
+                All registrations →
+              </Link>
+              <Link href="/admin/inquiries" className="text-slate-600 hover:text-slate-900">
+                All inquiries →
+              </Link>
             </div>
-          </div>
+          </section>
         </div>
 
-        {/* Right Column (5 cols): Quick Directory & Event Info */}
-        <div className="lg:col-span-5 space-y-5">
-          {/* Quick Management Directory */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-xs p-4 sm:p-5">
-            <h3 className="font-semibold text-sm text-slate-900 pb-3 border-b border-slate-100">
-              Content & Modules
-            </h3>
+        {/* Right: quick actions, content, event */}
+        <div className="lg:col-span-4 space-y-5">
+          <section className="bg-white rounded-xl border border-slate-200 shadow-xs p-4 sm:p-5">
+            <h2 className="font-semibold text-sm text-slate-900 mb-3">Quick actions</h2>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { href: "/admin/stalls", icon: Plus, label: "Book a stall" },
+                { href: "/admin/news", icon: Newspaper, label: "Post news" },
+                { href: "/admin/bulk-email", icon: Mail, label: "Send email" },
+                { href: "/admin/traffic", icon: BarChart3, label: "Site traffic" },
+              ].map(({ href, icon: Icon, label }) => (
+                <Link
+                  key={label}
+                  href={href}
+                  className="p-3 rounded-lg border border-slate-200 hover:border-[#218A59] hover:bg-emerald-50/40 text-xs font-medium text-slate-800 flex items-center gap-2 transition-colors"
+                >
+                  <Icon className="w-4 h-4 text-[#218A59]" />
+                  {label}
+                </Link>
+              ))}
+            </div>
+          </section>
+
+          <section className="bg-white rounded-xl border border-slate-200 shadow-xs p-4 sm:p-5">
+            <h2 className="font-semibold text-sm text-slate-900 mb-1">Website content</h2>
             <div className="divide-y divide-slate-100">
-              <Link
-                href="/admin/exhibitors"
-                className="py-2.5 flex items-center justify-between hover:text-[#218A59] transition-colors group"
-              >
-                <div className="flex items-center gap-2.5">
-                  <div className="p-1.5 rounded-lg bg-slate-100 text-slate-600 group-hover:bg-[#218A59]/10 group-hover:text-[#218A59] transition-colors">
-                    <Building2 className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="text-xs font-medium text-slate-800 group-hover:text-[#218A59]">
-                    Exhibitors Directory
+              {[
+                { href: "/admin/speakers", icon: ShieldCheck, label: "Organization members", count: memberCount ?? "…" },
+                { href: "/admin/news", icon: Newspaper, label: "News & announcements", count: data?.news?.length ?? "…" },
+                { href: "/admin/sponsors", icon: Award, label: "Sponsors & partners", count: sponsorCount },
+                { href: "/admin/exhibitors", icon: Building2, label: "Exhibitors", count: exhibitorsData.length },
+                { href: "/admin/conference", icon: CalendarDays, label: "Conference sessions", count: conferenceSessionsData.length },
+                { href: "/admin/badge-designer", icon: Layers, label: "Badge designer", count: "" },
+              ].map(({ href, icon: Icon, label, count }) => (
+                <Link key={label} href={href} className="py-2.5 flex items-center justify-between group">
+                  <span className="flex items-center gap-2.5 text-xs font-medium text-slate-700 group-hover:text-[#218A59]">
+                    <Icon className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#218A59]" />
+                    {label}
                   </span>
-                </div>
-                <div className="flex items-center gap-1.5 text-xs text-slate-500 font-mono">
-                  <span>{exhibitorsData.length}</span>
-                  <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-                </div>
-              </Link>
+                  <span className="flex items-center gap-1 text-xs text-slate-400 font-mono">
+                    {count}
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </section>
 
-              <Link
-                href="/admin/conference"
-                className="py-2.5 flex items-center justify-between hover:text-[#234679] transition-colors group"
-              >
-                <div className="flex items-center gap-2.5">
-                  <div className="p-1.5 rounded-lg bg-slate-100 text-slate-600 group-hover:bg-[#234679]/10 group-hover:text-[#234679] transition-colors">
-                    <CalendarDays className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="text-xs font-medium text-slate-800 group-hover:text-[#234679]">
-                    Conference Sessions
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5 text-xs text-slate-500 font-mono">
-                  <span>{conferenceSessionsData.length}</span>
-                  <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-                </div>
-              </Link>
-
-              <Link
-                href="/admin/sponsors"
-                className="py-2.5 flex items-center justify-between hover:text-amber-600 transition-colors group"
-              >
-                <div className="flex items-center gap-2.5">
-                  <div className="p-1.5 rounded-lg bg-slate-100 text-slate-600 group-hover:bg-amber-50 group-hover:text-amber-600 transition-colors">
-                    <Award className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="text-xs font-medium text-slate-800 group-hover:text-amber-600">
-                    Sponsors & Partners
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5 text-xs text-slate-500 font-mono">
-                  <span>{sponsorsData.reduce((acc, cat) => acc + (cat.sponsors?.length || 0), 0)}</span>
-                  <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-                </div>
-              </Link>
-
-              <Link
-                href="/admin/speakers"
-                className="py-2.5 flex items-center justify-between hover:text-purple-600 transition-colors group"
-              >
-                <div className="flex items-center gap-2.5">
-                  <div className="p-1.5 rounded-lg bg-slate-100 text-slate-600 group-hover:bg-purple-50 group-hover:text-purple-600 transition-colors">
-                    <ShieldCheck className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="text-xs font-medium text-slate-800 group-hover:text-purple-600">
-                    Organization Members (IPPAN & Team)
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5 text-xs text-slate-500 font-mono">
-                  <span>{speakersData.length}</span>
-                  <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-                </div>
-              </Link>
-
-              <Link
-                href="/admin/news"
-                className="py-2.5 flex items-center justify-between hover:text-[#218A59] transition-colors group"
-              >
-                <div className="flex items-center gap-2.5">
-                  <div className="p-1.5 rounded-lg bg-slate-100 text-slate-600 group-hover:bg-[#218A59]/10 group-hover:text-[#218A59] transition-colors">
-                    <Newspaper className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="text-xs font-medium text-slate-800 group-hover:text-[#218A59]">
-                    News & Announcements
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5 text-xs text-slate-500 font-mono">
-                  <span>{totalNews}</span>
-                  <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-                </div>
-              </Link>
-
-              <Link
-                href="/admin/badge-designer"
-                className="py-2.5 flex items-center justify-between hover:text-slate-900 transition-colors group"
-              >
-                <div className="flex items-center gap-2.5">
-                  <div className="p-1.5 rounded-lg bg-slate-100 text-slate-600 group-hover:bg-slate-200 group-hover:text-slate-900 transition-colors">
-                    <Layers className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="text-xs font-medium text-slate-800 group-hover:text-slate-900">
-                    Badge Designer
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5 text-xs text-slate-500 font-mono">
-                  <span>2 templates</span>
-                  <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-                </div>
+          <section className="bg-white rounded-xl border border-slate-200 shadow-xs p-4 sm:p-5 space-y-2.5 text-xs">
+            <div className="flex items-center justify-between">
+              <h2 className="font-semibold text-sm text-slate-900">Event</h2>
+              <Link href="/admin/settings" className="text-[11px] text-slate-500 hover:text-slate-900 flex items-center gap-1">
+                <Settings className="w-3 h-3" /> Settings
               </Link>
             </div>
-          </div>
-
-          {/* Event Metadata & Settings Card */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-xs p-4 sm:p-5 space-y-3.5">
-            <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">
-              <span className="text-xs font-semibold text-slate-900">Event Details</span>
-              <Link
-                href="/admin/settings"
-                className="text-[11px] text-slate-500 hover:text-slate-900 flex items-center gap-1 font-medium"
-              >
-                <Settings className="w-3 h-3" />
-                <span>Settings</span>
-              </Link>
-            </div>
-
-            <div className="space-y-2.5 text-xs">
-              <div>
-                <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">
-                  Event Name
-                </span>
-                <span className="font-medium text-slate-800">
-                  {data?.settings?.eventName || "Himalayan Green Energy Expo Nepal 2027"}
-                </span>
-              </div>
-
-              <div>
-                <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">
-                  Dates & Schedule
-                </span>
-                <span className="font-medium text-slate-800">
-                  {data?.settings?.eventDates || "Magh 3 – 5 · 17–19 Jan 2027"}
-                </span>
-              </div>
-
-              <div>
-                <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">
-                  Venue Location
-                </span>
-                <span className="font-medium text-slate-800 flex items-center gap-1">
-                  <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
-                  <span>{data?.settings?.venue || "BHRIKUTIMANDAP, KATHMANDU, NEPAL"}</span>
-                </span>
-              </div>
-
-              <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
-                <span className="text-slate-500">Forex Peg</span>
-                <span className="font-mono font-medium text-slate-700">
-                  1 USD = {exchangeRate} NPR
-                </span>
-              </div>
-            </div>
-          </div>
+            <p className="font-medium text-slate-800">
+              {data?.settings?.eventName || "Himalayan Green Energy Expo 2027"}
+            </p>
+            <p className="text-slate-600 flex items-center gap-1.5">
+              <CalendarDays className="w-3.5 h-3.5 text-slate-400" />
+              {data?.settings?.eventDates || "17–19 January 2027"}
+            </p>
+            <p className="text-slate-600 flex items-center gap-1.5">
+              <MapPin className="w-3.5 h-3.5 text-slate-400" />
+              {data?.settings?.venue || "Bhrikutimandap, Kathmandu"}
+            </p>
+            <p className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+              <span>Exchange rate</span>
+              <span className="font-mono text-slate-700">1 USD = {data?.settings?.currencyRateUSD_NPR || 134.5} NPR</span>
+            </p>
+          </section>
         </div>
       </div>
     </div>
