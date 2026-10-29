@@ -300,11 +300,12 @@ export function Navbar() {
           />
           <div className="h-8 sm:h-9 lg:h-10 w-[1px] bg-slate-200 self-center" aria-hidden="true" />
           <Image
-            src="/images/nepal_logo.jpg"
-            alt="Emblem of Nepal"
-            width={120}
-            height={144}
+            src="/Flag_of_Nepal.gif"
+            alt="Flag of Nepal"
+            width={283}
+            height={345}
             priority
+            unoptimized
             className="h-9 sm:h-11 lg:h-12 w-auto object-contain transition-transform duration-200 group-hover:scale-[1.02]"
           />
         </Link>
