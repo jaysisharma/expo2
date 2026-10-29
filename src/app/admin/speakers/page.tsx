@@ -25,6 +25,7 @@ import { speakersData as initialIPPANMembers } from "@/data/speakers";
 import { eventSolutionTeam as initialEventSolutionTeam } from "@/data/eventSolutionTeam";
 import { ImageUploadField } from "@/components/admin/ImageUploadField";
 import { saveFirebaseMembers, getFirebaseMembers } from "@/lib/contentApi";
+import { IPPAN_COMMITTEE_API, parseIppanApiPosts, type IppanCommitteeMember } from "@/lib/ippanCommitteeSource";
 
 interface IppanSyncPreview {
   source: string;
@@ -88,6 +89,9 @@ export default function AdminMembersPage() {
   // IPPAN website sync: preview of the changes, then apply
   const [ippanPreview, setIppanPreview] = useState<IppanSyncPreview | null>(null);
   const [ippanBusy, setIppanBusy] = useState<"preview" | "apply" | null>(null);
+  // Committee as read from ippan.org.np in this browser, plus the background check's result
+  const [ippanCommittee, setIppanCommittee] = useState<IppanCommitteeMember[] | null>(null);
+  const [ippanPending, setIppanPending] = useState<IppanSyncPreview | null>(null);
 
   // Load from Firebase first, fall back to localStorage, then defaults
   useEffect(() => {
@@ -141,13 +145,30 @@ export default function AdminMembersPage() {
     saveFirebaseMembers(updated).catch(() => {});
   };
 
+  // Read from the browser: IPPAN's Cloudflare blocks the website's servers, not visitors
+  const readIppanCommittee = async () => {
+    const res = await fetch(IPPAN_COMMITTEE_API, { cache: "no-store" });
+    if (!res.ok) throw new Error(`IPPAN website returned HTTP ${res.status}`);
+    return parseIppanApiPosts(await res.json());
+  };
+
+  const previewIppanSync = async (committee: IppanCommitteeMember[]): Promise<IppanSyncPreview> => {
+    const res = await fetch("/api/cron/ippan-members", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ committee, dryRun: true }),
+    });
+    const json = await res.json();
+    if (!json.success) throw new Error(json.message || "Could not compare with the IPPAN website");
+    return json;
+  };
+
   const handlePreviewIppanSync = async () => {
     setIppanBusy("preview");
     try {
-      const res = await fetch("/api/cron/ippan-members", { cache: "no-store" });
-      const json = await res.json();
-      if (!json.success) throw new Error(json.message || "Could not read the IPPAN website");
-      setIppanPreview(json);
+      const committee = await readIppanCommittee();
+      setIppanCommittee(committee);
+      setIppanPreview(await previewIppanSync(committee));
     } catch (err: any) {
       notify(err.message || "Could not read the IPPAN website");
     } finally {
@@ -155,10 +176,33 @@ export default function AdminMembersPage() {
     }
   };
 
+  // Quiet check when the page opens, so changes on ippan.org.np show up as a banner
+  useEffect(() => {
+    if (!mounted) return;
+    let cancelled = false;
+    readIppanCommittee()
+      .then(async (committee) => {
+        const preview = await previewIppanSync(committee);
+        if (cancelled) return;
+        setIppanCommittee(committee);
+        if (preview.changed) setIppanPending(preview);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mounted]);
+
   const handleApplyIppanSync = async () => {
+    if (!ippanCommittee) return;
     setIppanBusy("apply");
     try {
-      const res = await fetch("/api/cron/ippan-members", { method: "POST" });
+      const res = await fetch("/api/cron/ippan-members", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ committee: ippanCommittee }),
+      });
       const json = await res.json();
       if (!json.success || !Array.isArray(json.members)) throw new Error(json.message || "Sync failed");
       setMembers(json.members);
@@ -166,6 +210,7 @@ export default function AdminMembersPage() {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(json.members));
       } catch {}
       setIppanPreview(null);
+      setIppanPending(null);
       notify(`Synced with IPPAN: ${json.added.length} added, ${json.removed.length} removed, ${json.updated.length} updated`);
     } catch (err: any) {
       notify(err.message || "Sync failed");
@@ -388,6 +433,21 @@ export default function AdminMembersPage() {
           </button>
         </div>
       </div>
+
+      {ippanPending && !ippanPreview && (
+        <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <p className="text-xs text-amber-900">
+            <strong>The IPPAN committee has changed:</strong> {ippanPending.added.length} to add,{" "}
+            {ippanPending.removed.length} to remove, {ippanPending.updated.length} new positions.
+          </p>
+          <button
+            onClick={() => setIppanPreview(ippanPending)}
+            className="px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold cursor-pointer shrink-0"
+          >
+            Review changes
+          </button>
+        </div>
+      )}
 
       {/* KPI Summary Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -1059,7 +1119,7 @@ export default function AdminMembersPage() {
               </div>
             )}
 
-            <p className="text-[11px] text-slate-500">This also runs automatically every day.</p>
+            <p className="text-[11px] text-slate-500">This page checks IPPAN each time it opens and shows a banner when something changed.</p>
 
             <div className="flex justify-end gap-2 pt-1">
               <button
