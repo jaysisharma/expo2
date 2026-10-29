@@ -22,10 +22,46 @@ import {
   FileSpreadsheet,
   RefreshCw,
   Copy,
+  MoreHorizontal,
+  Link2,
 } from "lucide-react";
 import { boothsData, extractBoothsFromElements } from "@/data/booths";
 import { Booth } from "@/lib/types";
 import { formatCurrencyUSD, formatCurrencyNPR } from "@/lib/utils";
+import { resolveStall, type ResolvedStall } from "@/lib/stallPricing";
+import { GOOGLE_APPS_SCRIPT_TEMPLATE } from "./sheetSyncScript";
+
+const SHEET_URL = "https://docs.google.com/spreadsheets/d/1iDHOjkA6eNwazEpnwrMVmVD5I99sJvhF444Pn3tCNeE/edit";
+const BLOCKS = ["Block A", "Block B", "Block C", "Outdoor & Special"] as const;
+type BlockName = (typeof BLOCKS)[number];
+const STATUSES = ["Available", "Reserved", "Booked"] as const;
+
+/** A1 -> Block A; H, F and other stalls -> Outdoor & Special */
+function blockOf(booth: Booth): BlockName {
+  const prefix = booth.number.trim().toUpperCase().match(/^([A-Z]+)\d/)?.[1];
+  if (prefix === "A") return "Block A";
+  if (prefix === "B") return "Block B";
+  if (prefix === "C") return "Block C";
+  return "Outdoor & Special";
+}
+
+const STATUS_STYLES: Record<string, { badge: string; tile: string; dot: string }> = {
+  Booked: {
+    badge: "text-emerald-700 bg-emerald-50 border-emerald-200",
+    tile: "bg-emerald-50 border-emerald-200 hover:border-emerald-400",
+    dot: "bg-emerald-500",
+  },
+  Reserved: {
+    badge: "text-amber-800 bg-amber-50 border-amber-200",
+    tile: "bg-amber-50 border-amber-200 hover:border-amber-400",
+    dot: "bg-amber-500",
+  },
+  Available: {
+    badge: "text-slate-600 bg-slate-100 border-slate-200",
+    tile: "bg-white border-slate-200 hover:border-slate-400",
+    dot: "bg-slate-300",
+  },
+};
 
 export default function AdminStallsPage() {
   const [data, setData] = useState<any>(null);
@@ -66,6 +102,7 @@ export default function AdminStallsPage() {
   const [isPopulatingSheet, setIsPopulatingSheet] = useState(false);
   const [sheetWebhookUrl, setSheetWebhookUrl] = useState("");
   const [copiedScript, setCopiedScript] = useState(false);
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
 
   // Toast
   const [toastMsg, setToastMsg] = useState<{ text: string; type?: "success" | "error" } | null>(null);
@@ -147,17 +184,7 @@ export default function AdminStallsPage() {
 
   const filteredBooths = useMemo(() => {
     return mergedBooths.filter((b) => {
-      const matchesHall =
-        selectedHall === "All" ||
-        (selectedHall === "Block A" && (b.hall?.includes("A") || b.number.startsWith("A"))) ||
-        (selectedHall === "Block B" && (b.hall?.includes("B") || b.number.startsWith("B"))) ||
-        (selectedHall === "Block C" && (b.hall?.includes("C") || b.number.startsWith("C"))) ||
-        (selectedHall === "Outdoor & Special" &&
-          (b.hall?.includes("Outdoor") ||
-            b.hall?.includes("Special") ||
-            b.number.startsWith("H") ||
-            b.number.startsWith("F") ||
-            b.number.startsWith("OUT")));
+      const matchesHall = selectedHall === "All" || blockOf(b) === selectedHall;
 
       const matchesStatus = selectedStatus === "All" || b.status === selectedStatus;
 
@@ -199,6 +226,34 @@ export default function AdminStallsPage() {
       prev.includes(number) ? prev.filter((n) => n !== number) : [...prev, number]
     );
   };
+
+  // What customers are charged (sheet prices, prime surcharge, sheet sizes), same as checkout
+  const resolvedByNumber = useMemo(() => {
+    const inputs = {
+      elements: floorPlanElements,
+      boothOverrides: data?.boothOverrides || {},
+      primeSurchargePercent: primePct,
+    };
+    const map = new Map<string, ResolvedStall>();
+    for (const b of mergedBooths) map.set(b.number, resolveStall(b.number, inputs));
+    return map;
+  }, [mergedBooths, floorPlanElements, data?.boothOverrides, primePct]);
+
+  const blockCounts = useMemo(() => {
+    const counts: Record<string, { total: number; taken: number }> = { All: { total: 0, taken: 0 } };
+    for (const b of mergedBooths) {
+      const block = blockOf(b);
+      const taken = b.status !== "Available" ? 1 : 0;
+      counts[block] = { total: (counts[block]?.total || 0) + 1, taken: (counts[block]?.taken || 0) + taken };
+      counts.All = { total: counts.All.total + 1, taken: counts.All.taken + taken };
+    }
+    return counts;
+  }, [mergedBooths]);
+
+  const bookedValueNPR = mergedBooths
+    .filter((b) => b.status === "Booked")
+    .reduce((sum, b) => sum + (resolvedByNumber.get(b.number)?.priceNPR || 0), 0);
+  const isSheetConnected = Boolean(sheetWebhookUrl.trim());
 
   const bookedCount = mergedBooths.filter((b) => b.status === "Booked").length;
   const reservedCount = mergedBooths.filter((b) => b.status === "Reserved").length;
@@ -360,6 +415,33 @@ export default function AdminStallsPage() {
     }
   };
 
+  const handleReleaseBooth = async (booth: Booth) => {
+    if (!confirm(`Release Stall ${booth.number} (${booth.exhibitorName || "Client"}) back to Available?`)) return;
+    try {
+      const res = await fetch("/api/admin/data", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "update_booth",
+          payload: { boothNumber: booth.number, status: "Available", exhibitorName: "" },
+        }),
+      });
+      if ((await res.json()).success) {
+        notify(`Stall ${booth.number} released to Available`);
+        fetchBoothsData();
+      }
+    } catch {
+      notify("Failed to release stall", "error");
+    }
+  };
+
+  const openQuickBook = (stallNumber = "") => {
+    setQuickStallNumber(stallNumber);
+    setQuickClientName("");
+    setQuickStatus("Booked");
+    setShowQuickBookModal(true);
+  };
+
   const handleResetAllBooths = async () => {
     setIsResetting(true);
     try {
@@ -512,210 +594,224 @@ export default function AdminStallsPage() {
         </div>
       )}
 
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+      {/* Header: title, primary action, everything else in "More" */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-mono text-[10px] font-semibold uppercase tracking-wider">
-              Exhibition Hall
-            </span>
-            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-              Stalls & Floor Inventory
-            </h1>
-          </div>
-          <p className="text-xs text-slate-500 mt-1">
-            Manage floor allocations, stall booking statuses, and assigned exhibitors.
+          <span className="text-[10px] font-mono font-semibold uppercase tracking-wider text-slate-400">
+            Exhibition Hall
+          </span>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">Stalls & Bookings</h1>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Book stalls to exhibitors, track availability and keep the Google Sheet in sync.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            onClick={() => {
-              setQuickStallNumber("");
-              setQuickClientName("");
-              setQuickStatus("Booked");
-              setShowQuickBookModal(true);
-            }}
-            className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
-          >
-            <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-            <span>Quick Book Stall</span>
-          </button>
-
-          {(bookedCount > 0 || reservedCount > 0) && (
-            <button
-              onClick={() => setShowResetModal(true)}
-              className="px-3 py-1.5 rounded-lg bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-700 text-xs font-medium border border-slate-200 hover:border-rose-200 shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
-              title="Reset all stalls back to Available"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>Reset All</span>
-            </button>
-          )}
-
-          <button
-            onClick={() => handleSyncGoogleSheet()}
-            disabled={isSyncingSheet}
-            className="px-3.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer disabled:opacity-50"
-            title="Sync stall booking statuses from Google Sheet"
-          >
-            {isSyncingSheet ? (
-              <RefreshCw className="w-3.5 h-3.5 text-emerald-700 animate-spin" />
-            ) : (
-              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-700" />
-            )}
-            <span>{isSyncingSheet ? "Syncing Sheet..." : "Sync Google Sheet"}</span>
-          </button>
-
-          <button
-            onClick={() => setShowSheetModal(true)}
-            className="px-3 py-1.5 rounded-lg bg-white hover:bg-emerald-50 text-emerald-800 text-xs font-medium border border-emerald-200 shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
-            title="Google Sheet setup: copy the Apps Script and save its web app URL"
-          >
-            <Copy className="w-3.5 h-3.5" />
-            <span>Sheet Setup</span>
-          </button>
-
-          <button
-            onClick={exportCSV}
-            className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium border border-slate-200 shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
-          >
-            <Download className="w-3.5 h-3.5 text-slate-500" />
-            <span>Export CSV</span>
-          </button>
-
+        <div className="flex items-center gap-2">
           <Link
             href="/admin/floor-plan"
-            className="px-3.5 py-1.5 rounded-lg bg-[#218A59] hover:bg-[#1b734a] text-white text-xs font-medium flex items-center gap-1.5 shadow-xs transition-colors"
+            className="px-3 py-2 rounded-lg bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium border border-slate-200 shadow-xs flex items-center gap-1.5 transition-colors"
           >
-            <Compass className="w-3.5 h-3.5" />
-            <span>Interactive Floor Plan</span>
+            <Compass className="w-3.5 h-3.5 text-slate-500" />
+            <span>Floor Plan</span>
           </Link>
+
+          <div className="relative">
+            <button
+              onClick={() => setShowMoreMenu((v) => !v)}
+              className="px-2.5 py-2 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-xs flex items-center transition-colors cursor-pointer"
+              title="More actions"
+              aria-haspopup="menu"
+              aria-expanded={showMoreMenu}
+            >
+              <MoreHorizontal className="w-4 h-4" />
+            </button>
+            {showMoreMenu && (
+              <>
+                <div className="fixed inset-0 z-30" onClick={() => setShowMoreMenu(false)} />
+                <div
+                  role="menu"
+                  className="absolute right-0 mt-1.5 z-40 w-52 p-1 rounded-xl bg-white border border-slate-200 shadow-xl text-xs"
+                >
+                  <button
+                    role="menuitem"
+                    onClick={() => {
+                      setShowMoreMenu(false);
+                      exportCSV();
+                    }}
+                    className="w-full px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-700 flex items-center gap-2 cursor-pointer text-left"
+                  >
+                    <Download className="w-3.5 h-3.5 text-slate-500" />
+                    <span>Export CSV ({filteredBooths.length})</span>
+                  </button>
+                  {(bookedCount > 0 || reservedCount > 0) && (
+                    <>
+                      <div className="my-1 border-t border-slate-100" />
+                      <button
+                        role="menuitem"
+                        onClick={() => {
+                          setShowMoreMenu(false);
+                          setShowResetModal(true);
+                        }}
+                        className="w-full px-3 py-2 rounded-lg hover:bg-rose-50 text-rose-700 flex items-center gap-2 cursor-pointer text-left"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                        <span>Reset all stalls…</span>
+                      </button>
+                    </>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+
+          <button
+            onClick={() => openQuickBook()}
+            className="px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+            <span>Book Stall</span>
+          </button>
         </div>
       </div>
 
-      {/* Summary KPI Strip */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs">
-        <div>
-          <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">
-            Total Inventory
-          </span>
-          <div className="flex items-baseline gap-1.5 mt-0.5">
-            <span className="text-xl font-bold text-slate-900">{totalCount}</span>
-            <span className="text-xs text-slate-500 font-mono">stalls</span>
+      {/* Google Sheet connection */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3 rounded-xl bg-white border border-slate-200 shadow-xs">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
+            <FileSpreadsheet className="w-4 h-4" />
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-slate-900 truncate">Booked list HIGEX 2027</span>
+              <span
+                className={`inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
+                  isSheetConnected ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-800"
+                }`}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full ${isSheetConnected ? "bg-emerald-500" : "bg-amber-500"}`} />
+                {isSheetConnected ? "Connected" : "Not connected"}
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-500 truncate">
+              {isSheetConnected
+                ? "Prices and bookings come from the sheet. Edits there update this page automatically."
+                : "Open Setup to connect the sheet's Apps Script."}
+            </p>
           </div>
         </div>
-
-        <div>
-          <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">
-            Occupancy Rate
-          </span>
-          <div className="flex items-baseline gap-1.5 mt-0.5">
-            <span className="text-xl font-bold text-slate-900">{occupancyPct}%</span>
-            <span className="text-xs text-slate-500 font-mono">
-              ({bookedCount + reservedCount} occupied)
-            </span>
-          </div>
-        </div>
-
-        <div>
-          <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">
-            Confirmed Booked
-          </span>
-          <div className="flex items-baseline gap-1.5 mt-0.5">
-            <span className="text-xl font-bold text-emerald-700">{bookedCount}</span>
-            <span className="text-xs text-slate-500 font-mono">
-              ({Math.round((bookedCount / totalCount) * 100)}%)
-            </span>
-          </div>
-        </div>
-
-        <div>
-          <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">
-            Available Open
-          </span>
-          <div className="flex items-baseline gap-1.5 mt-0.5">
-            <span className="text-xl font-bold text-slate-700">{availableCount}</span>
-            <span className="text-xs text-slate-500 font-mono">
-              ({reservedCount} reserved)
-            </span>
-          </div>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <a
+            href={SHEET_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="px-2.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-xs font-medium flex items-center gap-1"
+          >
+            <span>Open</span>
+            <ExternalLink className="w-3 h-3" />
+          </a>
+          <button
+            onClick={() => handleSyncGoogleSheet()}
+            disabled={isSyncingSheet || !isSheetConnected}
+            className="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            title={isSheetConnected ? "Pull bookings and prices from the sheet now" : "Connect the sheet first"}
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isSyncingSheet ? "animate-spin" : ""}`} />
+            <span>{isSyncingSheet ? "Syncing…" : "Sync now"}</span>
+          </button>
+          <button
+            onClick={() => setShowSheetModal(true)}
+            className="px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
+          >
+            <Link2 className="w-3.5 h-3.5 text-slate-500" />
+            <span>Setup</span>
+          </button>
         </div>
       </div>
 
-      {/* Filter & Control Bar */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200 shadow-xs">
-        {/* Hall Selection Pills */}
-        <div className="flex items-center gap-1 overflow-x-auto scrollbar-none pb-1 md:pb-0">
-          {["All", "Block A", "Block B", "Block C", "Outdoor & Special"].map((hall) => {
+      {/* Summary */}
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+        <div className="col-span-2 lg:col-span-1 p-4 rounded-xl bg-white border border-slate-200 shadow-xs">
+          <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">Occupancy</span>
+          <div className="flex items-baseline gap-1.5 mt-1">
+            <span className="text-2xl font-bold text-slate-900">{occupancyPct}%</span>
+            <span className="text-[11px] text-slate-500">
+              of {mergedBooths.length} stalls
+            </span>
+          </div>
+          <div className="mt-2.5 h-1.5 rounded-full bg-slate-100 overflow-hidden flex">
+            <div className="bg-emerald-500" style={{ width: `${(bookedCount / totalCount) * 100}%` }} />
+            <div className="bg-amber-400" style={{ width: `${(reservedCount / totalCount) * 100}%` }} />
+          </div>
+        </div>
+
+        {STATUSES.slice()
+          .reverse()
+          .map((st) => {
+            const count = st === "Booked" ? bookedCount : st === "Reserved" ? reservedCount : availableCount;
+            const active = selectedStatus === st;
+            return (
+              <button
+                key={st}
+                onClick={() => setSelectedStatus(active ? "All" : st)}
+                className={`p-4 rounded-xl border shadow-xs text-left transition-colors cursor-pointer ${
+                  active ? "bg-slate-900 border-slate-900 text-white" : "bg-white border-slate-200 hover:border-slate-300"
+                }`}
+                title={active ? "Show all statuses" : `Show only ${st.toLowerCase()} stalls`}
+              >
+                <span className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider opacity-70">
+                  <span className={`w-1.5 h-1.5 rounded-full ${STATUS_STYLES[st].dot}`} />
+                  {st}
+                </span>
+                <span className="block text-2xl font-bold mt-1">{count}</span>
+              </button>
+            );
+          })}
+
+        <div className="col-span-2 lg:col-span-1 p-4 rounded-xl bg-white border border-slate-200 shadow-xs">
+          <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">Booked value</span>
+          <span className="block text-lg font-bold text-slate-900 mt-1">{formatCurrencyNPR(bookedValueNPR)}</span>
+          <span className="text-[11px] text-slate-500">{bookedCount} stalls, before VAT</span>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+        <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-100 overflow-x-auto scrollbar-none">
+          {(["All", ...BLOCKS] as const).map((hall) => {
             const isActive = selectedHall === hall;
-            const count =
-              hall === "All"
-                ? mergedBooths.length
-                : hall === "Block A"
-                ? mergedBooths.filter((b) => b.hall?.includes("A") || b.number.startsWith("A")).length
-                : hall === "Block B"
-                ? mergedBooths.filter((b) => b.hall?.includes("B") || b.number.startsWith("B")).length
-                : hall === "Block C"
-                ? mergedBooths.filter((b) => b.hall?.includes("C") || b.number.startsWith("C")).length
-                : mergedBooths.filter(
-                    (b) =>
-                      b.hall?.includes("Outdoor") ||
-                      b.hall?.includes("Special") ||
-                      b.number.startsWith("H") ||
-                      b.number.startsWith("F") ||
-                      b.number.startsWith("OUT")
-                  ).length;
-
+            const c = blockCounts[hall] || { total: 0, taken: 0 };
             return (
               <button
                 key={hall}
                 onClick={() => setSelectedHall(hall)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer flex items-center gap-1.5 ${
-                  isActive
-                    ? "bg-slate-900 text-white font-semibold"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                className={`px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-colors cursor-pointer flex items-center gap-1.5 ${
+                  isActive ? "bg-white text-slate-900 font-semibold shadow-xs" : "text-slate-600 hover:text-slate-900"
                 }`}
               >
-                <span>{hall}</span>
-                <span
-                  className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                    isActive ? "bg-slate-800 text-slate-200" : "bg-slate-100 text-slate-500"
-                  }`}
-                >
-                  {count}
+                <span>{hall === "All" ? "All blocks" : hall}</span>
+                <span className="text-[10px] text-slate-400 font-mono">
+                  {c.taken}/{c.total}
                 </span>
               </button>
             );
           })}
         </div>
 
-        {/* Right: Status Filter, Search, View Mode */}
         <div className="flex items-center gap-2">
-          <select
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            className="px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs font-medium text-slate-700 focus:outline-none focus:border-[#218A59] focus:bg-white cursor-pointer"
-          >
-            <option value="All">All Status</option>
-            <option value="Available">Available</option>
-            <option value="Reserved">Reserved</option>
-            <option value="Booked">Booked</option>
-          </select>
-
-          <div className="relative flex-1 sm:w-56">
+          <div className="relative flex-1 lg:w-64">
             <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search stall #, company..."
-              className="w-full pl-8 pr-7 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#218A59] focus:bg-white"
+              placeholder="Search stall # or company…"
+              className="w-full pl-8 pr-7 py-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#218A59]"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
                 className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                aria-label="Clear search"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -723,98 +819,96 @@ export default function AdminStallsPage() {
           </div>
 
           <div className="flex items-center p-0.5 rounded-lg bg-slate-100 border border-slate-200 shrink-0">
-            <button
-              onClick={() => setViewMode("table")}
-              className={`p-1.5 rounded-md transition-colors cursor-pointer ${
-                viewMode === "table"
-                  ? "bg-white text-slate-900 shadow-xs"
-                  : "text-slate-500 hover:text-slate-800"
-              }`}
-              title="Table view"
-            >
-              <List className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => setViewMode("grid")}
-              className={`p-1.5 rounded-md transition-colors cursor-pointer ${
-                viewMode === "grid"
-                  ? "bg-white text-slate-900 shadow-xs"
-                  : "text-slate-500 hover:text-slate-800"
-              }`}
-              title="Grid view"
-            >
-              <LayoutGrid className="w-3.5 h-3.5" />
-            </button>
+            {(
+              [
+                ["table", List, "Table view"],
+                ["grid", LayoutGrid, "Map view by block"],
+              ] as const
+            ).map(([mode, Icon, label]) => (
+              <button
+                key={mode}
+                onClick={() => setViewMode(mode)}
+                className={`p-1.5 rounded-md transition-colors cursor-pointer ${
+                  viewMode === mode ? "bg-white text-slate-900 shadow-xs" : "text-slate-500 hover:text-slate-800"
+                }`}
+                title={label}
+                aria-label={label}
+              >
+                <Icon className="w-3.5 h-3.5" />
+              </button>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* Floating Bulk Action Bar */}
-      {selectedNumbers.length > 0 && (
-        <div className="sticky top-4 z-30 p-2.5 px-4 rounded-xl bg-slate-900 text-white shadow-xl flex flex-wrap items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2 duration-150">
-          <div className="flex items-center gap-2.5 text-xs">
-            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-500 text-slate-950 font-bold text-[11px]">
-              {selectedNumbers.length}
-            </span>
-            <span className="font-medium text-slate-200">
-              {selectedNumbers.length === 1 ? "1 stall selected" : `${selectedNumbers.length} stalls selected`}
-            </span>
-          </div>
+      {selectedStatus !== "All" && (
+        <div className="-mt-2 flex items-center gap-2 text-[11px] text-slate-500">
+          <span>
+            Showing <strong className="text-slate-700">{selectedStatus.toLowerCase()}</strong> stalls only
+          </span>
+          <button onClick={() => setSelectedStatus("All")} className="text-emerald-700 hover:underline cursor-pointer">
+            Show all
+          </button>
+        </div>
+      )}
 
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[11px] text-slate-400 hidden sm:inline">Set Status:</span>
-            <button
-              onClick={() => handleBulkSetStatus("Available")}
-              disabled={isBulkUpdating}
-              className="px-2.5 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 transition-colors cursor-pointer"
-            >
-              Available
-            </button>
-            <button
-              onClick={() => handleBulkSetStatus("Reserved")}
-              disabled={isBulkUpdating}
-              className="px-2.5 py-1 rounded-md bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-semibold transition-colors cursor-pointer"
-            >
-              Reserved
-            </button>
-            <button
-              onClick={() => handleBulkSetStatus("Booked")}
-              disabled={isBulkUpdating}
-              className="px-2.5 py-1 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition-colors cursor-pointer"
-            >
-              Booked
-            </button>
-            <span className="text-slate-600 mx-0.5">|</span>
+      {/* Bulk actions for selected stalls */}
+      {selectedNumbers.length > 0 && (
+        <div className="sticky top-4 z-20 p-2.5 px-4 rounded-xl bg-slate-900 text-white shadow-xl flex flex-wrap items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2 duration-150">
+          <span className="text-xs font-medium text-slate-200">
+            {selectedNumbers.length === 1 ? "1 stall selected" : `${selectedNumbers.length} stalls selected`}
+          </span>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-[11px] text-slate-400 hidden sm:inline mr-1">Mark as</span>
+            {STATUSES.map((st) => (
+              <button
+                key={st}
+                onClick={() => handleBulkSetStatus(st)}
+                disabled={isBulkUpdating}
+                className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50 ${
+                  st === "Booked"
+                    ? "bg-emerald-600 hover:bg-emerald-500 text-white"
+                    : st === "Reserved"
+                    ? "bg-amber-500 hover:bg-amber-400 text-slate-950"
+                    : "bg-slate-700 hover:bg-slate-600 text-slate-100"
+                }`}
+              >
+                {st}
+              </button>
+            ))}
+            <span className="w-px h-4 bg-slate-700 mx-1" />
             <button
               onClick={() => handleBulkSetPrime(true)}
               disabled={isBulkUpdating}
-              className="px-2.5 py-1 rounded-md bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-bold transition-colors cursor-pointer flex items-center gap-1"
+              className="px-2.5 py-1 rounded-md bg-slate-700 hover:bg-slate-600 text-amber-300 text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1 disabled:opacity-50"
             >
-              <Sparkles className="w-3 h-3 text-amber-900" />
-              <span>Set Prime (+25%)</span>
+              <Sparkles className="w-3 h-3" />
+              <span>Prime</span>
             </button>
             <button
               onClick={() => handleBulkSetPrime(false)}
               disabled={isBulkUpdating}
-              className="px-2.5 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition-colors cursor-pointer"
+              className="px-2.5 py-1 rounded-md bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-medium transition-colors cursor-pointer disabled:opacity-50"
             >
-              Remove Prime
+              Standard
             </button>
             <button
               onClick={() => setSelectedNumbers([])}
-              className="px-2.5 py-1 text-xs text-slate-400 hover:text-white transition-colors cursor-pointer ml-1"
+              className="px-2 py-1 text-slate-400 hover:text-white transition-colors cursor-pointer"
+              title="Clear selection"
+              aria-label="Clear selection"
             >
-              Deselect
+              <X className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
       )}
 
-      {/* Content: Table or Grid */}
+      {/* Stalls */}
       {isLoading ? (
         <div className="py-20 flex flex-col items-center justify-center text-slate-400 bg-white rounded-xl border border-slate-200">
           <Loader2 className="w-6 h-6 animate-spin text-[#218A59] mb-2" />
-          <span className="text-xs">Loading floor stalls...</span>
+          <span className="text-xs">Loading stalls…</span>
         </div>
       ) : filteredBooths.length === 0 ? (
         <div className="py-16 px-4 flex flex-col items-center justify-center text-center bg-white rounded-xl border border-slate-200 shadow-xs">
@@ -823,7 +917,7 @@ export default function AdminStallsPage() {
           </div>
           <h3 className="text-sm font-semibold text-slate-800">No stalls found</h3>
           <p className="text-xs text-slate-500 max-w-sm mt-1 mb-4">
-            No stalls match your selected filters. Try choosing a different hall or clearing search keywords.
+            Nothing matches these filters. Try another block or clear the search.
           </p>
           <button
             onClick={() => {
@@ -833,175 +927,133 @@ export default function AdminStallsPage() {
             }}
             className="px-3.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium cursor-pointer"
           >
-            Reset Filters
+            Clear filters
           </button>
         </div>
       ) : viewMode === "table" ? (
-        /* Minimal Clean Table */
         <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="bg-slate-50/80 border-b border-slate-200 text-[11px] font-mono text-slate-500 uppercase tracking-wider">
-                  <th className="py-3 pl-4 pr-2 w-10">
+                <tr className="bg-slate-50/80 border-b border-slate-200 text-[10px] font-mono text-slate-500 uppercase tracking-wider">
+                  <th className="py-2.5 pl-4 pr-2 w-10">
                     <input
                       ref={masterCheckboxRef}
                       type="checkbox"
                       checked={isAllFilteredSelected}
                       onChange={handleToggleSelectAll}
                       className="w-4 h-4 rounded border-slate-300 text-[#218A59] focus:ring-[#218A59] cursor-pointer"
-                      title={isAllFilteredSelected ? "Deselect all" : "Select all"}
+                      aria-label={isAllFilteredSelected ? "Deselect all" : "Select all"}
                     />
                   </th>
-                  <th className="py-3 px-3">Stall #</th>
-                  <th className="py-3 px-3">Hall / Zone</th>
-                  <th className="py-3 px-3">Size & Type</th>
-                  <th className="py-3 px-3">Assigned Exhibitor</th>
-                  <th className="py-3 px-3">Price</th>
-                  <th className="py-3 px-3">Status</th>
-                  <th className="py-3 pr-4 pl-3 text-right">Action</th>
+                  <th className="py-2.5 px-3">Stall</th>
+                  <th className="py-2.5 px-3">Size</th>
+                  <th className="py-2.5 px-3">Exhibitor</th>
+                  <th className="py-2.5 px-3 text-right">Price</th>
+                  <th className="py-2.5 px-3">Status</th>
+                  <th className="py-2.5 pr-4 pl-3 text-right">
+                    <span className="sr-only">Actions</span>
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-slate-700">
                 {filteredBooths.map((booth) => {
                   const isSelected = selectedNumbers.includes(booth.number);
-
+                  const r = resolvedByNumber.get(booth.number);
                   return (
                     <tr
                       key={booth.id}
-                      className={`hover:bg-slate-50/70 transition-colors ${
-                        isSelected ? "bg-emerald-50/30" : ""
-                      }`}
+                      className={`group hover:bg-slate-50/70 transition-colors ${isSelected ? "bg-emerald-50/40" : ""}`}
                     >
-                      {/* Checkbox */}
                       <td className="py-3 pl-4 pr-2">
                         <input
                           type="checkbox"
                           checked={isSelected}
                           onChange={() => handleToggleSelectOne(booth.number)}
                           className="w-4 h-4 rounded border-slate-300 text-[#218A59] focus:ring-[#218A59] cursor-pointer"
+                          aria-label={`Select stall ${booth.number}`}
                         />
                       </td>
 
-                      {/* Stall # */}
-                      <td className="py-3 px-3 font-mono font-bold text-[#234679]">
-                        <div className="flex items-center gap-1.5 flex-wrap">
+                      <td className="py-3 px-3">
+                        <div className="flex items-center gap-1.5">
                           <button
                             onClick={() => handleOpenEdit(booth)}
-                            className="hover:underline cursor-pointer"
+                            className="font-mono font-bold text-[#234679] hover:underline cursor-pointer"
                           >
                             {booth.number}
                           </button>
-                          {booth.isPrime && (
-                            <span className="text-[9px] font-mono px-1.5 py-0.5 rounded font-bold bg-amber-100 text-amber-900 border border-amber-300">
-                              ★ PRIME (+{primePct}%)
+                          {(r?.isPrime ?? booth.isPrime) && (
+                            <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-amber-100 text-amber-900">
+                              ★ Prime
                             </span>
                           )}
                         </div>
+                        <span className="text-[11px] text-slate-400">{blockOf(booth)}</span>
                       </td>
 
-                      {/* Zone */}
-                      <td className="py-3 px-3 text-slate-600">
-                        <span className="font-medium text-[11px] px-2 py-0.5 rounded-md bg-slate-100 text-slate-700">
-                          {booth.hall || "Hall A"}
-                        </span>
+                      <td className="py-3 px-3 whitespace-nowrap">
+                        <span className="font-mono font-medium text-slate-900">{r?.sizeSqM ?? booth.sizeSqM} m²</span>
+                        <span className="text-[11px] text-slate-400 block">{r?.dimensions || booth.dimensions}</span>
                       </td>
 
-                      {/* Size & Type */}
-                      <td className="py-3 px-3 text-slate-600">
-                        <span className="font-mono font-medium text-slate-900">{booth.sizeSqM}m²</span>
-                        <span className="text-[11px] text-slate-400 block">{booth.dimensions} · {booth.type}</span>
-                      </td>
-
-                      {/* Exhibitor */}
                       <td className="py-3 px-3">
                         {booth.exhibitorName ? (
-                          <span className="font-semibold text-slate-900 truncate block max-w-[200px]">
+                          <span className="font-semibold text-slate-900 truncate block max-w-[220px]">
                             {booth.exhibitorName}
                           </span>
                         ) : (
-                          <span className="text-slate-400 text-xs italic">Unassigned</span>
+                          <span className="text-slate-400">—</span>
                         )}
                       </td>
 
-                      {/* Price */}
-                      <td className="py-3 px-3 font-mono">
-                        <span className="font-medium text-slate-800">{formatCurrencyUSD(booth.priceUSD)}</span>
-                        <span className="text-[10px] text-slate-500 font-medium block font-sans">
-                          {formatCurrencyNPR(booth.priceNPR || Math.round(booth.priceUSD * exchangeRate))}
+                      <td className="py-3 px-3 text-right whitespace-nowrap">
+                        <span className="font-mono font-semibold text-slate-900">
+                          {formatCurrencyNPR(r?.priceNPR ?? booth.priceNPR ?? 0)}
+                        </span>
+                        <span className="text-[11px] text-slate-400 block font-mono">
+                          {formatCurrencyUSD(r?.priceUSD ?? booth.priceUSD)}
+                          {r?.isPrime ? " · incl. prime" : ""}
                         </span>
                       </td>
 
-                      {/* Status */}
                       <td className="py-3 px-3 whitespace-nowrap">
                         <span
-                          className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded-md border ${
-                            booth.status === "Booked"
-                              ? "text-emerald-700 bg-emerald-50 border-emerald-200"
-                              : booth.status === "Reserved"
-                              ? "text-amber-800 bg-amber-50 border-amber-200"
-                              : "text-slate-600 bg-slate-100 border-slate-200"
+                          className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md border ${
+                            STATUS_STYLES[booth.status]?.badge || STATUS_STYLES.Available.badge
                           }`}
                         >
+                          <span className={`w-1.5 h-1.5 rounded-full ${STATUS_STYLES[booth.status]?.dot || "bg-slate-300"}`} />
                           {booth.status}
                         </span>
                       </td>
 
-                      {/* Action */}
                       <td className="py-3 pr-4 pl-3 text-right whitespace-nowrap">
-                        <div className="flex items-center justify-end gap-1.5">
+                        <div className="flex items-center justify-end gap-1">
                           {booth.status === "Available" ? (
                             <button
-                              onClick={() => {
-                                setQuickStallNumber(booth.number);
-                                setQuickClientName("");
-                                setQuickStatus("Booked");
-                                setShowQuickBookModal(true);
-                              }}
-                              className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-colors cursor-pointer flex items-center gap-1 shadow-2xs"
+                              onClick={() => openQuickBook(booth.number)}
+                              className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition-colors cursor-pointer"
                             >
-                              <Plus className="w-3 h-3 stroke-[2.5]" />
-                              <span>Book to Client</span>
+                              Book
                             </button>
                           ) : (
-                            <>
-                              <button
-                                onClick={() => handleOpenEdit(booth)}
-                                className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium transition-colors cursor-pointer"
-                              >
-                                Edit
-                              </button>
-                              <button
-                                onClick={async () => {
-                                  if (!confirm(`Release Stall ${booth.number} (${booth.exhibitorName || "Client"}) back to Available?`)) return;
-                                  try {
-                                    const res = await fetch("/api/admin/data", {
-                                      method: "POST",
-                                      headers: { "Content-Type": "application/json" },
-                                      body: JSON.stringify({
-                                        action: "update_booth",
-                                        payload: {
-                                          boothNumber: booth.number,
-                                          status: "Available",
-                                          exhibitorName: "",
-                                        },
-                                      }),
-                                    });
-                                    if ((await res.json()).success) {
-                                      notify(`Stall ${booth.number} released to Available`);
-                                      fetchBoothsData();
-                                    }
-                                  } catch {
-                                    notify("Failed to release stall", "error");
-                                  }
-                                }}
-                                className="px-2 py-1 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-600 text-xs font-medium transition-colors cursor-pointer"
-                                title="Release back to Available"
-                              >
-                                Release
-                              </button>
-                            </>
+                            <button
+                              onClick={() => handleReleaseBooth(booth)}
+                              className="px-2.5 py-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 text-xs font-medium transition-colors cursor-pointer"
+                              title="Release back to Available"
+                            >
+                              Release
+                            </button>
                           )}
+                          <button
+                            onClick={() => handleOpenEdit(booth)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
+                            title={`Edit stall ${booth.number}`}
+                            aria-label={`Edit stall ${booth.number}`}
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -1011,89 +1063,64 @@ export default function AdminStallsPage() {
             </table>
           </div>
 
-          {/* Table Footer */}
           <div className="p-3 px-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between text-[11px] text-slate-500">
             <span>
               Showing {filteredBooths.length} of {mergedBooths.length} stalls
             </span>
-            <span>
-              {bookedCount} booked · {reservedCount} reserved · {availableCount} available
-            </span>
+            <span>Prices exclude 13% VAT</span>
           </div>
         </div>
       ) : (
-        /* Minimal Grid View */
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-          {filteredBooths.map((booth) => {
-            const isSelected = selectedNumbers.includes(booth.number);
-
-            return (
-              <div
-                key={booth.id}
-                onClick={() => handleToggleSelectOne(booth.number)}
-                className={`p-3 rounded-xl border text-xs cursor-pointer transition-all flex flex-col justify-between gap-2 shadow-xs ${
-                  isSelected
-                    ? "border-emerald-500 ring-1 ring-emerald-500 bg-emerald-50/20"
-                    : "border-slate-200 hover:border-slate-300 bg-white"
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1">
-                    <span className="font-mono font-bold text-slate-900">{booth.number}</span>
-                    {booth.isPrime && (
-                      <span className="text-[8px] font-mono px-1 py-0.2 rounded font-bold bg-amber-100 text-amber-900 border border-amber-300">
-                        ★ PRIME
-                      </span>
-                    )}
-                  </div>
-                  <span
-                    className={`text-[9px] font-mono px-1.5 py-0.2 rounded font-semibold ${
-                      booth.status === "Booked"
-                        ? "bg-emerald-100 text-emerald-800"
-                        : booth.status === "Reserved"
-                        ? "bg-amber-100 text-amber-800"
-                        : "bg-slate-100 text-slate-600"
-                    }`}
-                  >
-                    {booth.status}
-                  </span>
-                </div>
-
-                <div className="text-[11px] text-slate-600 truncate">
-                  {booth.exhibitorName || <span className="text-slate-400 italic">Available</span>}
-                </div>
-
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400 font-mono">
-                  <span>{booth.sizeSqM}m²</span>
-                  {booth.status === "Available" ? (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setQuickStallNumber(booth.number);
-                        setQuickClientName("");
-                        setQuickStatus("Booked");
-                        setShowQuickBookModal(true);
-                      }}
-                      className="text-emerald-700 hover:text-emerald-900 font-bold flex items-center gap-0.5 cursor-pointer"
-                    >
-                      <Plus className="w-3 h-3 stroke-[2.5]" />
-                      <span>Book</span>
-                    </button>
-                  ) : (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleOpenEdit(booth);
-                      }}
-                      className="text-slate-600 hover:text-slate-900 underline cursor-pointer"
-                    >
-                      Edit
-                    </button>
-                  )}
-                </div>
+        /* Map view: stalls grouped by block, coloured by status */
+        <div className="space-y-4">
+          {BLOCKS.filter((block) => filteredBooths.some((b) => blockOf(b) === block)).map((block) => (
+            <div key={block} className="p-4 rounded-xl bg-white border border-slate-200 shadow-xs">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-xs font-bold text-slate-900">{block}</h3>
+                <span className="text-[11px] text-slate-400 font-mono">
+                  {blockCounts[block]?.taken || 0}/{blockCounts[block]?.total || 0} taken
+                </span>
               </div>
-            );
-          })}
+              <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 lg:grid-cols-9 xl:grid-cols-12 gap-2">
+                {filteredBooths
+                  .filter((b) => blockOf(b) === block)
+                  .map((booth) => {
+                    const isSelected = selectedNumbers.includes(booth.number);
+                    const r = resolvedByNumber.get(booth.number);
+                    return (
+                      <button
+                        key={booth.id}
+                        onClick={() => handleOpenEdit(booth)}
+                        className={`relative p-2 rounded-lg border text-left transition-colors cursor-pointer ${
+                          STATUS_STYLES[booth.status]?.tile || STATUS_STYLES.Available.tile
+                        } ${isSelected ? "ring-2 ring-emerald-500" : ""}`}
+                        title={`${booth.number} · ${booth.status}${booth.exhibitorName ? ` · ${booth.exhibitorName}` : ""} · ${formatCurrencyNPR(r?.priceNPR ?? 0)}`}
+                      >
+                        <span className="flex items-center justify-between">
+                          <span className="font-mono font-bold text-[11px] text-slate-900">{booth.number}</span>
+                          {r?.isPrime && <span className="text-[9px] text-amber-600">★</span>}
+                        </span>
+                        <span className="block text-[10px] text-slate-500 truncate">
+                          {booth.exhibitorName || `${r?.sizeSqM ?? booth.sizeSqM} m²`}
+                        </span>
+                      </button>
+                    );
+                  })}
+              </div>
+            </div>
+          ))}
+          <div className="flex items-center gap-4 text-[11px] text-slate-500 px-1">
+            {STATUSES.map((st) => (
+              <span key={st} className="flex items-center gap-1.5">
+                <span className={`w-2 h-2 rounded-full ${STATUS_STYLES[st].dot}`} />
+                {st}
+              </span>
+            ))}
+            <span className="flex items-center gap-1.5">
+              <span className="text-amber-600">★</span> Prime
+            </span>
+            <span className="ml-auto">Click a stall to edit it</span>
+          </div>
         </div>
       )}
 
@@ -1108,10 +1135,10 @@ export default function AdminStallsPage() {
                 </div>
                 <div>
                   <h3 className="font-bold text-base text-slate-900">
-                    Quick Book Stall to Client
+                    Book a stall
                   </h3>
                   <p className="text-xs text-slate-500">
-                    Allocate booth &amp; lock it across the site instantly.
+                    Assign it to an exhibitor; the website and sheet update right away.
                   </p>
                 </div>
               </div>
@@ -1346,6 +1373,13 @@ export default function AdminStallsPage() {
                 )}
               </div>
 
+              {isSheetConnected && (
+                <p className="text-[11px] text-slate-500 leading-relaxed">
+                  Prices and prime status come from the Google Sheet. Changes to them here are replaced the next
+                  time that stall is edited in the sheet; status and exhibitor changes are written to the sheet.
+                </p>
+              )}
+
               <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
                 <span>Power Specification</span>
                 <span className="text-slate-700 font-medium">{editingBooth.powerIncluded || "15A 3-Phase"}</span>
@@ -1407,145 +1441,150 @@ export default function AdminStallsPage() {
           </div>
         </div>
       )}
-      {/* Google Sheet Sync Modal */}
+      {/* Google Sheet Setup */}
       {showSheetModal && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-2xl bg-white rounded-2xl p-6 shadow-2xl space-y-4 border border-slate-200 animate-in fade-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-start justify-between pb-3 border-b border-slate-100">
+          <div className="w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-start justify-between p-5 pb-4 border-b border-slate-100">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
                   <FileSpreadsheet className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-slate-900">Google Sheet Stall Sync</h3>
+                  <h3 className="text-base font-bold text-slate-900">Google Sheet</h3>
                   <p className="text-xs text-slate-500">
-                    Connect your live spreadsheet to sync booked/reserved stalls with the website and floor plan.
+                    The sheet holds the real prices and bookings; the website follows it.
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setShowSheetModal(false)}
                 className="w-7 h-7 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center cursor-pointer"
+                aria-label="Close"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Current Sheet Link */}
-            <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200 flex items-center justify-between">
-              <div>
-                <span className="text-[10px] font-mono uppercase text-emerald-800 font-bold block">Connected Google Sheet</span>
-                <span className="text-xs text-emerald-950 font-medium">Booked list HIGEX 2027</span>
-              </div>
-              <a
-                href="https://docs.google.com/spreadsheets/d/1iDHOjkA6eNwazEpnwrMVmVD5I99sJvhF444Pn3tCNeE/edit"
-                target="_blank"
-                rel="noreferrer"
-                className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors"
-              >
-                <span>Open Sheet</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
-            </div>
-
-            {/* Webhook Input */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-700">Google Apps Script Web App URL</label>
-              <div className="flex gap-2">
-                <input
-                  type="url"
-                  value={sheetWebhookUrl}
-                  onChange={(e) => setSheetWebhookUrl(e.target.value)}
-                  placeholder="https://script.google.com/macros/s/.../exec"
-                  className="flex-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-800 focus:outline-none focus:border-emerald-600 focus:bg-white"
-                />
-                <button
-                  type="button"
-                  onClick={() => handleSaveWebhookUrl(sheetWebhookUrl)}
-                  className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold cursor-pointer shrink-0"
-                >
-                  Save URL
-                </button>
-              </div>
-            </div>
-
-            {/* Quick Populate Feature Card */}
-            <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="space-y-0.5">
-                <div className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Fill Website Bookings into Sheet</span>
+            <div className="p-5 space-y-5">
+              {/* 1. Connection */}
+              <section className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">Connection</h4>
+                  <a
+                    href={SHEET_URL}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-xs text-emerald-700 hover:underline flex items-center gap-1"
+                  >
+                    Booked list HIGEX 2027 <ExternalLink className="w-3 h-3" />
+                  </a>
                 </div>
-                <p className="text-[11px] text-emerald-800 leading-snug">
-                  Marks stalls booked or reserved on the website in the sheet (Status &amp; Company Name). Stalls already filled in the sheet, and all price columns, are left untouched.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => handlePopulateGoogleSheet(sheetWebhookUrl)}
-                disabled={isPopulatingSheet || !sheetWebhookUrl.trim()}
-                className="px-3.5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shrink-0 disabled:opacity-50 shadow-xs transition-colors"
-              >
-                {isPopulatingSheet ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <FileSpreadsheet className="w-3.5 h-3.5" />}
-                <span>{isPopulatingSheet ? "Filling Sheet..." : "Fill Bookings into Sheet"}</span>
-              </button>
-            </div>
+                <label className="block text-xs font-semibold text-slate-700" htmlFor="sheet-webhook-url">
+                  Apps Script web app URL
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    id="sheet-webhook-url"
+                    type="url"
+                    value={sheetWebhookUrl}
+                    onChange={(e) => setSheetWebhookUrl(e.target.value)}
+                    placeholder="https://script.google.com/macros/s/…/exec"
+                    className="flex-1 min-w-0 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-800 focus:outline-none focus:border-emerald-600 focus:bg-white"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleSaveWebhookUrl(sheetWebhookUrl)}
+                    disabled={!sheetWebhookUrl.trim()}
+                    className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-semibold cursor-pointer shrink-0 disabled:opacity-40"
+                  >
+                    Save
+                  </button>
+                </div>
+              </section>
 
-            {/* Action Buttons */}
-            <div className="flex items-center justify-between pt-1">
-              <button
-                type="button"
-                onClick={() => {
-                  navigator.clipboard.writeText(GOOGLE_APPS_SCRIPT_TEMPLATE);
-                  setCopiedScript(true);
-                  setTimeout(() => setCopiedScript(false), 2500);
-                  notify("Google Apps Script code copied to clipboard!");
-                }}
-                className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium flex items-center gap-1.5 cursor-pointer"
-              >
-                {copiedScript ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{copiedScript ? "Copied Script Code!" : "Copy Google Apps Script"}</span>
-              </button>
+              {/* 2. Actions */}
+              <section className="space-y-2">
+                <h4 className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">Sync</h4>
+                <div className="grid sm:grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleSyncGoogleSheet(sheetWebhookUrl)}
+                    disabled={isSyncingSheet || !sheetWebhookUrl.trim()}
+                    className="p-3 rounded-xl border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/40 text-left transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <span className="flex items-center gap-1.5 text-xs font-bold text-slate-900">
+                      <RefreshCw className={`w-3.5 h-3.5 text-emerald-700 ${isSyncingSheet ? "animate-spin" : ""}`} />
+                      {isSyncingSheet ? "Syncing…" : "Sheet → website"}
+                    </span>
+                    <span className="block text-[11px] text-slate-500 mt-1 leading-snug">
+                      Pull every stall's status, company, size and price from the sheet now.
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handlePopulateGoogleSheet(sheetWebhookUrl)}
+                    disabled={isPopulatingSheet || !sheetWebhookUrl.trim()}
+                    className="p-3 rounded-xl border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/40 text-left transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <span className="flex items-center gap-1.5 text-xs font-bold text-slate-900">
+                      <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-700" />
+                      {isPopulatingSheet ? "Filling…" : "Website → sheet"}
+                    </span>
+                    <span className="block text-[11px] text-slate-500 mt-1 leading-snug">
+                      Mark website bookings in empty sheet rows. Filled rows and prices are left alone.
+                    </span>
+                  </button>
+                </div>
+              </section>
 
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowSheetModal(false)}
-                  className="px-3 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 text-xs font-medium cursor-pointer"
-                >
-                  Close
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleSyncGoogleSheet(sheetWebhookUrl)}
-                  disabled={isSyncingSheet || !sheetWebhookUrl.trim()}
-                  className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer disabled:opacity-50"
-                >
-                  {isSyncingSheet ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
-                  <span>{isSyncingSheet ? "Syncing..." : "Sync Sheet to DB"}</span>
-                </button>
-              </div>
-            </div>
-
-            {/* 4 Step Quick Guide */}
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-2 text-slate-600">
-              <span className="font-bold text-slate-800 block text-[11px] uppercase tracking-wider">
-                How It Works &amp; Setup (100% Free):
-              </span>
-              <ol className="list-decimal list-inside space-y-1.5 text-[11px] leading-relaxed">
-                <li>
-                  Open your <a href="https://docs.google.com/spreadsheets/d/1iDHOjkA6eNwazEpnwrMVmVD5I99sJvhF444Pn3tCNeE/edit" target="_blank" rel="noreferrer" className="text-emerald-700 underline font-semibold">Google Sheet</a>, click <strong>Extensions</strong> &rarr; <strong>Apps Script</strong>.
-                </li>
-                <li>
-                  Click <strong>&quot;Copy Google Apps Script&quot;</strong> button above, delete whatever is in the script editor, paste this code, and click <strong>Save</strong>.
-                </li>
-                <li>
-                  Click <strong>Deploy</strong> &rarr; <strong>New deployment</strong> (or Manage deployments &rarr; Edit), select <strong>Web app</strong>, set <em>Who has access</em> to <strong>Anyone</strong>, and click <strong>Deploy</strong>. Copy and paste the Web App URL above!
-                </li>
-                <li>
-                  In Google Sheets click <strong>⚡ Expo Stall Sync &rarr; 📥 Fill in bookings from website</strong>, then <strong>🔁 Turn on auto-sync when I edit</strong> so changes to Status or Company Name update the website.
-                </li>
-              </ol>
+              {/* 3. Setup */}
+              <section className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
+                    First-time setup
+                  </h4>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(GOOGLE_APPS_SCRIPT_TEMPLATE);
+                      setCopiedScript(true);
+                      setTimeout(() => setCopiedScript(false), 2500);
+                      notify("Apps Script copied to clipboard");
+                    }}
+                    className="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+                  >
+                    {copiedScript ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                    <span>{copiedScript ? "Copied" : "Copy Apps Script"}</span>
+                  </button>
+                </div>
+                <ol className="space-y-2 text-[11px] text-slate-600 leading-relaxed">
+                  {[
+                    <>
+                      In the sheet, open <strong>Extensions → Apps Script</strong>, replace everything with the copied
+                      script and click <strong>Save</strong>.
+                    </>,
+                    <>
+                      <strong>Project Settings → Script Properties</strong>: add <code className="px-1 rounded bg-slate-100 font-mono">SYNC_SECRET</code>{" "}
+                      with the same value as <code className="px-1 rounded bg-slate-100 font-mono">GOOGLE_SHEET_SYNC_SECRET</code> on Vercel.
+                    </>,
+                    <>
+                      <strong>Deploy → New deployment → Web app</strong>, execute as <strong>Me</strong>, access{" "}
+                      <strong>Anyone</strong>. Paste the <code className="px-1 rounded bg-slate-100 font-mono">/exec</code> URL above and Save.
+                    </>,
+                    <>
+                      Reload the sheet and choose <strong>⚡ Expo Stall Sync → 🔁 Turn on auto-sync when I edit</strong>.
+                    </>,
+                  ].map((step, i) => (
+                    <li key={i} className="flex gap-2.5">
+                      <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-700 font-bold text-[10px] flex items-center justify-center shrink-0">
+                        {i + 1}
+                      </span>
+                      <span>{step}</span>
+                    </li>
+                  ))}
+                </ol>
+              </section>
             </div>
           </div>
         </div>
@@ -1553,359 +1592,3 @@ export default function AdminStallsPage() {
     </div>
   );
 }
-
-const GOOGLE_APPS_SCRIPT_TEMPLATE = `// ============================================================================
-// HIMALAYAN GREEN ENERGY EXPO 2027 - "Booked list HIGEX 2027" STALL SYNC
-// ============================================================================
-// Works with the tabs "list" (Blocks A/B/C) and "Hydro Competition" (H1-H8).
-// Columns are found by their header names (Stall No, Status, Company Name,
-// Contact Number, Email Address), so moving columns around is fine.
-//
-// Prices come FROM the sheet: Stall size, Sqm, Dealed Amount and Prime Charge (NRs. and
-// US Dollar sections) are sent to the website, which then charges exactly that
-// (+13% VAT). The website never writes prices back here.
-//
-// The script only ever writes the Status, Company Name, Contact Number and
-// Email Address cells of an existing stall row. Rates, prime charge, VAT,
-// totals, advance/due amounts, remarks and the BLOCK header rows are never
-// touched, and rows are never added or cleared.
-//
-// SETUP: Project Settings (gear icon) -> Script Properties -> add
-//   SYNC_SECRET = the same value as GOOGLE_SHEET_SYNC_SECRET on the website.
-
-const WEBSITE_SYNC_URL = "https://www.himalayanenergyexpo.com/api/stalls/sync-sheet";
-const STALL_TABS = ["list", "Hydro Competition"];
-
-function getSyncSecret() {
-  var secret = PropertiesService.getScriptProperties().getProperty("SYNC_SECRET");
-  if (!secret) throw new Error("SYNC_SECRET is not set. Add it under Project Settings -> Script Properties.");
-  return secret;
-}
-
-function onOpen() {
-  try {
-    SpreadsheetApp.getUi()
-      .createMenu("⚡ Expo Stall Sync")
-      .addItem("📥 Fill in bookings from website", "pullBookingsFromWebsite")
-      .addItem("📤 Sync sheet to website", "pushAllStallsToWebsite")
-      .addSeparator()
-      .addItem("🔁 Turn on auto-sync when I edit", "enableAutoSync")
-      .addToUi();
-  } catch (e) {
-    Logger.log("onOpen error: " + e.toString());
-  }
-}
-
-/** Safe alert that works both inside Google Sheet and in the script editor */
-function showAlert(msg) {
-  try {
-    SpreadsheetApp.getUi().alert(msg);
-  } catch (e) {
-    Logger.log(msg);
-  }
-}
-
-/** "A01", "A-1", "a 1" -> "A1" */
-function normalizeStallNo(val) {
-  if (!val) return "";
-  var cleaned = String(val).toUpperCase().replace(/[^A-Z0-9]/g, "");
-  var m = cleaned.match(/^([A-Z]+)0*([0-9]+)$/);
-  return m ? m[1] + parseInt(m[2], 10) : "";
-}
-
-function headerKey(val) {
-  return String(val || "").replace(/[ \\n\\r\\t]+/g, " ").trim().toLowerCase();
-}
-
-/** Website status -> what this sheet uses in the Status column */
-function sheetStatus(status) {
-  var s = String(status || "").toLowerCase();
-  if (s.indexOf("book") !== -1) return "BOOKED";
-  if (s.indexOf("reserv") !== -1) return "RESERVED";
-  return "";
-}
-
-/** Reads one tab and finds its header row (the row with "Stall No") */
-function readTab(sheet) {
-  var data = sheet.getDataRange().getValues();
-  for (var r = 0; r < Math.min(10, data.length); r++) {
-    var cols = {};
-    for (var c = 0; c < data[r].length; c++) {
-      var h = headerKey(data[r][c]);
-      var key = null;
-      if (h === "stall no" || h === "stall no.") key = "stall";
-      else if (h === "status") key = "status";
-      else if (h === "company name") key = "company";
-      else if (h === "contact number") key = "phone";
-      else if (h === "email address" || h === "email") key = "email";
-      else if (h === "sqm") key = "sqm";
-      else if (h === "stall size") key = "size";
-      // The NRs. section comes first and the US Dollar section second
-      else if (h === "dealed amount" || h === "deal amount" || h === "full amount") key = cols.dealNPR === undefined ? "dealNPR" : "dealUSD";
-      else if (h === "prime charge") key = cols.primeNPR === undefined ? "primeNPR" : "primeUSD";
-      if (key && cols[key] === undefined) cols[key] = c;
-    }
-    if (cols.stall !== undefined && cols.status !== undefined) {
-      return { sheet: sheet, data: data, headerRow: r, cols: cols };
-    }
-  }
-  return null;
-}
-
-function readAllTabs() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var tabs = [];
-  for (var i = 0; i < STALL_TABS.length; i++) {
-    var sheet = ss.getSheetByName(STALL_TABS[i]);
-    var tab = sheet ? readTab(sheet) : null;
-    if (tab) tabs.push(tab);
-  }
-  return tabs;
-}
-
-function cell(tab, r, key) {
-  var c = tab.cols[key];
-  return c === undefined ? "" : String(tab.data[r][c] || "").trim();
-}
-
-/** Numeric cell value, or "" when empty / not a number (formulas give their result) */
-function amount(tab, r, key) {
-  var c = tab.cols[key];
-  if (c === undefined) return "";
-  var v = tab.data[r][c];
-  if (v === "" || v === null) return "";
-  var n = Number(String(v).replace(/[^0-9.]/g, ""));
-  return isNaN(n) ? "" : n;
-}
-
-/** One stall row in the shape the website expects */
-function rowToItem(tab, r) {
-  var stallNo = normalizeStallNo(tab.data[r][tab.cols.stall]);
-  if (!stallNo) return null; // BLOCK header or empty row
-  return {
-    stallNo: stallNo,
-    status: cell(tab, r, "status") || "Available",
-    companyName: cell(tab, r, "company"),
-    contact: cell(tab, r, "phone") || cell(tab, r, "email"),
-    bookedDate: "",
-    sizeSqM: amount(tab, r, "sqm"),
-    stallSize: cell(tab, r, "size"),
-    dealNPR: amount(tab, r, "dealNPR"),
-    dealUSD: amount(tab, r, "dealUSD"),
-    primeChargeNPR: amount(tab, r, "primeNPR"),
-    primeChargeUSD: amount(tab, r, "primeUSD")
-  };
-}
-
-function collectAllRows() {
-  var tabs = readAllTabs();
-  var rows = [];
-  for (var t = 0; t < tabs.length; t++) {
-    for (var r = tabs[t].headerRow + 1; r < tabs[t].data.length; r++) {
-      var item = rowToItem(tabs[t], r);
-      if (item) rows.push(item);
-    }
-  }
-  return rows;
-}
-
-function findStall(tabs, stallNo) {
-  var target = normalizeStallNo(stallNo);
-  for (var t = 0; t < tabs.length; t++) {
-    for (var r = tabs[t].headerRow + 1; r < tabs[t].data.length; r++) {
-      if (normalizeStallNo(tabs[t].data[r][tabs[t].cols.stall]) === target) {
-        return { tab: tabs[t], r: r };
-      }
-    }
-  }
-  return null;
-}
-
-function setCell(tab, r, key, value) {
-  var c = tab.cols[key];
-  if (c === undefined) return;
-  tab.sheet.getRange(r + 1, c + 1).setValue(value);
-  tab.data[r][c] = value;
-}
-
-/**
- * Writes a website booking into the sheet.
- * fillBlanksOnly: only fill stalls whose Status cell is still empty
- * (used for bulk fills, so bookings typed into the sheet are never overwritten).
- */
-function applyBooking(tabs, item, fillBlanksOnly) {
-  var hit = findStall(tabs, item.stallNo);
-  if (!hit) return false;
-  var status = sheetStatus(item.status);
-  var company = item.companyName && item.companyName !== "Unassigned" ? item.companyName : "";
-
-  if (fillBlanksOnly) {
-    if (!status || cell(hit.tab, hit.r, "status")) return false;
-  }
-
-  setCell(hit.tab, hit.r, "status", status);
-  if (!status) {
-    setCell(hit.tab, hit.r, "company", "");
-    return true;
-  }
-  if (company && (!fillBlanksOnly || !cell(hit.tab, hit.r, "company"))) {
-    setCell(hit.tab, hit.r, "company", company);
-  }
-  var contact = String(item.contact || "").trim();
-  if (contact) {
-    var key = contact.indexOf("@") !== -1 ? "email" : "phone";
-    if (!cell(hit.tab, hit.r, key)) setCell(hit.tab, hit.r, key, contact);
-  }
-  return true;
-}
-
-function jsonOut(obj) {
-  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
-}
-
-/** Fill website bookings into stalls that are still empty in the sheet */
-function pullBookingsFromWebsite() {
-  try {
-    var res = UrlFetchApp.fetch(WEBSITE_SYNC_URL + "?action=get_all_stalls&secret=" + encodeURIComponent(getSyncSecret()), {
-      method: "get",
-      followRedirects: true,
-      muteHttpExceptions: true
-    });
-    if (res.getResponseCode() !== 200) {
-      showAlert("Server returned HTTP " + res.getResponseCode() + ": " + res.getContentText().slice(0, 150));
-      return;
-    }
-    var json = JSON.parse(res.getContentText());
-    if (!json.success || !Array.isArray(json.stalls)) {
-      showAlert("Could not fetch stalls: " + (json.error || "Unknown"));
-      return;
-    }
-    var tabs = readAllTabs();
-    var filled = 0;
-    for (var i = 0; i < json.stalls.length; i++) {
-      if (applyBooking(tabs, json.stalls[i], true)) filled++;
-    }
-    showAlert("Done. Filled in " + filled + " booked/reserved stalls from the website. Stalls already marked in the sheet were left as they are.");
-  } catch (err) {
-    showAlert("Error: " + err.toString());
-  }
-}
-
-function postRowsToWebsite(rows) {
-  var res = UrlFetchApp.fetch(WEBSITE_SYNC_URL, {
-    method: "post",
-    contentType: "application/json",
-    payload: JSON.stringify({ secret: getSyncSecret(), rows: rows }),
-    followRedirects: true,
-    muteHttpExceptions: true
-  });
-  var text = res.getContentText();
-  if (res.getResponseCode() !== 200) throw new Error("HTTP " + res.getResponseCode() + ": " + text.slice(0, 150));
-  var json = JSON.parse(text);
-  if (!json.success) throw new Error(json.error || "Unknown sync error");
-  return json;
-}
-
-/** Send every stall row in the sheet to the website */
-function pushAllStallsToWebsite() {
-  var rows = collectAllRows();
-  if (rows.length === 0) {
-    showAlert("No stall rows found. Check that the tabs are named: " + STALL_TABS.join(", "));
-    return;
-  }
-  try {
-    var json = postRowsToWebsite(rows);
-    showAlert("Success! Synced " + (json.count || 0) + " stalls to the website & floor plan.");
-  } catch (err) {
-    showAlert("Sync error: " + err.toString());
-  }
-}
-
-/** Installs the trigger that sends a row to the website whenever it is edited */
-function enableAutoSync() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var triggers = ScriptApp.getProjectTriggers();
-  for (var i = 0; i < triggers.length; i++) {
-    if (triggers[i].getHandlerFunction() === "onStallEdit") ScriptApp.deleteTrigger(triggers[i]);
-  }
-  ScriptApp.newTrigger("onStallEdit").forSpreadsheet(ss).onEdit().create();
-  showAlert("Auto-sync is on. Editing a stall's Status, Company Name, contact, Sqm, Dealed Amount or Prime Charge now updates the website.");
-}
-
-/** Installable onEdit trigger (see enableAutoSync) */
-function onStallEdit(e) {
-  if (!e || !e.range) return;
-  var sheet = e.range.getSheet();
-  if (STALL_TABS.indexOf(sheet.getName()) === -1) return;
-  var tab = readTab(sheet);
-  if (!tab) return;
-
-  var watched = [
-    tab.cols.status, tab.cols.company, tab.cols.phone, tab.cols.email,
-    tab.cols.sqm, tab.cols.size, tab.cols.dealNPR, tab.cols.dealUSD, tab.cols.primeNPR, tab.cols.primeUSD
-  ];
-  var firstCol = e.range.getColumn() - 1;
-  var lastCol = firstCol + e.range.getNumColumns() - 1;
-  var touched = false;
-  for (var w = 0; w < watched.length; w++) {
-    if (watched[w] !== undefined && watched[w] >= firstCol && watched[w] <= lastCol) touched = true;
-  }
-  if (!touched) return;
-
-  var rows = [];
-  var firstRow = e.range.getRow() - 1;
-  for (var r = firstRow; r < firstRow + e.range.getNumRows(); r++) {
-    if (r <= tab.headerRow || r >= tab.data.length) continue;
-    var item = rowToItem(tab, r);
-    if (item) rows.push(item);
-  }
-  if (rows.length === 0) return;
-
-  try {
-    postRowsToWebsite(rows);
-  } catch (err) {
-    SpreadsheetApp.getActiveSpreadsheet().toast("Website sync failed: " + err.toString(), "Expo Stall Sync", 10);
-  }
-}
-
-function hasValidSecret(given) {
-  try {
-    return Boolean(given) && given === getSyncSecret();
-  } catch (err) {
-    return false;
-  }
-}
-
-/** Called by the website to read all stall rows */
-function doGet(e) {
-  if (!hasValidSecret(e && e.parameter && e.parameter.secret)) return jsonOut({ success: false, error: "Unauthorized" });
-  var rows = collectAllRows();
-  return jsonOut({ success: true, count: rows.length, rows: rows });
-}
-
-/** Called by the website when a stall is booked online or changed in the admin panel */
-function doPost(e) {
-  try {
-    var payload = JSON.parse(e.postData.contents);
-    if (!hasValidSecret(payload.secret)) return jsonOut({ success: false, error: "Unauthorized" });
-    var tabs = readAllTabs();
-
-    // Bulk fill from the admin panel: only stalls still empty in the sheet
-    if (payload.action === "populate_all" && Array.isArray(payload.stalls)) {
-      var filled = 0;
-      for (var i = 0; i < payload.stalls.length; i++) {
-        if (applyBooking(tabs, payload.stalls[i], true)) filled++;
-      }
-      return jsonOut({ success: true, count: filled });
-    }
-
-    if (!payload.stallNo) return jsonOut({ success: false, error: "Missing stallNo" });
-    if (!applyBooking(tabs, payload, false)) {
-      return jsonOut({ success: false, error: "Stall " + payload.stallNo + " not found in sheet" });
-    }
-    return jsonOut({ success: true, stallNo: normalizeStallNo(payload.stallNo), status: sheetStatus(payload.status) });
-  } catch (err) {
-    return jsonOut({ success: false, error: err.toString() });
-  }
-}
-`;
