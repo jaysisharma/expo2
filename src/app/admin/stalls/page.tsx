@@ -25,43 +25,20 @@ import {
   MoreHorizontal,
   Link2,
 } from "lucide-react";
-import { boothsData, extractBoothsFromElements } from "@/data/booths";
 import { Booth } from "@/lib/types";
 import { formatCurrencyUSD, formatCurrencyNPR } from "@/lib/utils";
-import { resolveStall, type ResolvedStall } from "@/lib/stallPricing";
+import {
+  BLOCKS,
+  STALL_STATUSES,
+  STATUS_STYLES,
+  blockOf,
+  mergeBoothOverrides,
+  resolveBooths,
+} from "@/lib/stallInventory";
 import { GOOGLE_APPS_SCRIPT_TEMPLATE } from "./sheetSyncScript";
 
 const SHEET_URL = "https://docs.google.com/spreadsheets/d/1iDHOjkA6eNwazEpnwrMVmVD5I99sJvhF444Pn3tCNeE/edit";
-const BLOCKS = ["Block A", "Block B", "Block C", "Outdoor & Special"] as const;
-type BlockName = (typeof BLOCKS)[number];
-const STATUSES = ["Available", "Reserved", "Booked"] as const;
-
-/** A1 -> Block A; H, F and other stalls -> Outdoor & Special */
-function blockOf(booth: Booth): BlockName {
-  const prefix = booth.number.trim().toUpperCase().match(/^([A-Z]+)\d/)?.[1];
-  if (prefix === "A") return "Block A";
-  if (prefix === "B") return "Block B";
-  if (prefix === "C") return "Block C";
-  return "Outdoor & Special";
-}
-
-const STATUS_STYLES: Record<string, { badge: string; tile: string; dot: string }> = {
-  Booked: {
-    badge: "text-emerald-700 bg-emerald-50 border-emerald-200",
-    tile: "bg-emerald-50 border-emerald-200 hover:border-emerald-400",
-    dot: "bg-emerald-500",
-  },
-  Reserved: {
-    badge: "text-amber-800 bg-amber-50 border-amber-200",
-    tile: "bg-amber-50 border-amber-200 hover:border-amber-400",
-    dot: "bg-amber-500",
-  },
-  Available: {
-    badge: "text-slate-600 bg-slate-100 border-slate-200",
-    tile: "bg-white border-slate-200 hover:border-slate-400",
-    dot: "bg-slate-300",
-  },
-};
+const STATUSES = STALL_STATUSES;
 
 export default function AdminStallsPage() {
   const [data, setData] = useState<any>(null);
@@ -152,35 +129,10 @@ export default function AdminStallsPage() {
   const primePct = data?.settings?.primeStallSurchargePercent ?? 25;
   const primeRate = primePct / 100;
 
-  const baseBooths: Booth[] = useMemo(() => {
-    if (floorPlanElements && floorPlanElements.length > 0) {
-      const extracted = extractBoothsFromElements(floorPlanElements);
-      if (extracted.length > 0) return extracted;
-    }
-    return boothsData;
-  }, [floorPlanElements]);
-
-  const mergedBooths: Booth[] = useMemo(() => {
-    return baseBooths.map((b) => {
-      const zeroPadded = b.number.replace(/^([A-Za-z]+)(\d)$/, "$10$2");
-      const strippedZero = b.number.replace(/^([A-Za-z]+)0+(\d+)$/, "$1$2");
-      const override =
-        data?.boothOverrides?.[b.number] ||
-        data?.boothOverrides?.[zeroPadded] ||
-        data?.boothOverrides?.[strippedZero];
-      return override
-        ? {
-            ...b,
-            status: (override.status || b.status) as any,
-            exhibitorName:
-              override.exhibitorName !== undefined ? override.exhibitorName : b.exhibitorName,
-            priceUSD: override.priceUSD !== undefined ? Number(override.priceUSD) : b.priceUSD,
-            priceNPR: override.priceNPR !== undefined ? Number(override.priceNPR) : b.priceNPR,
-            isPrime: override.isPrime !== undefined ? Boolean(override.isPrime) : Boolean(b.isPrime),
-          }
-        : { ...b, isPrime: Boolean(b.isPrime) };
-    });
-  }, [baseBooths, data?.boothOverrides]);
+  const mergedBooths: Booth[] = useMemo(
+    () => mergeBoothOverrides(floorPlanElements, data?.boothOverrides),
+    [floorPlanElements, data?.boothOverrides]
+  );
 
   const filteredBooths = useMemo(() => {
     return mergedBooths.filter((b) => {
@@ -228,16 +180,10 @@ export default function AdminStallsPage() {
   };
 
   // What customers are charged (sheet prices, prime surcharge, sheet sizes), same as checkout
-  const resolvedByNumber = useMemo(() => {
-    const inputs = {
-      elements: floorPlanElements,
-      boothOverrides: data?.boothOverrides || {},
-      primeSurchargePercent: primePct,
-    };
-    const map = new Map<string, ResolvedStall>();
-    for (const b of mergedBooths) map.set(b.number, resolveStall(b.number, inputs));
-    return map;
-  }, [mergedBooths, floorPlanElements, data?.boothOverrides, primePct]);
+  const resolvedByNumber = useMemo(
+    () => resolveBooths(mergedBooths, floorPlanElements, data?.boothOverrides, primePct),
+    [mergedBooths, floorPlanElements, data?.boothOverrides, primePct]
+  );
 
   const blockCounts = useMemo(() => {
     const counts: Record<string, { total: number; taken: number }> = { All: { total: 0, taken: 0 } };
