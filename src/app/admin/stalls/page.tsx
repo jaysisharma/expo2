@@ -1518,7 +1518,7 @@ export default function AdminStallsPage() {
                       {isSyncingSheet ? "Syncing…" : "Sheet → website"}
                     </span>
                     <span className="block text-[11px] text-slate-500 mt-1 leading-snug">
-                      Pull every stall's status, company, size and price from the sheet now.
+                      Pull every stall&apos;s status, company, size and price from the sheet now.
                     </span>
                   </button>
                   <button
