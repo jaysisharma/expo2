@@ -19,11 +19,21 @@ import {
   ShieldCheck,
   AlertCircle,
   Filter,
+  RefreshCw,
 } from "lucide-react";
 import { speakersData as initialIPPANMembers } from "@/data/speakers";
 import { eventSolutionTeam as initialEventSolutionTeam } from "@/data/eventSolutionTeam";
 import { ImageUploadField } from "@/components/admin/ImageUploadField";
 import { saveFirebaseMembers, getFirebaseMembers } from "@/lib/contentApi";
+
+interface IppanSyncPreview {
+  source: string;
+  committeeSize: number;
+  changed: boolean;
+  added: { name: string; title: string }[];
+  removed: { name: string; title: string }[];
+  updated: { name: string; from: string; to: string }[];
+}
 
 export interface UnifiedMember {
   id: string;
@@ -75,6 +85,9 @@ export default function AdminMembersPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [addModalPhoto, setAddModalPhoto] = useState("/images/committee/mohan-kumar-dangi.webp");
   const [toastMsg, setToastMsg] = useState<string | null>(null);
+  // IPPAN website sync: preview of the changes, then apply
+  const [ippanPreview, setIppanPreview] = useState<IppanSyncPreview | null>(null);
+  const [ippanBusy, setIppanBusy] = useState<"preview" | "apply" | null>(null);
 
   // Load from Firebase first, fall back to localStorage, then defaults
   useEffect(() => {
@@ -126,6 +139,39 @@ export default function AdminMembersPage() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
     } catch {}
     saveFirebaseMembers(updated).catch(() => {});
+  };
+
+  const handlePreviewIppanSync = async () => {
+    setIppanBusy("preview");
+    try {
+      const res = await fetch("/api/cron/ippan-members", { cache: "no-store" });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.message || "Could not read the IPPAN website");
+      setIppanPreview(json);
+    } catch (err: any) {
+      notify(err.message || "Could not read the IPPAN website");
+    } finally {
+      setIppanBusy(null);
+    }
+  };
+
+  const handleApplyIppanSync = async () => {
+    setIppanBusy("apply");
+    try {
+      const res = await fetch("/api/cron/ippan-members", { method: "POST" });
+      const json = await res.json();
+      if (!json.success || !Array.isArray(json.members)) throw new Error(json.message || "Sync failed");
+      setMembers(json.members);
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(json.members));
+      } catch {}
+      setIppanPreview(null);
+      notify(`Synced with IPPAN: ${json.added.length} added, ${json.removed.length} removed, ${json.updated.length} updated`);
+    } catch (err: any) {
+      notify(err.message || "Sync failed");
+    } finally {
+      setIppanBusy(null);
+    }
   };
 
   const notify = (msg: string) => {
@@ -323,6 +369,15 @@ export default function AdminMembersPage() {
           >
             <Download className="w-3.5 h-3.5 text-slate-500" />
             <span>Export CSV</span>
+          </button>
+          <button
+            onClick={handlePreviewIppanSync}
+            disabled={ippanBusy !== null}
+            className="px-3 py-1.5 rounded-xl bg-white hover:bg-emerald-50 text-emerald-800 text-xs font-medium border border-emerald-200 shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+            title="Compare IPPAN members with ippan.org.np/executive-committee-members"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${ippanBusy === "preview" ? "animate-spin" : ""}`} />
+            <span>{ippanBusy === "preview" ? "Checking IPPAN..." : "Sync from IPPAN"}</span>
           </button>
           <button
             onClick={() => setShowAddModal(true)}
@@ -943,6 +998,91 @@ export default function AdminMembersPage() {
       )}
 
       {/* Add Modal */}
+      {ippanPreview && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-lg bg-white border border-slate-200 rounded-2xl p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-start justify-between pb-3 border-b border-slate-100">
+              <div>
+                <h3 className="text-base font-bold text-slate-900">Sync IPPAN Executive Committee</h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  {ippanPreview.committeeSize} members on{" "}
+                  <a href={ippanPreview.source} target="_blank" rel="noreferrer" className="text-emerald-700 underline">
+                    ippan.org.np
+                  </a>
+                  . Photos and bios of existing members are kept.
+                </p>
+              </div>
+              <button
+                onClick={() => setIppanPreview(null)}
+                className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {!ippanPreview.changed ? (
+              <p className="text-sm text-slate-700">Already up to date — nothing to change.</p>
+            ) : (
+              <div className="space-y-3 text-xs">
+                {ippanPreview.added.length > 0 && (
+                  <div>
+                    <span className="font-bold text-emerald-700 block mb-1">Add ({ippanPreview.added.length})</span>
+                    <ul className="space-y-0.5 text-slate-700">
+                      {ippanPreview.added.map((m) => (
+                        <li key={m.name}>+ {m.name} — {m.title}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {ippanPreview.removed.length > 0 && (
+                  <div>
+                    <span className="font-bold text-rose-700 block mb-1">Remove ({ippanPreview.removed.length})</span>
+                    <ul className="space-y-0.5 text-slate-700">
+                      {ippanPreview.removed.map((m) => (
+                        <li key={m.name}>− {m.name} — {m.title}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {ippanPreview.updated.length > 0 && (
+                  <div>
+                    <span className="font-bold text-amber-700 block mb-1">Position changed ({ippanPreview.updated.length})</span>
+                    <ul className="space-y-0.5 text-slate-700">
+                      {ippanPreview.updated.map((m) => (
+                        <li key={m.name}>
+                          {m.name}: {m.from} → {m.to}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <p className="text-[11px] text-slate-500">This also runs automatically every day.</p>
+
+            <div className="flex justify-end gap-2 pt-1">
+              <button
+                onClick={() => setIppanPreview(null)}
+                className="px-3 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 text-xs font-medium cursor-pointer"
+              >
+                Close
+              </button>
+              {ippanPreview.changed && (
+                <button
+                  onClick={handleApplyIppanSync}
+                  disabled={ippanBusy !== null}
+                  className="px-4 py-2 rounded-xl bg-[#218A59] hover:bg-[#1b734a] text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                >
+                  {ippanBusy === "apply" && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
+                  <span>{ippanBusy === "apply" ? "Syncing..." : "Apply changes"}</span>
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {showAddModal && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="w-full max-w-lg bg-white border border-slate-200 rounded-2xl p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95">
