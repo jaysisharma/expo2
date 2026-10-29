@@ -77,7 +77,7 @@ export default function StallBookingWizard() {
   }, [step]);
   const [selectedBoothNumbers, setSelectedBoothNumbers] = useState<string[]>([]);
   const [selectedPackageId, setSelectedPackageId] = useState<string>("custom-selection");
-  const [packageFilter, setPackageFilter] = useState<"all" | "sponsor" | "stall" | "custom">("all");
+  const [packageFilter, setPackageFilter] = useState<"all" | "sponsor" | "custom">("all");
   const [isCustomizedOnMap, setIsCustomizedOnMap] = useState<boolean>(false);
   const [viewMode, setViewMode] = useState<"map" | "list">("map");
   const [boothType, setBoothType] = useState<"Shell Scheme" | "Bare Space">("Shell Scheme");
@@ -593,10 +593,9 @@ export default function StallBookingWizard() {
             {/* Category Filter Pills */}
             <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
               {[
-                { key: "all", label: "All Packages", count: 10 },
-                { key: "sponsor", label: "Sponsorship Tiers", count: 6 },
-                { key: "stall", label: "Exhibition Stalls", count: 2 },
-                { key: "custom", label: "Custom Selection", count: 1 },
+                { key: "all", label: "All Packages", count: 8 },
+                { key: "sponsor", label: "Sponsorship Tiers", count: 7 },
+                { key: "custom", label: "Select Stall", count: 1 },
               ].map((tab) => {
                 const isActive = packageFilter === tab.key;
                 return (
@@ -890,205 +889,7 @@ export default function StallBookingWizard() {
               </div>
             )}
 
-            {/* ─── STANDARD EXHIBITION STALLS (2 Horizontal Cards Grid) ─── */}
-            {(packageFilter === "all" || packageFilter === "stall") && (
-              <div className="space-y-3 pt-2">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-700">
-                    STANDARD EXHIBITION STALLS
-                  </h4>
-                  <div className="flex items-center gap-1 text-xs text-slate-500 font-medium">
-                    <Box className="w-3.5 h-3.5 text-slate-400" />
-                    <span>2 stall types available</span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Stall 1: Standard Built Stall */}
-                  {(() => {
-                    const pkg = PARTICIPATION_PACKAGES.find((p) => p.id === "standard-stall")!;
-                    const isSelected = selectedPackageId === pkg.id;
-                    return (
-                      <div
-                        onClick={() => selectPackage(pkg.id)}
-                        className={`p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between bg-white relative ${
-                          isSelected
-                            ? "border-[#007A5E] ring-1.5 ring-[#007A5E] shadow-sm"
-                            : "border-slate-200 hover:border-slate-300"
-                        }`}
-                      >
-                        <div className="flex items-start gap-4">
-                          {/* Radio */}
-                          <div
-                            className={`w-4 h-4 rounded-full border flex items-center justify-center mt-1 shrink-0 ${
-                              isSelected
-                                ? "border-[#007A5E] bg-[#007A5E]"
-                                : "border-slate-300 bg-white"
-                            }`}
-                          >
-                            {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                          </div>
-
-                          {/* Octonorm Booth Realistic Graphic */}
-                          <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-slate-100 border border-slate-200/80 shrink-0 flex items-center justify-center p-1.5 overflow-hidden">
-                            <div className="w-full h-full rounded-lg bg-gradient-to-b from-slate-200 to-slate-300/80 flex flex-col items-center justify-between p-1.5 border border-slate-300/60 shadow-2xs">
-                              <div className="w-full h-2 rounded bg-emerald-700/80 text-[6px] text-white font-bold flex items-center justify-center">
-                                EXHIBITOR
-                              </div>
-                              <div className="w-6 h-6 rounded-full border border-slate-400/50 bg-white/60 flex items-center justify-center">
-                                <Box className="w-3 h-3 text-slate-500" />
-                              </div>
-                              <div className="w-full h-1 bg-slate-400/40 rounded" />
-                            </div>
-                          </div>
-
-                          {/* Info & Badges */}
-                          <div className="flex-1 min-w-0 space-y-1.5">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <h5 className="font-bold text-sm sm:text-base text-slate-900">
-                                Standard Stall (3m × 3m)
-                              </h5>
-                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
-                                Built Stall
-                              </span>
-                            </div>
-                            <p className="text-xs text-slate-500 font-mono">
-                              3M × 3M Built Stall (B1–B22, H1–H8)
-                            </p>
-
-                            {/* Inclusion check pills */}
-                            <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                              {pkg.perks.map((perk, i) => (
-                                <span
-                                  key={i}
-                                  className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-md bg-slate-50 text-slate-700 border border-slate-200/70 font-medium"
-                                >
-                                  <Check className="w-2.5 h-2.5 text-emerald-600 stroke-[2.5]" />
-                                  <span>{perk}</span>
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Bottom Price & Button */}
-                        <div className="flex items-center justify-between pt-4 mt-3 border-t border-slate-100 pl-8">
-                          <div>
-                            <div className="font-mono font-bold text-sm text-slate-900">
-                              NPR 85,000 – 1,80,000
-                            </div>
-                            <div className="font-mono text-[10px] text-slate-400">
-                              USD 700 – 1,350
-                            </div>
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              selectPackage(pkg.id);
-                            }}
-                            className="px-4 py-1.5 rounded-xl text-xs font-semibold border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 cursor-pointer"
-                          >
-                            Select Stall
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })()}
-
-                  {/* Stall 2: Bare Space Stall (Custom) */}
-                  {(() => {
-                    const pkg = PARTICIPATION_PACKAGES.find((p) => p.id === "bare-space-stall")!;
-                    const isSelected = selectedPackageId === pkg.id;
-                    return (
-                      <div
-                        onClick={() => selectPackage(pkg.id)}
-                        className={`p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between bg-white relative ${
-                          isSelected
-                            ? "border-[#007A5E] ring-1.5 ring-[#007A5E] shadow-sm"
-                            : "border-slate-200 hover:border-slate-300"
-                        }`}
-                      >
-                        <div className="flex items-start gap-4">
-                          {/* Radio */}
-                          <div
-                            className={`w-4 h-4 rounded-full border flex items-center justify-center mt-1 shrink-0 ${
-                              isSelected
-                                ? "border-[#007A5E] bg-[#007A5E]"
-                                : "border-slate-300 bg-white"
-                            }`}
-                          >
-                            {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                          </div>
-
-                          {/* Raw Floor Isometric Graphic */}
-                          <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-slate-100 border border-slate-200/80 shrink-0 flex items-center justify-center p-2 overflow-hidden">
-                            <div className="w-full h-full rounded-lg bg-gradient-to-tr from-slate-300 via-slate-200 to-slate-100 border border-slate-300 shadow-2xs flex items-center justify-center relative">
-                              <div className="absolute inset-2 border border-dashed border-slate-400/60 rounded" />
-                              <span className="font-mono text-[9px] font-bold text-slate-500">RAW AREA</span>
-                            </div>
-                          </div>
-
-                          {/* Info & Badges */}
-                          <div className="flex-1 min-w-0 space-y-1.5">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <h5 className="font-bold text-sm sm:text-base text-slate-900">
-                                Bare Space Stall (Custom)
-                              </h5>
-                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
-                                Raw Space
-                              </span>
-                            </div>
-                            <p className="text-xs text-slate-500 font-mono">
-                              6M × 6M or 10M × 7M Raw Space (Block A / Block C)
-                            </p>
-
-                            {/* Inclusion check pills */}
-                            <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                              {pkg.perks.map((perk, i) => (
-                                <span
-                                  key={i}
-                                  className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-md bg-slate-50 text-slate-700 border border-slate-200/70 font-medium"
-                                >
-                                  <Check className="w-2.5 h-2.5 text-emerald-600 stroke-[2.5]" />
-                                  <span>{perk}</span>
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Bottom Price & Button */}
-                        <div className="flex items-center justify-between pt-4 mt-3 border-t border-slate-100 pl-8">
-                          <div>
-                            <div className="font-mono font-bold text-sm text-slate-900">
-                              From NPR 3,78,000
-                            </div>
-                            <div className="font-mono text-[10px] text-slate-400">
-                              From USD 3,000
-                            </div>
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              selectPackage(pkg.id);
-                            }}
-                            className="px-4 py-1.5 rounded-xl text-xs font-semibold border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 cursor-pointer"
-                          >
-                            Select Stall
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })()}
-                </div>
-              </div>
-            )}
-
-            {/* ─── CUSTOM MAP SELECTION BAR ─── */}
+            {/* ─── SELECT STALL BAR (pick stalls on the floor plan) ─── */}
             {(packageFilter === "all" || packageFilter === "custom") && (() => {
               const pkg = PARTICIPATION_PACKAGES.find((p) => p.id === "custom-selection")!;
               const isSelected = selectedPackageId === pkg.id;
@@ -1112,14 +913,14 @@ export default function StallBookingWizard() {
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-slate-900 text-sm">
-                          Custom Map Selection
+                          Select Stall
                         </span>
                         <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
-                          Interactive
+                          Floor plan
                         </span>
                       </div>
                       <p className="text-xs text-slate-500 mt-0.5">
-                        Choose any stall directly on the interactive floor plan below
+                        Pick one or more available stalls on the floor plan below
                       </p>
                     </div>
                   </div>

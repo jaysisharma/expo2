@@ -201,7 +201,7 @@ export const PARTICIPATION_PACKAGES: StallPackage[] = [
   },
   {
     id: "custom-selection",
-    name: "Custom Map Selection",
+    name: "Select Stall",
     type: "custom",
     badge: "Flexible",
     priceNPR: 0,
