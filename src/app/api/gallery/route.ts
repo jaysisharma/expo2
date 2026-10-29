@@ -41,6 +41,16 @@ export async function POST(req: Request) {
   if (!Array.isArray(body?.items)) {
     return NextResponse.json({ success: false, message: "Expected an array of items" }, { status: 400 });
   }
+  // Never wipe a saved list by accident (e.g. a stale browser copy); "Clear" sends allowEmpty
+  if (body.items.length === 0 && body.allowEmpty !== true) {
+    const stored = await getFirebaseGallery();
+    if (stored && stored.length > 0) {
+      return NextResponse.json(
+        { success: false, message: "Refusing to replace saved gallery photos with an empty list" },
+        { status: 409 }
+      );
+    }
+  }
   const ok = await saveFirebaseGallery(body.items);
   return NextResponse.json({ success: ok }, { status: ok ? 200 : 500 });
 }

@@ -39,6 +39,16 @@ export async function POST(req: Request) {
   if (!Array.isArray(body?.videos)) {
     return NextResponse.json({ success: false, message: "Expected an array of videos" }, { status: 400 });
   }
+  // Never wipe a saved list by accident (e.g. a stale browser copy); "Clear" sends allowEmpty
+  if (body.videos.length === 0 && body.allowEmpty !== true) {
+    const stored = await getFirebaseVideos();
+    if (stored && stored.length > 0) {
+      return NextResponse.json(
+        { success: false, message: "Refusing to replace saved videos with an empty list" },
+        { status: 409 }
+      );
+    }
+  }
   const ok = await saveFirebaseVideos(body.videos);
   return NextResponse.json({ success: ok }, { status: ok ? 200 : 500 });
 }

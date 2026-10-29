@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import Image from "next/image";
 import {
   Image as ImageIcon,
@@ -130,22 +130,32 @@ export default function AdminGalleryPage() {
     } catch {}
   }, [editions]);
 
+  // Saving starts only after the saved gallery has loaded and the admin changes something.
+  // Saving on open used to overwrite the live gallery with this browser's (possibly empty) copy.
+  const savingEnabled = useRef(false);
+
   // Sync items to localStorage AND Firebase
   useEffect(() => {
     try {
       localStorage.setItem("expo_admin_gallery_items_v2", JSON.stringify(items));
     } catch {}
     // Save to Firebase so public gallery page sees the latest
-    saveFirebaseGallery(items).catch(() => {});
+    if (savingEnabled.current) saveFirebaseGallery(items).catch(() => {});
   }, [items]);
 
-  // On mount, try to load from Firebase first (overrides localStorage)
+  // On mount, load the saved gallery (overrides localStorage), then allow saving
   useEffect(() => {
-    getFirebaseGallery().then((fbItems) => {
-      if (fbItems && fbItems.length > 0) {
-        setItems(fbItems);
-      }
-    }).catch(() => {});
+    getFirebaseGallery()
+      .then((fbItems) => {
+        if (fbItems && fbItems.length > 0) setItems(fbItems);
+      })
+      .catch(() => {})
+      .finally(() => {
+        // Let the state update from the load settle before edits are saved
+        setTimeout(() => {
+          savingEnabled.current = true;
+        }, 0);
+      });
   }, []);
 
   // Derive categories list dynamically
@@ -531,7 +541,7 @@ export default function AdminGalleryPage() {
                 try {
                   localStorage.removeItem("expo_admin_gallery_items_v2");
                 } catch {}
-                saveFirebaseGallery([]).catch(() => {});
+                saveFirebaseGallery([], true).catch(() => {});
                 notify("All existing gallery photos cleared. Ready for fresh uploads!");
               }
             }}
