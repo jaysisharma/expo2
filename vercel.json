@@ -4,6 +4,10 @@
     {
       "path": "/api/cron/weekly-report",
       "schedule": "15 3 * * 1"
+    },
+    {
+      "path": "/api/cron/ippan-members",
+      "schedule": "30 1 * * *"
     }
   ]
 }
