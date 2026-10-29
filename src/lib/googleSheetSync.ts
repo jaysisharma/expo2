@@ -1,4 +1,5 @@
 import fs from "fs/promises";
+import { timingSafeEqual } from "crypto";
 import path from "path";
 import {
   setFirebaseBoothOverride,
@@ -27,6 +28,61 @@ export interface SheetStallItem {
   status: "Available" | "Reserved" | "Booked" | string;
   bookedDate?: string;
   contact?: string;
+  /** Pricing columns from the "Booked list" sheet (numbers, prime charge as an amount) */
+  dealNPR?: number | string;
+  dealUSD?: number | string;
+  primeChargeNPR?: number | string;
+  primeChargeUSD?: number | string;
+  /** "Stall size" column, e.g. "6mx6m" or "Irregular Space" */
+  stallSize?: string;
+}
+
+const MAX_PRICE = 100_000_000;
+// A sheet price below this is a typo, not a real stall price; ignore it rather than sell the stall for it
+const MIN_STALL_PRICE_NPR = 1000;
+
+function sheetAmount(v: unknown): number | undefined {
+  if (v === undefined || v === null || v === "") return undefined;
+  const n = Number(String(v).replace(/[,\s]/g, ""));
+  return Number.isFinite(n) && n >= 0 && n <= MAX_PRICE ? n : undefined;
+}
+
+interface SheetPricing {
+  priceNPR?: number;
+  priceUSD?: number;
+  isPrime?: boolean;
+  primeChargeNPR?: number;
+  primeChargeUSD?: number;
+  sizeSqM?: number;
+  dimensions?: string;
+}
+
+/** "6mx6m" -> "6m × 6m" (the website's format); other text such as "Irregular Space" is kept */
+function sheetDimensions(v: unknown): string | undefined {
+  const text = String(v ?? "").trim().slice(0, 40);
+  if (!text) return undefined;
+  const m = text.match(/^(\d+(?:\.\d+)?)\s*m?\s*[x×]\s*(\d+(?:\.\d+)?)\s*m?$/i);
+  return m ? `${m[1]}m × ${m[2]}m` : text;
+}
+
+/** Price fields for a booth override, or {} when the row carries no price */
+export function sheetPricing(row: SheetStallItem): SheetPricing {
+  const priceNPR = sheetAmount(row.dealNPR);
+  if (!priceNPR || priceNPR < MIN_STALL_PRICE_NPR) return {};
+  const priceUSD = sheetAmount(row.dealUSD);
+  const primeChargeNPR = sheetAmount(row.primeChargeNPR) || 0;
+  const primeChargeUSD = sheetAmount(row.primeChargeUSD) || 0;
+  const sizeSqM = sheetAmount(row.sizeSqM);
+  const dimensions = sheetDimensions(row.stallSize);
+  return {
+    ...(dimensions ? { dimensions } : {}),
+    priceNPR,
+    ...(priceUSD ? { priceUSD } : {}),
+    isPrime: primeChargeNPR > 0,
+    primeChargeNPR,
+    primeChargeUSD,
+    ...(sizeSqM ? { sizeSqM } : {}),
+  };
 }
 
 /**
@@ -57,6 +113,22 @@ export function normalizeStallStatus(raw: string | undefined): "Available" | "Re
   return "Available";
 }
 
+/** Apps Script web app URL with the shared secret, for reading the sheet (doGet) */
+export function sheetReadUrl(webhookUrl: string) {
+  const url = new URL(webhookUrl);
+  url.searchParams.set("secret", process.env.GOOGLE_SHEET_SYNC_SECRET || "");
+  return url.toString();
+}
+
+/** True when the request carries the GOOGLE_SHEET_SYNC_SECRET (sent by the sheet's Apps Script) */
+export function isValidSheetSecret(secret: unknown) {
+  const expected = process.env.GOOGLE_SHEET_SYNC_SECRET;
+  if (!expected || typeof secret !== "string") return false;
+  const given = Buffer.from(secret);
+  const wanted = Buffer.from(expected);
+  return given.length === wanted.length && timingSafeEqual(given, wanted);
+}
+
 /** Push single stall change to Google Apps Script webhook (if configured) */
 export async function pushStallToGoogleSheet(item: SheetStallItem) {
   let webhookUrl = process.env.GOOGLE_SHEETS_WEBHOOK_URL;
@@ -71,6 +143,7 @@ export async function pushStallToGoogleSheet(item: SheetStallItem) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        secret: process.env.GOOGLE_SHEET_SYNC_SECRET || "",
         action: "update_stall",
         stallNo: normalizeStallNumber(item.stallNo),
         status: normalizeStallStatus(item.status),
@@ -106,14 +179,18 @@ export async function syncSheetRowsToDb(rows: SheetStallItem[]) {
   }
   if (!adminData.boothOverrides) adminData.boothOverrides = {};
 
-  // 2. Read floor plan
-  let floorPlan: any = null;
-  try {
-    floorPlan = JSON.parse(await fs.readFile(ROOT_FLOOR_PATH, "utf-8"));
-  } catch {
+  // 2. Read floor plan (Firestore first: the bundled file is stale on Vercel and saving it
+  // back would overwrite newer floor plan studio edits)
+  let floorPlan: any = await getFirebaseFloorPlan().catch(() => null);
+  if (!floorPlan || !Array.isArray(floorPlan.elements) || floorPlan.elements.length === 0) {
+    floorPlan = null;
     try {
-      floorPlan = JSON.parse(await fs.readFile(SRC_FLOOR_PATH, "utf-8"));
-    } catch {}
+      floorPlan = JSON.parse(await fs.readFile(ROOT_FLOOR_PATH, "utf-8"));
+    } catch {
+      try {
+        floorPlan = JSON.parse(await fs.readFile(SRC_FLOOR_PATH, "utf-8"));
+      } catch {}
+    }
   }
 
   const updatedStalls: string[] = [];
@@ -133,10 +210,12 @@ export async function syncSheetRowsToDb(rows: SheetStallItem[]) {
       normalizedStatus = "Reserved";
     }
     const exhibitor = isUnassigned ? "" : rawCompany;
+    const pricing = sheetPricing(row);
 
     const overridePayload = {
       status: normalizedStatus,
       exhibitorName: exhibitor,
+      ...pricing,
       contact: row.contact || "",
       bookedDate: row.bookedDate || "",
       updatedAt: now,
@@ -159,12 +238,14 @@ export async function syncSheetRowsToDb(rows: SheetStallItem[]) {
     await setFirebaseBoothOverride(canonicalStallNo, {
       status: normalizedStatus,
       exhibitorName: exhibitor,
+      ...pricing,
     }).catch(() => {});
 
     if (rawStallNo !== canonicalStallNo) {
       await setFirebaseBoothOverride(rawStallNo, {
         status: normalizedStatus,
         exhibitorName: exhibitor,
+        ...pricing,
       }).catch(() => {});
     }
 
@@ -178,6 +259,9 @@ export async function syncSheetRowsToDb(rows: SheetStallItem[]) {
             ...el,
             status: normalizedStatus,
             exhibitorName: exhibitor,
+            ...(pricing.priceNPR !== undefined
+              ? { priceNPR: pricing.priceNPR, isPrime: pricing.isPrime, ...(pricing.priceUSD ? { priceUSD: pricing.priceUSD } : {}) }
+              : {}),
           };
         }
         return el;
@@ -336,6 +420,7 @@ export async function pushAllStallsToGoogleSheet(passedWebhookUrl?: string) {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
+      secret: process.env.GOOGLE_SHEET_SYNC_SECRET || "",
       action: "populate_all",
       stalls,
     }),
