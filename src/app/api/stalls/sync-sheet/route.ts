@@ -4,8 +4,11 @@ import {
   pushStallToGoogleSheet,
   getAllStallsForSheet,
   pushAllStallsToGoogleSheet,
+  isValidSheetSecret,
+  sheetReadUrl,
   SheetStallItem,
 } from "@/lib/googleSheetSync";
+import { getAdminSession } from "@/lib/session";
 import fs from "fs/promises";
 import path from "path";
 import {
@@ -19,15 +22,28 @@ import { boothsData } from "@/data/booths";
 
 export const dynamic = "force-dynamic";
 
+// Callers: the admin Stalls page (admin login cookie) and the "Booked list" sheet's Apps
+// Script (GOOGLE_SHEET_SYNC_SECRET). The sheet can only sync stall rows; everything else
+// is admin-only. Rows carry prices, so an unauthenticated write would let anyone reprice a stall.
+const ADMIN_ONLY_ACTIONS = [
+  "reset_all_stalls",
+  "sync_floor_plan_from_file",
+  "save_webhook_url",
+  "push_all_to_sheet",
+  "populate_sheet",
+  "fetch_and_sync",
+];
+
+const unauthorized = () => NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
     const { action, secret, rows, stallNo, status, companyName, bookedDate, contact, webhookUrl } = body;
 
-    // Optional secret check if set
-    const expectedSecret = process.env.GOOGLE_SHEET_SYNC_SECRET || "expo2_secret_sync_2027";
-    if (secret && secret !== expectedSecret) {
-      return NextResponse.json({ success: false, error: "Unauthorized: Invalid secret" }, { status: 401 });
+    const isAdmin = Boolean(await getAdminSession(req));
+    if (!isAdmin && (!isValidSheetSecret(secret) || ADMIN_ONLY_ACTIONS.includes(action))) {
+      return unauthorized();
     }
 
     // Reset all stalls override in Firestore
@@ -84,7 +100,7 @@ export async function POST(req: Request) {
         );
       }
 
-      const res = await fetch(targetUrl, { redirect: "follow" });
+      const res = await fetch(sheetReadUrl(targetUrl), { redirect: "follow" });
       const text = await res.text();
       let sheetJson: any;
       try {
@@ -139,6 +155,12 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const action = searchParams.get("action");
   const passedUrl = searchParams.get("url");
+  const isAdmin = Boolean(await getAdminSession(req));
+
+  // The sheet's "Fill in bookings from website" reads this with the secret
+  if (!isAdmin && !((action === "get_all_stalls" || action === "export_all") && isValidSheetSecret(searchParams.get("secret")))) {
+    return unauthorized();
+  }
 
   // Return all 91 stalls with live status for Google Sheet population
   if (action === "get_all_stalls" || action === "export_all") {
@@ -174,7 +196,7 @@ export async function GET(req: Request) {
     }
 
     try {
-      const res = await fetch(webhookUrl, { redirect: "follow" });
+      const res = await fetch(sheetReadUrl(webhookUrl), { redirect: "follow" });
       const text = await res.text();
       let sheetJson: any;
       try {
@@ -214,6 +236,6 @@ export async function GET(req: Request) {
     success: true,
     configured: Boolean(configuredUrl),
     webhookUrl: configuredUrl,
-    sheetUrl: "https://docs.google.com/spreadsheets/d/1nG2uJ3TDNseKGNTyldxnii8Fm6DuuIN1nIOIXQX2RVc/edit",
+    sheetUrl: "https://docs.google.com/spreadsheets/d/1OCExy81NgcVEtRURf0SB0zJmTv6tVebFIMtmj0CVYC0/edit",
   });
 }

@@ -17,6 +17,8 @@ export interface PricingInputs {
   primeSurchargePercent: number;
 }
 
+const roundMoney = (n: number) => Math.round(n * 100) / 100;
+
 const toNumber = (v: unknown) => (v !== undefined && v !== null && !isNaN(Number(v)) ? Number(v) : undefined);
 
 // Filters out walls, labels and zones from floor plan elements
@@ -45,14 +47,18 @@ export function resolveStall(num: string, { elements, boothOverrides, primeSurch
 
   const number = custom?.number || official?.number || fallback?.number || num;
   const category = custom?.category || official?.category || fallback?.type || "Standard Exhibition Stall";
-  const dimensions = custom?.dimensions || official?.dimensions || fallback?.dimensions || "3m × 3m";
-  const sizeSqM = Number(custom?.sizeSqM ?? official?.sizeSqM ?? fallback?.sizeSqM ?? 9);
-  const sizeSqFt = Number(custom?.sizeSqFt ?? official?.sizeSqFt ?? Math.round(sizeSqM * 10.76));
 
   const override =
     boothOverrides[cleanNum] || boothOverrides[number?.toLowerCase()] || (custom?.id && boothOverrides[custom.id]);
   // Overrides are saved under the stall number as typed (e.g. "A1"), so also try an exact match
   const overrideExact = override || boothOverrides[num] || boothOverrides[number];
+
+  // Stall size and area synced from the Google Sheet win over the floor plan
+  const dimensions = overrideExact?.dimensions || custom?.dimensions || official?.dimensions || fallback?.dimensions || "3m × 3m";
+  const sizeSqM = Number(toNumber(overrideExact?.sizeSqM) ?? custom?.sizeSqM ?? official?.sizeSqM ?? fallback?.sizeSqM ?? 9);
+  const sizeSqFt = Number(
+    toNumber(overrideExact?.sizeSqM) !== undefined ? Math.round(sizeSqM * 10.76) : custom?.sizeSqFt ?? official?.sizeSqFt ?? Math.round(sizeSqM * 10.76)
+  );
 
   const isPrime =
     overrideExact?.isPrime !== undefined
@@ -67,8 +73,9 @@ export function resolveStall(num: string, { elements, boothOverrides, primeSurch
     toNumber(overrideExact?.priceUSD) ?? toNumber(custom?.priceUSD) ?? toNumber(official?.priceUSD) ?? toNumber(fallback?.priceUSD) ?? 1350;
 
   const primeSurchargeRate = (primeSurchargePercent || DEFAULT_PRIME_SURCHARGE_PERCENT) / 100;
-  const primeSurchargeNPR = isPrime ? Math.round(basePriceNPR * primeSurchargeRate) : 0;
-  const primeSurchargeUSD = isPrime ? Math.round(basePriceUSD * primeSurchargeRate) : 0;
+  // An exact prime charge synced from the Google Sheet wins over the percentage
+  const primeSurchargeNPR = isPrime ? toNumber(overrideExact?.primeChargeNPR) ?? Math.round(basePriceNPR * primeSurchargeRate) : 0;
+  const primeSurchargeUSD = isPrime ? toNumber(overrideExact?.primeChargeUSD) ?? Math.round(basePriceUSD * primeSurchargeRate) : 0;
 
   const block = custom?.block || official?.block || fallback?.hall || (number ? `Block ${number.charAt(0).toUpperCase()}` : "Main Pavilion");
   const status = custom?.status || official?.status || fallback?.status || "Available";
@@ -90,9 +97,13 @@ export function resolveStall(num: string, { elements, boothOverrides, primeSurch
       upper.startsWith("IRR")
   );
 
-  const ratePerSqMNPR = Number(custom?.ratePerSqMNPR || (basePriceNPR && sizeSqM ? Math.round(basePriceNPR / sizeSqM) : 10500));
+  // A price synced from the sheet makes the floor plan's stored rate stale, so derive it instead
+  const fromSheet = toNumber(overrideExact?.priceNPR) !== undefined;
+  const ratePerSqMNPR = Number(
+    (!fromSheet && custom?.ratePerSqMNPR) || (basePriceNPR && sizeSqM ? Math.round(basePriceNPR / sizeSqM) : 10500)
+  );
   const ratePerSqMUSD = Number(
-    custom?.ratePerSqMUSD || (basePriceUSD && sizeSqM ? Number((basePriceUSD / sizeSqM).toFixed(2)) : 83.33)
+    (!fromSheet && custom?.ratePerSqMUSD) || (basePriceUSD && sizeSqM ? Number((basePriceUSD / sizeSqM).toFixed(2)) : 83.33)
   );
 
   const displayName = isIrregular
@@ -141,8 +152,9 @@ export function quoteBooking(stallNumbers: string[], packageId: string | null | 
   const rawTotalPriceUSD = sum("priceUSD");
   const finalPriceNPR = isSponsorPackage && pkg ? pkg.priceNPR : rawTotalPriceNPR;
   const finalPriceUSD = isSponsorPackage && pkg ? pkg.priceUSD : rawTotalPriceUSD;
-  const vatNPR = Math.round(finalPriceNPR * VAT_RATE);
-  const vatUSD = Math.round(finalPriceUSD * VAT_RATE);
+  // Rounded to the paisa / cent (not the whole rupee) so totals match the Google Sheet exactly
+  const vatNPR = roundMoney(finalPriceNPR * VAT_RATE);
+  const vatUSD = roundMoney(finalPriceUSD * VAT_RATE);
 
   return {
     stalls,
@@ -162,7 +174,7 @@ export function quoteBooking(stallNumbers: string[], packageId: string | null | 
     finalBasePriceUSD: isSponsorPackage && pkg ? pkg.priceUSD : sum("basePriceUSD"),
     vatNPR,
     vatUSD,
-    totalWithVatNPR: finalPriceNPR + vatNPR,
-    totalWithVatUSD: finalPriceUSD + vatUSD,
+    totalWithVatNPR: roundMoney(finalPriceNPR + vatNPR),
+    totalWithVatUSD: roundMoney(finalPriceUSD + vatUSD),
   };
 }

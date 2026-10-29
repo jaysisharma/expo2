@@ -135,6 +135,10 @@ export async function setFirebaseBoothOverride(
     priceUSD?: number;
     priceNPR?: number;
     isPrime?: boolean;
+    primeChargeNPR?: number;
+    primeChargeUSD?: number;
+    sizeSqM?: number;
+    dimensions?: string;
     is72hHold?: boolean;
     holdExpiresAt?: string;
     bookingRef?: string;

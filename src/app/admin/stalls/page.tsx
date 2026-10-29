@@ -461,7 +461,7 @@ export default function AdminStallsPage() {
       });
       const json = await res.json();
       if (json.success) {
-        notify(`Success! Populated all ${json.count || 91} stalls into your Google Sheet!`, "success");
+        notify(`Done! Filled ${json.response?.count ?? 0} website bookings into your Google Sheet.`, "success");
         setShowSheetModal(false);
         fetchBoothsData();
       } else {
@@ -1426,10 +1426,10 @@ export default function AdminStallsPage() {
             <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200 flex items-center justify-between">
               <div>
                 <span className="text-[10px] font-mono uppercase text-emerald-800 font-bold block">Connected Google Sheet</span>
-                <span className="text-xs text-emerald-950 font-medium">Stall Booking Tracking Sheet</span>
+                <span className="text-xs text-emerald-950 font-medium">Booked list HIGEX 2027</span>
               </div>
               <a
-                href="https://docs.google.com/spreadsheets/d/1nG2uJ3TDNseKGNTyldxnii8Fm6DuuIN1nIOIXQX2RVc/edit?gid=0#gid=0"
+                href="https://docs.google.com/spreadsheets/d/1OCExy81NgcVEtRURf0SB0zJmTv6tVebFIMtmj0CVYC0/edit"
                 target="_blank"
                 rel="noreferrer"
                 className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors"
@@ -1465,10 +1465,10 @@ export default function AdminStallsPage() {
               <div className="space-y-0.5">
                 <div className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Auto-Populate All 91 Stalls</span>
+                  <span>Fill Website Bookings into Sheet</span>
                 </div>
                 <p className="text-[11px] text-emerald-800 leading-snug">
-                  Automatically writes all 91 stalls (C1–C16, B1–B22, A1–A46, H1–H8, F1–F2) with live statuses &amp; companies into your Google Sheet!
+                  Marks stalls booked or reserved on the website in the sheet (Status &amp; Company Name). Stalls already filled in the sheet, and all price columns, are left untouched.
                 </p>
               </div>
               <button
@@ -1478,7 +1478,7 @@ export default function AdminStallsPage() {
                 className="px-3.5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shrink-0 disabled:opacity-50 shadow-xs transition-colors"
               >
                 {isPopulatingSheet ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <FileSpreadsheet className="w-3.5 h-3.5" />}
-                <span>{isPopulatingSheet ? "Populating Sheet..." : "Populate 91 Stalls to Sheet"}</span>
+                <span>{isPopulatingSheet ? "Filling Sheet..." : "Fill Bookings into Sheet"}</span>
               </button>
             </div>
 
@@ -1525,7 +1525,7 @@ export default function AdminStallsPage() {
               </span>
               <ol className="list-decimal list-inside space-y-1.5 text-[11px] leading-relaxed">
                 <li>
-                  Open your <a href="https://docs.google.com/spreadsheets/d/1nG2uJ3TDNseKGNTyldxnii8Fm6DuuIN1nIOIXQX2RVc/edit" target="_blank" rel="noreferrer" className="text-emerald-700 underline font-semibold">Google Sheet</a>, click <strong>Extensions</strong> &rarr; <strong>Apps Script</strong>.
+                  Open your <a href="https://docs.google.com/spreadsheets/d/1OCExy81NgcVEtRURf0SB0zJmTv6tVebFIMtmj0CVYC0/edit" target="_blank" rel="noreferrer" className="text-emerald-700 underline font-semibold">Google Sheet</a>, click <strong>Extensions</strong> &rarr; <strong>Apps Script</strong>.
                 </li>
                 <li>
                   Click <strong>&quot;Copy Google Apps Script&quot;</strong> button above, delete whatever is in the script editor, paste this code, and click <strong>Save</strong>.
@@ -1534,7 +1534,7 @@ export default function AdminStallsPage() {
                   Click <strong>Deploy</strong> &rarr; <strong>New deployment</strong> (or Manage deployments &rarr; Edit), select <strong>Web app</strong>, set <em>Who has access</em> to <strong>Anyone</strong>, and click <strong>Deploy</strong>. Copy and paste the Web App URL above!
                 </li>
                 <li>
-                  Click <strong>&quot;Populate 91 Stalls to Sheet&quot;</strong> above, or in Google Sheets click <strong>⚡ Expo Stall Sync &rarr; 📥 Populate All 91 Stalls to Sheet</strong>.
+                  In Google Sheets click <strong>⚡ Expo Stall Sync &rarr; 📥 Fill in bookings from website</strong>, then <strong>🔁 Turn on auto-sync when I edit</strong> so changes to Status or Company Name update the website.
                 </li>
               </ol>
             </div>
@@ -1546,36 +1546,41 @@ export default function AdminStallsPage() {
 }
 
 const GOOGLE_APPS_SCRIPT_TEMPLATE = `// ============================================================================
-// HIMALAYAN GREEN ENERGY EXPO 2027 - GOOGLE SHEET STALL SYNC (100% FREE)
+// HIMALAYAN GREEN ENERGY EXPO 2027 - "Booked list HIGEX 2027" STALL SYNC
 // ============================================================================
-// Columns (11):
-// A: Stall # | B: Hall / Zone | C: Size (m²) | D: Dimensions | E: Size & Type
-// F: Assigned Exhibitor | G: Price (USD) | H: Price (NPR) | I: Status | J: Booked Date | K: Contact
+// Works with the tabs "list" (Blocks A/B/C) and "Hydro Competition" (H1-H8).
+// Columns are found by their header names (Stall No, Status, Company Name,
+// Contact Number, Email Address), so moving columns around is fine.
+//
+// Prices come FROM the sheet: Stall size, Sqm, Dealed Amount and Prime Charge (NRs. and
+// US Dollar sections) are sent to the website, which then charges exactly that
+// (+13% VAT). The website never writes prices back here.
+//
+// The script only ever writes the Status, Company Name, Contact Number and
+// Email Address cells of an existing stall row. Rates, prime charge, VAT,
+// totals, advance/due amounts, remarks and the BLOCK header rows are never
+// touched, and rows are never added or cleared.
+//
+// SETUP: Project Settings (gear icon) -> Script Properties -> add
+//   SYNC_SECRET = the same value as GOOGLE_SHEET_SYNC_SECRET on the website.
 
 const WEBSITE_SYNC_URL = "https://www.himalayanenergyexpo.com/api/stalls/sync-sheet";
-const SYNC_SECRET = "expo2_secret_sync_2027";
+const STALL_TABS = ["list", "Hydro Competition"];
 
-const HEADERS = [
-  "Stall #",
-  "Hall / Zone",
-  "Size (m²)",
-  "Dimensions",
-  "Size & Type",
-  "Assigned Exhibitor",
-  "Price (USD)",
-  "Price (NPR)",
-  "Status",
-  "Booked Date",
-  "Contact"
-];
+function getSyncSecret() {
+  var secret = PropertiesService.getScriptProperties().getProperty("SYNC_SECRET");
+  if (!secret) throw new Error("SYNC_SECRET is not set. Add it under Project Settings -> Script Properties.");
+  return secret;
+}
 
 function onOpen() {
   try {
     SpreadsheetApp.getUi()
       .createMenu("⚡ Expo Stall Sync")
-      .addItem("📥 Populate All 91 Stalls to Sheet", "pullAllStallsFromWebsite")
+      .addItem("📥 Fill in bookings from website", "pullBookingsFromWebsite")
+      .addItem("📤 Sync sheet to website", "pushAllStallsToWebsite")
       .addSeparator()
-      .addItem("📤 Sync Sheet to Website", "pushAllStallsToWebsite")
+      .addItem("🔁 Turn on auto-sync when I edit", "enableAutoSync")
       .addToUi();
   } catch (e) {
     Logger.log("onOpen error: " + e.toString());
@@ -1591,379 +1596,307 @@ function showAlert(msg) {
   }
 }
 
+/** "A01", "A-1", "a 1" -> "A1" */
 function normalizeStallNo(val) {
   if (!val) return "";
-  var cleaned = String(val).trim().toUpperCase().replace(/[\\s\\-_#]/g, "");
-  var m = cleaned.match(/^([A-Z]+)0*(\\d+)$/);
-  if (m) {
-    return m[1] + parseInt(m[2], 10);
-  }
-  return cleaned;
+  var cleaned = String(val).toUpperCase().replace(/[^A-Z0-9]/g, "");
+  var m = cleaned.match(/^([A-Z]+)0*([0-9]+)$/);
+  return m ? m[1] + parseInt(m[2], 10) : "";
 }
 
-function detectColumnIndexes(headerRow) {
-  var map = {
-    stallCol: 0,
-    hallCol: 1,
-    sizeCol: 2,
-    dimCol: 3,
-    typeCol: 4,
-    exhibitorCol: 5,
-    priceUsdCol: 6,
-    priceNprCol: 7,
-    statusCol: 8,
-    dateCol: 9,
-    contactCol: 10
+function headerKey(val) {
+  return String(val || "").replace(/[ \\n\\r\\t]+/g, " ").trim().toLowerCase();
+}
+
+/** Website status -> what this sheet uses in the Status column */
+function sheetStatus(status) {
+  var s = String(status || "").toLowerCase();
+  if (s.indexOf("book") !== -1) return "BOOKED";
+  if (s.indexOf("reserv") !== -1) return "RESERVED";
+  return "";
+}
+
+/** Reads one tab and finds its header row (the row with "Stall No") */
+function readTab(sheet) {
+  var data = sheet.getDataRange().getValues();
+  for (var r = 0; r < Math.min(10, data.length); r++) {
+    var cols = {};
+    for (var c = 0; c < data[r].length; c++) {
+      var h = headerKey(data[r][c]);
+      var key = null;
+      if (h === "stall no" || h === "stall no.") key = "stall";
+      else if (h === "status") key = "status";
+      else if (h === "company name") key = "company";
+      else if (h === "contact number") key = "phone";
+      else if (h === "email address" || h === "email") key = "email";
+      else if (h === "sqm") key = "sqm";
+      else if (h === "stall size") key = "size";
+      // The NRs. section comes first and the US Dollar section second
+      else if (h === "dealed amount" || h === "full amount") key = cols.dealNPR === undefined ? "dealNPR" : "dealUSD";
+      else if (h === "prime charge") key = cols.primeNPR === undefined ? "primeNPR" : "primeUSD";
+      if (key && cols[key] === undefined) cols[key] = c;
+    }
+    if (cols.stall !== undefined && cols.status !== undefined) {
+      return { sheet: sheet, data: data, headerRow: r, cols: cols };
+    }
+  }
+  return null;
+}
+
+function readAllTabs() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var tabs = [];
+  for (var i = 0; i < STALL_TABS.length; i++) {
+    var sheet = ss.getSheetByName(STALL_TABS[i]);
+    var tab = sheet ? readTab(sheet) : null;
+    if (tab) tabs.push(tab);
+  }
+  return tabs;
+}
+
+function cell(tab, r, key) {
+  var c = tab.cols[key];
+  return c === undefined ? "" : String(tab.data[r][c] || "").trim();
+}
+
+/** Numeric cell value, or "" when empty / not a number (formulas give their result) */
+function amount(tab, r, key) {
+  var c = tab.cols[key];
+  if (c === undefined) return "";
+  var v = tab.data[r][c];
+  if (v === "" || v === null) return "";
+  var n = Number(String(v).replace(/[^0-9.]/g, ""));
+  return isNaN(n) ? "" : n;
+}
+
+/** One stall row in the shape the website expects */
+function rowToItem(tab, r) {
+  var stallNo = normalizeStallNo(tab.data[r][tab.cols.stall]);
+  if (!stallNo) return null; // BLOCK header or empty row
+  return {
+    stallNo: stallNo,
+    status: cell(tab, r, "status") || "Available",
+    companyName: cell(tab, r, "company"),
+    contact: cell(tab, r, "phone") || cell(tab, r, "email"),
+    bookedDate: "",
+    sizeSqM: amount(tab, r, "sqm"),
+    stallSize: cell(tab, r, "size"),
+    dealNPR: amount(tab, r, "dealNPR"),
+    dealUSD: amount(tab, r, "dealUSD"),
+    primeChargeNPR: amount(tab, r, "primeNPR"),
+    primeChargeUSD: amount(tab, r, "primeUSD")
   };
-
-  if (!headerRow || headerRow.length <= 1) return map;
-
-  for (var c = 0; c < headerRow.length; c++) {
-    var h = String(headerRow[c] || "").trim().toLowerCase();
-    if (h.indexOf("stall") !== -1 || h === "booth" || h === "no") map.stallCol = c;
-    else if (h.indexOf("hall") !== -1 || h.indexOf("zone") !== -1) map.hallCol = c;
-    else if (h.indexOf("size (m²)") !== -1 || h.indexOf("sqm") !== -1 || h === "size") map.sizeCol = c;
-    else if (h.indexOf("dimension") !== -1) map.dimCol = c;
-    else if (h.indexOf("type") !== -1) map.typeCol = c;
-    else if (h.indexOf("exhibitor") !== -1 || h.indexOf("company") !== -1 || h.indexOf("client") !== -1) map.exhibitorCol = c;
-    else if (h.indexOf("usd") !== -1) map.priceUsdCol = c;
-    else if (h.indexOf("npr") !== -1) map.priceNprCol = c;
-    else if (h.indexOf("status") !== -1) map.statusCol = c;
-    else if (h.indexOf("date") !== -1) map.dateCol = c;
-    else if (h.indexOf("contact") !== -1 || h.indexOf("phone") !== -1 || h.indexOf("email") !== -1) map.contactCol = c;
-  }
-
-  // Fallback for 5-column format
-  if (headerRow.length <= 6 && map.statusCol === 8) {
-    map.statusCol = 1;
-    map.exhibitorCol = 2;
-    map.dateCol = 3;
-    map.contactCol = 4;
-  }
-
-  return map;
 }
 
-function ensureSheetHeaders(sheet) {
-  var currentFirst = sheet.getRange(1, 1, 1, 11).getValues()[0];
-  if (!currentFirst[0] || String(currentFirst[0]).trim() === "") {
-    var headerRange = sheet.getRange(1, 1, 1, 11);
-    headerRange.setValues([HEADERS]);
-    headerRange.setFontWeight("bold");
-    headerRange.setBackground("#064e3b");
-    headerRange.setFontColor("#ffffff");
-    sheet.setFrozenRows(1);
-    sheet.setColumnWidth(1, 80);
-    sheet.setColumnWidth(2, 120);
-    sheet.setColumnWidth(3, 80);
-    sheet.setColumnWidth(4, 110);
-    sheet.setColumnWidth(5, 180);
-    sheet.setColumnWidth(6, 200);
-    sheet.setColumnWidth(7, 100);
-    sheet.setColumnWidth(8, 120);
-    sheet.setColumnWidth(9, 100);
-    sheet.setColumnWidth(10, 120);
-    sheet.setColumnWidth(11, 160);
+function collectAllRows() {
+  var tabs = readAllTabs();
+  var rows = [];
+  for (var t = 0; t < tabs.length; t++) {
+    for (var r = tabs[t].headerRow + 1; r < tabs[t].data.length; r++) {
+      var item = rowToItem(tabs[t], r);
+      if (item) rows.push(item);
+    }
   }
+  return rows;
 }
 
-/** Pull all 91 stalls from website database and populate into Google Sheet */
-function pullAllStallsFromWebsite() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  ensureSheetHeaders(sheet);
+function findStall(tabs, stallNo) {
+  var target = normalizeStallNo(stallNo);
+  for (var t = 0; t < tabs.length; t++) {
+    for (var r = tabs[t].headerRow + 1; r < tabs[t].data.length; r++) {
+      if (normalizeStallNo(tabs[t].data[r][tabs[t].cols.stall]) === target) {
+        return { tab: tabs[t], r: r };
+      }
+    }
+  }
+  return null;
+}
 
+function setCell(tab, r, key, value) {
+  var c = tab.cols[key];
+  if (c === undefined) return;
+  tab.sheet.getRange(r + 1, c + 1).setValue(value);
+  tab.data[r][c] = value;
+}
+
+/**
+ * Writes a website booking into the sheet.
+ * fillBlanksOnly: only fill stalls whose Status cell is still empty
+ * (used for bulk fills, so bookings typed into the sheet are never overwritten).
+ */
+function applyBooking(tabs, item, fillBlanksOnly) {
+  var hit = findStall(tabs, item.stallNo);
+  if (!hit) return false;
+  var status = sheetStatus(item.status);
+  var company = item.companyName && item.companyName !== "Unassigned" ? item.companyName : "";
+
+  if (fillBlanksOnly) {
+    if (!status || cell(hit.tab, hit.r, "status")) return false;
+  }
+
+  setCell(hit.tab, hit.r, "status", status);
+  if (!status) {
+    setCell(hit.tab, hit.r, "company", "");
+    return true;
+  }
+  if (company && (!fillBlanksOnly || !cell(hit.tab, hit.r, "company"))) {
+    setCell(hit.tab, hit.r, "company", company);
+  }
+  var contact = String(item.contact || "").trim();
+  if (contact) {
+    var key = contact.indexOf("@") !== -1 ? "email" : "phone";
+    if (!cell(hit.tab, hit.r, key)) setCell(hit.tab, hit.r, key, contact);
+  }
+  return true;
+}
+
+function jsonOut(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
+}
+
+/** Fill website bookings into stalls that are still empty in the sheet */
+function pullBookingsFromWebsite() {
   try {
-    var res = UrlFetchApp.fetch(WEBSITE_SYNC_URL + "?action=get_all_stalls", {
+    var res = UrlFetchApp.fetch(WEBSITE_SYNC_URL + "?action=get_all_stalls&secret=" + encodeURIComponent(getSyncSecret()), {
       method: "get",
       followRedirects: true,
       muteHttpExceptions: true
     });
-    var text = res.getContentText();
-    var code = res.getResponseCode();
-
-    if (code !== 200) {
-      showAlert("Server returned HTTP " + code + ": " + text.slice(0, 150));
+    if (res.getResponseCode() !== 200) {
+      showAlert("Server returned HTTP " + res.getResponseCode() + ": " + res.getContentText().slice(0, 150));
       return;
     }
-
-    var json = JSON.parse(text);
+    var json = JSON.parse(res.getContentText());
     if (!json.success || !Array.isArray(json.stalls)) {
       showAlert("Could not fetch stalls: " + (json.error || "Unknown"));
       return;
     }
-
-    // Preserve any existing local edits in the sheet
-    var existingData = sheet.getDataRange().getValues();
-    var colMap = detectColumnIndexes(existingData[0]);
-    var existingMap = {};
-    for (var i = 1; i < existingData.length; i++) {
-      var sNo = normalizeStallNo(existingData[i][colMap.stallCol]);
-      if (sNo) {
-        existingMap[sNo] = {
-          status: existingData[i][colMap.statusCol] || "Available",
-          company: existingData[i][colMap.exhibitorCol] || "",
-          date: existingData[i][colMap.dateCol] || "",
-          contact: existingData[i][colMap.contactCol] || ""
-        };
-      }
+    var tabs = readAllTabs();
+    var filled = 0;
+    for (var i = 0; i < json.stalls.length; i++) {
+      if (applyBooking(tabs, json.stalls[i], true)) filled++;
     }
-
-    var rows = [];
-    for (var k = 0; k < json.stalls.length; k++) {
-      var item = json.stalls[k];
-      var sNo = String(item.stallNo || "").trim();
-      var canon = normalizeStallNo(sNo);
-      var ex = existingMap[canon] || {};
-
-      var status = item.status || ex.status || "Available";
-      var company = (item.companyName && item.companyName !== "Unassigned")
-        ? item.companyName
-        : (ex.company && ex.company !== "Unassigned" ? ex.company : "Unassigned");
-      var date = item.bookedDate || ex.date || "";
-      var contact = item.contact || ex.contact || "";
-
-      rows.push([
-        sNo,
-        item.hall || "",
-        item.sizeSqM || "",
-        item.dimensions || "",
-        item.sizeType || "",
-        company,
-        item.priceUSD || "",
-        item.priceNPR || "",
-        status,
-        date,
-        contact
-      ]);
-    }
-
-    // Clear old rows from row 2 downwards
-    if (sheet.getLastRow() > 1) {
-      sheet.getRange(2, 1, sheet.getLastRow() - 1, 11).clearContent();
-    }
-
-    // Ensure sheet has enough rows for all stalls
-    var requiredRows = rows.length + 1;
-    if (sheet.getMaxRows() < requiredRows) {
-      sheet.insertRowsAfter(sheet.getMaxRows(), requiredRows - sheet.getMaxRows());
-    }
-
-    // Write all stalls in batch
-    if (rows.length > 0) {
-      sheet.getRange(2, 1, rows.length, 11).setValues(rows);
-    }
-
-    showAlert("Success! Populated all " + rows.length + " stalls into your Google Sheet.");
+    showAlert("Done. Filled in " + filled + " booked/reserved stalls from the website. Stalls already marked in the sheet were left as they are.");
   } catch (err) {
     showAlert("Error: " + err.toString());
   }
 }
 
-/** Push all rows from Google Sheet to the Website Database */
-function pushAllStallsToWebsite() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  var data = sheet.getDataRange().getValues();
-  if (data.length <= 1) {
-    showAlert("No stall data found in sheet.");
-    return;
-  }
-  
-  var colMap = detectColumnIndexes(data[0]);
-  var rows = [];
-  for (var i = 1; i < data.length; i++) {
-    var stallNo = String(data[i][colMap.stallCol] || "").trim();
-    if (!stallNo) continue;
-    rows.push({
-      stallNo: stallNo,
-      status: String(data[i][colMap.statusCol] || "Available").trim(),
-      companyName: String(data[i][colMap.exhibitorCol] || "").trim(),
-      bookedDate: String(data[i][colMap.dateCol] || "").trim(),
-      contact: String(data[i][colMap.contactCol] || "").trim()
-    });
-  }
-
-  if (rows.length === 0) {
-    showAlert("No stall rows found to sync.");
-    return;
-  }
-
-  var options = {
+function postRowsToWebsite(rows) {
+  var res = UrlFetchApp.fetch(WEBSITE_SYNC_URL, {
     method: "post",
     contentType: "application/json",
-    payload: JSON.stringify({ secret: SYNC_SECRET, rows: rows }),
+    payload: JSON.stringify({ secret: getSyncSecret(), rows: rows }),
     followRedirects: true,
     muteHttpExceptions: true
-  };
+  });
+  var text = res.getContentText();
+  if (res.getResponseCode() !== 200) throw new Error("HTTP " + res.getResponseCode() + ": " + text.slice(0, 150));
+  var json = JSON.parse(text);
+  if (!json.success) throw new Error(json.error || "Unknown sync error");
+  return json;
+}
+
+/** Send every stall row in the sheet to the website */
+function pushAllStallsToWebsite() {
+  var rows = collectAllRows();
+  if (rows.length === 0) {
+    showAlert("No stall rows found. Check that the tabs are named: " + STALL_TABS.join(", "));
+    return;
+  }
+  try {
+    var json = postRowsToWebsite(rows);
+    showAlert("Success! Synced " + (json.count || 0) + " stalls to the website & floor plan.");
+  } catch (err) {
+    showAlert("Sync error: " + err.toString());
+  }
+}
+
+/** Installs the trigger that sends a row to the website whenever it is edited */
+function enableAutoSync() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var triggers = ScriptApp.getProjectTriggers();
+  for (var i = 0; i < triggers.length; i++) {
+    if (triggers[i].getHandlerFunction() === "onStallEdit") ScriptApp.deleteTrigger(triggers[i]);
+  }
+  ScriptApp.newTrigger("onStallEdit").forSpreadsheet(ss).onEdit().create();
+  showAlert("Auto-sync is on. Editing a stall's Status, Company Name, contact, Sqm, Dealed Amount or Prime Charge now updates the website.");
+}
+
+/** Installable onEdit trigger (see enableAutoSync) */
+function onStallEdit(e) {
+  if (!e || !e.range) return;
+  var sheet = e.range.getSheet();
+  if (STALL_TABS.indexOf(sheet.getName()) === -1) return;
+  var tab = readTab(sheet);
+  if (!tab) return;
+
+  var watched = [
+    tab.cols.status, tab.cols.company, tab.cols.phone, tab.cols.email,
+    tab.cols.sqm, tab.cols.size, tab.cols.dealNPR, tab.cols.dealUSD, tab.cols.primeNPR, tab.cols.primeUSD
+  ];
+  var firstCol = e.range.getColumn() - 1;
+  var lastCol = firstCol + e.range.getNumColumns() - 1;
+  var touched = false;
+  for (var w = 0; w < watched.length; w++) {
+    if (watched[w] !== undefined && watched[w] >= firstCol && watched[w] <= lastCol) touched = true;
+  }
+  if (!touched) return;
+
+  var rows = [];
+  var firstRow = e.range.getRow() - 1;
+  for (var r = firstRow; r < firstRow + e.range.getNumRows(); r++) {
+    if (r <= tab.headerRow || r >= tab.data.length) continue;
+    var item = rowToItem(tab, r);
+    if (item) rows.push(item);
+  }
+  if (rows.length === 0) return;
 
   try {
-    var res = UrlFetchApp.fetch(WEBSITE_SYNC_URL, options);
-    var text = res.getContentText();
-    var code = res.getResponseCode();
-
-    if (code !== 200) {
-      showAlert("Server returned HTTP " + code + ": " + text.slice(0, 150));
-      return;
-    }
-
-    var json;
-    try {
-      json = JSON.parse(text);
-    } catch (parseErr) {
-      showAlert("Response was not JSON: " + text.slice(0, 150));
-      return;
-    }
-
-    if (json.success) {
-      showAlert("Success! Synced " + (json.count || 0) + " stalls to the website & floor plan.");
-    } else {
-      showAlert("Sync error: " + (json.error || "Unknown"));
-    }
+    postRowsToWebsite(rows);
   } catch (err) {
-    showAlert("Error: " + err.toString());
+    SpreadsheetApp.getActiveSpreadsheet().toast("Website sync failed: " + err.toString(), "Expo Stall Sync", 10);
   }
 }
 
-/** Called by Website to return all rows from Google Sheet as JSON */
+function hasValidSecret(given) {
+  try {
+    return Boolean(given) && given === getSyncSecret();
+  } catch (err) {
+    return false;
+  }
+}
+
+/** Called by the website to read all stall rows */
 function doGet(e) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  var data = sheet.getDataRange().getValues();
-  if (data.length <= 1) {
-    return ContentService.createTextOutput(JSON.stringify({ success: true, count: 0, rows: [] }))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
-
-  var colMap = detectColumnIndexes(data[0]);
-  var rows = [];
-  for (var i = 1; i < data.length; i++) {
-    var stallNo = String(data[i][colMap.stallCol] || "").trim();
-    if (!stallNo) continue;
-    rows.push({
-      stallNo: stallNo,
-      status: String(data[i][colMap.statusCol] || "Available").trim(),
-      companyName: String(data[i][colMap.exhibitorCol] || "").trim(),
-      bookedDate: String(data[i][colMap.dateCol] || "").trim(),
-      contact: String(data[i][colMap.contactCol] || "").trim()
-    });
-  }
-  return ContentService.createTextOutput(JSON.stringify({ success: true, count: rows.length, rows: rows }))
-    .setMimeType(ContentService.MimeType.JSON);
+  if (!hasValidSecret(e && e.parameter && e.parameter.secret)) return jsonOut({ success: false, error: "Unauthorized" });
+  var rows = collectAllRows();
+  return jsonOut({ success: true, count: rows.length, rows: rows });
 }
 
-/** Called by Website whenever a stall is booked online or populated in bulk */
+/** Called by the website when a stall is booked online or changed in the admin panel */
 function doPost(e) {
   try {
-    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
     var payload = JSON.parse(e.postData.contents);
+    if (!hasValidSecret(payload.secret)) return jsonOut({ success: false, error: "Unauthorized" });
+    var tabs = readAllTabs();
 
-    // Case A: Bulk populate all stalls from website
+    // Bulk fill from the admin panel: only stalls still empty in the sheet
     if (payload.action === "populate_all" && Array.isArray(payload.stalls)) {
-      ensureSheetHeaders(sheet);
-
-      var existingData = sheet.getDataRange().getValues();
-      var colMap = detectColumnIndexes(existingData[0]);
-      var existingMap = {};
-      for (var i = 1; i < existingData.length; i++) {
-        var sNo = normalizeStallNo(existingData[i][colMap.stallCol]);
-        if (sNo) {
-          existingMap[sNo] = {
-            status: existingData[i][colMap.statusCol] || "Available",
-            company: existingData[i][colMap.exhibitorCol] || "",
-            date: existingData[i][colMap.dateCol] || "",
-            contact: existingData[i][colMap.contactCol] || ""
-          };
-        }
+      var filled = 0;
+      for (var i = 0; i < payload.stalls.length; i++) {
+        if (applyBooking(tabs, payload.stalls[i], true)) filled++;
       }
-
-      var rows = [];
-      for (var k = 0; k < payload.stalls.length; k++) {
-        var item = payload.stalls[k];
-        var sNo = String(item.stallNo || "").trim();
-        var canon = normalizeStallNo(sNo);
-        var ex = existingMap[canon] || {};
-
-        var status = item.status || ex.status || "Available";
-        var company = (item.companyName && item.companyName !== "Unassigned")
-          ? item.companyName
-          : (ex.company && ex.company !== "Unassigned" ? ex.company : "Unassigned");
-        var date = item.bookedDate || ex.date || "";
-        var contact = item.contact || ex.contact || "";
-
-        rows.push([
-          sNo,
-          item.hall || "",
-          item.sizeSqM || "",
-          item.dimensions || "",
-          item.sizeType || "",
-          company,
-          item.priceUSD || "",
-          item.priceNPR || "",
-          status,
-          date,
-          contact
-        ]);
-      }
-
-      if (sheet.getLastRow() > 1) {
-        sheet.getRange(2, 1, sheet.getLastRow() - 1, 11).clearContent();
-      }
-
-      var requiredRows = rows.length + 1;
-      if (sheet.getMaxRows() < requiredRows) {
-        sheet.insertRowsAfter(sheet.getMaxRows(), requiredRows - sheet.getMaxRows());
-      }
-
-      if (rows.length > 0) {
-        sheet.getRange(2, 1, rows.length, 11).setValues(rows);
-      }
-
-      return ContentService.createTextOutput(JSON.stringify({ success: true, count: rows.length }))
-        .setMimeType(ContentService.MimeType.JSON);
+      return jsonOut({ success: true, count: filled });
     }
 
-    // Case B: Single stall update
-    var stallNo = String(payload.stallNo || "").trim().toUpperCase();
-    if (!stallNo) {
-      return ContentService.createTextOutput(JSON.stringify({ success: false, error: "Missing stallNo" }))
-        .setMimeType(ContentService.MimeType.JSON);
+    if (!payload.stallNo) return jsonOut({ success: false, error: "Missing stallNo" });
+    if (!applyBooking(tabs, payload, false)) {
+      return jsonOut({ success: false, error: "Stall " + payload.stallNo + " not found in sheet" });
     }
-    
-    ensureSheetHeaders(sheet);
-    var data = sheet.getDataRange().getValues();
-    var colMap = detectColumnIndexes(data[0]);
-    var canonicalTarget = normalizeStallNo(stallNo);
-    var rowIndex = -1;
-    for (var i = 1; i < data.length; i++) {
-      if (normalizeStallNo(data[i][colMap.stallCol]) === canonicalTarget || String(data[i][colMap.stallCol] || "").trim().toUpperCase() === stallNo) {
-        rowIndex = i + 1; // 1-indexed
-        break;
-      }
-    }
-    
-    var status = payload.status || "Booked";
-    var company = payload.companyName || "";
-    var date = payload.bookedDate || Utilities.formatDate(new Date(), "GMT+5:45", "yyyy-MM-dd");
-    var contact = payload.contact || "";
-
-    if (rowIndex > 0) {
-      sheet.getRange(rowIndex, colMap.statusCol + 1).setValue(status);
-      sheet.getRange(rowIndex, colMap.exhibitorCol + 1).setValue(company);
-      sheet.getRange(rowIndex, colMap.dateCol + 1).setValue(date);
-      if (contact) sheet.getRange(rowIndex, colMap.contactCol + 1).setValue(contact);
-    } else {
-      var newRow = new Array(Math.max(11, data[0].length)).fill("");
-      newRow[colMap.stallCol] = stallNo;
-      newRow[colMap.statusCol] = status;
-      newRow[colMap.exhibitorCol] = company;
-      newRow[colMap.dateCol] = date;
-      newRow[colMap.contactCol] = contact;
-      sheet.appendRow(newRow);
-    }
-
-    return ContentService.createTextOutput(JSON.stringify({ success: true, stallNo: stallNo, status: status }))
-      .setMimeType(ContentService.MimeType.JSON);
+    return jsonOut({ success: true, stallNo: normalizeStallNo(payload.stallNo), status: sheetStatus(payload.status) });
   } catch (err) {
-    return ContentService.createTextOutput(JSON.stringify({ success: false, error: err.toString() }))
-      .setMimeType(ContentService.MimeType.JSON);
+    return jsonOut({ success: false, error: err.toString() });
   }
 }
 `;
