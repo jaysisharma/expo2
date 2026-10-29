@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import Image from "next/image";
 import {
   Film,
@@ -95,15 +95,18 @@ export default function AdminVideosPage() {
     setTimeout(() => setToastMsg(null), 3200);
   };
 
+  // Saving starts only after the saved list has loaded (saving on open overwrote it with this browser's copy)
+  const savingEnabled = useRef(false);
+
   // Sync with Firebase and LocalStorage
   useEffect(() => {
     try {
       localStorage.setItem("expo_admin_videos_v1", JSON.stringify(videos));
     } catch {}
-    saveFirebaseVideos(videos).catch(() => {});
+    if (savingEnabled.current) saveFirebaseVideos(videos).catch(() => {});
   }, [videos]);
 
-  // Load from Firebase on mount
+  // Load from Firebase on mount, then allow saving
   useEffect(() => {
     getFirebaseVideos()
       .then((fbVideos) => {
@@ -111,7 +114,12 @@ export default function AdminVideosPage() {
           setVideos(fbVideos.filter((v: VideoItem) => !REMOVED_VIDEO_IDS.has(v.id)));
         }
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => {
+        setTimeout(() => {
+          savingEnabled.current = true;
+        }, 0);
+      });
   }, []);
 
   // Category filter list

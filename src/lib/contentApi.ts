@@ -11,12 +11,13 @@ async function getStored(route: string, key: string): Promise<any[] | null> {
   }
 }
 
-async function save(route: string, key: string, list: any[]): Promise<boolean> {
+// allowEmpty: the server refuses to replace a non-empty list with an empty one unless this is set
+async function save(route: string, key: string, list: any[], allowEmpty = false): Promise<boolean> {
   try {
     const res = await fetch(`/api/${route}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ [key]: list }),
+      body: JSON.stringify({ [key]: list, ...(allowEmpty ? { allowEmpty: true } : {}) }),
     });
     return res.ok;
   } catch {
@@ -25,8 +26,8 @@ async function save(route: string, key: string, list: any[]): Promise<boolean> {
 }
 
 export const getFirebaseGallery = () => getStored("gallery", "items");
-export const saveFirebaseGallery = (items: any[]) => save("gallery", "items", items);
+export const saveFirebaseGallery = (items: any[], allowEmpty = false) => save("gallery", "items", items, allowEmpty);
 export const getFirebaseMembers = () => getStored("members", "members");
 export const saveFirebaseMembers = (members: any[]) => save("members", "members", members);
 export const getFirebaseVideos = () => getStored("videos", "videos");
-export const saveFirebaseVideos = (videos: any[]) => save("videos", "videos", videos);
+export const saveFirebaseVideos = (videos: any[], allowEmpty = false) => save("videos", "videos", videos, allowEmpty);
