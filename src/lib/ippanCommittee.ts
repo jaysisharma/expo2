@@ -1,21 +1,21 @@
 // Keeps the site's IPPAN members in step with the Executive Committee page on ippan.org.np.
 // The page is a WordPress grid: each card has a photo, the name (<h4>) and the position (<h6>).
 import "server-only";
+import {
+  IPPAN_COMMITTEE_API,
+  IPPAN_COMMITTEE_URL,
+  decodeHtml as decode,
+  parseIppanApiPosts,
+  type IppanCommitteeMember,
+} from "./ippanCommitteeSource";
 
-export const IPPAN_COMMITTEE_URL = "https://www.ippan.org.np/executive-committee-members";
+export { IPPAN_COMMITTEE_URL, type IppanCommitteeMember };
 const IPPAN_ORGANIZATION = "Independent Power Producers' Association, Nepal (IPPAN)";
 // Fewer cards than this means the page failed to load or its layout changed; never sync from it
 const MIN_COMMITTEE_SIZE = 15;
 // The daily cron leaves bigger removals for an admin to review
 export const MAX_AUTO_REMOVALS = 5;
 const FEATURED_TITLES = ["president", "senior vice president", "vice president", "general secretary", "chief advisor"];
-
-export interface IppanCommitteeMember {
-  name: string;
-  title: string;
-  photo: string;
-  profileUrl: string;
-}
 
 export interface IppanSyncPlan {
   members: any[];
@@ -24,17 +24,6 @@ export interface IppanSyncPlan {
   updated: { name: string; from: string; to: string }[];
   committeeSize: number;
 }
-
-const decode = (s: string) =>
-  s
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&#0?39;|&rsquo;|&#8217;/g, "'")
-    .replace(/&quot;/g, '"')
-    .replace(/&nbsp;/g, " ")
-    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)))
-    .replace(/\s+/g, " ")
-    .trim();
 
 /** "Mr. Milan khadka" and "Milan Khadka" -> "milan khadka" */
 export function nameKey(name: string) {
@@ -65,20 +54,31 @@ export function parseIppanCommittee(html: string): IppanCommitteeMember[] {
   return members;
 }
 
-export async function fetchIppanCommittee(): Promise<IppanCommitteeMember[]> {
-  const res = await fetch(IPPAN_COMMITTEE_URL, {
-    headers: { "User-Agent": "Mozilla/5.0 (compatible; HIGEX-member-sync)" },
-    cache: "no-store",
-    signal: AbortSignal.timeout(20_000),
-  });
-  if (!res.ok) throw new Error(`IPPAN website returned HTTP ${res.status}`);
-  const committee = parseIppanCommittee(await res.text());
+/** Throws unless the list looks like a whole committee (page down or redesigned otherwise) */
+export function assertCompleteCommittee(committee: IppanCommitteeMember[]) {
   if (committee.length < MIN_COMMITTEE_SIZE || !committee.some((m) => titleKey(m.title) === "president")) {
     throw new Error(
-      `Only found ${committee.length} committee members on the IPPAN page; its layout may have changed, so nothing was synced.`
+      `Only found ${committee.length} committee members on the IPPAN website; it may be down or changed, so nothing was synced.`
     );
   }
   return committee;
+}
+
+/**
+ * Server-side read, used by the daily cron. IPPAN's Cloudflare may answer 403 to Vercel's
+ * servers; the admin page then reads the committee from the browser instead.
+ */
+export async function fetchIppanCommittee(): Promise<IppanCommitteeMember[]> {
+  const init = {
+    headers: { "User-Agent": "Mozilla/5.0 (compatible; HIGEX-member-sync)", Accept: "application/json,text/html" },
+    cache: "no-store" as const,
+    signal: AbortSignal.timeout(20_000),
+  };
+  const api = await fetch(IPPAN_COMMITTEE_API, init);
+  if (api.ok) return assertCompleteCommittee(parseIppanApiPosts(await api.json()));
+  const page = await fetch(IPPAN_COMMITTEE_URL, init);
+  if (!page.ok) throw new Error(`IPPAN website returned HTTP ${page.status} to the server`);
+  return assertCompleteCommittee(parseIppanCommittee(await page.text()));
 }
 
 const slug = (s: string) => nameKey(s).replace(/ /g, "-");
