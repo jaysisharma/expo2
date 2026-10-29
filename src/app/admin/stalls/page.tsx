@@ -568,6 +568,15 @@ export default function AdminStallsPage() {
           </button>
 
           <button
+            onClick={() => setShowSheetModal(true)}
+            className="px-3 py-1.5 rounded-lg bg-white hover:bg-emerald-50 text-emerald-800 text-xs font-medium border border-emerald-200 shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+            title="Google Sheet setup: copy the Apps Script and save its web app URL"
+          >
+            <Copy className="w-3.5 h-3.5" />
+            <span>Sheet Setup</span>
+          </button>
+
+          <button
             onClick={exportCSV}
             className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium border border-slate-200 shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
           >
