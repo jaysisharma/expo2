@@ -236,6 +236,6 @@ export async function GET(req: Request) {
     success: true,
     configured: Boolean(configuredUrl),
     webhookUrl: configuredUrl,
-    sheetUrl: "https://docs.google.com/spreadsheets/d/1OCExy81NgcVEtRURf0SB0zJmTv6tVebFIMtmj0CVYC0/edit",
+    sheetUrl: "https://docs.google.com/spreadsheets/d/1iDHOjkA6eNwazEpnwrMVmVD5I99sJvhF444Pn3tCNeE/edit",
   });
 }

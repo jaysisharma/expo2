@@ -1429,7 +1429,7 @@ export default function AdminStallsPage() {
                 <span className="text-xs text-emerald-950 font-medium">Booked list HIGEX 2027</span>
               </div>
               <a
-                href="https://docs.google.com/spreadsheets/d/1OCExy81NgcVEtRURf0SB0zJmTv6tVebFIMtmj0CVYC0/edit"
+                href="https://docs.google.com/spreadsheets/d/1iDHOjkA6eNwazEpnwrMVmVD5I99sJvhF444Pn3tCNeE/edit"
                 target="_blank"
                 rel="noreferrer"
                 className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors"
@@ -1525,7 +1525,7 @@ export default function AdminStallsPage() {
               </span>
               <ol className="list-decimal list-inside space-y-1.5 text-[11px] leading-relaxed">
                 <li>
-                  Open your <a href="https://docs.google.com/spreadsheets/d/1OCExy81NgcVEtRURf0SB0zJmTv6tVebFIMtmj0CVYC0/edit" target="_blank" rel="noreferrer" className="text-emerald-700 underline font-semibold">Google Sheet</a>, click <strong>Extensions</strong> &rarr; <strong>Apps Script</strong>.
+                  Open your <a href="https://docs.google.com/spreadsheets/d/1iDHOjkA6eNwazEpnwrMVmVD5I99sJvhF444Pn3tCNeE/edit" target="_blank" rel="noreferrer" className="text-emerald-700 underline font-semibold">Google Sheet</a>, click <strong>Extensions</strong> &rarr; <strong>Apps Script</strong>.
                 </li>
                 <li>
                   Click <strong>&quot;Copy Google Apps Script&quot;</strong> button above, delete whatever is in the script editor, paste this code, and click <strong>Save</strong>.
@@ -1632,7 +1632,7 @@ function readTab(sheet) {
       else if (h === "sqm") key = "sqm";
       else if (h === "stall size") key = "size";
       // The NRs. section comes first and the US Dollar section second
-      else if (h === "dealed amount" || h === "full amount") key = cols.dealNPR === undefined ? "dealNPR" : "dealUSD";
+      else if (h === "dealed amount" || h === "deal amount" || h === "full amount") key = cols.dealNPR === undefined ? "dealNPR" : "dealUSD";
       else if (h === "prime charge") key = cols.primeNPR === undefined ? "primeNPR" : "primeUSD";
       if (key && cols[key] === undefined) cols[key] = c;
     }
