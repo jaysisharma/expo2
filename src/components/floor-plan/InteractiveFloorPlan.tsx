@@ -207,8 +207,12 @@ export default function InteractiveFloorPlan({
                 const sNum = el.number || el.id;
                 const ov = overrides[sNum] || (el.id && overrides[el.id]);
                 if (!ov) return el;
+                const ovSize = ov.sizeSqM !== undefined && ov.sizeSqM !== null ? Number(ov.sizeSqM) : undefined;
                 return {
                   ...el,
+                  dimensions: ov.dimensions || el.dimensions,
+                  sizeSqM: ovSize ?? el.sizeSqM,
+                  sizeSqFt: ovSize !== undefined ? Math.round(ovSize * 10.76) : el.sizeSqFt,
                   priceNPR: ov.priceNPR !== undefined && ov.priceNPR !== null ? Number(ov.priceNPR) : el.priceNPR,
                   priceUSD: ov.priceUSD !== undefined && ov.priceUSD !== null ? Number(ov.priceUSD) : el.priceUSD,
                   status: ov.status || el.status,
