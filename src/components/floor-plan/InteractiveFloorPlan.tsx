@@ -325,6 +325,26 @@ export default function InteractiveFloorPlan({
   );
   const primeSurchargeRate = (primeSurchargePercent || 25) / 100;
 
+  // Base price, prime charge and type for a stall's detail card (sheet prime charges win, as on the server)
+  const stallCardInfo = (stall: any) => {
+    const sNum = stall.number || stall.id;
+    const ov = boothOverrides[sNum] || (stall.id && boothOverrides[stall.id]);
+    const pick = (a: any, b: any, fallback: number) =>
+      a !== undefined && a !== null ? Number(a) : b !== undefined && b !== null ? Number(b) : fallback;
+    const isPrime = Boolean(ov?.isPrime ?? stall.isPrime);
+    const baseNPR = pick(ov?.priceNPR, stall.priceNPR, 180000);
+    const baseUSD = pick(ov?.priceUSD, stall.priceUSD, 1350);
+    const primeNPR = isPrime ? pick(ov?.primeChargeNPR, undefined, Math.round(baseNPR * primeSurchargeRate)) : 0;
+    const primeUSD = isPrime ? pick(ov?.primeChargeUSD, undefined, Math.round(baseUSD * primeSurchargeRate)) : 0;
+    const isIrregular = Boolean(
+      stall.isIrregular ||
+        stall.category === "Irregular Bare Space" ||
+        String(stall.dimensions || "").toLowerCase().includes("irregular")
+    );
+    return { isPrime, isIrregular, baseNPR, baseUSD, primeNPR, primeUSD, totalNPR: baseNPR + primeNPR, totalUSD: baseUSD + primeUSD };
+  };
+  const money = (n: number) => n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+
   const totalPriceNPR = selectedStallObjects.reduce((acc, curr) => {
     const sNum = curr.number || curr.id;
     const ov = boothOverrides[sNum] || (curr.id && boothOverrides[curr.id]);
@@ -964,30 +984,20 @@ export default function InteractiveFloorPlan({
           const hMatch = upper.match(/^H(\d+)$/);
           const isH = hMatch && parseInt(hMatch[1], 10) >= 1 && parseInt(hMatch[1], 10) <= 8;
           const isBareSpace = !isB && !isH;
+          const card = stallCardInfo(hoveredStall);
 
           return (
             <div className="hidden sm:block absolute top-4 left-4 z-40 pointer-events-none p-4 rounded-xl bg-slate-900/95 text-white backdrop-blur-md border border-white/20 shadow-2xl font-mono text-xs space-y-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-sans font-bold text-base text-white">
                   STALL {stallNum}{" "}
-                  {isBareSpace
-                    ? hoveredStall.category === "Irregular Bare Space" || hoveredStall.isIrregular
-                      ? "(Irregular Bare Space)"
-                      : "(Bare Space)"
-                    : ""}
+                  {isBareSpace ? (card.isIrregular ? "(Irregular Bare Space)" : "(Bare Space)") : ""}
                 </span>
-                {(() => {
-                  const ov = boothOverrides[stallNum] || (hoveredStall.id && boothOverrides[hoveredStall.id]);
-                  const isStallPrime = Boolean(ov?.isPrime ?? hoveredStall.isPrime);
-                  if (isStallPrime) {
-                    return (
-                      <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-amber-400 text-slate-950 flex items-center gap-0.5 shadow-xs">
-                        ★ PRIME (+{primeSurchargePercent}%)
-                      </span>
-                    );
-                  }
-                  return null;
-                })()}
+                {card.isPrime && (
+                  <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-amber-400 text-slate-950 flex items-center gap-0.5 shadow-xs">
+                    ★ PRIME (+{primeSurchargePercent}%)
+                  </span>
+                )}
                 <span
                   className={`text-[9px] px-2 py-0.5 rounded font-bold uppercase ${
                     hoveredStall.status === "Available" || !hoveredStall.status
@@ -1006,44 +1016,20 @@ export default function InteractiveFloorPlan({
               <div className="text-slate-300 text-[10px]">
                 Area: {hoveredStall.sizeSqM ?? 9} m² ({hoveredStall.sizeSqFt ?? Math.round((hoveredStall.sizeSqM ?? 9) * 10.76)} sq.ft)
               </div>
+              {card.isPrime && (
+                <div className="pt-0.5 space-y-0.5 text-[10px]">
+                  <div className="text-slate-300">
+                    Base: NPR {money(card.baseNPR)} / USD ${money(card.baseUSD)}
+                  </div>
+                  <div className="text-amber-300">
+                    Prime (+{primeSurchargePercent}%): +NPR {money(card.primeNPR)} / +USD ${money(card.primeUSD)}
+                  </div>
+                </div>
+              )}
               <div className="text-[#34D399] font-bold text-xs pt-0.5">
-                NPR {(() => {
-                  const ov = boothOverrides[stallNum] || (hoveredStall.id && boothOverrides[hoveredStall.id]);
-                  const isStallPrime = Boolean(ov?.isPrime ?? hoveredStall.isPrime);
-                  const npr =
-                    ov?.priceNPR !== undefined && ov?.priceNPR !== null
-                      ? Number(ov.priceNPR)
-                      : hoveredStall.priceNPR !== undefined && hoveredStall.priceNPR !== null
-                      ? Number(hoveredStall.priceNPR)
-                      : 180000;
-                  const usd =
-                    ov?.priceUSD !== undefined && ov?.priceUSD !== null
-                      ? Number(ov.priceUSD)
-                      : hoveredStall.priceUSD !== undefined && hoveredStall.priceUSD !== null
-                      ? Number(hoveredStall.priceUSD)
-                      : 1350;
-                  const nprEffective = isStallPrime ? Math.round(npr * (1 + primeSurchargeRate)) : npr;
-                  const usdEffective = isStallPrime ? Math.round(usd * (1 + primeSurchargeRate)) : usd;
-                  return `${nprEffective.toLocaleString()} / USD $${usdEffective.toLocaleString()}`;
-                })()}
+                {card.isPrime ? "Total: " : ""}NPR {money(card.totalNPR)} / USD ${money(card.totalUSD)}
                 <span className="text-[10px] text-slate-300 font-normal ml-1 font-sans">(+ 13% VAT)</span>
               </div>
-              {(() => {
-                const ov = boothOverrides[stallNum] || (hoveredStall.id && boothOverrides[hoveredStall.id]);
-                const isStallPrime = Boolean(ov?.isPrime ?? hoveredStall.isPrime);
-                if (!isStallPrime) return null;
-                const npr =
-                  ov?.priceNPR !== undefined && ov?.priceNPR !== null
-                    ? Number(ov.priceNPR)
-                    : hoveredStall.priceNPR !== undefined && hoveredStall.priceNPR !== null
-                    ? Number(hoveredStall.priceNPR)
-                    : 180000;
-                return (
-                  <div className="text-[10px] text-amber-300 font-mono">
-                    Includes {primeSurchargePercent}% Prime Surcharge (+NPR {Math.round(npr * primeSurchargeRate).toLocaleString()})
-                  </div>
-                );
-              })()}
             </div>
           );
         })()}
@@ -1060,25 +1046,10 @@ export default function InteractiveFloorPlan({
 
           const ov = boothOverrides[stallNum] || (activeMobileStall.id && boothOverrides[activeMobileStall.id]);
           const effectiveStatus = ov?.status || activeMobileStall.status || "Available";
-          const isStallPrime = Boolean(ov?.isPrime ?? activeMobileStall.isPrime);
+          const card = stallCardInfo(activeMobileStall);
+          const isStallPrime = card.isPrime;
           const isBooked = effectiveStatus === "Booked";
           const isSelected = selectedStalls.some((s) => s.toLowerCase() === stallNum.toLowerCase() || (activeMobileStall.id && s.toLowerCase() === activeMobileStall.id.toLowerCase()));
-
-          const baseNPR =
-            ov?.priceNPR !== undefined && ov?.priceNPR !== null
-              ? Number(ov.priceNPR)
-              : activeMobileStall.priceNPR !== undefined && activeMobileStall.priceNPR !== null
-              ? Number(activeMobileStall.priceNPR)
-              : 180000;
-          const baseUSD =
-            ov?.priceUSD !== undefined && ov?.priceUSD !== null
-              ? Number(ov.priceUSD)
-              : activeMobileStall.priceUSD !== undefined && activeMobileStall.priceUSD !== null
-              ? Number(activeMobileStall.priceUSD)
-              : 1350;
-
-          const effectiveNPR = isStallPrime ? Math.round(baseNPR * (1 + primeSurchargeRate)) : baseNPR;
-          const effectiveUSD = isStallPrime ? Math.round(baseUSD * (1 + primeSurchargeRate)) : baseUSD;
 
           return (
             <div className="sm:hidden absolute bottom-3 left-3 right-3 z-40 p-3.5 rounded-2xl bg-slate-900/95 text-white backdrop-blur-xl border border-white/20 shadow-2xl font-mono text-xs animate-in fade-in slide-in-from-bottom-3 duration-200">
@@ -1107,11 +1078,7 @@ export default function InteractiveFloorPlan({
                   </div>
                   <div className="text-emerald-400 font-bold text-[11px] mt-0.5">
                     {activeMobileStall.dimensions || "3m × 3m"} ·{" "}
-                    {isBareSpace
-                      ? activeMobileStall.category === "Irregular Bare Space" || activeMobileStall.isIrregular
-                        ? "Irregular Bare Space"
-                        : "Bare Space"
-                      : "Shell Scheme"}{" "}
+                    {isBareSpace ? (card.isIrregular ? "Irregular Bare Space" : "Bare Space") : "Shell Scheme"}{" "}
                     · {activeMobileStall.sizeSqM ?? 9} m² ({activeMobileStall.sizeSqFt ?? Math.round((activeMobileStall.sizeSqM ?? 9) * 10.76)} sq.ft)
                   </div>
                 </div>
@@ -1126,9 +1093,19 @@ export default function InteractiveFloorPlan({
 
               <div className="pt-2 flex items-center justify-between gap-3">
                 <div>
-                  <div className="text-[10px] text-slate-400">Total (+13% VAT):</div>
+                  {isStallPrime && (
+                    <div className="text-[10px] space-y-0.5 pb-1">
+                      <div className="text-slate-300">
+                        Base: NPR {money(card.baseNPR)} / USD ${money(card.baseUSD)}
+                      </div>
+                      <div className="text-amber-300">
+                        Prime (+{primeSurchargePercent}%): +NPR {money(card.primeNPR)} / +USD ${money(card.primeUSD)}
+                      </div>
+                    </div>
+                  )}
+                  <div className="text-[10px] text-slate-400">Total (excl. 13% VAT):</div>
                   <div className="text-[#34D399] font-bold text-xs">
-                    NPR {effectiveNPR.toLocaleString()} / USD ${effectiveUSD.toLocaleString()}
+                    NPR {money(card.totalNPR)} / USD ${money(card.totalUSD)}
                   </div>
                 </div>
                 {!isBooked && activeMobileStall.category !== "SEMINAR HALL" && (
