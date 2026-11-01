@@ -436,12 +436,25 @@ export function CanvasElementRenderer({
                       key={pIdx}
                       cx={pt.x}
                       cy={pt.y}
-                      r="4.5"
+                      r="5.5"
                       fill="#38BDF8"
                       stroke="#0C121C"
                       strokeWidth="1.5"
-                      className="pointer-events-none"
-                    />
+                      className={
+                        activeTool === "select" && selectedIds.length === 1
+                          ? "pointer-events-auto cursor-move hover:fill-white"
+                          : "pointer-events-none"
+                      }
+                      onMouseDown={(e) => {
+                        if (activeTool !== "select" || selectedIds.length !== 1) return;
+                        e.stopPropagation();
+                        setInitialElementState(el);
+                        setDragStartPos(getCoordinates(e));
+                        setIsResizing(`vertex:${pIdx}`);
+                      }}
+                    >
+                      <title>Drag to move this corner</title>
+                    </circle>
                   ))}
                 </>
               )}
