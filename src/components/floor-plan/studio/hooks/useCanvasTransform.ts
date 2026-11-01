@@ -102,7 +102,32 @@ export function useCanvasTransform({
         );
       }
 
-      // 2. Resizing (Primary Selected)
+      // 2a. Dragging a single polygon vertex (handle id "vertex:<index>")
+      else if (isResizing && isResizing.startsWith("vertex:") && initialElementState?.points) {
+        const vIdx = Number(isResizing.slice("vertex:".length));
+        const targetId = initialElementState.id;
+
+        setElements((prev) =>
+          prev.map((el) => {
+            if (el.id !== targetId || !el.points || !el.points[vIdx]) return el;
+            const points = el.points.map((pt, i) => (i === vIdx ? { x: currentPos.x, y: currentPos.y } : pt));
+            const xs = points.map((p) => p.x);
+            const ys = points.map((p) => p.y);
+            const minX = Math.min(...xs);
+            const minY = Math.min(...ys);
+            return {
+              ...el,
+              points,
+              x: minX,
+              y: minY,
+              width: Math.max(20, Math.max(...xs) - minX),
+              height: Math.max(20, Math.max(...ys) - minY),
+            };
+          })
+        );
+      }
+
+      // 2b. Resizing (Primary Selected)
       else if (isResizing && primarySelected && initialElementState) {
         const dx = currentPos.x - dragStartPos.x;
         const dy = currentPos.y - dragStartPos.y;
