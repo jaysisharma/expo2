@@ -1,3 +1,5 @@
+import { PDFS } from "@/lib/pdfs";
+
 export interface ExpoResource {
   id: string;
   title: string;
@@ -33,7 +35,7 @@ export const expoResources: ExpoResource[] = [
     category: "Event Background & Proposal",
     fileType: "PDF",
     fileSize: "28 MB",
-    url: "/Proposal.pdf",
+    url: PDFS.proposal,
     description: "Strategic event prospectus, exhibitor profiles, stall classifications, and international patron endorsements.",
   },
   {

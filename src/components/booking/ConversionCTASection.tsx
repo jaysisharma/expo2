@@ -1,5 +1,6 @@
 'use client';
 
+import { PDFS } from "@/lib/pdfs";
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -188,7 +189,7 @@ export function ConversionCTASection() {
 
             <div className="flex flex-wrap items-center gap-5">
               <a
-                href="/Proposal.pdf"
+                href={PDFS.proposal}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-white inline-flex items-center gap-1.5 transition-colors font-medium text-slate-300"

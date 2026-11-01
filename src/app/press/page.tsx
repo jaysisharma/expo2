@@ -1,5 +1,6 @@
 'use client';
 
+import { PDFS } from "@/lib/pdfs";
 import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -154,7 +155,7 @@ export default function PressPage() {
                     <span>Press Banner</span>
                   </a>
                   <a
-                    href="/Proposal.pdf"
+                    href={PDFS.proposal}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="px-3.5 py-2 rounded-full bg-[#007A5E] hover:bg-[#005C42] text-white font-mono text-xs font-bold tracking-wider inline-flex items-center gap-1.5 transition-all shadow-md active:scale-95"

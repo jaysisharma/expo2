@@ -1,5 +1,6 @@
 'use client';
 
+import { PDFS } from "@/lib/pdfs";
 import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -75,7 +76,7 @@ const NAV_STRUCTURE: NavItem[] = [
           title: 'Download Event Proposal',
           badge: 'PDF',
           description: 'Official scope, sponsor packages & guidelines',
-          href: '/Proposal.pdf',
+          href: PDFS.proposal,
           icon: FileText,
           external: true,
         },
@@ -122,14 +123,14 @@ const NAV_STRUCTURE: NavItem[] = [
       highlightNote: 'Official 5th Edition Documentation, Forms & Rate Cards',
       actionCta: {
         label: 'Download Proposal (PDF)',
-        href: '/Proposal.pdf',
+        href: PDFS.proposal,
       },
       items: [
         {
           title: 'Event Proposal',
           badge: 'PDF',
           description: 'Official expo scope, theme tracks & exhibition overview',
-          href: '/Proposal.pdf',
+          href: PDFS.proposal,
           icon: FileText,
           external: true,
         },
@@ -137,7 +138,7 @@ const NAV_STRUCTURE: NavItem[] = [
           title: 'Stall Booking Form',
           badge: 'Form',
           description: 'Two-sided official registration & booth application form',
-          href: '/booking-form.pdf',
+          href: PDFS.bookingForm,
           icon: FileCheck,
           external: true,
         },
@@ -145,8 +146,16 @@ const NAV_STRUCTURE: NavItem[] = [
           title: 'Sponsor Tariff Sheet',
           badge: 'Tariffs',
           description: 'Sponsorship tiers, deliverable matrix & rate card',
-          href: '/sponsors-sheet.pdf',
+          href: PDFS.sponsorsSheet,
           icon: Award,
+          external: true,
+        },
+        {
+          title: 'Floor Plan',
+          badge: 'PDF',
+          description: 'Venue layout with Block A, B & C stall numbers',
+          href: PDFS.floorPlan,
+          icon: LayoutGrid,
           external: true,
         },
       ],

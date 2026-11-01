@@ -1,5 +1,6 @@
 "use client";
 
+import { PDFS, PDF_DOCS, findPdfDoc } from "@/lib/pdfs";
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -101,7 +102,7 @@ export function triggerPdfDownloadModal(pdfUrl: string, title?: string) {
 
 export default function PdfDownloadModal() {
   const [isOpen, setIsOpen] = useState(false);
-  const [pdfUrl, setPdfUrl] = useState<string>("/Proposal.pdf");
+  const [pdfUrl, setPdfUrl] = useState<string>(PDFS.proposal);
   const [documentTitle, setDocumentTitle] = useState<string>(
     "Himalayan Green Energy Expo Proposal (PDF)"
   );
@@ -124,7 +125,7 @@ export default function PdfDownloadModal() {
     const handleOpenModal = (event: Event) => {
       const customEvent = event as CustomEvent<PdfModalEventDetail>;
       if (customEvent.detail) {
-        setPdfUrl(customEvent.detail.pdfUrl || "/Proposal.pdf");
+        setPdfUrl(customEvent.detail.pdfUrl || PDFS.proposal);
         setDocumentTitle(
           customEvent.detail.title || "Himalayan Green Energy Expo Proposal (PDF)"
         );
@@ -176,18 +177,20 @@ export default function PdfDownloadModal() {
   }, []);
 
   const getDownloadMetadata = (url: string) => {
+    const known = findPdfDoc(url);
+    if (known) {
+      return { downloadUrl: known.url, filename: known.filename };
+    }
+
     const lower = url.toLowerCase();
+    if (lower.includes("floor")) {
+      return { downloadUrl: PDF_DOCS.floorPlan.url, filename: PDF_DOCS.floorPlan.filename };
+    }
     if (lower.includes("booking") || (lower.includes("form") && !lower.includes("challenge") && !lower.includes("competition"))) {
-      return {
-        downloadUrl: "/files/booking-form.pdf",
-        filename: "Himalayan-Expo-Stall-Booking-Form.pdf",
-      };
+      return { downloadUrl: PDF_DOCS.bookingForm.url, filename: PDF_DOCS.bookingForm.filename };
     }
     if (lower.includes("sponsor")) {
-      return {
-        downloadUrl: "/files/sponsors-sheet.pdf",
-        filename: "Himalayan-Expo-Sponsorship-Rates-Sheet.pdf",
-      };
+      return { downloadUrl: PDF_DOCS.sponsorsSheet.url, filename: PDF_DOCS.sponsorsSheet.filename };
     }
     if (lower.includes("competition")) {
       return {
@@ -201,10 +204,7 @@ export default function PdfDownloadModal() {
         filename: "Himalayan-Expo-Challenge.pdf",
       };
     }
-    return {
-      downloadUrl: "/files/Proposal.pdf",
-      filename: "Himalayan-Green-Energy-Expo-Proposal.pdf",
-    };
+    return { downloadUrl: PDF_DOCS.proposal.url, filename: PDF_DOCS.proposal.filename };
   };
 
   const lastDownloadRef = useRef<number>(0);
