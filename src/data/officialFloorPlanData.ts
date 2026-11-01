@@ -158,8 +158,8 @@ export const officialStalls: OfficialStall[] = [
   { id: "H7", number: "H7", block: "Special", category: "HYDRO COMPETITION", dimensions: "2m x 2m", sizeSqM: 4, sizeSqFt: 43, priceNPR: 50000, priceUSD: 380, status: "Available", powerIncluded: "5A Single Phase", colorCode: "#A855F7", x: 274, y: 218, width: 12, height: 12, rotation: -60 },
   { id: "H8", number: "H8", block: "Special", category: "HYDRO COMPETITION", dimensions: "2m x 2m", sizeSqM: 4, sizeSqFt: 43, priceNPR: 50000, priceUSD: 380, status: "Available", powerIncluded: "5A Single Phase", colorCode: "#A855F7", x: 282, y: 214, width: 12, height: 12, rotation: -60 },
 
-  { id: "F1", number: "F1", block: "Outdoor", category: "FOOD COURT", dimensions: "6m x 6m", sizeSqM: 36, sizeSqFt: 387, priceNPR: 300000, priceUSD: 2250, status: "Booked", bookedBy: "Himalayan Coffee & Catering", powerIncluded: "16A Single Phase", colorCode: "#EA580C", x: 390, y: 155, width: 28, height: 28, rotation: 0 },
-  { id: "F2", number: "F2", block: "Outdoor", category: "FOOD COURT", dimensions: "6m x 6m", sizeSqM: 36, sizeSqFt: 387, priceNPR: 300000, priceUSD: 2250, status: "Available", powerIncluded: "16A Single Phase", colorCode: "#EA580C", x: 420, y: 155, width: 28, height: 28, rotation: 0 },
+  { id: "F1", number: "F1", block: "Outdoor", category: "FOOD COURT", dimensions: "6m x 6m", sizeSqM: 36, sizeSqFt: 387, priceNPR: 50000, priceUSD: 380, status: "Booked", bookedBy: "Himalayan Coffee & Catering", powerIncluded: "16A Single Phase", colorCode: "#EA580C", x: 390, y: 155, width: 28, height: 28, rotation: 0 },
+  { id: "F2", number: "F2", block: "Outdoor", category: "FOOD COURT", dimensions: "6m x 6m", sizeSqM: 36, sizeSqFt: 387, priceNPR: 50000, priceUSD: 380, status: "Available", powerIncluded: "16A Single Phase", colorCode: "#EA580C", x: 420, y: 155, width: 28, height: 28, rotation: 0 },
 
   { id: "SEMINAR_HALL", number: "SEMINAR HALL", block: "Special", category: "SEMINAR HALL", dimensions: "20m x 40m", sizeSqM: 800, sizeSqFt: 8611, priceNPR: 0, priceUSD: 0, status: "Booked", bookedBy: "Official Plenary & Summit Sessions", powerIncluded: "Main Auditorium AV / Power", colorCode: "#451A03", x: 535, y: 165, width: 180, height: 50, rotation: -7 },
 
@@ -242,6 +242,6 @@ export const officialStalls: OfficialStall[] = [
   // =========================================================================
   // 20 FT X 60 FT BARE SPACE (Olive Gold)
   // =========================================================================
-  { id: "BS1", number: "20 FT X 60 FT - 1", block: "Outdoor", category: "20 FT X 60 FT BARE SPACE", dimensions: "20ft x 60ft", sizeSqM: 111, sizeSqFt: 1200, priceNPR: 875000, priceUSD: 6500, status: "Available", powerIncluded: "3-Phase 63A Heavy Machinery", colorCode: "#854D0E", x: 260, y: 550, width: 95, height: 42, rotation: -30 },
-  { id: "BS2", number: "20 FT X 60 FT - 2", block: "Outdoor", category: "20 FT X 60 FT BARE SPACE", dimensions: "20ft x 60ft", sizeSqM: 111, sizeSqFt: 1200, priceNPR: 875000, priceUSD: 6500, status: "Available", powerIncluded: "3-Phase 63A Heavy Machinery", colorCode: "#854D0E", x: 215, y: 670, width: 42, height: 110, rotation: 0 },
+  { id: "BS1", number: "20 FT X 60 FT - 1", block: "Outdoor", category: "20 FT X 60 FT BARE SPACE", dimensions: "20ft x 60ft", sizeSqM: 111, sizeSqFt: 1200, priceNPR: 1165500, priceUSD: 9435, status: "Available", powerIncluded: "3-Phase 63A Heavy Machinery", colorCode: "#854D0E", x: 260, y: 550, width: 95, height: 42, rotation: -30 },
+  { id: "BS2", number: "20 FT X 60 FT - 2", block: "Outdoor", category: "20 FT X 60 FT BARE SPACE", dimensions: "20ft x 60ft", sizeSqM: 111, sizeSqFt: 1200, priceNPR: 1165500, priceUSD: 9435, status: "Available", powerIncluded: "3-Phase 63A Heavy Machinery", colorCode: "#854D0E", x: 215, y: 670, width: 42, height: 110, rotation: 0 },
 ];
