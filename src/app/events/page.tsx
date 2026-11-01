@@ -1,3 +1,4 @@
+import { PDFS } from "@/lib/pdfs";
 import React from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -331,7 +332,7 @@ export default function EventsPage() {
               </a>
 
               <a
-                href="/files/form.pdf"
+                href={PDFS.bookingForm}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-4 rounded-xl bg-[#F8FAFB] hover:bg-white border border-slate-200 hover:border-[#061A2A] hover:shadow-md transition-all flex flex-col justify-between group"

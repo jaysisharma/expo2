@@ -1,5 +1,6 @@
 'use client';
 
+import { PDFS } from "@/lib/pdfs";
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -110,7 +111,7 @@ export function ConferenceThemesSection() {
 
             {/* Creative Download PDF Button */}
             <a
-              href="/Proposal.pdf"
+              href={PDFS.proposal}
               target="_blank"
               rel="noopener noreferrer"
               className="group inline-flex items-center gap-3 px-6 py-3 rounded-full bg-slate-50 hover:bg-[#007A5E] border border-slate-200 hover:border-[#007A5E] text-slate-800 hover:text-white text-xs font-bold tracking-wider uppercase shadow-2xs hover:shadow-md transition-all duration-200 self-start sm:self-auto shrink-0"

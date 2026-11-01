@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import path from "path";
+import { PDF_DOCS } from "./src/lib/pdfs";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -29,173 +30,24 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // PDFs live only in public/files/. The list in src/lib/pdfs.ts drives both
+  // the rewrites (old short URLs keep working) and the download headers.
   async rewrites() {
-    return [
-      {
-        source: "/Proposal.pdf",
-        destination: "/files/Proposal.pdf",
-      },
-      {
-        source: "/proposal.pdf",
-        destination: "/files/Proposal.pdf",
-      },
-      {
-        source: "/booking-form.pdf",
-        destination: "/files/booking-form.pdf",
-      },
-      {
-        source: "/form.pdf",
-        destination: "/files/booking-form.pdf",
-      },
-      {
-        source: "/sponsors-sheet.pdf",
-        destination: "/files/sponsors-sheet.pdf",
-      },
-      {
-        source: "/sponsor-sheet.pdf",
-        destination: "/files/sponsors-sheet.pdf",
-      },
-    ];
+    return Object.values(PDF_DOCS).flatMap((doc) =>
+      doc.aliases.map((alias) => ({ source: alias, destination: doc.url })),
+    );
   },
   async headers() {
-    return [
-      {
-        source: "/files/Proposal.pdf",
+    return Object.values(PDF_DOCS).flatMap((doc) =>
+      [doc.url, ...doc.aliases].map((source) => ({
+        source,
         headers: [
-          {
-            key: "Content-Disposition",
-            value: 'attachment; filename="Himalayan-Green-Energy-Expo-Proposal.pdf"',
-          },
-          {
-            key: "Content-Type",
-            value: "application/pdf",
-          },
-          {
-            key: "Cache-Control",
-            value: "public, max-age=0, must-revalidate",
-          },
+          { key: "Content-Disposition", value: `attachment; filename="${doc.filename}"` },
+          { key: "Content-Type", value: "application/pdf" },
+          { key: "Cache-Control", value: "public, max-age=0, must-revalidate" },
         ],
-      },
-      {
-        source: "/Proposal.pdf",
-        headers: [
-          {
-            key: "Content-Disposition",
-            value: 'attachment; filename="Himalayan-Green-Energy-Expo-Proposal.pdf"',
-          },
-          {
-            key: "Content-Type",
-            value: "application/pdf",
-          },
-          {
-            key: "Cache-Control",
-            value: "public, max-age=0, must-revalidate",
-          },
-        ],
-      },
-      {
-        source: "/files/booking-form.pdf",
-        headers: [
-          {
-            key: "Content-Disposition",
-            value: 'attachment; filename="Himalayan-Expo-Stall-Booking-Form.pdf"',
-          },
-          {
-            key: "Content-Type",
-            value: "application/pdf",
-          },
-          {
-            key: "Cache-Control",
-            value: "public, max-age=0, must-revalidate",
-          },
-        ],
-      },
-      {
-        source: "/booking-form.pdf",
-        headers: [
-          {
-            key: "Content-Disposition",
-            value: 'attachment; filename="Himalayan-Expo-Stall-Booking-Form.pdf"',
-          },
-          {
-            key: "Content-Type",
-            value: "application/pdf",
-          },
-          {
-            key: "Cache-Control",
-            value: "public, max-age=0, must-revalidate",
-          },
-        ],
-      },
-      {
-        source: "/files/form.pdf",
-        headers: [
-          {
-            key: "Content-Disposition",
-            value: 'attachment; filename="Himalayan-Expo-Stall-Booking-Form.pdf"',
-          },
-          {
-            key: "Content-Type",
-            value: "application/pdf",
-          },
-          {
-            key: "Cache-Control",
-            value: "public, max-age=0, must-revalidate",
-          },
-        ],
-      },
-      {
-        source: "/form.pdf",
-        headers: [
-          {
-            key: "Content-Disposition",
-            value: 'attachment; filename="Himalayan-Expo-Stall-Booking-Form.pdf"',
-          },
-          {
-            key: "Content-Type",
-            value: "application/pdf",
-          },
-          {
-            key: "Cache-Control",
-            value: "public, max-age=0, must-revalidate",
-          },
-        ],
-      },
-      {
-        source: "/files/sponsors-sheet.pdf",
-        headers: [
-          {
-            key: "Content-Disposition",
-            value: 'attachment; filename="Himalayan-Expo-Sponsorship-Rates-Sheet.pdf"',
-          },
-          {
-            key: "Content-Type",
-            value: "application/pdf",
-          },
-          {
-            key: "Cache-Control",
-            value: "public, max-age=0, must-revalidate",
-          },
-        ],
-      },
-      {
-        source: "/sponsors-sheet.pdf",
-        headers: [
-          {
-            key: "Content-Disposition",
-            value: 'attachment; filename="Himalayan-Expo-Sponsorship-Rates-Sheet.pdf"',
-          },
-          {
-            key: "Content-Type",
-            value: "application/pdf",
-          },
-          {
-            key: "Cache-Control",
-            value: "public, max-age=0, must-revalidate",
-          },
-        ],
-      },
-    ];
+      })),
+    );
   },
 };
 

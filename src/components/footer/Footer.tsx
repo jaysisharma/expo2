@@ -1,5 +1,6 @@
 'use client';
 
+import { PDFS } from "@/lib/pdfs";
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -107,18 +108,23 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <a href="/Proposal.pdf" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 transition-colors">
+                <a href={PDFS.proposal} target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 transition-colors">
                   Proposal (PDF)
                 </a>
               </li>
               <li>
-                <a href="/booking-form.pdf" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 transition-colors">
+                <a href={PDFS.bookingForm} target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 transition-colors">
                   Booking Form (PDF)
                 </a>
               </li>
               <li>
-                <a href="/sponsors-sheet.pdf" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 transition-colors">
+                <a href={PDFS.sponsorsSheet} target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 transition-colors">
                   Sponsor Sheet (PDF)
+                </a>
+              </li>
+              <li>
+                <a href={PDFS.floorPlan} target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 transition-colors">
+                  Floor Plan (PDF)
                 </a>
               </li>
             </ul>

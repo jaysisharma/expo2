@@ -1,5 +1,6 @@
 "use client";
 
+import { PDFS } from "@/lib/pdfs";
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -38,7 +39,7 @@ export default function ExpoIntro() {
 
             <div className="pt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
               <a
-                href="/Proposal.pdf"
+                href={PDFS.proposal}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-6 py-3.5 rounded-md bg-[#087EA4] text-white font-mono text-xs font-bold tracking-wider hover:bg-[#061A2A] transition-colors inline-flex items-center justify-center gap-2 shadow-sm"
