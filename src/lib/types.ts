@@ -34,7 +34,7 @@ export interface Speaker {
   title: string;
   organization: string;
   photo: string;
-  category: "Keynote" | "Policy & Government" | "Engineering & Tech" | "Finance & Investment" | "Regional Energy" | "IPPAN Leadership";
+  category: "Keynote" | "Policy & Government" | "Engineering & Tech" | "Finance & Investment" | "Regional Energy" | "IPPAN Leadership" | "IPPAN Secretariat";
   bio: string;
   featured: boolean;
   sessionIds: string[];

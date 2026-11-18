@@ -37,9 +37,9 @@ export function SpeakersSection() {
 
               <Link
                 href="/speakers"
-                className="group inline-flex items-center gap-3 px-6 py-3 rounded-full bg-white hover:bg-[#007A5E] border border-slate-200 hover:border-[#007A5E] text-slate-800 hover:text-white text-xs font-bold tracking-wider uppercase shadow-2xs hover:shadow-md transition-all duration-200 self-start sm:self-auto shrink-0"
+                className="group inline-flex items-center gap-3 px-6 py-3 rounded-full bg-white hover:!bg-[#007A5E] border border-slate-200 hover:!border-[#007A5E] text-slate-800 hover:!text-white text-xs font-bold tracking-wider uppercase shadow-2xs hover:shadow-md transition-all duration-200 self-start sm:self-auto shrink-0"
               >
-                <span>View All Members</span>
+                <span className="text-slate-800 group-hover:!text-white transition-colors duration-200">View All Members</span>
                 <span className="w-6 h-6 rounded-full bg-slate-100 group-hover:bg-white/20 flex items-center justify-center transition-colors">
                   <ArrowUpRight className="w-3.5 h-3.5" />
                 </span>
@@ -104,7 +104,7 @@ export function SpeakersSection() {
                 href="https://eventsolutionnepal.com.np/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group inline-flex items-center gap-3 px-6 py-3 rounded-full bg-white hover:bg-[#007A5E] border border-slate-200 hover:border-[#007A5E] text-slate-800 hover:text-white text-xs font-bold tracking-wider uppercase shadow-2xs hover:shadow-md transition-all duration-200 self-start sm:self-auto shrink-0"
+                className="group inline-flex items-center gap-3 px-6 py-3 rounded-full bg-white hover:!bg-[#007A5E] border border-slate-200 hover:!border-[#007A5E] text-slate-800 hover:!text-white text-xs font-bold tracking-wider uppercase shadow-2xs hover:shadow-md transition-all duration-200 self-start sm:self-auto shrink-0"
               >
                 <span>Visit Event Solution</span>
                 <span className="w-6 h-6 rounded-full bg-slate-100 group-hover:bg-white/20 flex items-center justify-center transition-colors">

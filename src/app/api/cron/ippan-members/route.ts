@@ -4,6 +4,7 @@ import { getAdminSession } from "@/lib/session";
 import {
   assertCompleteCommittee,
   fetchIppanCommittee,
+  fetchIppanSecretariat,
   planIppanSync,
   MAX_AUTO_REMOVALS,
   IPPAN_COMMITTEE_URL,
@@ -19,7 +20,12 @@ async function buildPlan(committee?: IppanCommitteeMember[]) {
   if (!current || current.length === 0) {
     throw new Error("No saved members list yet. Open Admin → Members once so it is saved, then sync.");
   }
-  return planIppanSync(current, committee ? assertCompleteCommittee(committee) : await fetchIppanCommittee());
+  // The secretariat is best effort: if IPPAN's site can't be read, existing staff are left as is
+  const secretariat = await fetchIppanSecretariat().catch((e) => {
+    console.warn("[ippan-members] secretariat not synced:", e.message);
+    return null;
+  });
+  return planIppanSync(current, committee ? assertCompleteCommittee(committee) : await fetchIppanCommittee(), secretariat);
 }
 
 const summary = (plan: Awaited<ReturnType<typeof buildPlan>>) => ({
