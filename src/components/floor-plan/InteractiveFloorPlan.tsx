@@ -286,7 +286,8 @@ export default function InteractiveFloorPlan({
       setActiveMobileStall(stall);
     }
 
-    if (effectiveStatus === "Booked" || stall.category === "SEMINAR HALL") return;
+    const isUnavailable = effectiveStatus === "Booked" || effectiveStatus === "Reserved";
+    if (isUnavailable || stall.category === "SEMINAR HALL") return;
 
     if (onSelectStall) {
       onSelectStall(stall);
@@ -661,6 +662,7 @@ export default function InteractiveFloorPlan({
                   const isPrime = Boolean(override?.isPrime ?? el.isPrime);
                   const isBooked = effectiveStatus === "Booked";
                   const isReserved = effectiveStatus === "Reserved";
+                  const isUnavailable = isBooked || isReserved;
                   const isSelected = isBookable && selectedStalls.some((s) => s.toLowerCase() === stallNumber.toLowerCase() || (el.id && s.toLowerCase() === el.id.toLowerCase()));
                   const isHovered = isBookable && hoveredStall?.id === el.id;
 
@@ -692,7 +694,7 @@ export default function InteractiveFloorPlan({
                     ? "#34D399"
                     : isHovered
                     ? "#FFFFFF"
-                    : isPrime && !isBooked
+                    : isPrime && !isUnavailable
                     ? "#F59E0B"
                     : el.borderColor || "#38BDF8";
 
@@ -722,8 +724,8 @@ export default function InteractiveFloorPlan({
                   return (
                     <g
                       key={el.id}
-                      className={isBookable ? `cursor-pointer pointer-events-auto ${isBooked ? "cursor-not-allowed opacity-60" : "transition-transform hover:opacity-90"}` : ""}
-                      style={{ pointerEvents: isBookable ? "auto" : undefined, cursor: isBookable ? (isBooked ? "not-allowed" : "pointer") : "default" }}
+                      className={isBookable ? `cursor-pointer pointer-events-auto ${isUnavailable ? "cursor-not-allowed opacity-60" : "transition-transform hover:opacity-90"}` : ""}
+                      style={{ pointerEvents: isBookable ? "auto" : undefined, cursor: isBookable ? (isUnavailable ? "not-allowed" : "pointer") : "default" }}
                       onClick={() => isBookable && toggleStall(el)}
                       onMouseEnter={() => {
                         if (typeof window !== "undefined" && window.innerWidth >= 768 && isBookable) {
@@ -744,8 +746,8 @@ export default function InteractiveFloorPlan({
                             ? 0
                             : isSelected
                             ? 0.95
-                            : isBooked
-                            ? 0.6
+                            : isUnavailable
+                            ? 0.65
                             : isHovered
                             ? 0.9
                             : el.fillOpacity ?? (isZone ? 0.45 : 0.85)
@@ -756,13 +758,13 @@ export default function InteractiveFloorPlan({
                         strokeLinecap="round"
                         style={{
                           pointerEvents: isOutline ? "none" : isBookable ? "auto" : undefined,
-                          cursor: isBookable ? (isBooked ? "not-allowed" : "pointer") : "default",
+                          cursor: isBookable ? (isUnavailable ? "not-allowed" : "pointer") : "default",
                         }}
                       />
                       {el.number && !isOutline && (
                         <text
                           x={textCenterX}
-                          y={textCenterY - (el.dimensions && el.width >= 50 && el.height >= 40 ? 5 : 0)}
+                          y={textCenterY}
                           textAnchor="middle"
                           dominantBaseline="central"
                           transform={
@@ -777,27 +779,6 @@ export default function InteractiveFloorPlan({
                           className="select-none pointer-events-none drop-shadow-md"
                         >
                           {isSelected ? `✓ ${stallNumber}` : isPrime ? `★ ${stallNumber}` : stallNumber}
-                        </text>
-                      )}
-                      {el.number && !isOutline && el.dimensions && el.width >= 50 && el.height >= 40 && (
-                        <text
-                          x={textCenterX}
-                          y={textCenterY + 7}
-                          textAnchor="middle"
-                          dominantBaseline="central"
-                          transform={
-                            el.textRotation
-                              ? `rotate(${el.textRotation}, ${textCenterX}, ${textCenterY})`
-                              : undefined
-                          }
-                          fill={el.textColor || "#FFFFFF"}
-                          fillOpacity={0.8}
-                          fontSize={Math.max(6.5, Math.round((el.fontSize || 10) * 0.72))}
-                          fontWeight="normal"
-                          fontFamily="sans-serif"
-                          className="select-none pointer-events-none drop-shadow-sm"
-                        >
-                          {el.dimensions}
                         </text>
                       )}
                     </g>
@@ -878,6 +859,7 @@ export default function InteractiveFloorPlan({
               const isHovered = hoveredStall?.id === el.id;
               const isBooked = effectiveStatus === "Booked";
               const isReserved = effectiveStatus === "Reserved";
+              const isUnavailable = isBooked || isReserved;
 
               const q = searchQuery.toLowerCase().trim();
               const isMatchSearch =
@@ -922,12 +904,12 @@ export default function InteractiveFloorPlan({
                       : isReserved
                       ? "#F59E0B"
                       : el.color || "#0284C7",
-                    opacity: isBooked ? 0.6 : el.fillOpacity ?? 0.85,
+                    opacity: isBooked ? 0.6 : isReserved ? 0.75 : el.fillOpacity ?? 0.85,
                     borderColor: isSelected
                       ? "#34D399"
                       : isHovered
                       ? "#FFFFFF"
-                      : isPrime && !isBooked
+                      : isPrime && !isUnavailable
                       ? "#F59E0B"
                       : el.borderColor || "#38BDF8",
                     borderWidth: isSelected ? "3px" : isHovered ? "2px" : isPrime ? "2.5px" : `${el.strokeWidth || 2}px`,
@@ -937,12 +919,12 @@ export default function InteractiveFloorPlan({
                       ? "0 0 20px rgba(16, 185, 129, 0.8)"
                       : isHovered
                       ? "0 0 15px rgba(255, 255, 255, 0.5)"
-                      : isPrime && !isBooked
+                      : isPrime && !isUnavailable
                       ? "0 0 8px rgba(245, 158, 11, 0.45)"
                       : "none",
                   }}
                   className={`flex flex-col items-center justify-center cursor-pointer transition-all duration-150 z-10 ${
-                    isBooked ? "cursor-not-allowed" : "hover:scale-105"
+                    isUnavailable ? "cursor-not-allowed opacity-75" : "hover:scale-105"
                   } ${isMatchSearch ? "ring-4 ring-amber-400" : ""}`}
                 >
                   <span
@@ -953,11 +935,11 @@ export default function InteractiveFloorPlan({
                       lineHeight: 1.1,
                       transform: combinedTextTransform,
                     }}
-                    className="font-mono drop-shadow-md select-none pointer-events-none inline-block transition-transform text-center"
+                    className="font-mono drop-shadow-md select-none pointer-events-none inline-block whitespace-nowrap transition-transform text-center"
                   >
                     {isSelected ? `✓ ${stallNumber}` : isPrime ? `★ ${stallNumber}` : stallNumber}
                   </span>
-                  {el.dimensions && el.width >= 50 && el.height >= 40 && (
+                  {el.dimensions && el.width >= 70 && el.height >= 60 && (
                     <span
                       style={{
                         transform: combinedTextTransform,
@@ -1049,6 +1031,8 @@ export default function InteractiveFloorPlan({
           const card = stallCardInfo(activeMobileStall);
           const isStallPrime = card.isPrime;
           const isBooked = effectiveStatus === "Booked";
+          const isReserved = effectiveStatus === "Reserved";
+          const isUnavailable = isBooked || isReserved;
           const isSelected = selectedStalls.some((s) => s.toLowerCase() === stallNum.toLowerCase() || (activeMobileStall.id && s.toLowerCase() === activeMobileStall.id.toLowerCase()));
 
           return (
@@ -1108,7 +1092,7 @@ export default function InteractiveFloorPlan({
                     NPR {money(card.totalNPR)} / USD ${money(card.totalUSD)}
                   </div>
                 </div>
-                {!isBooked && activeMobileStall.category !== "SEMINAR HALL" && (
+                {!isUnavailable && activeMobileStall.category !== "SEMINAR HALL" && (
                   <button
                     type="button"
                     onClick={() => {

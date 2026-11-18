@@ -242,7 +242,7 @@ export default function StallBookingWizard() {
 
     const available = elements
       .filter(isActualStall)
-      .filter((el: any) => el.status !== "Booked");
+      .filter((el: any) => el.status !== "Booked" && el.status !== "Reserved");
 
     const allocated: string[] = [];
 
@@ -323,13 +323,13 @@ export default function StallBookingWizard() {
           const num = (el.number || el.id).toLowerCase();
           if (seen.has(num)) return false;
           seen.add(num);
-          return el.status !== "Booked";
+          return el.status !== "Booked" && el.status !== "Reserved";
         })
         .map((el: any) => findStall(el.number || el.id));
     }
 
     return officialStalls
-      .filter((s) => s.status !== "Booked")
+      .filter((s) => s.status !== "Booked" && s.status !== "Reserved")
       .map((s) => findStall(s.number || s.id));
   }, [elements, boothOverrides, primeSurchargePercent]);
 
