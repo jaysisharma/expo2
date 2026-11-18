@@ -14,6 +14,7 @@ export interface IppanCommitteeMember {
   title: string;
   photo: string;
   profileUrl: string;
+  category?: string;
 }
 
 export const decodeHtml = (s: string) =>

@@ -10,6 +10,10 @@ import {
 } from "./ippanCommitteeSource";
 
 export { IPPAN_COMMITTEE_URL, type IppanCommitteeMember };
+export const IPPAN_SECRETARIAT_URL = "https://www.ippan.org.np/secretariat";
+export const SECRETARIAT_CATEGORY = "IPPAN Secretariat";
+// Fewer cards than this on the secretariat page means it failed to load or changed layout
+const MIN_SECRETARIAT_SIZE = 3;
 const IPPAN_ORGANIZATION = "Independent Power Producers' Association, Nepal (IPPAN)";
 // Fewer cards than this means the page failed to load or its layout changed; never sync from it
 const MIN_COMMITTEE_SIZE = 15;
@@ -81,6 +85,19 @@ export async function fetchIppanCommittee(): Promise<IppanCommitteeMember[]> {
   return assertCompleteCommittee(parseIppanCommittee(await page.text()));
 }
 
+/** Secretariat staff from ippan.org.np/secretariat (same card layout as the committee page) */
+export async function fetchIppanSecretariat(): Promise<IppanCommitteeMember[]> {
+  const page = await fetch(IPPAN_SECRETARIAT_URL, {
+    headers: { "User-Agent": "Mozilla/5.0 (compatible; HIGEX-member-sync)", Accept: "text/html" },
+    cache: "no-store",
+    signal: AbortSignal.timeout(20_000),
+  });
+  if (!page.ok) throw new Error(`IPPAN secretariat page returned HTTP ${page.status}`);
+  const staff = parseIppanCommittee(await page.text());
+  if (staff.length < MIN_SECRETARIAT_SIZE) throw new Error(`Only found ${staff.length} secretariat members; page may have changed`);
+  return staff;
+}
+
 const slug = (s: string) => nameKey(s).replace(/ /g, "-");
 
 /**
@@ -88,14 +105,25 @@ const slug = (s: string) => nameKey(s).replace(/ /g, "-");
  * their id, photo, bio, category and featured flag (only the position is updated); new people get
  * the IPPAN photo; people no longer on the page are dropped. Non-IPPAN members are untouched.
  */
-export function planIppanSync(current: any[], committee: IppanCommitteeMember[]): IppanSyncPlan {
+export function planIppanSync(
+  current: any[],
+  executive: IppanCommitteeMember[],
+  secretariat: IppanCommitteeMember[] | null = null
+): IppanSyncPlan {
+  // Committee first; anyone also on the committee is not repeated as secretariat. When the
+  // secretariat page could not be read (null) its existing members are kept as they are.
+  const execKeys = new Set(executive.map((c) => nameKey(c.name)));
+  const staff = (secretariat ?? []).filter((c) => !execKeys.has(nameKey(c.name)));
+  const keptStaff = secretariat === null ? current.filter((m) => m.orgType === "IPPAN" && m.category === SECRETARIAT_CATEGORY && !execKeys.has(nameKey(m.name))) : [];
+  const committee = [...executive, ...staff.map((c) => ({ ...c, category: SECRETARIAT_CATEGORY }))];
   const existing = new Map<string, any>();
   for (const m of current) if (m.orgType === "IPPAN") existing.set(nameKey(m.name), m);
 
   const added: IppanSyncPlan["added"] = [];
   const updated: IppanSyncPlan["updated"] = [];
   const seen = new Set<string>();
-  const ippanMembers = committee.map((c) => {
+  for (const m of keptStaff) seen.add(nameKey(m.name));
+  const ippanMembers = committee.map((c: IppanCommitteeMember) => {
     const key = nameKey(c.name);
     seen.add(key);
     const prev = existing.get(key);
@@ -112,7 +140,7 @@ export function planIppanSync(current: any[], committee: IppanCommitteeMember[])
       organization: IPPAN_ORGANIZATION,
       orgType: "IPPAN",
       photo: c.photo || "/images/committee/mohan-kumar-dangi.webp",
-      category: "IPPAN Leadership",
+      category: c.category || "IPPAN Leadership",
       bio: `${c.title} at ${IPPAN_ORGANIZATION}.`,
       featured: FEATURED_TITLES.some((t) => c.title.toLowerCase().includes(t)),
     };
@@ -126,7 +154,7 @@ export function planIppanSync(current: any[], committee: IppanCommitteeMember[])
   const firstIppan = current.findIndex((m) => m.orgType === "IPPAN");
   const others = current.filter((m) => m.orgType !== "IPPAN");
   const insertAt = firstIppan === -1 ? 0 : current.slice(0, firstIppan).filter((m) => m.orgType !== "IPPAN").length;
-  const members = [...others.slice(0, insertAt), ...ippanMembers, ...others.slice(insertAt)];
+  const members = [...others.slice(0, insertAt), ...ippanMembers, ...keptStaff.map((m) => existing.get(nameKey(m.name)) ?? m), ...others.slice(insertAt)];
 
-  return { members, added, removed, updated, committeeSize: committee.length };
+  return { members, added, removed, updated, committeeSize: executive.length };
 }

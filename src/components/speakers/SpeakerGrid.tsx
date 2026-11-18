@@ -29,12 +29,18 @@ export default function SpeakerGrid({ limit }: { limit?: number }) {
     { key: "PRESIDENCY", label: "President & Vice Presidents" },
     { key: "OFFICERS", label: "Executive Officers & Treasury" },
     { key: "MEMBERS", label: "Executive Members" },
+    { key: "SECRETARIAT", label: "Secretariat" },
   ];
 
   const filteredMembers = useMemo(() => {
     return speakersData.filter((member) => {
       let matchesRole = true;
-      if (selectedRole === "PRESIDENCY") {
+      const isStaff = (member as any).category === "IPPAN Secretariat";
+      if (selectedRole === "SECRETARIAT") {
+        matchesRole = isStaff;
+      } else if (selectedRole !== "ALL" && isStaff) {
+        matchesRole = false;
+      } else if (selectedRole === "PRESIDENCY") {
         matchesRole =
           member.title.includes("President") ||
           member.title.includes("Senior Vice President") ||
