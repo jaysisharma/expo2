@@ -358,6 +358,49 @@ export default function EventsPage() {
             </div>
           </div>
 
+          {/* Section 2.8: Partner & Regional Events */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-xs">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-6 md:gap-8 items-center">
+              <div className="md:col-span-2">
+                <div className="relative aspect-square w-full max-w-sm mx-auto rounded-xl overflow-hidden border border-slate-200 bg-white">
+                  <Image
+                    src="/asean.jpg"
+                    alt="ASEAN Smart Energy & Energy Storage Expo, 17–19 March 2027, IMPACT Exhibition Center, Bangkok"
+                    fill
+                    sizes="(min-width: 768px) 340px, 90vw"
+                    className="object-contain"
+                  />
+                </div>
+              </div>
+
+              <div className="md:col-span-3 space-y-4">
+                <div>
+                  <span className="text-xs font-bold text-[#087EA4] uppercase tracking-wider block mb-1 font-mono">
+                    PARTNER & REGIONAL EVENTS
+                  </span>
+                  <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
+                    ASEAN Smart Energy & Energy Storage Expo
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-600 mt-2">
+                    Continue your clean energy journey in Southeast Asia. Co-located shows cover solar PV, battery
+                    energy storage, wind and biomass energy.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap gap-2 text-xs font-mono">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-100 text-slate-700">
+                    <Calendar className="w-3.5 h-3.5 text-[#087EA4]" />
+                    17–19 March 2027
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-100 text-slate-700">
+                    <MapPin className="w-3.5 h-3.5 text-[#087EA4]" />
+                    IMPACT Exhibition Center, Bangkok
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Section 3: Callout Banner */}
           <div className="bg-[#061A2A] text-white p-8 rounded-2xl border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-6">
             <div>

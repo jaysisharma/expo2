@@ -1,6 +1,6 @@
 import { Hero } from '@/components/hero';
 import { MountainRidgeDivider } from '@/components/ui';
-import { AboutExpoPlatform, WhyParticipateSection, WhoWillYouMeetSection, EventAttractionsSection, GalaDinnerSection, LatestNewsSection } from '@/components/home';
+import { AboutExpoPlatform, WhyParticipateSection, WhoWillYouMeetSection, EventAttractionsSection, GalaDinnerSection, LatestNewsSection, RegionalEventsSection } from '@/components/home';
 import { ExpoJourney, OrganizersSection, InaugurationMomentsSection } from '@/components/story';
 import { ConferenceThemesSection } from '@/components/conference';
 import { SpeakersSection } from '@/components/speakers';
@@ -19,6 +19,12 @@ export default function Home() {
         <div className="relative w-full bg-[#071322] -mt-1 z-10">
           <MountainRidgeDivider fillColor="#ffffff" accentColor="#00E599" />
         </div>
+
+        {/* 01a: Current 2027 Edition Official Partners & Sponsors (Hidden automatically when empty) */}
+        <CurrentPartnersStrip />
+
+        {/* 01b: Official Patronage, Government Endorsements & Previous Partners */}
+        <OfficialPatronsStrip />
 
         {/* 02: About The Expo / Regional Platform */}
         <AboutExpoPlatform />
@@ -50,11 +56,8 @@ export default function Home() {
         {/* 11: Behind The Expo (IPPAN × Event Solution Joint Summit Leadership) */}
         <OrganizersSection />
 
-        {/* 12a: Current 2027 Edition Official Partners & Sponsors (Hidden automatically when empty) */}
-        <CurrentPartnersStrip />
-
-        {/* 12b: Official Patronage, Government Endorsements & Previous Partners */}
-        <OfficialPatronsStrip />
+        {/* 12: Partner & Regional Events (ASEAN Smart Energy Expo) */}
+        <RegionalEventsSection />
 
         {/* 13: Latest News & Events Section */}
         <LatestNewsSection />

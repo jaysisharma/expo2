@@ -6,4 +6,5 @@ export { WhyParticipateSection } from './WhyParticipateSection';
 export { EventAttractionsSection } from './EventAttractionsSection';
 export { HimalayanEcosystemGraphic } from './HimalayanEcosystemGraphic';
 export { LatestNewsSection } from './LatestNewsSection';
+export { RegionalEventsSection } from './RegionalEventsSection';
 export { WhoWillYouMeetSection } from './WhoWillYouMeetSection';
