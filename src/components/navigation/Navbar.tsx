@@ -1,5 +1,6 @@
 'use client';
 
+import { SocialLinks } from '@/components/ui/SocialLinks';
 import { PDFS } from "@/lib/pdfs";
 import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
@@ -657,6 +658,10 @@ export function Navbar() {
                   <span>Book Stall</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
+              </div>
+              <div className="flex items-center justify-between pt-2">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Follow us</span>
+                <SocialLinks />
               </div>
             </div>
           </div>

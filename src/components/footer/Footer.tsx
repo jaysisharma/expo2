@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { CONTACT_DETAILS } from '@/data/contactInfo';
 import { openCookieSettings } from '@/lib/consent';
+import { SocialLinks } from '@/components/ui/SocialLinks';
 
 export function Footer() {
   return (
@@ -43,6 +44,10 @@ export function Footer() {
               <span className="text-slate-600">•</span>
               <span className="text-slate-300">BHRIKUTIMANDAP, KATHMANDU, NEPAL</span>
             </div>
+
+            <SocialLinks
+              className="pt-1"
+            />
 
             <div className="pt-2">
               <span className="text-[11px] font-mono uppercase tracking-wider text-slate-500 block mb-2">
