@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { trackFunnel } from "@/lib/funnel";
 import Link from "next/link";
+import { SocialLinks } from "@/components/ui/SocialLinks";
 import {
   Mail,
   Phone,
@@ -190,6 +191,24 @@ export default function ContactPage() {
                     <p className="text-[11px] text-slate-500 mt-1">
                       Sunday – Friday, 9:00 AM – 6:00 PM NPT
                     </p>
+                  </div>
+                </div>
+
+                {/* Social Media */}
+                <div className="flex items-start gap-4 p-4 rounded-xl bg-white border border-slate-200 shadow-xs">
+                  <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
+                    <MessageSquare className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">
+                      Follow &amp; Message Us
+                    </span>
+                    <p className="text-xs text-slate-600 mt-0.5">
+                      Facebook, Instagram &amp; TikTok — @himalayangreenenergyexpo
+                    </p>
+                    <SocialLinks
+                      className="mt-2.5"
+                    />
                   </div>
                 </div>
 

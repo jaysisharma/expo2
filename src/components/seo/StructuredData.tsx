@@ -1,5 +1,6 @@
 import React from "react";
 import { CONTACT_DETAILS } from "@/data/contactInfo";
+import { SOCIAL_URLS } from "@/data/socials";
 import { EVENT, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 
 /** Renders schema.org JSON-LD so Google and AI assistants understand the page. */
@@ -69,6 +70,7 @@ export function EventStructuredData() {
           name: "Himalayan Green Energy Expo",
           url: SITE_URL,
           logo: `${SITE_URL}/images/logo.webp`,
+          sameAs: SOCIAL_URLS,
           email: CONTACT_DETAILS.emails.expo,
           telephone: CONTACT_DETAILS.mobiles[0].raw,
           address: {
