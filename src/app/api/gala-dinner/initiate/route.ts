@@ -6,6 +6,7 @@ import path from 'path';
 import { attributionFields } from '@/lib/attribution';
 import { addFirebaseInquiry, addFirebaseRegistration, updateFirebaseRegistration } from '@/lib/firebaseDb';
 import { resolveNewOrderId } from '@/lib/orders';
+import { PAYMENT_BANK, PAYMENT_PROOF_EMAIL } from '@/lib/paymentDetails';
 
 export const dynamic = 'force-dynamic';
 
@@ -79,15 +80,9 @@ export async function POST(req: Request) {
       );
     }
 
-    if (passType === 'international') {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Online USD 50 payment is coming soon. Please contact Shrestha.anup101@gmail.com for international registrations.',
-        },
-        { status: 400 }
-      );
-    }
+    // International delegates pay in USD by SWIFT wire to Standard Chartered (lib/paymentDetails)
+    const isIntlDelegate = passType === 'international';
+    const effectivePaymentMethod = isIntlDelegate ? 'bank' : paymentMethod;
 
     const qty = Math.max(1, parseInt(String(quantity), 10) || 1);
     const unitPriceNPR = passType === 'international' ? 6750 : 6000;
@@ -141,8 +136,12 @@ export async function POST(req: Request) {
         dietary,
         specialRequests,
       },
-      paymentMethod,
-      paymentStatus: paymentMethod === 'qr' ? 'PENDING_QR_VERIFICATION' : 'UNPAID',
+      paymentMethod: effectivePaymentMethod,
+      paymentStatus: isIntlDelegate
+        ? 'PENDING_WIRE'
+        : paymentMethod === 'qr'
+          ? 'PENDING_QR_VERIFICATION'
+          : 'UNPAID',
       screenshotUrl: body.screenshotUrl || '',
       checkedIn: false,
       registeredAt: new Date().toISOString(),
@@ -161,7 +160,7 @@ export async function POST(req: Request) {
       email,
       phone,
       company: organization || name,
-      subject: `Networking Dinner Reservation [${qty}x ${passType.toUpperCase()}] - ${paymentMethod.toUpperCase()}`,
+      subject: `Networking Dinner Reservation [${qty}x ${passType.toUpperCase()}] - ${isIntlDelegate ? 'SWIFT WIRE' : paymentMethod.toUpperCase()}`,
       message: `Order: ${orderId}. Pass: ${resolvedPassTitle}. Quantity: ${qty}. Total: NPR ${totalAmountNPR.toLocaleString()} (USD ${totalAmountUSD}). Dietary: ${dietary}. Payment: ${paymentMethod.toUpperCase()}.`,
       stallInterest: 'Networking Dinner (Royal Tulip)',
       status: 'New',
@@ -215,12 +214,34 @@ export async function POST(req: Request) {
                 <strong>Reservation Summary:</strong><br/>
                 &bull; <strong>Pass Category:</strong> ${resolvedPassTitle}<br/>
                 &bull; <strong>Quantity:</strong> ${qty} Delegate Pass(es)<br/>
-                &bull; <strong>Total Amount:</strong> NPR ${totalAmountNPR.toLocaleString()} (Includes 13% VAT: NPR ${vatNPR.toLocaleString()})<br/>
-                &bull; <strong>Payment Method:</strong> ${paymentMethod.toUpperCase()}<br/>
+                &bull; <strong>Total Amount:</strong> ${
+                  isIntlDelegate
+                    ? `USD $${totalAmountUSD.toLocaleString()} (Includes 13% VAT: USD $${vatUSD.toLocaleString()})`
+                    : `NPR ${totalAmountNPR.toLocaleString()} (Includes 13% VAT: NPR ${vatNPR.toLocaleString()})`
+                }<br/>
+                &bull; <strong>Payment Method:</strong> ${isIntlDelegate ? 'SWIFT BANK WIRE (USD)' : paymentMethod.toUpperCase()}<br/>
                 &bull; <strong>Date &amp; Time:</strong> Monday, 18 January 2027 &bull; 6:00 PM onwards<br/>
                 &bull; <strong>Venue:</strong> Royal Tulip Kathmandu (Gwarko)<br/>
                 &bull; <strong>Inclusions:</strong> 5-Star Gourmet Banquet, diplomatic plenary reflections, and complimentary 3-day access badge to the main exhibition at Bhrikuti Mandap.
               </div>
+
+              ${
+                isIntlDelegate
+                  ? `
+              <div style="background-color: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 16px 20px; margin: 18px 0; font-size: 13px; line-height: 1.7;">
+                <strong style="color: #075985;">Pay by SWIFT Bank Wire (USD):</strong><br/>
+                &bull; <strong>Beneficiary:</strong> ${PAYMENT_BANK.beneficiary}<br/>
+                &bull; <strong>Account Number:</strong> ${PAYMENT_BANK.accountNumber}<br/>
+                &bull; <strong>Bank:</strong> ${PAYMENT_BANK.bankName}<br/>
+                &bull; <strong>Branch:</strong> ${PAYMENT_BANK.branch}<br/>
+                &bull; <strong>SWIFT / BIC:</strong> ${PAYMENT_BANK.swift}<br/>
+                &bull; <strong>Amount:</strong> USD $${totalAmountUSD.toLocaleString()}<br/>
+                &bull; <strong>Payment Remarks:</strong> ${orderId}<br/><br/>
+                Please email the SWIFT advice / bank receipt quoting <strong>${orderId}</strong> to
+                <a href="mailto:${PAYMENT_PROOF_EMAIL}" style="color: #0369a1; font-weight: 600;">${PAYMENT_PROOF_EMAIL}</a>. Your pass is issued once the payment is received.
+              </div>`
+                  : ''
+              }
 
               <div style="border-top: 1px solid #e2e8f0; padding-top: 16px; margin-top: 16px; font-size: 13px; color: #475569; line-height: 1.6;">
                 <strong>Secretariat Inquiries:</strong><br/>
@@ -243,7 +264,9 @@ export async function POST(req: Request) {
           from: `"${fromName}" <${smtpUser}>`,
           to: email,
           replyTo: `"Expo Secretariat" <info@eventsolutionnepal.com.np>`,
-          subject: `Networking Dinner Reservation Confirmed [Ref: ${orderId}] | Himalayan Green Energy Expo 2027`,
+          subject: isIntlDelegate
+            ? `Networking Dinner Reservation Received - Payment Pending [Ref: ${orderId}] | Himalayan Green Energy Expo 2027`
+            : `Networking Dinner Reservation Confirmed [Ref: ${orderId}] | Himalayan Green Energy Expo 2027`,
           html: emailHtml,
         }).catch((err) => {
           console.warn("[gala-dinner] Auto-reply send error:", err?.message || err);
@@ -284,7 +307,7 @@ export async function POST(req: Request) {
         paymentMethod: 'bank',
         totalAmountNPR,
         totalAmountUSD,
-        message: 'VIP Networking Dinner pass reservation received. SWIFT Wire / USD Pro-Forma Invoice details provided.',
+        message: 'Networking Dinner reservation received. Pay by SWIFT wire to complete it.',
         redirectUrl: `/payment/success?id=${encodeURIComponent(
           orderId
         )}&gateway=bank&type=gala&amount=${isInternational ? totalAmountUSD : totalAmountNPR}&currency=${isInternational ? 'USD' : 'NPR'}&qty=${qty}&pass=${passType}`,
