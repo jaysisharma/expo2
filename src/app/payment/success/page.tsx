@@ -82,6 +82,15 @@ function PaymentSuccessContent() {
     };
   }, [id]);
   const isVerifiedPaid = orderStatus === "PAID";
+  // hold: 72h free hold · confirmed: payment verified · review: proof received (receipt / QR
+  // screenshot), waiting for the team · pay: nothing received yet, show how to pay + upload
+  const stage: "hold" | "confirmed" | "review" | "pay" = isHold72h
+    ? "hold"
+    : isVerifiedPaid
+    ? "confirmed"
+    : orderStatus === "PROOF_SUBMITTED" || orderStatus === "PENDING_QR_VERIFICATION" || (isQr && orderStatus !== "")
+    ? "review"
+    : "pay";
 
   useEffect(() => {
     if (!isVerifiedPaid && !isHold72h) return;
@@ -95,50 +104,56 @@ function PaymentSuccessContent() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-900 flex flex-col">
-      {/* Top Emerald Header */}
+      {/* Top Header: only the confirmed / hold stages look like a success */}
       <div className="bg-[#04281E] text-white pt-28 sm:pt-32 pb-12 sm:pb-16 px-4 sm:px-6 lg:px-8 border-b border-emerald-500/20">
         <div className="max-w-4xl mx-auto text-center space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/30 text-xs font-mono font-bold text-[#34D399] uppercase shadow-xs">
-            <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
+          <div
+            className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-mono font-bold uppercase shadow-xs ${
+              stage === "confirmed" || stage === "hold"
+                ? "bg-emerald-950/80 border-emerald-500/30 text-[#34D399]"
+                : "bg-amber-950/60 border-amber-400/30 text-amber-300"
+            }`}
+          >
+            <span
+              className={`w-2 h-2 rounded-full animate-pulse ${
+                stage === "confirmed" || stage === "hold" ? "bg-[#10B981]" : "bg-amber-400"
+              }`}
+            />
             <span>
-              {isHold72h
-                ? "72-HOUR FREE HOLD CONFIRMATION"
-                : isVerifiedPaid
+              {stage === "hold"
+                ? "72-HOUR FREE HOLD ACTIVE"
+                : stage === "confirmed"
                 ? isGala
-                  ? "NETWORKING DINNER PASS CONFIRMED"
+                  ? "NETWORKING DINNER SEAT CONFIRMED"
                   : "STALL BOOKING CONFIRMED"
-                : "RESERVATION RECEIVED – NOT CONFIRMED YET"}
+                : stage === "review"
+                ? "PAYMENT UNDER REVIEW – NOT CONFIRMED YET"
+                : "STEP 2 OF 2 – PAYMENT REQUIRED"}
             </span>
           </div>
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white">
-            {isHold72h
-              ? "72-Hour Free Hold Confirmed (Zero Cost)!"
-              : isVerifiedPaid
+            {stage === "hold"
+              ? "72-Hour Free Hold Active (Zero Cost)"
+              : stage === "confirmed"
               ? isGala
-                ? "Payment Verified – Networking Dinner Pass Confirmed!"
-                : "Payment Verified – Stall Booking Confirmed!"
-              : isBank
-              ? isGala
-                ? "Networking Dinner Reservation Received"
-                : "Stall Reservation Received"
-              : "Reservation Received – Payment Being Verified"}
+                ? "Payment Verified – Your Seat Is Confirmed"
+                : "Payment Verified – Stall Booking Confirmed"
+              : stage === "review"
+              ? "We're Verifying Your Payment"
+              : "Complete Your Payment"}
           </h1>
           <p className="text-sm sm:text-base text-emerald-100/80 max-w-xl mx-auto leading-relaxed">
-            {isHold72h
-              ? "Your exclusive 72-hour free hold is officially active! Your reservation has been locked in at zero upfront cost while your organization finalizes internal approvals."
-              : isVerifiedPaid
+            {stage === "hold"
+              ? "Your 72-hour free hold is active at zero upfront cost while your organization finalizes internal approvals."
+              : stage === "confirmed"
               ? isGala
-                ? "Your payment has been verified. Your Networking Dinner pass for Royal Tulip Kathmandu (Gwarko) is confirmed and your entry pass with QR code has been emailed to you."
-                : "Your payment has been verified. Your exhibition booth is now confirmed for the Himalayan Green Energy Expo 2027."
-              : isBank
-              ? isGala
-                ? "Your seats are reserved but not confirmed yet. Complete the bank transfer below; your entry pass is emailed once the payment is received."
-                : "Your booth is reserved but not confirmed yet. Complete the bank transfer below to confirm it."
+                ? "Your Networking Dinner seat at Royal Tulip Kathmandu (Gwarko) is confirmed. Your entry pass with QR code has been emailed to you."
+                : "Your exhibition booth is confirmed for the Himalayan Green Energy Expo 2027."
+              : stage === "review"
+              ? `Your payment proof has been received. Our team will verify it and confirm your ${isGala ? "seat" : "booking"} within 24 hours${isGala ? ", then email your entry pass with QR code" : ""}.`
               : orderStatus === null
-              ? "Checking your payment status…"
-              : isGala
-              ? "Your reservation is saved but NOT confirmed yet. Our team is verifying your payment; once it is verified you'll receive a confirmation email with your entry pass and QR code."
-              : "Your reservation is saved but NOT confirmed yet. Our team is verifying your payment and will email you once it is confirmed."}
+              ? "Checking your booking…"
+              : `Your ${isGala ? "seats are" : "booth is"} reserved but NOT confirmed yet. Pay using the details below and upload your receipt; we confirm within 24 hours of receiving it.`}
           </p>
         </div>
       </div>
@@ -150,9 +165,15 @@ function PaymentSuccessContent() {
             {/* Status Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100">
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-200 text-[#10B981] flex items-center justify-center shrink-0 shadow-xs">
-                  <CheckCircle2 className="w-8 h-8" />
-                </div>
+                {stage === "confirmed" || stage === "hold" ? (
+                  <div className="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-200 text-[#10B981] flex items-center justify-center shrink-0 shadow-xs">
+                    <CheckCircle2 className="w-8 h-8" />
+                  </div>
+                ) : (
+                  <div className="w-14 h-14 rounded-2xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center shrink-0 shadow-xs">
+                    <Clock className="w-8 h-8" />
+                  </div>
+                )}
                 <div>
                   <span className="text-[11px] font-mono text-slate-500 font-bold uppercase tracking-wider">
                     BOOKING REFERENCE NUMBER
@@ -192,15 +213,36 @@ function PaymentSuccessContent() {
               </div>
             </div>
 
-            {/* Email Confirmation Notice */}
-            <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 flex items-center gap-2.5">
-              <Mail className="w-4 h-4 text-emerald-700 shrink-0" />
-              <span>
-                {isVerifiedPaid
-                  ? "A confirmation email with your booking details has been sent to your registered email address."
-                  : "We've emailed your reservation details to your registered email address. This is not a ticket or confirmation yet."}
-              </span>
-            </div>
+            {/* Stage-specific next step: pay + upload, waiting for verification, or confirmed */}
+            {stage === "pay" && (isBank || isGala) && (
+              <PaymentInstructions
+                bookingRef={id}
+                stalls={isGala ? undefined : stalls}
+                amountNPR={currency === "NPR" && amount ? Number(amount) || undefined : undefined}
+                amountUSD={currency === "USD" && amount ? Number(amount) || undefined : undefined}
+                international={currency === "USD"}
+                kind={isGala ? "ticket" : "stall"}
+                title="Pay Now and Upload Your Receipt"
+                onReceiptUploaded={() => setOrderStatus("PROOF_SUBMITTED")}
+              />
+            )}
+            {stage === "review" && (
+              <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-start gap-2.5">
+                <Clock className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+                <span>
+                  <strong>Not confirmed yet.</strong> We&apos;ve received your payment proof and will confirm within 24 hours.
+                  {isGala
+                    ? " Your entry pass with QR code is emailed once the payment is verified; unpaid reservations are not admitted."
+                    : " You'll get a confirmation email once the payment is verified."}
+                </span>
+              </div>
+            )}
+            {stage === "confirmed" && (
+              <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 flex items-center gap-2.5">
+                <Mail className="w-4 h-4 text-emerald-700 shrink-0" />
+                <span>A confirmation email with your booking details has been sent to your registered email address.</span>
+              </div>
+            )}
 
             {/* Receipt Summary Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-5 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-mono">
@@ -343,15 +385,15 @@ function PaymentSuccessContent() {
             )}
 
             {/* Payment instructions: NepalPay QR (NPR) or SWIFT wire (USD) */}
-            {(isBank || isHold72h) && (
+            {stage === "hold" && (
               <PaymentInstructions
                 bookingRef={id}
                 stalls={isGala ? undefined : stalls}
                 amountNPR={currency === "NPR" && amount ? Number(amount) || undefined : undefined}
                 amountUSD={currency === "USD" && amount ? Number(amount) || undefined : undefined}
                 international={currency === "USD"}
-                title={isHold72h ? "Ready to Confirm? Pay Within 72 Hours" : "Complete Your Payment"}
-                allowReceiptUpload={!isGala}
+                title="Ready to Confirm? Pay Within 72 Hours"
+                onReceiptUploaded={() => setOrderStatus("PROOF_SUBMITTED")}
               />
             )}
 
@@ -439,16 +481,20 @@ function PaymentSuccessContent() {
                 className="px-5 py-3 rounded-full bg-white border border-slate-300 hover:border-[#218A59] text-slate-800 font-mono text-xs font-bold transition-all flex items-center gap-2 shadow-xs cursor-pointer"
               >
                 <Download className="w-4 h-4 text-[#218A59]" />
-                <span>PRINT / SAVE CONFIRMATION</span>
+                <span>
+                  {stage === "confirmed" ? "PRINT / SAVE CONFIRMATION" : stage === "hold" ? "PRINT / SAVE HOLD DETAILS" : "PRINT / SAVE PAYMENT DETAILS"}
+                </span>
               </button>
 
               <div className="flex items-center gap-2">
-                <Link
-                  href="/book-stall"
-                  className="px-5 py-3 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-mono text-xs font-bold transition-colors"
-                >
-                  Floor Plan Map
-                </Link>
+                {!isGala && (
+                  <Link
+                    href="/book-stall"
+                    className="px-5 py-3 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-mono text-xs font-bold transition-colors"
+                  >
+                    Floor Plan Map
+                  </Link>
+                )}
                 <Link
                   href="/"
                   className="px-6 py-3 rounded-full bg-[#218A59] hover:bg-[#186a43] text-white font-mono text-xs font-bold transition-all shadow-md flex items-center gap-1.5"

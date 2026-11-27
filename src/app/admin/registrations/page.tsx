@@ -494,7 +494,11 @@ export default function AdminRegistrationsPage() {
                                 : "bg-amber-50 text-amber-800 border-amber-200"
                             }`}
                           >
-                            {reg.paymentStatus === "PAID" ? "PAID" : `UNPAID · ${reg.paymentStatus || "pending"}`}
+                            {reg.paymentStatus === "PAID"
+                              ? "PAID"
+                              : reg.paymentStatus === "PROOF_SUBMITTED" || reg.paymentStatus === "PENDING_QR_VERIFICATION"
+                              ? "RECEIPT IN · VERIFY"
+                              : `UNPAID · ${reg.paymentStatus || "pending"}`}
                           </span>
                           {reg.screenshotUrl && (
                             <a
@@ -504,6 +508,16 @@ export default function AdminRegistrationsPage() {
                               className="text-[10px] font-semibold text-[#234679] hover:underline"
                             >
                               Payment screenshot
+                            </a>
+                          )}
+                          {Array.isArray(reg.receipts) && reg.receipts.length > 0 && (
+                            <a
+                              href={reg.receipts[reg.receipts.length - 1].url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[10px] font-semibold text-[#234679] hover:underline"
+                            >
+                              Receipt{reg.receipts.length > 1 ? ` (${reg.receipts.length})` : ""}
                             </a>
                           )}
                           {reg.paymentStatus !== "PAID" && (
