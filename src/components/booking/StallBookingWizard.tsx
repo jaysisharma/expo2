@@ -8,6 +8,7 @@ import savedFloorPlanFallback from "@/data/savedCustomFloorPlan.json";
 import InteractiveFloorPlan from "@/components/floor-plan/InteractiveFloorPlan";
 import confetti from "canvas-confetti";
 import PaymentInstructions from "./PaymentInstructions";
+import { effectiveStallStatus, findOverride, isStatusTaken } from "@/lib/stallAvailability";
 import {
   CheckCircle2,
   ArrowRight,
@@ -169,6 +170,9 @@ export default function StallBookingWizard() {
   // Stall details & price — shared with the server so the charged amount matches what's shown
   const pricingInputs = { elements, boothOverrides, primeSurchargePercent };
   const findStall = (num: string) => resolveStall(num, pricingInputs);
+  // A stall is free unless the admin override or floor plan marks it booked/reserved/held
+  const isStallFree = (el: { number?: string; id?: string; status?: string }) =>
+    !isStatusTaken(effectiveStallStatus(findOverride(boothOverrides, el.number, el.id), el.status));
 
   // Aggregate selected stalls metadata using Admin-configured details
   const selectedStallObjects = selectedBoothNumbers.map(findStall);
@@ -261,7 +265,7 @@ export default function StallBookingWizard() {
 
     const available = elements
       .filter(isActualStall)
-      .filter((el: any) => el.status !== "Booked" && el.status !== "Reserved");
+      .filter((el: any) => isStallFree(el));
 
     const allocated: string[] = [];
 
@@ -342,13 +346,13 @@ export default function StallBookingWizard() {
           const num = (el.number || el.id).toLowerCase();
           if (seen.has(num)) return false;
           seen.add(num);
-          return el.status !== "Booked" && el.status !== "Reserved";
+          return isStallFree(el);
         })
         .map((el: any) => findStall(el.number || el.id));
     }
 
     return officialStalls
-      .filter((s) => s.status !== "Booked" && s.status !== "Reserved")
+      .filter((s) => isStallFree(s))
       .map((s) => findStall(s.number || s.id));
   }, [elements, boothOverrides, primeSurchargePercent]);
 
@@ -476,6 +480,19 @@ export default function StallBookingWizard() {
           }),
         });
         const data = await response.json();
+        if (response.status === 409 && Array.isArray(data.takenStalls)) {
+          // Someone else got there first: drop those stalls, mark them taken and go back to the map
+          const takenLower = new Set<string>(data.takenStalls.map((s: string) => s.toLowerCase()));
+          setSelectedBoothNumbers((prev) => prev.filter((s) => !takenLower.has(s.toLowerCase())));
+          setBoothOverrides((prev) => {
+            const next = { ...prev };
+            for (const s of data.takenStalls as string[]) next[s] = { ...(next[s] || {}), status: "Reserved" };
+            return next;
+          });
+          setStep(1);
+          setFormError(data.error);
+          return;
+        }
         if (!response.ok || !data.success) {
           throw new Error(data.error || "Failed to submit your reservation. Please try again.");
         }
