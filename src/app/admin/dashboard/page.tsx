@@ -26,6 +26,7 @@ import {
   AlertCircle,
   FileSpreadsheet,
   Wallet,
+  FileText,
 } from "lucide-react";
 import { exhibitorsData } from "@/data/exhibitors";
 import { conferenceSessionsData } from "@/data/conference";
@@ -141,6 +142,7 @@ export default function AdminDashboardPage() {
   const checkInRate = registrations.length ? Math.round((checkedInCount / registrations.length) * 100) : 0;
   const newInquiries = inquiries.filter((i: any) => i.status === "New").length;
   const pendingPayments = stallBookings.filter((b: any) => /pending|initiated/i.test(`${b.paymentStatus || b.status || ""}`)).length;
+  const receiptsToVerify = stallBookings.filter((b: any) => b.paymentStatus === "PROOF_SUBMITTED").length;
   const sponsorCount = (Array.isArray(data?.sponsors) && data.sponsors.length ? data.sponsors : sponsorsData).reduce(
     (acc: number, cat: any) => acc + (cat.sponsors?.length || 0),
     0
@@ -213,6 +215,12 @@ export default function AdminDashboardPage() {
   };
 
   const attention = [
+    receiptsToVerify > 0 && {
+      key: "receipts",
+      href: "/admin/dashboard",
+      icon: FileText,
+      text: `${receiptsToVerify} payment ${receiptsToVerify === 1 ? "receipt" : "receipts"} uploaded, waiting to be verified (set the stall to Booked once paid)`,
+    },
     newInquiries > 0 && {
       key: "inquiries",
       href: "/admin/inquiries",
@@ -475,6 +483,18 @@ export default function AdminDashboardPage() {
                   </div>
 
                   <div className="flex items-center gap-1.5 shrink-0">
+                    {kind === "booking" && Array.isArray(raw.receipts) && raw.receipts.length > 0 && (
+                      <a
+                        href={raw.receipts[raw.receipts.length - 1].url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title={`${raw.receipts.length} receipt(s) uploaded`}
+                        className="px-2.5 py-1 rounded-lg text-[11px] font-medium border bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 flex items-center gap-1"
+                      >
+                        <FileText className="w-3 h-3" />
+                        Receipt{raw.receipts.length > 1 ? ` (${raw.receipts.length})` : ""}
+                      </a>
+                    )}
                     {kind === "registration" && (
                       <button
                         onClick={() => handleToggleCheckin(raw.id, raw.checkedIn)}
