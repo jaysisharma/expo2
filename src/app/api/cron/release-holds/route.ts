@@ -26,7 +26,8 @@ const isExpired = (holdExpiresAt: unknown, now: number) => {
 
 // GET: run by the Vercel cron (see vercel.json), authorised with CRON_SECRET.
 // Releases stalls and sponsorship packages whose 72-hour free hold has expired, and
-// "Book" reservations still unpaid after their payment deadline (RESERVATION_PAYMENT_DAYS).
+// "Book" reservations still unpaid after their payment window (BOOKING_PAYMENT_MINUTES).
+// Expired windows already count as free (lib/stallAvailability); this tidies the records.
 // Admins can call it too: it previews what would be released; add ?apply=1 to release now.
 export async function GET(req: Request) {
   const cronSecret = process.env.CRON_SECRET;

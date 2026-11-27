@@ -129,8 +129,11 @@ export async function POST(req: Request) {
         <h2 style="margin: 0 0 8px; font-size: 18px; color: #065f46;">We've received your payment receipt</h2>
         <p style="font-size: 14px;">Dear ${esc(booking.contactPerson || company)},</p>
         <p style="font-size: 14px;">Thank you. Your payment receipt for booking <strong>${esc(bookingId)}</strong> has been received.
-        Your stall(s) stay reserved in your name while our team verifies the payment, which usually takes 1–2 working days.
-        You'll get a confirmation email once it is verified.</p>
+        ${
+          lost.length > 0
+            ? `Your reservation time had run out and stall ${esc(lost.join(", "))} is no longer held for you. Our team will check your payment and contact you about your stall within 1–2 working days.`
+            : "Your stall(s) stay reserved in your name while our team verifies the payment, which usually takes 1–2 working days. Your booking is confirmed once the payment is verified, and you'll get a confirmation email then."
+        }</p>
         <table style="border-collapse: collapse; font-size: 13px; margin: 12px 0;">
           <tr><td style="padding: 5px 10px; border: 1px solid #e2e8f0; background: #f8fafc; font-weight: 600;">Reference</td><td style="padding: 5px 10px; border: 1px solid #e2e8f0;">${esc(bookingId)}</td></tr>
           <tr><td style="padding: 5px 10px; border: 1px solid #e2e8f0; background: #f8fafc; font-weight: 600;">Stalls</td><td style="padding: 5px 10px; border: 1px solid #e2e8f0;">${esc(stallList)}</td></tr>
@@ -146,7 +149,7 @@ export async function POST(req: Request) {
         <h2 style="margin: 0 0 6px; font-size: 18px;">Payment receipt uploaded: ${esc(company)} (Stall ${esc(stallList)})</h2>
         ${
           lost.length > 0
-            ? `<p style="margin: 8px 0; padding: 10px 12px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; font-size: 13px; color: #991b1b;"><strong>Check before confirming:</strong> stall ${esc(lost.join(", "))} is no longer reserved for this booking (its hold or deadline expired and it was released). Re-assign it in admin if the payment is valid.</p>`
+            ? `<p style="margin: 8px 0; padding: 10px 12px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; font-size: 13px; color: #991b1b;"><strong>Check before confirming:</strong> stall ${esc(lost.join(", "))} is no longer reserved for this booking (its hold or 10-minute payment window expired and it was released or taken). Re-assign it in admin if the payment is valid.</p>`
             : ""
         }
         <table style="border-collapse: collapse; font-size: 13px; width: 100%;">
@@ -185,7 +188,7 @@ export async function POST(req: Request) {
       ]);
     });
 
-    return NextResponse.json({ success: true, receiptCount: receipts.length + 1 });
+    return NextResponse.json({ success: true, receiptCount: receipts.length + 1, stallsLost: lost });
   } catch (error: any) {
     console.error("[receipt] Upload failed:", error);
     return bad("Upload failed. Please try again in a moment.", 500);

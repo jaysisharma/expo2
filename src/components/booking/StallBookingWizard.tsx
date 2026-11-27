@@ -8,7 +8,8 @@ import savedFloorPlanFallback from "@/data/savedCustomFloorPlan.json";
 import InteractiveFloorPlan from "@/components/floor-plan/InteractiveFloorPlan";
 import confetti from "canvas-confetti";
 import PaymentInstructions from "./PaymentInstructions";
-import { effectiveStallStatus, findOverride, isStatusTaken, RESERVATION_PAYMENT_DAYS } from "@/lib/stallAvailability";
+import { effectiveStallStatus, findOverride, isStatusTaken, BOOKING_PAYMENT_MINUTES } from "@/lib/stallAvailability";
+import PaymentCountdown from "./PaymentCountdown";
 import {
   CheckCircle2,
   ArrowRight,
@@ -127,8 +128,13 @@ export default function StallBookingWizard() {
   const [perksModalPackageId, setPerksModalPackageId] = useState<string | null>(null);
 
   const [bookingRef, setBookingRef] = useState<string>("");
-  // "hold" = free 72-hour hold on the stalls, "book" = online booking, paid within RESERVATION_PAYMENT_DAYS
+  // "hold" = free 72-hour hold on the stalls, "book" = stall held BOOKING_PAYMENT_MINUTES while they pay
+  // and upload a receipt; not confirmed until the team verifies the payment
   const [reservationType, setReservationType] = useState<"book" | "hold">("book");
+  // "Book" payment window: ends at paymentDueBy unless a receipt is uploaded first
+  const [paymentDueBy, setPaymentDueBy] = useState<string>("");
+  const [paymentWindowExpired, setPaymentWindowExpired] = useState(false);
+  const [receiptResult, setReceiptResult] = useState<{ stallsLost: string[] } | null>(null);
 
   // Load custom elements configured from Admin Floor Plan Studio & overrides
   const [elements, setElements] = useState<any[]>(
@@ -467,10 +473,10 @@ export default function StallBookingWizard() {
         trackFunnel("stall_booking", "submit");
         const finalRef: string = data.bookingId || ref;
         setBookingRef(finalRef);
-        confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
 
         if (isHold) {
           // Stalls are now on a 72-hour hold in the exhibitor's name
+          confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
           if (data.redirectUrl) {
             router.push(data.redirectUrl);
             return;
@@ -480,7 +486,14 @@ export default function StallBookingWizard() {
           return;
         }
 
-        // Booking: saved in admin panel; show the confirmation and payment details
+        // Booking: stall held for the payment window; show the timer and payment details
+        setPaymentDueBy(
+          typeof data.paymentDueBy === "string"
+            ? data.paymentDueBy
+            : new Date(Date.now() + BOOKING_PAYMENT_MINUTES * 60 * 1000).toISOString()
+        );
+        setPaymentWindowExpired(false);
+        setReceiptResult(null);
         setStep(4);
       } catch (err: any) {
         console.error("Reservation error:", err);
@@ -623,7 +636,9 @@ export default function StallBookingWizard() {
               ? "SELECT STALL(S)"
               : step === 2
                 ? "ORGANIZATION DETAILS"
-                : "CONFIRMED"}
+                : reservationType === "hold"
+                    ? "HOLD CONFIRMED"
+                    : "PAYMENT"}
           </span>
           <span>{Math.round((displayStep / 3) * 100)}% COMPLETED</span>
         </div>
@@ -1520,7 +1535,7 @@ export default function StallBookingWizard() {
                 {
                   value: "book" as const,
                   title: "Book Stall",
-                  desc: `Reserve the stall now and pay within ${RESERVATION_PAYMENT_DAYS} days by QR or bank transfer. Unpaid reservations are released.`,
+                  desc: `We hold the stall for ${BOOKING_PAYMENT_MINUTES} minutes while you pay by QR or bank transfer and upload the receipt. Confirmed once payment is verified.`,
                   Icon: Mail,
                 },
                 {
@@ -1557,6 +1572,12 @@ export default function StallBookingWizard() {
                 );
               })}
             </div>
+            {exhibitorOrigin === "international" && reservationType === "book" && (
+              <p className="text-[11.5px] text-sky-800 bg-sky-50 border border-sky-200 rounded-lg px-3 py-2 leading-relaxed">
+                Paying by international bank wire? A SWIFT transfer usually can&apos;t be completed in {BOOKING_PAYMENT_MINUTES} minutes,
+                so choose <strong>Hold for 72 Hours</strong> instead.
+              </p>
+            )}
           </div>
 
           {/* Exhibitor Classification: Domestic vs International */}
@@ -1992,26 +2013,19 @@ export default function StallBookingWizard() {
          ========================================================================= */}
       {step === 4 && (
         <div className="text-center py-8 space-y-6">
-          <div className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-300 text-[#059669] flex items-center justify-center mx-auto shadow-xs">
-            {paymentMethod === "hold_72h" ? (
-              <Clock className="w-9 h-9 text-emerald-600" />
-            ) : (
-              <CheckCircle2 className="w-10 h-10" />
-            )}
-          </div>
-
-          <div>
-            <span className="font-mono text-xs text-[#059669] tracking-widest uppercase font-bold">
-              {paymentMethod === "hold_72h"
-                ? "72-HOUR FREE HOLD CONFIRMED"
-                : "STALL RESERVATION SUBMITTED"}
-            </span>
-            <h3 className="font-sans font-bold text-3xl text-slate-900 mt-1">
-              Thank You, {formData.companyName || "Partner"}!
-            </h3>
-            <p className="text-xs sm:text-sm text-slate-600 font-normal mt-2 max-w-md mx-auto leading-relaxed">
-              {paymentMethod === "hold_72h" ? (
-                <>
+          {paymentMethod === "hold_72h" ? (
+            <>
+              <div className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-300 text-[#059669] flex items-center justify-center mx-auto shadow-xs">
+                <Clock className="w-9 h-9 text-emerald-600" />
+              </div>
+              <div>
+                <span className="font-mono text-xs text-[#059669] tracking-widest uppercase font-bold">
+                  72-HOUR FREE HOLD CONFIRMED
+                </span>
+                <h3 className="font-sans font-bold text-3xl text-slate-900 mt-1">
+                  Thank You, {formData.companyName || "Partner"}!
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 font-normal mt-2 max-w-md mx-auto leading-relaxed">
                   Your <strong>72-Hour Free Hold</strong> for{" "}
                   <strong>
                     {selectedPackage && selectedPackage.id !== "custom-selection"
@@ -2020,14 +2034,76 @@ export default function StallBookingWizard() {
                   </strong>{" "}
                   is locked in at zero cost today.
                   Our exhibition team will contact you within 24 hours with details and wire invoice.
-                </>
-              ) : (
-                <>
-                  Your booking for <strong>STALL {selectedBoothNumbers.join(", ")}</strong> is confirmed and reserved in your name for <strong>{RESERVATION_PAYMENT_DAYS} days</strong>. Pay using the details below to secure it, otherwise it is released for other exhibitors. A confirmation email has been sent to <strong>{formData.email}</strong>.
-                </>
+                </p>
+              </div>
+            </>
+          ) : receiptResult ? (
+            <div>
+              <div className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-300 text-[#059669] flex items-center justify-center mx-auto shadow-xs">
+                <CheckCircle2 className="w-10 h-10" />
+              </div>
+              <span className="block mt-3 font-mono text-xs text-[#059669] tracking-widest uppercase font-bold">
+                RECEIPT RECEIVED – AWAITING VERIFICATION
+              </span>
+              <h3 className="font-sans font-bold text-3xl text-slate-900 mt-1">
+                Thank You, {formData.companyName || "Partner"}!
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-600 font-normal mt-2 max-w-md mx-auto leading-relaxed">
+                {receiptResult.stallsLost.length > 0 ? (
+                  <>
+                    Your reservation time had run out and stall <strong>{receiptResult.stallsLost.join(", ")}</strong> is no longer held for you.
+                    Our team will check your payment and contact you about your stall.
+                  </>
+                ) : (
+                  <>
+                    <strong>STALL {selectedBoothNumbers.join(", ")}</strong> stays reserved for you while our team verifies the payment
+                    (usually 1–2 working days). Your booking is confirmed once the payment is verified; we&apos;ve emailed you at{" "}
+                    <strong>{formData.email}</strong>.
+                  </>
+                )}
+              </p>
+            </div>
+          ) : paymentWindowExpired ? (
+            <div className="max-w-md mx-auto space-y-3">
+              <span className="block font-mono text-xs text-rose-700 tracking-widest uppercase font-bold">
+                RESERVATION TIME EXPIRED
+              </span>
+              <h3 className="font-sans font-bold text-2xl text-slate-900">Your stall hold has ended</h3>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                <strong>STALL {selectedBoothNumbers.join(", ")}</strong> was not paid for within {BOOKING_PAYMENT_MINUTES} minutes and has been
+                released. If you have already paid, upload the receipt below and our team will contact you. Otherwise you can start again.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setStep(1);
+                  setBookingRef("");
+                  setPaymentDueBy("");
+                  setPaymentWindowExpired(false);
+                }}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#007A5E] hover:bg-[#00664e] text-white font-mono text-xs font-bold cursor-pointer"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>START AGAIN</span>
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <span className="block font-mono text-xs text-amber-700 tracking-widest uppercase font-bold">
+                NOT CONFIRMED YET – PAYMENT PENDING
+              </span>
+              <h3 className="font-sans font-bold text-2xl sm:text-3xl text-slate-900">
+                Complete your payment within {BOOKING_PAYMENT_MINUTES} minutes
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-600 font-normal max-w-lg mx-auto leading-relaxed">
+                We&apos;re holding <strong>STALL {selectedBoothNumbers.join(", ")}</strong> for you. Pay by QR or bank transfer and
+                upload your receipt before the timer runs out. If no receipt arrives in time, the stall is released for other exhibitors.
+              </p>
+              {paymentDueBy && (
+                <PaymentCountdown dueBy={paymentDueBy} onExpire={() => setPaymentWindowExpired(true)} />
               )}
-            </p>
-          </div>
+            </div>
+          )}
 
           <div className="inline-block p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-900 font-bold">
             REFERENCE ID: {bookingRef}
@@ -2042,7 +2118,13 @@ export default function StallBookingWizard() {
                 amountUSD={totalWithVatUSD}
                 international={exhibitorOrigin === "international"}
                 email={formData.email.trim()}
-                title={paymentMethod === "hold_72h" ? "Ready to Confirm? Pay Within 72 Hours" : "Pay Now to Confirm Your Stall"}
+                title={paymentMethod === "hold_72h" ? "Ready to Confirm? Pay Within 72 Hours" : "Pay Now and Upload Your Receipt"}
+                onReceiptUploaded={(result) => {
+                  setReceiptResult(result);
+                  if (result.stallsLost.length === 0) {
+                    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                  }
+                }}
               />
             </div>
           )}
@@ -2059,15 +2141,17 @@ export default function StallBookingWizard() {
             </div>
           )}
 
+          {(paymentMethod === "hold_72h" || receiptResult) && (
           <div className="pt-4 flex flex-wrap justify-center gap-4">
             <button
               onClick={() => window.print()}
               className="px-6 py-3.5 rounded-full bg-white text-slate-900 font-mono text-xs font-bold border border-slate-300 hover:border-[#218A59] transition-all flex items-center gap-2 shadow-xs cursor-pointer"
             >
               <Download className="w-4 h-4 text-[#218A59]" />
-              <span>DOWNLOAD BOOKING CONFIRMATION</span>
+              <span>{paymentMethod === "hold_72h" ? "DOWNLOAD HOLD CONFIRMATION" : "DOWNLOAD RECEIPT ACKNOWLEDGEMENT"}</span>
             </button>
           </div>
+          )}
         </div>
       )}
 
@@ -2126,7 +2210,7 @@ export default function StallBookingWizard() {
                       {step === 2
                         ? reservationType === "hold"
                           ? "HOLD STALL FOR 72 HOURS (NPR 0)"
-                          : "CONFIRM BOOKING"
+                          : `BOOK & PAY NOW (${BOOKING_PAYMENT_MINUTES} MIN)`
                         : step === 3
                         ? paymentMethod === "hold_72h"
                           ? "CONFIRM 72-HOUR FREE HOLD (NPR 0)"
