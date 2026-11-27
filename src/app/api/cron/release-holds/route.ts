@@ -15,6 +15,9 @@ import { HOLD_STATUS } from "@/lib/stallAvailability";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
+// "PENDING_EMAIL_CONFIRMATION" is what bookings made before the online flow were saved as
+const UNPAID_BOOKING_STATUSES = new Set(["PENDING_PAYMENT", "PENDING_EMAIL_CONFIRMATION"]);
+
 const isExpired = (holdExpiresAt: unknown, now: number) => {
   if (typeof holdExpiresAt !== "string" || !holdExpiresAt) return false;
   const t = Date.parse(holdExpiresAt);
@@ -61,7 +64,7 @@ export async function GET(req: Request) {
     const overdueRefs = [...new Set(overdueReservations.map((r) => r.bookingRef).filter((r): r is string => Boolean(r)))];
     const overdueBookings = new Map<string, any>();
     for (const ref of overdueRefs) overdueBookings.set(ref, await getFirebaseStallBooking(ref));
-    const isUnpaid = (ref?: string) => !!ref && overdueBookings.get(ref)?.paymentStatus === "PENDING_EMAIL_CONFIRMATION";
+    const isUnpaid = (ref?: string) => !!ref && UNPAID_BOOKING_STATUSES.has(overdueBookings.get(ref)?.paymentStatus);
     const unpaidReservations = overdueReservations.filter((r) => isUnpaid(r.bookingRef));
     const settledReservations = overdueReservations.filter((r) => !isUnpaid(r.bookingRef));
 
