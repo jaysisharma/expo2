@@ -54,6 +54,9 @@ import { PARTICIPATION_PACKAGES, type StallPackage } from "@/data/participationP
 import { quoteBooking, resolveStall, isActualStall } from "@/lib/stallPricing";
 export { PARTICIPATION_PACKAGES, type StallPackage };
 
+const RESERVATION_EMAIL_TO = "Shrestha.anup101@gmail.com";
+const RESERVATION_EMAIL_CC = "info@himalayanenergyexpo.com";
+
 export default function StallBookingWizard() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -113,6 +116,9 @@ export default function StallBookingWizard() {
   const [perksModalPackageId, setPerksModalPackageId] = useState<string | null>(null);
 
   const [bookingRef, setBookingRef] = useState<string>("");
+  const [reservationMailto, setReservationMailto] = useState<string>("");
+  // "hold" = free 72-hour hold on the stalls, "book" = booking request confirmed by email
+  const [reservationType, setReservationType] = useState<"book" | "hold">("book");
 
   // Load custom elements configured from Admin Floor Plan Studio & overrides
   const [elements, setElements] = useState<any[]>(
@@ -174,6 +180,7 @@ export default function StallBookingWizard() {
     if (queryHold && !hasFastTrackedRef.current) {
       hasFastTrackedRef.current = true;
       setPaymentMethod("hold_72h");
+      setReservationType("hold");
       setStep(2);
     }
   }, [queryHold]);
@@ -344,6 +351,35 @@ export default function StallBookingWizard() {
     });
   };
 
+  const buildReservationMailto = (ref: string) => {
+    const resolvedIndustry =
+      formData.industryCategory === "Other" ? customIndustry.trim() : formData.industryCategory;
+    const packageLine =
+      selectedPackage && selectedPackage.id !== "custom-selection" ? `Package: ${selectedPackage.name}\n` : "";
+    const subject = `Stall Reservation [${selectedBoothNumbers.join(", ")}] - ${formData.companyName.trim()} - Himalayan Green Energy Expo 2027`;
+    const body =
+      `Dear Secretariat,\n\n` +
+      `We would like to reserve the following stall(s) for Himalayan Green Energy Expo 2027.\n\n` +
+      `Reference ID: ${ref}\n` +
+      packageLine +
+      `Stalls: ${selectedBoothNumbers.join(", ")}\n` +
+      `Total Area: ${totalAreaSqM} m²\n` +
+      `Tariff (incl. VAT): NPR ${totalWithVatNPR.toLocaleString()} / USD $${totalWithVatUSD.toLocaleString()}\n\n` +
+      `--- Exhibitor Details ---\n` +
+      `Exhibitor Type: ${exhibitorOrigin === "international" ? "International" : "Domestic"}\n` +
+      `Company: ${formData.companyName.trim()}\n` +
+      `Contact Person: ${formData.contactPerson.trim()}\n` +
+      `Email: ${formData.email.trim()}\n` +
+      `Phone: ${formData.phone.trim()}\n` +
+      `Country: ${formData.country.trim()}\n` +
+      (formData.website.trim() ? `Website: ${formData.website.trim()}\n` : "") +
+      `Industry Sector: ${resolvedIndustry}\n` +
+      `Fascia Name: ${(formData.fasciaName || formData.companyName).trim()}\n` +
+      (formData.specialRequirements.trim() ? `Special Requirements: ${formData.specialRequirements.trim()}\n` : "") +
+      `\nPlease share the booking confirmation and invoice details.\n\nThank you.`;
+    return `mailto:${RESERVATION_EMAIL_TO}?cc=${RESERVATION_EMAIL_CC}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  };
+
   const handleNext = async () => {
     setFormError("");
 
@@ -385,6 +421,80 @@ export default function StallBookingWizard() {
         setFormError("Please specify your Industry Sector.");
         return;
       }
+
+      // Form is valid: record the hold / booking in the admin panel
+      const isHold = reservationType === "hold";
+      const ref = `HHE26-STALL-${Math.floor(100000 + Math.random() * 900000)}`;
+      const resolvedIndustry =
+        formData.industryCategory === "Other" ? customIndustry.trim() : formData.industryCategory;
+      const tag = `[${exhibitorOrigin.toUpperCase()} EXHIBITOR] ${isHold ? "[72-HOUR FREE HOLD] " : "[EMAIL BOOKING] "}`;
+
+      setIsSubmitting(true);
+      try {
+        const response = await fetch("/api/payment/initiate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            bookingId: ref,
+            stallNumbers: selectedBoothNumbers,
+            packageId: selectedPackageId,
+            amountNPR: isHold ? 0 : totalWithVatNPR,
+            amountUSD: isHold ? 0 : totalWithVatUSD,
+            customerName: formData.contactPerson || formData.companyName,
+            contactPerson: formData.contactPerson.trim(),
+            email: formData.email.trim(),
+            phone: formData.phone.trim(),
+            company: formData.companyName.trim(),
+            country: formData.country.trim(),
+            website: formData.website.trim(),
+            fasciaName: (formData.fasciaName || formData.companyName).trim(),
+            boothType: selectedStallObjects.every((s) => s.isBareSpace) ? "Bare Space" : "Standard",
+            powerOption: "Standard 15A Included",
+            industryCategory: resolvedIndustry,
+            packageName: selectedPackage && selectedPackage.id !== "custom-selection" ? selectedPackage.name : undefined,
+            packageType: selectedPackage ? selectedPackage.type : "stall",
+            packagePerks: selectedPackage && selectedPackage.perks ? selectedPackage.perks : [],
+            specialRequirements:
+              (selectedPackage && selectedPackage.id !== "custom-selection"
+                ? `${tag}Package: ${selectedPackage.name} | Stalls: ${selectedBoothNumbers.join(", ")}`
+                : `${tag}Stalls: ${selectedBoothNumbers.join(", ")}`) +
+              (formData.specialRequirements.trim() ? ` | Notes: ${formData.specialRequirements.trim()}` : ""),
+            paymentMethod: isHold ? "hold_72h" : "email",
+            isHold72h: isHold,
+          }),
+        });
+        const data = await response.json();
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || "Failed to submit your reservation. Please try again.");
+        }
+        trackFunnel("stall_booking", "submit");
+        const finalRef: string = data.bookingId || ref;
+        setBookingRef(finalRef);
+        confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+
+        if (isHold) {
+          // Stalls are now on a 72-hour hold in the exhibitor's name
+          if (data.redirectUrl) {
+            router.push(data.redirectUrl);
+            return;
+          }
+          setPaymentMethod("hold_72h");
+          setStep(4);
+          return;
+        }
+
+        // Booking: saved in admin panel, now compose the reservation email
+        const mailto = buildReservationMailto(finalRef);
+        setReservationMailto(mailto);
+        window.location.href = mailto;
+        setStep(4);
+      } catch (err: any) {
+        console.error("Reservation error:", err);
+        setFormError(err.message || "An error occurred while submitting your reservation. Please try again.");
+      } finally {
+        setIsSubmitting(false);
+      }
+      return;
     }
 
     if (step === 3) {
@@ -500,6 +610,9 @@ export default function StallBookingWizard() {
     setStep((prev) => Math.min(prev + 1, 4));
   };
 
+  // Step 3 (online payment) is bypassed: the details form submits by composing an email
+  const displayStep = step === 4 ? 3 : step;
+
   const handlePrev = () => {
     setFormError("");
     setStep((prev) => Math.max(prev - 1, 1));
@@ -511,22 +624,18 @@ export default function StallBookingWizard() {
       <div className="mb-8">
         <div className="flex items-center justify-between mb-3 text-xs font-mono text-slate-500 font-semibold">
           <span className="text-[#218A59] font-bold">
-            STEP 0{step} OF 04:{" "}
+            STEP 0{displayStep} OF 03:{" "}
             {step === 1
               ? "SELECT STALL(S)"
               : step === 2
                 ? "ORGANIZATION DETAILS"
-                : step === 3
-                  ? exhibitorOrigin === "international"
-                    ? "REVIEW & RESERVE"
-                    : "PAYMENT & REVIEW"
-                  : "CONFIRMED"}
+                : "RESERVATION EMAIL"}
           </span>
-          <span>{Math.round((step / 4) * 100)}% COMPLETED</span>
+          <span>{Math.round((displayStep / 3) * 100)}% COMPLETED</span>
         </div>
         <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
           <div
-            style={{ width: `${(step / 4) * 100}%` }}
+            style={{ width: `${(displayStep / 3) * 100}%` }}
             className="h-full bg-gradient-to-r from-[#218A59] to-[#10B981] transition-all duration-300"
           />
         </div>
@@ -1081,33 +1190,6 @@ export default function StallBookingWizard() {
                   </span>
                 </div>
 
-                {/* Festival Season Notice: Manual Booking Required */}
-                <div className="p-4 bg-gradient-to-br from-amber-50 via-orange-50/70 to-amber-50 border-b border-amber-200/90 text-xs space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500 text-white font-mono text-[10px] font-bold uppercase tracking-wider shadow-2xs">
-                      <Sparkles className="w-3 h-3" />
-                      <span>Festive Notice</span>
-                    </span>
-                    <span className="font-bold text-amber-950 text-xs">
-                      Manual Booking Required
-                    </span>
-                  </div>
-                  <p className="text-[11.5px] text-amber-900 leading-relaxed">
-                    For the festival season, please contact us directly via email to confirm your stall reservation &amp; invoice:
-                  </p>
-                  <a
-                    href={`mailto:Shrestha.anup101@gmail.com?subject=${encodeURIComponent(
-                      `Stall Booking Inquiry (Stalls: ${selectedBoothNumbers.join(", ") || "General"}) - Himalayan Green Energy Expo 2027`
-                    )}&body=${encodeURIComponent(
-                      `Dear Secretariat,\n\nI would like to manually reserve the following stall(s) for Himalayan Green Energy Expo 2027 during the festival season:\n\nStalls: ${selectedBoothNumbers.join(", ") || "Please advise"}\nTariff: NPR ${totalWithVatNPR.toLocaleString()} / USD $${totalWithVatUSD.toLocaleString()}\nCompany: ${formData.companyName || ""}\nContact Person: ${formData.contactPerson || ""}\nPhone: ${formData.phone || ""}\n\nPlease share the booking confirmation & invoice details.\n\nThank you.`
-                    )}`}
-                    className="flex items-center justify-center gap-2 w-full py-2.5 px-3 rounded-xl bg-amber-900 hover:bg-amber-950 text-amber-50 text-[11px] font-mono font-bold tracking-wide transition-all shadow-xs cursor-pointer"
-                  >
-                    <Mail className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-                    <span className="truncate">Shrestha.anup101@gmail.com</span>
-                  </a>
-                </div>
-
                 {/* Section 1: Selected Stalls List */}
                 <div className="p-4 sm:p-5 space-y-3">
                   <div className="flex items-center justify-between">
@@ -1362,35 +1444,22 @@ export default function StallBookingWizard() {
                     </div>
                   )}
 
-                  {/* Action Buttons: Direct Email Inquiry for Festival Season */}
-                  <div className="pt-1 space-y-2">
+                  {/* Action Button: Continue to organization details form */}
+                  <div className="pt-1">
                     {selectedBoothNumbers.length > 0 ? (
-                      <a
-                        href={`mailto:Shrestha.anup101@gmail.com?subject=${encodeURIComponent(
-                          `Festival Season Stall Booking Inquiry (Stalls: ${selectedBoothNumbers.join(", ")}) - Expo 2027`
-                        )}&body=${encodeURIComponent(
-                          `Dear Secretariat,\n\nI would like to manually reserve the following stall(s) for Himalayan Green Energy Expo 2027 during the festival season:\n\nStalls: ${selectedBoothNumbers.join(", ")}\nTotal Area: ${totalAreaSqM} m²\nTariff: NPR ${totalWithVatNPR.toLocaleString()} / USD $${totalWithVatUSD.toLocaleString()}\n\nPlease share the booking confirmation & invoice details.\n\nThank you.`
-                        )}`}
+                      <button
+                        type="button"
+                        onClick={handleNext}
                         className="w-full py-3.5 px-4 rounded-xl font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-sm bg-[#007A5E] hover:bg-[#00664e] text-white hover:shadow-md cursor-pointer text-center"
                       >
-                        <Mail className="w-4 h-4 text-emerald-200 shrink-0" />
-                        <span>EMAIL TO RESERVE ({selectedBoothNumbers.length} STALL{selectedBoothNumbers.length > 1 ? "S" : ""})</span>
-                      </a>
+                        <span>CONTINUE TO DETAILS ({selectedBoothNumbers.length} STALL{selectedBoothNumbers.length > 1 ? "S" : ""})</span>
+                        <ArrowRight className="w-4 h-4 shrink-0" />
+                      </button>
                     ) : (
                       <div className="w-full py-3 px-4 rounded-xl font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 bg-slate-100 text-slate-400 text-center">
                         <span>SELECT STALL ON FLOOR PLAN</span>
                       </div>
                     )}
-
-                    <a
-                      href={`mailto:Shrestha.anup101@gmail.com?subject=${encodeURIComponent(
-                        `Festival Season Stall Booking Inquiry (Stalls: ${selectedBoothNumbers.join(", ") || "General"}) - Expo 2027`
-                      )}`}
-                      className="w-full py-2.5 px-3 rounded-xl font-mono text-[11px] font-bold tracking-wider flex items-center justify-center gap-1.5 transition-all border border-amber-300 bg-amber-50/80 text-amber-900 hover:bg-amber-100 cursor-pointer text-center"
-                    >
-                      <Mail className="w-3.5 h-3.5 text-amber-700 shrink-0" />
-                      <span className="truncate">Shrestha.anup101@gmail.com</span>
-                    </a>
                   </div>
                 </div>
 
@@ -1405,7 +1474,7 @@ export default function StallBookingWizard() {
                   </div>
                   <div className="flex flex-wrap items-center gap-1.5 text-slate-600 font-mono">
                     <Mail className="w-3 h-3 text-slate-400 shrink-0" />
-                    <a href="mailto:Shrestha.anup101@gmail.com" className="text-amber-800 font-bold hover:underline">
+                    <a href="mailto:Shrestha.anup101@gmail.com" className="hover:text-emerald-700 hover:underline">
                       Shrestha.anup101@gmail.com
                     </a>
                     <span className="text-slate-400">|</span>
@@ -1434,17 +1503,66 @@ export default function StallBookingWizard() {
               <h3 className="font-sans font-bold text-2xl text-slate-900">
                 Step 2: Exhibitor Organization Details
               </h3>
-              {paymentMethod === "hold_72h" && (
+              {reservationType === "hold" && (
                 <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-mono font-bold border border-emerald-300">
                   72-HOUR FREE HOLD (NPR 0 TODAY)
                 </span>
               )}
             </div>
             <p className="text-xs text-slate-600 font-normal mt-1">
-              {paymentMethod === "hold_72h"
+              {reservationType === "hold"
                 ? `Enter organization contact details to place a 72-hour hold on ${selectedPackage && selectedPackage.id !== "custom-selection" ? selectedPackage.name : `Stalls (${selectedBoothNumbers.join(", ")})`}. Zero upfront payment.`
                 : "Provide company details for official directory listing, badges, and invoice generation."}
             </p>
+          </div>
+
+          {/* Reservation Type: Hold vs Book */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3">
+            <label className="block text-xs font-mono text-slate-700 font-bold uppercase tracking-wider">
+              WHAT WOULD YOU LIKE TO DO? *
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {([
+                {
+                  value: "book" as const,
+                  title: "Book Stall",
+                  desc: "Send a booking request by email. Your stall is reserved and our team replies with the contract & invoice.",
+                  Icon: Mail,
+                },
+                {
+                  value: "hold" as const,
+                  title: "Hold for 72 Hours",
+                  desc: "Hold the stall free in your name for 72 hours while you decide. No payment today.",
+                  Icon: Clock,
+                },
+              ]).map(({ value, title, desc, Icon }) => {
+                const active = reservationType === value;
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => {
+                      setReservationType(value);
+                      // Keep the summary/confirmation copy in sync with the chosen option
+                      if (value === "book" && paymentMethod === "hold_72h") {
+                        setPaymentMethod(exhibitorOrigin === "international" ? "bank" : "khalti");
+                      }
+                    }}
+                    aria-pressed={active}
+                    className={`text-left p-4 rounded-xl border-2 transition-all cursor-pointer ${active
+                      ? "border-[#007A5E] bg-emerald-50/70"
+                      : "border-slate-200 bg-white hover:border-slate-300"
+                      }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Icon className={`w-4 h-4 shrink-0 ${active ? "text-[#007A5E]" : "text-slate-400"}`} />
+                      <span className="font-sans font-bold text-sm text-slate-900">{title}</span>
+                    </div>
+                    <p className="text-[11.5px] text-slate-600 leading-relaxed mt-1.5">{desc}</p>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Exhibitor Classification: Domestic vs International */}
@@ -1762,38 +1880,6 @@ export default function StallBookingWizard() {
             </div>
           </div>
 
-          {/* Festive Season Notice in Step 3 Booking Summary */}
-          <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-50 via-orange-50/60 to-amber-50 border border-amber-300/80 text-xs text-amber-950 space-y-2">
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500 text-white font-mono text-[10px] font-bold uppercase tracking-wider shadow-2xs">
-                <Sparkles className="w-3 h-3" />
-                <span>Festive Season Notice</span>
-              </span>
-              <strong className="text-amber-950 font-bold">
-                Manual Reservation via Email
-              </strong>
-            </div>
-            <p className="text-[11.5px] text-amber-900 leading-relaxed">
-              For the festival season, please contact us manually via email to confirm your stall reservation, pro-forma invoice, or contract:
-            </p>
-            <div className="flex flex-wrap items-center gap-3 pt-1">
-              <a
-                href={`mailto:Shrestha.anup101@gmail.com?subject=${encodeURIComponent(
-                  `Manual Stall Reservation [${selectedBoothNumbers.join(", ")}] - Himalayan Green Energy Expo 2027`
-                )}&body=${encodeURIComponent(
-                  `Dear Secretariat,\n\nI would like to manually confirm our stall reservation during the festival season:\n\nStalls: ${selectedBoothNumbers.join(", ")}\nTotal Payable: NPR ${totalWithVatNPR.toLocaleString()} / USD $${totalWithVatUSD.toLocaleString()}\nCompany: ${formData.companyName || ""}\nContact Person: ${formData.contactPerson || ""}\nPhone: ${formData.phone || ""}\nEmail: ${formData.email || ""}\n\nPlease issue the official pro-forma wire invoice.\n\nThank you.`
-                )}`}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-900 hover:bg-amber-950 text-amber-50 font-mono text-xs font-bold transition-all shadow-xs"
-              >
-                <Mail className="w-3.5 h-3.5 text-amber-300" />
-                <span>Shrestha.anup101@gmail.com</span>
-              </a>
-              <span className="text-xs font-mono text-amber-800">
-                Direct Hotlines: +977-9703606348 / 9703606345
-              </span>
-            </div>
-          </div>
-
           {/* Payment Selection */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
@@ -1943,7 +2029,7 @@ export default function StallBookingWizard() {
                 </>
               ) : (
                 <>
-                  Your provisional booking for <strong>STALL {selectedBoothNumbers.join(", ")}</strong> has been received. Our exhibition team will issue your formal pro-forma invoice and exhibitor kit within 24 hours.
+                  Your reservation email for <strong>STALL {selectedBoothNumbers.join(", ")}</strong> has been prepared in your email app with all your details filled in. <strong>Please press Send</strong> to complete your reservation. Our exhibition team will reply with your pro-forma invoice and exhibitor kit.
                 </>
               )}
             </p>
@@ -1953,12 +2039,19 @@ export default function StallBookingWizard() {
             REFERENCE ID: {bookingRef}
           </div>
 
-          {formData.email && (
-            <div className="max-w-md mx-auto p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 flex items-center justify-center gap-2">
-              <Mail className="w-4 h-4 text-emerald-700 shrink-0" />
-              <span>
-                A confirmation email with full booking details and bank wire info has been sent to <strong>{formData.email}</strong>.
-              </span>
+          {reservationMailto && (
+            <div className="max-w-md mx-auto p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 space-y-2.5">
+              <div className="flex items-center justify-center gap-2">
+                <Mail className="w-4 h-4 text-emerald-700 shrink-0" />
+                <span>Email app didn&apos;t open? Click below, or write to <strong>{RESERVATION_EMAIL_TO}</strong> quoting your reference ID.</span>
+              </div>
+              <a
+                href={reservationMailto}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#007A5E] hover:bg-[#00664e] text-white font-mono text-xs font-bold transition-all shadow-xs"
+              >
+                <Mail className="w-3.5 h-3.5" />
+                <span>OPEN RESERVATION EMAIL</span>
+              </a>
             </div>
           )}
 
@@ -2036,8 +2129,13 @@ export default function StallBookingWizard() {
                   </>
                 ) : (
                   <>
+                    {step === 2 && (reservationType === "hold" ? <Clock className="w-4 h-4" /> : <Mail className="w-4 h-4" />)}
                     <span>
-                      {step === 3
+                      {step === 2
+                        ? reservationType === "hold"
+                          ? "HOLD STALL FOR 72 HOURS (NPR 0)"
+                          : "SUBMIT BOOKING & COMPOSE EMAIL"
+                        : step === 3
                         ? paymentMethod === "hold_72h"
                           ? "CONFIRM 72-HOUR FREE HOLD (NPR 0)"
                           : exhibitorOrigin === "international"

@@ -196,6 +196,8 @@ export async function POST(req: Request) {
     }
 
     const isHold72h = paymentMethod === "hold_72h" || Boolean(body.isHold72h);
+    // Booking request confirmed by the exhibitor via email (no online payment)
+    const isEmailBooking = !isHold72h && paymentMethod === "email";
     const holdExpiresAt = isHold72h
       ? new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString()
       : undefined;
@@ -225,7 +227,13 @@ export async function POST(req: Request) {
       paymentMethod,
       is72hHold: isHold72h,
       holdExpiresAt,
-      paymentStatus: isHold72h ? "FREE_HOLD_72H" : paymentMethod === "bank" ? "PENDING_WIRE" : "INITIATED",
+      paymentStatus: isHold72h
+        ? "FREE_HOLD_72H"
+        : isEmailBooking
+          ? "PENDING_EMAIL_CONFIRMATION"
+          : paymentMethod === "bank"
+            ? "PENDING_WIRE"
+            : "INITIATED",
       bookingStatus: isHold72h ? "72h Free Hold" : "Reserved",
       createdAt: new Date().toISOString(),
     };
@@ -351,7 +359,9 @@ export async function POST(req: Request) {
       company: company || contactPerson,
       subject: isHold72h
         ? `[72-HOUR FREE HOLD] Reservation [${stallListStr}]`
-        : `Stall Reservation [${stallListStr}] - Method: ${paymentMethod.toUpperCase()}`,
+        : isEmailBooking
+          ? `[BOOKING REQUEST - EMAIL] Reservation [${stallListStr}]`
+          : `Stall Reservation [${stallListStr}] - Method: ${paymentMethod.toUpperCase()}`,
       message: `Booking Ref: ${orderId}. Stalls: ${stallListStr}. Fascia: ${fasciaName || company}. ${
         isHold72h
           ? `72-HOUR FREE HOLD (Zero Cost). Expires at: ${holdExpiresAt}.`
@@ -383,7 +393,9 @@ export async function POST(req: Request) {
 
       const subjectLine = isHold72h
         ? `[72-Hour Free Hold Confirmed] Ref: ${orderId} · ${resolvedPackageName || `Stall ${stallListStr}`} | Himalayan Green Energy Expo 2027`
-        : `${isSponsorTier ? `${resolvedPackageName} Confirmed` : "Stall Reservation Confirmed"} [Ref: ${orderId}] | Himalayan Green Energy Expo 2027`;
+        : isEmailBooking
+        ? `[Booking Request Received] Ref: ${orderId} · ${resolvedPackageName || `Stall ${stallListStr}`} | Himalayan Green Energy Expo 2027`
+        : `${isSponsorTier ?`${resolvedPackageName} Confirmed` : "Stall Reservation Confirmed"} [Ref: ${orderId}] | Himalayan Green Energy Expo 2027`;
 
       const perksHtml = Array.isArray(packagePerks) && packagePerks.length > 0
         ? `
@@ -471,6 +483,13 @@ export async function POST(req: Request) {
                 &bull; <strong>USD Account Number:</strong> 001001201928482<br/>
                 &bull; <strong>Branch / SWIFT:</strong> Durbarmarg, Kathmandu / NIMBNPKA<br/>
                 &bull; <strong>Wire Remarks:</strong> Please quote booking reference <code>${escapeHtml(orderId)}</code>
+              </div>
+              `
+                  : isEmailBooking
+                  ? `
+              <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 16px 20px; margin: 18px 0; font-size: 13px; line-height: 1.7;">
+                <strong style="color: #065f46;">Booking Request Received:</strong><br/>
+                Your stall(s) are reserved in your organization&apos;s name while our exhibition secretariat reviews your request. We will reply with your official contract and pro-forma invoice. Please quote booking reference <code>${escapeHtml(orderId)}</code> in all correspondence.
               </div>
               `
                   : isBankTransfer
@@ -565,6 +584,16 @@ Website: https://www.higex.org
       (host ? `${protocol}://${host}` : null) ||
       process.env.NEXT_PUBLIC_APP_URL ||
       (process.env.NODE_ENV === "development" ? "http://localhost:3000" : "https://www.higex.org");
+
+    // Email booking request: recorded above, the exhibitor confirms by sending the composed email
+    if (isEmailBooking) {
+      return NextResponse.json({
+        success: true,
+        bookingId: orderId,
+        paymentMethod: "email",
+        message: "Booking request recorded. Awaiting email confirmation.",
+      });
+    }
 
     // 2. Handle 72-Hour Free Hold Routing (Zero Cost)
     if (isHold72h) {
