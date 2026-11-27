@@ -13,6 +13,16 @@ import {
   updateFirebaseRegistration,
 } from "./firebaseDb";
 import { pushStallToGoogleSheet } from "./googleSheetSync";
+import { deliverPass } from "./passDelivery";
+
+/** A registration that must be paid before it is confirmed (Networking Dinner tickets). */
+export function isPaidTicketOrder(registration: any): boolean {
+  if (!registration) return false;
+  return (
+    registration.ticketDetails?.category === "Networking Dinner" ||
+    /^(GALA-|HHE27-GALA)/i.test(String(registration.id || ""))
+  );
+}
 
 const ADMIN_DATA_PATHS = [
   path.join(process.cwd(), "data", "adminData.json"),
@@ -144,6 +154,15 @@ export async function markOrderPaymentStatus(
     }
   } else {
     await updateFirebaseRegistration(orderId, { ...patch, status: paymentStatus === "PAID" ? "Confirmed" : "Failed" });
+    // A paid ticket is only confirmed now, so this is when the guest gets their entry pass
+    if (paymentStatus === "PAID" && current !== "PAID" && isPaidTicketOrder(order.record)) {
+      try {
+        await deliverPass({ ...order.record, ...patch });
+        await updateFirebaseRegistration(orderId, { passSentAt: new Date().toISOString() });
+      } catch (err) {
+        console.error(`[orders] Paid ticket ${orderId}: pass email failed`, err);
+      }
+    }
   }
 
   // Local files (local development / non-Vercel hosting)

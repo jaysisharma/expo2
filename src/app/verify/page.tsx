@@ -65,6 +65,7 @@ function VerifyContent() {
   const [staffName, setStaffName] = useState("");
   const [checkinLoading, setCheckinLoading] = useState(false);
   const [tamperedError, setTamperedError] = useState(false);
+  const [failMessage, setFailMessage] = useState<string | null>(null);
 
   useEffect(() => {
     async function checkStaffAuth() {
@@ -102,8 +103,11 @@ function VerifyContent() {
         const res = await fetch(`/api/verify?${query.toString()}`);
         const data = await res.json();
 
-        if (res.status === 403 || data.tampered) {
+        // Unpaid / unknown paid tickets must never fall through to the URL-built preview below
+        const isPaidTicketId = /^(GALA-|HHE27-GALA)/i.test(idParam || "");
+        if (res.status === 403 || data.tampered || res.status === 402 || data.paymentPending || (isPaidTicketId && !data.success)) {
           setTamperedError(true);
+          setFailMessage(data.paymentPending || res.status === 402 ? data.message || null : null);
           setLoading(false);
           return;
         }
@@ -128,7 +132,10 @@ function VerifyContent() {
         }
       } catch (err) {
         console.warn("Verify fetch error", err);
-        if (nameParam || idParam) {
+        if (/^(GALA-|HHE27-GALA)/i.test(idParam || "")) {
+          // Can't confirm a paid ticket offline
+          setTamperedError(true);
+        } else if (nameParam || idParam) {
           setAttendee({
             id: idParam || "HHE27-255298",
             name: nameParam || "Registered Attendee",
@@ -400,9 +407,10 @@ function VerifyContent() {
             <AlertCircle className="w-6 h-6" />
           </div>
           <div className="space-y-1">
-            <h2 className="text-lg font-bold text-slate-900">Verification Failed</h2>
+            <h2 className="text-lg font-bold text-slate-900">{failMessage ? "Payment Not Verified" : "Verification Failed"}</h2>
             <p className="text-xs text-slate-600 leading-relaxed">
-              This pass token could not be verified by the official IPPAN registry. Please present your original registration email at the venue desk.
+              {failMessage ||
+                "This pass token could not be verified by the official registry. Please present your original registration email at the venue desk."}
             </p>
           </div>
           <Link

@@ -60,21 +60,38 @@ function PaymentSuccessContent() {
     trackFunnel("payment", "success");
   }, []);
 
+  const isBank = gateway.toLowerCase() === "bank";
+  const isKhalti = gateway.toLowerCase() === "khalti";
+  const isQr = gateway.toLowerCase() === "qr";
+  const isHold72h =
+    gateway.toLowerCase() === "hold_72h" ||
+    searchParams.get("hold") === "72h" ||
+    searchParams.get("hold") === "true";
+
+  // The URL can be typed by anyone, so "paid / confirmed" comes from the server, never the URL.
+  // null = still loading (treated as not paid).
+  const [orderStatus, setOrderStatus] = React.useState<string | null>(null);
   useEffect(() => {
+    let cancelled = false;
+    fetch(`/api/payment/status?id=${encodeURIComponent(id)}`, { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d) => !cancelled && setOrderStatus(d?.found ? String(d.paymentStatus || "") : ""))
+      .catch(() => !cancelled && setOrderStatus(""));
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+  const isVerifiedPaid = orderStatus === "PAID";
+
+  useEffect(() => {
+    if (!isVerifiedPaid && !isHold72h) return;
     confetti({
       particleCount: 120,
       spread: 80,
       origin: { y: 0.5 },
       colors: ["#10B981", "#34D399", "#059669", "#38BDF8", "#F59E0B"],
     });
-  }, []);
-
-  const isBank = gateway.toLowerCase() === "bank";
-  const isKhalti = gateway.toLowerCase() === "khalti";
-  const isHold72h =
-    gateway.toLowerCase() === "hold_72h" ||
-    searchParams.get("hold") === "72h" ||
-    searchParams.get("hold") === "true";
+  }, [isVerifiedPaid, isHold72h]);
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-900 flex flex-col">
@@ -85,33 +102,43 @@ function PaymentSuccessContent() {
             <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
             <span>
               {isHold72h
-                ? "OFFICIAL 72-HOUR FREE HOLD CONFIRMATION"
-                : isGala
-                ? "OFFICIAL NETWORKING DINNER VIP PASS CONFIRMATION"
-                : "OFFICIAL STALL ALLOCATION CONFIRMATION"}
+                ? "72-HOUR FREE HOLD CONFIRMATION"
+                : isVerifiedPaid
+                ? isGala
+                  ? "NETWORKING DINNER PASS CONFIRMED"
+                  : "STALL BOOKING CONFIRMED"
+                : "RESERVATION RECEIVED – NOT CONFIRMED YET"}
             </span>
           </div>
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white">
             {isHold72h
               ? "72-Hour Free Hold Confirmed (Zero Cost)!"
-              : isGala
-              ? isBank
-                ? "Networking Dinner VIP Pass Reservation Received!"
-                : "Payment & Networking Dinner VIP Pass Confirmed!"
+              : isVerifiedPaid
+              ? isGala
+                ? "Payment Verified – Networking Dinner Pass Confirmed!"
+                : "Payment Verified – Stall Booking Confirmed!"
               : isBank
-                ? "Stall Reservation Received!"
-                : "Payment & Stall Booking Confirmed!"}
+              ? isGala
+                ? "Networking Dinner Reservation Received"
+                : "Stall Reservation Received"
+              : "Reservation Received – Payment Being Verified"}
           </h1>
           <p className="text-sm sm:text-base text-emerald-100/80 max-w-xl mx-auto leading-relaxed">
             {isHold72h
               ? "Your exclusive 72-hour free hold is officially active! Your reservation has been locked in at zero upfront cost while your organization finalizes internal approvals."
-              : isGala
-              ? isBank
-                ? "Your Networking Dinner seats at Royal Tulip Kathmandu (Gwarko) have been provisionally held. Please complete the bank wire remittance within 48 hours to finalize guest seating."
-                : "Your Khalti payment has been successfully verified. Your VIP delegate credential for the Royal Tulip Kathmandu (Gwarko) Networking Dinner is officially locked in."
+              : isVerifiedPaid
+              ? isGala
+                ? "Your payment has been verified. Your Networking Dinner pass for Royal Tulip Kathmandu (Gwarko) is confirmed and your entry pass with QR code has been emailed to you."
+                : "Your payment has been verified. Your exhibition booth is now confirmed for the Himalayan Green Energy Expo 2027."
               : isBank
-                ? "Your booth allocation has been provisionally reserved. Please complete the bank wire remittance within 48 hours to finalize badge and pro-forma issuance."
-                : "Your payment has been successfully verified. Your exhibition booth is now officially locked in for the Himalayan Green Energy Expo 2027."}
+              ? isGala
+                ? "Your seats are reserved but not confirmed yet. Complete the bank transfer below; your entry pass is emailed once the payment is received."
+                : "Your booth is reserved but not confirmed yet. Complete the bank transfer below to confirm it."
+              : orderStatus === null
+              ? "Checking your payment status…"
+              : isGala
+              ? "Your reservation is saved but NOT confirmed yet. Our team is verifying your payment; once it is verified you'll receive a confirmation email with your entry pass and QR code."
+              : "Your reservation is saved but NOT confirmed yet. Our team is verifying your payment and will email you once it is confirmed."}
           </p>
         </div>
       </div>
@@ -147,7 +174,13 @@ function PaymentSuccessContent() {
                 {isKhalti && !isHold72h && (
                   <>
                     <CreditCard className="w-4 h-4 text-[#5D2E8E]" />
-                    <span>Paid via Khalti ePayment</span>
+                    <span>{isVerifiedPaid ? "Paid via Khalti ePayment" : "Khalti payment – not verified"}</span>
+                  </>
+                )}
+                {isQr && !isHold72h && (
+                  <>
+                    <CreditCard className="w-4 h-4 text-amber-600" />
+                    <span>{isVerifiedPaid ? "QR payment verified" : "QR payment – being verified"}</span>
                   </>
                 )}
                 {isBank && !isHold72h && (
@@ -163,7 +196,9 @@ function PaymentSuccessContent() {
             <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 flex items-center gap-2.5">
               <Mail className="w-4 h-4 text-emerald-700 shrink-0" />
               <span>
-                An official confirmation email containing full reservation details, banking instructions, and reference credentials has been sent to your registered email address.
+                {isVerifiedPaid
+                  ? "A confirmation email with your booking details has been sent to your registered email address."
+                  : "We've emailed your reservation details to your registered email address. This is not a ticket or confirmation yet."}
               </span>
             </div>
 
@@ -365,7 +400,9 @@ function PaymentSuccessContent() {
                       </span>
                       <span>
                         {isGala
-                          ? "Your digital VIP Networking Dinner e-ticket with registered QR code is issued under your reference ID."
+                          ? isVerifiedPaid
+                            ? "Your Networking Dinner entry pass with QR code has been emailed to you. Show it at the venue entrance."
+                            : "Your entry pass with QR code is emailed only after your payment is verified. Unpaid reservations are not admitted."
                           : "Our organizing team will issue your formal tax receipt and exhibitor manual via email within 24 hours."}
                       </span>
                     </li>

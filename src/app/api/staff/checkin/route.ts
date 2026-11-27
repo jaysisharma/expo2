@@ -6,6 +6,7 @@ import {
   toggleFirebaseCheckin,
 } from "@/lib/firebaseDb";
 import { getStaffOrAdminSession } from "@/lib/session";
+import { isPaidTicketOrder } from "@/lib/orders";
 
 export const dynamic = "force-dynamic";
 
@@ -191,6 +192,19 @@ export async function POST(req: NextRequest) {
           message: `Pass ID "${passId}" not found in registration database.`,
         },
         { status: 404 }
+      );
+    }
+
+    // A paid ticket (Networking Dinner) is only valid once its payment is verified
+    if (isPaidTicketOrder(reg) && reg.paymentStatus !== "PAID") {
+      return NextResponse.json(
+        {
+          success: false,
+          paymentPending: true,
+          registration: { id: reg.id, name: reg.name, organization: reg.organization, passType: reg.passType },
+          message: `${reg.name || "This guest"}'s ticket (${reg.id}) is NOT PAID / not verified yet (${reg.paymentStatus || "unpaid"}). Do not admit; send them to the registration desk.`,
+        },
+        { status: 402 }
       );
     }
 

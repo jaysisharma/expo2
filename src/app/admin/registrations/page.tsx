@@ -177,6 +177,31 @@ export default function AdminRegistrationsPage() {
     }
   };
 
+  // Paid tickets (Networking Dinner) must be verified before they are confirmed / get a pass
+  const isPaidTicket = (reg: any) =>
+    reg?.ticketDetails?.category === "Networking Dinner" || /^(GALA-|HHE27-GALA)/i.test(String(reg?.id || ""));
+
+  const handleVerifyPayment = async (reg: any) => {
+    if (
+      !window.confirm(
+        `Confirm you've received the payment for ${reg.name} (${reg.id})?\n\nThis marks the ticket PAID and emails the guest their entry pass.`
+      )
+    )
+      return;
+    try {
+      const res = await fetch("/api/admin/data", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "verify_registration_payment", payload: { regId: reg.id } }),
+      });
+      const json = await res.json();
+      notify(json.message || (json.success ? "Payment verified" : "Could not verify payment"));
+    } catch {
+      notify("Could not verify payment");
+    }
+    fetchData();
+  };
+
   const handleDeleteRegistration = async (regId: string) => {
     if (!confirm(`Are you sure you want to delete ${regId}?`)) return;
 
@@ -460,6 +485,37 @@ export default function AdminRegistrationsPage() {
                       <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
                         {reg.passType}
                       </span>
+                      {isPaidTicket(reg) && (
+                        <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                          <span
+                            className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded border ${
+                              reg.paymentStatus === "PAID"
+                                ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                                : "bg-amber-50 text-amber-800 border-amber-200"
+                            }`}
+                          >
+                            {reg.paymentStatus === "PAID" ? "PAID" : `UNPAID · ${reg.paymentStatus || "pending"}`}
+                          </span>
+                          {reg.screenshotUrl && (
+                            <a
+                              href={reg.screenshotUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[10px] font-semibold text-[#234679] hover:underline"
+                            >
+                              Payment screenshot
+                            </a>
+                          )}
+                          {reg.paymentStatus !== "PAID" && (
+                            <button
+                              onClick={() => handleVerifyPayment(reg)}
+                              className="text-[10px] font-semibold px-2 py-0.5 rounded bg-[#218A59] hover:bg-[#186a43] text-white cursor-pointer"
+                            >
+                              Mark paid &amp; send pass
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </td>
                     <td className="p-3.5 text-slate-600 text-[11px]">
                       <div>{reg.email}</div>

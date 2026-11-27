@@ -283,9 +283,9 @@ export default function StaffCheckinPage() {
         }
         setScanResult({
           type: "error",
-          title: "Pass Not Found",
+          title: json.paymentPending ? "Payment Not Verified" : "Pass Not Found",
           message: json.message || "This pass was not found in the attendee registry. Please verify with the help desk.",
-          registration: undefined,
+          registration: json.paymentPending ? json.registration : undefined,
         });
       }
     } catch {
