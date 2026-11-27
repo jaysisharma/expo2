@@ -316,6 +316,7 @@ function PaymentSuccessContent() {
                 amountUSD={currency === "USD" && amount ? Number(amount) || undefined : undefined}
                 international={currency === "USD"}
                 title={isHold72h ? "Ready to Confirm? Pay Within 72 Hours" : "Complete Your Payment"}
+                allowReceiptUpload={!isGala}
               />
             )}
 

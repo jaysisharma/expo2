@@ -2041,6 +2041,7 @@ export default function StallBookingWizard() {
                 amountNPR={totalWithVatNPR}
                 amountUSD={totalWithVatUSD}
                 international={exhibitorOrigin === "international"}
+                email={formData.email.trim()}
                 title={paymentMethod === "hold_72h" ? "Ready to Confirm? Pay Within 72 Hours" : "Pay Now to Confirm Your Stall"}
               />
             </div>

@@ -1,8 +1,9 @@
 "use client";
 
 import React from "react";
-import { Globe, Landmark, Mail, QrCode } from "lucide-react";
-import { PAYMENT_BANK, paymentProofMailto, PAYMENT_PROOF_EMAIL } from "@/lib/paymentDetails";
+import { Globe, Landmark, QrCode } from "lucide-react";
+import { PAYMENT_BANK, PAYMENT_PROOF_EMAIL } from "@/lib/paymentDetails";
+import ReceiptUpload from "./ReceiptUpload";
 
 type Props = {
   bookingRef: string;
@@ -13,6 +14,10 @@ type Props = {
   international?: boolean;
   /** Optional heading override, e.g. for holds where payment is not due yet */
   title?: string;
+  /** Booking email, if known; otherwise the receipt form asks for it */
+  email?: string;
+  /** Stall bookings can upload a receipt; other orders (e.g. gala) are told where to send it */
+  allowReceiptUpload?: boolean;
 };
 
 /**
@@ -26,6 +31,8 @@ export default function PaymentInstructions({
   amountUSD,
   international = false,
   title = "Complete Your Payment",
+  email,
+  allowReceiptUpload = true,
 }: Props) {
   const qrCard = (
     <div className="p-4 rounded-xl bg-white border border-slate-200 space-y-3">
@@ -111,19 +118,20 @@ export default function PaymentInstructions({
         )}
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+      {allowReceiptUpload ? (
+        <>
+          <p className="text-[11.5px] text-emerald-900 leading-relaxed">
+            Quote <strong className="font-mono">{bookingRef}</strong> in the payment remarks, then upload your receipt below.
+            Your stall is confirmed once payment is verified.
+          </p>
+          <ReceiptUpload bookingRef={bookingRef} email={email} />
+        </>
+      ) : (
         <p className="text-[11.5px] text-emerald-900 leading-relaxed">
-          After paying, send your receipt or SWIFT advice quoting <strong className="font-mono">{bookingRef}</strong>.
-          Your stall is confirmed once payment is verified.
+          Quote <strong className="font-mono">{bookingRef}</strong> in the payment remarks and send your receipt to{" "}
+          <strong>{PAYMENT_PROOF_EMAIL}</strong>. Your reservation is confirmed once payment is verified.
         </p>
-        <a
-          href={paymentProofMailto(bookingRef, stalls)}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#007A5E] hover:bg-[#00664e] text-white font-mono text-xs font-bold transition-all shadow-xs shrink-0"
-        >
-          <Mail className="w-3.5 h-3.5" />
-          <span>SEND PAYMENT PROOF</span>
-        </a>
-      </div>
+      )}
     </div>
   );
 }
