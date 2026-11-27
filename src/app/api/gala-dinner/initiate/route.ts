@@ -183,6 +183,12 @@ export async function POST(req: Request) {
 
     await saveAdminData(adminData);
 
+    // Where the guest pays and uploads their receipt (same page they land on after booking)
+    const siteUrl = (process.env.NEXT_PUBLIC_APP_URL || 'https://www.higex.org').replace(/\/$/, '');
+    const paymentPageUrl = `${siteUrl}/payment/success?id=${encodeURIComponent(orderId)}&gateway=bank&type=gala&amount=${
+      isIntlDelegate ? totalAmountUSD : totalAmountNPR
+    }&currency=${isIntlDelegate ? 'USD' : 'NPR'}&qty=${qty}&pass=${passType}`;
+
     // Acknowledgement email (NOT a confirmation): payment is still pending for every method.
     // Khalti guests get nothing yet: they are on their way to pay, and the confirmation with
     // their entry pass is sent once Khalti verifies the payment (lib/orders markOrderPaymentStatus).
@@ -244,8 +250,9 @@ export async function POST(req: Request) {
                   ? `
               <div style="background-color: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 16px 20px; margin: 18px 0; font-size: 13px; line-height: 1.7;">
                 <strong style="color: #92400e;">Not confirmed yet &ndash; payment being verified</strong><br/>
-                We have received your payment screenshot. Our team will check it against our account; once the payment is verified
-                you will receive a confirmation email with your official entry pass and QR code. Please don't treat this email as your ticket.
+                We have received your payment screenshot. Our team will check it against our account and confirm your seat
+                <strong>within 24 hours</strong>; you will then receive a confirmation email with your official entry pass and QR code.
+                Please don't treat this email as your ticket.
               </div>`
                   : ''
               }
@@ -262,8 +269,9 @@ export async function POST(req: Request) {
                 &bull; <strong>SWIFT / BIC:</strong> ${PAYMENT_BANK.swift}<br/>
                 &bull; <strong>Amount:</strong> USD $${totalAmountUSD.toLocaleString()}<br/>
                 &bull; <strong>Payment Remarks:</strong> ${orderId}<br/><br/>
-                Please email the SWIFT advice / bank receipt quoting <strong>${orderId}</strong> to
-                <a href="mailto:${PAYMENT_PROOF_EMAIL}" style="color: #0369a1; font-weight: 600;">${PAYMENT_PROOF_EMAIL}</a>. Your pass is issued once the payment is received.
+                After paying, <a href="${paymentPageUrl}" style="color: #0369a1; font-weight: 600;">upload your SWIFT advice / bank receipt on your payment page</a>
+                (or email it to <a href="mailto:${PAYMENT_PROOF_EMAIL}" style="color: #0369a1;">${PAYMENT_PROOF_EMAIL}</a> quoting <strong>${orderId}</strong>).
+                We confirm your seat within 24 hours of receiving it and then email your entry pass.
               </div>`
                   : ''
               }

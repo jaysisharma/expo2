@@ -3,11 +3,12 @@ import type { UploadApiResponse } from "cloudinary";
 import cloudinary from "@/lib/cloudinary";
 import { sendMail } from "@/lib/mailer";
 import {
-  getFirebaseStallBooking,
   saveFirebaseStallBooking,
   getFirebaseBoothOverrides,
   setFirebaseBoothOverride,
+  updateFirebaseRegistration,
 } from "@/lib/firebaseDb";
+import { findOrder, isPaidTicketOrder } from "@/lib/orders";
 import { findOverride } from "@/lib/stallAvailability";
 import { PAYMENT_PROOF_CC, PAYMENT_PROOF_EMAIL } from "@/lib/paymentDetails";
 
@@ -50,7 +51,10 @@ export async function POST(req: Request) {
       return bad("Please upload a photo (JPG, PNG, WEBP, HEIC) or PDF under 10MB.");
     }
 
-    const booking = await getFirebaseStallBooking(bookingId);
+    // Stall bookings and paid tickets (Networking Dinner) both take receipts
+    const order = await findOrder(bookingId).catch(() => null);
+    const isTicket = order?.kind === "registration" && isPaidTicketOrder(order.record);
+    const booking = order && (order.kind === "stall" || isTicket) ? order.record : null;
     // Same message for "no such booking" and "wrong email" so IDs can't be probed
     if (!booking || String(booking.email || "").trim().toLowerCase() !== email) {
       return bad("We couldn't find a booking with that reference ID and email. Please check both and try again.", 404);
@@ -80,6 +84,54 @@ export async function POST(req: Request) {
       note,
       uploadedAt: now,
     };
+
+    // Networking Dinner ticket: record the receipt; the team marks it paid in Admin → Registrations,
+    // which emails the entry pass. No stalls involved.
+    if (isTicket) {
+      const currentTicket = String(booking.paymentStatus || "");
+      const pending = currentTicket !== "PAID";
+      await updateFirebaseRegistration(bookingId, {
+        receipts: [...receipts, receipt],
+        lastReceiptAt: now,
+        ...(pending ? { paymentStatus: "PROOF_SUBMITTED", status: "Payment Proof Submitted" } : {}),
+      });
+      const t = booking.ticketDetails || {};
+      const intl = t.passTier === "international";
+      const ticketTotal = intl ? `USD $${Number(t.totalAmountUSD || 0).toLocaleString()}` : `NPR ${Number(t.totalAmountNPR || 0).toLocaleString()}`;
+      const guestHtml = `
+      <div style="font-family: Arial, sans-serif; color: #0f172a; max-width: 600px; line-height: 1.6;">
+        <h2 style="margin: 0 0 8px; font-size: 18px; color: #065f46;">We've received your payment receipt</h2>
+        <p style="font-size: 14px;">Dear ${esc(booking.name)},</p>
+        <p style="font-size: 14px;">Thank you. Your receipt for Networking Dinner booking <strong>${esc(bookingId)}</strong> has been received.
+        Our team will verify the payment and confirm your seat <strong>within 24 hours</strong>. Once verified, you'll receive a
+        confirmation email with your entry pass and QR code. This email is not a ticket.</p>
+        <p style="font-size: 13px; color: #475569;">Seats: ${esc(t.quantity || 1)} · Amount: ${esc(ticketTotal)}${amount ? ` · Amount stated: ${esc(amount)}` : ""}</p>
+        <p style="font-size: 13px; color: #475569;">Questions? Call +977-9703606348 / 9703606345.<br/>Himalayan Green Energy Expo 2027 Secretariat</p>
+      </div>`;
+      const teamHtml = `
+      <div style="font-family: Arial, sans-serif; color: #0f172a; max-width: 620px;">
+        <h2 style="margin: 0 0 6px; font-size: 18px;">Networking Dinner receipt uploaded: ${esc(booking.name)} (${esc(bookingId)})</h2>
+        <p style="font-size: 13px; margin: 6px 0;">${esc(booking.organization || "")} · ${esc(booking.email)} · ${esc(booking.phone || "-")}</p>
+        <p style="font-size: 13px; margin: 6px 0;">${esc(t.quantity || 1)} seat(s) · ${esc(intl ? "International" : "National")} · Total ${esc(ticketTotal)} · Amount stated: ${esc(amount || "-")}</p>
+        <p style="margin: 16px 0;"><a href="${esc(receipt.url)}" style="display: inline-block; background: #047857; color: #fff; padding: 10px 18px; border-radius: 6px; text-decoration: none; font-weight: 700; font-size: 13px;">View receipt</a></p>
+        <p style="font-size: 12px; color: #475569;">Once the money is in the account, open <strong>Admin → Registrations</strong> and click <strong>Mark paid &amp; send pass</strong>. Promised to the guest: confirmation within 24 hours.</p>
+      </div>`;
+      after(async () => {
+        await Promise.all([
+          sendMail({
+            to: [booking.email],
+            subject: `Payment receipt received - Ref ${bookingId} | Networking Dinner`,
+            html: guestHtml,
+          }).catch((err) => console.warn("[receipt] Guest email failed:", err)),
+          sendMail({
+            to: TEAM_EMAILS,
+            subject: `[Dinner Receipt] ${booking.name} - Ref ${bookingId}`,
+            html: teamHtml,
+          }).catch((err) => console.warn("[receipt] Team email failed:", err)),
+        ]);
+      });
+      return NextResponse.json({ success: true, receiptCount: receipts.length + 1, stallsLost: [] });
+    }
 
     // 2. Record it on the booking. Paid / confirmed bookings keep their status.
     const current = String(booking.paymentStatus || "");
@@ -131,8 +183,8 @@ export async function POST(req: Request) {
         <p style="font-size: 14px;">Thank you. Your payment receipt for booking <strong>${esc(bookingId)}</strong> has been received.
         ${
           lost.length > 0
-            ? `Your reservation time had run out and stall ${esc(lost.join(", "))} is no longer held for you. Our team will check your payment and contact you about your stall within 1–2 working days.`
-            : "Your stall(s) stay reserved in your name while our team verifies the payment, which usually takes 1–2 working days. Your booking is confirmed once the payment is verified, and you'll get a confirmation email then."
+            ? `Your reservation time had run out and stall ${esc(lost.join(", "))} is no longer held for you. Our team will check your payment and contact you about your stall within 24 hours.`
+            : "Your stall(s) stay reserved in your name while our team verifies the payment. We confirm your booking within 24 hours and email you once it is confirmed."
         }</p>
         <table style="border-collapse: collapse; font-size: 13px; margin: 12px 0;">
           <tr><td style="padding: 5px 10px; border: 1px solid #e2e8f0; background: #f8fafc; font-weight: 600;">Reference</td><td style="padding: 5px 10px; border: 1px solid #e2e8f0;">${esc(bookingId)}</td></tr>

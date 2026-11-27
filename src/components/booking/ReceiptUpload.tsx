@@ -2,19 +2,20 @@
 
 import React, { useRef, useState } from "react";
 import { CheckCircle2, FileUp, Loader2, Upload } from "lucide-react";
+import { MAX_UPLOAD_BYTES, readJsonResponse, shrinkImageForUpload } from "@/lib/clientImage";
 
 type Props = {
   bookingRef: string;
   /** Email used for the booking; asked for when not known (e.g. on the success page) */
   email?: string;
+  /** "stall" booking or a paid "ticket" (Networking Dinner): only changes the wording */
+  kind?: "stall" | "ticket";
   /** Called after a successful upload; stallsLost lists stalls no longer held for this booking */
   onUploaded?: (result: { stallsLost: string[] }) => void;
 };
 
-const MAX_MB = 10;
-
 /** Upload a payment receipt (photo or PDF) against a booking. */
-export default function ReceiptUpload({ bookingRef, email: knownEmail, onUploaded }: Props) {
+export default function ReceiptUpload({ bookingRef, email: knownEmail, kind = "stall", onUploaded }: Props) {
   const [email, setEmail] = useState(knownEmail || "");
   const [amount, setAmount] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -30,21 +31,21 @@ export default function ReceiptUpload({ bookingRef, email: knownEmail, onUploade
       setMessage("Please choose your receipt file.");
       return;
     }
-    if (file.size > MAX_MB * 1024 * 1024) {
-      setStatus("error");
-      setMessage(`The file is larger than ${MAX_MB}MB. Please upload a smaller photo or PDF.`);
-      return;
-    }
     setStatus("uploading");
     setMessage("");
     try {
+      // Phone photos / screenshots can exceed the server's upload limit, so shrink them first
+      const toUpload = await shrinkImageForUpload(file);
+      if (toUpload.size > MAX_UPLOAD_BYTES) {
+        throw new Error("The file is too large. Please upload a smaller screenshot, photo or PDF (under 4MB).");
+      }
       const body = new FormData();
       body.append("bookingId", bookingRef);
       body.append("email", email.trim());
       body.append("amount", amount.trim());
-      body.append("file", file);
+      body.append("file", toUpload);
       const res = await fetch("/api/payment/receipt", { method: "POST", body });
-      const data = await res.json().catch(() => ({}));
+      const data = await readJsonResponse(res);
       if (!res.ok || !data.success) throw new Error(data.error || "Upload failed. Please try again.");
       const lost: string[] = Array.isArray(data.stallsLost) ? data.stallsLost : [];
       setStallsLost(lost);
@@ -71,7 +72,10 @@ export default function ReceiptUpload({ bookingRef, email: knownEmail, onUploade
               Our team will check your payment and contact you about your stall.
             </>
           ) : (
-            <>Your stall stays reserved while our team verifies the payment (usually 1–2 working days). Your booking is confirmed once it is verified.</>
+            <>
+              Our team will verify your payment and confirm your booking <strong>within 24 hours</strong>
+              {kind === "ticket" ? ", and email your entry pass" : ""}. Your reservation stays held for you meanwhile.
+            </>
           )}
           <button
             type="button"

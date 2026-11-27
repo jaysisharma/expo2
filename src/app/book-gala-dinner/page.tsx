@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useRef, Suspense } from "react";
 import { trackFunnel } from "@/lib/funnel";
-import { PAYMENT_BANK, PAYMENT_PROOF_EMAIL } from "@/lib/paymentDetails";
+import { PAYMENT_BANK } from "@/lib/paymentDetails";
+import { MAX_UPLOAD_BYTES, readJsonResponse, shrinkImageForUpload } from "@/lib/clientImage";
 import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
@@ -147,12 +148,21 @@ function BookGalaDinnerForm() {
       // Upload screenshot to Cloudinary if domestic QR method
       let screenshotUrl = "";
       if (resolvedPaymentMethod === "qr" && screenshot) {
+        // Phone screenshots can exceed the server's upload limit, so shrink them first
+        const toUpload = await shrinkImageForUpload(screenshot);
+        if (toUpload.size > MAX_UPLOAD_BYTES) {
+          throw new Error("Your screenshot is too large. Please upload a smaller screenshot (under 4MB).");
+        }
         const fd = new FormData();
-        fd.append("file", screenshot);
+        fd.append("file", toUpload);
         fd.append("folder", "gala-screenshots");
         const upRes = await fetch("/api/upload", { method: "POST", body: fd });
-        const upData = await upRes.json();
-        screenshotUrl = upData.url || "";
+        const upData = await readJsonResponse(upRes);
+        if (!upRes.ok || !upData.url) {
+          // Never book a QR payment without its screenshot
+          throw new Error(upData.error || "We couldn't upload your payment screenshot. Please try again.");
+        }
+        screenshotUrl = upData.url;
       }
 
       const resolvedCountry =
@@ -172,7 +182,7 @@ function BookGalaDinnerForm() {
         }),
       });
 
-      const data = await res.json();
+      const data = await readJsonResponse(res);
       if (!res.ok || !data.success) throw new Error(data.error || "Booking failed.");
       trackFunnel("dinner", "submit");
 
@@ -426,8 +436,8 @@ function BookGalaDinnerForm() {
                     </dl>
 
                     <p className="text-[11px] text-slate-400 leading-relaxed">
-                      After paying, email the SWIFT advice / bank receipt quoting your reference ID to{" "}
-                      <a href={`mailto:${PAYMENT_PROOF_EMAIL}`} className="text-sky-300 underline">{PAYMENT_PROOF_EMAIL}</a>.
+                      After you submit, the payment page shows these details again with your reference ID and lets you
+                      upload your SWIFT advice / bank receipt. We confirm your seat within 24 hours of receiving it.
                     </p>
                   </div>
                 ) : (

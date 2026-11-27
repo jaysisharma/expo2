@@ -2057,7 +2057,7 @@ export default function StallBookingWizard() {
                 ) : (
                   <>
                     <strong>STALL {selectedBoothNumbers.join(", ")}</strong> stays reserved for you while our team verifies the payment
-                    (usually 1–2 working days). Your booking is confirmed once the payment is verified; we&apos;ve emailed you at{" "}
+                    and confirms your booking within 24 hours; we&apos;ve emailed you at{" "}
                     <strong>{formData.email}</strong>.
                   </>
                 )}
