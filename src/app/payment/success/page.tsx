@@ -5,6 +5,7 @@ import { trackFunnel } from "@/lib/funnel";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import confetti from "canvas-confetti";
+import PaymentInstructions from "@/components/booking/PaymentInstructions";
 import {
   CheckCircle2,
   Download,
@@ -306,25 +307,16 @@ function PaymentSuccessContent() {
               </div>
             )}
 
-            {/* Bank Wire Details Box (if bank transfer chosen) */}
-            {isBank && (
-              <div className="p-5 rounded-2xl bg-emerald-50/80 border border-emerald-200 text-xs space-y-3 font-mono">
-                <div className="flex items-center gap-2 font-bold text-[#15803D]">
-                  <Landmark className="w-4 h-4" />
-                  <span>IPPAN OFFICIAL BANK ACCOUNT DETAILS FOR REMITTANCE</span>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-slate-800 pt-1">
-                  <div><strong>Beneficiary:</strong> IPPAN - GREEN ENERGY EXPO</div>
-                  <div><strong>Bank Name:</strong> Nepal Investment Mega Bank (NIMB)</div>
-                  <div><strong>NPR Account No:</strong> 001001201928471</div>
-                  <div><strong>USD Account No:</strong> 001001201928482</div>
-                  <div><strong>Branch / Location:</strong> Durbarmarg, Kathmandu, Nepal</div>
-                  <div><strong>SWIFT Code:</strong> NIMBNPKA</div>
-                </div>
-                <p className="text-[11px] text-slate-600 font-sans font-normal pt-1">
-                  Please mention Reference ID <strong>{id}</strong> in your wire remarks and email the bank swift advice/voucher to <strong>expo@ippan.org.np</strong>.
-                </p>
-              </div>
+            {/* Payment instructions: NepalPay QR (NPR) or SWIFT wire (USD) */}
+            {(isBank || isHold72h) && (
+              <PaymentInstructions
+                bookingRef={id}
+                stalls={isGala ? undefined : stalls}
+                amountNPR={currency === "NPR" && amount ? Number(amount) || undefined : undefined}
+                amountUSD={currency === "USD" && amount ? Number(amount) || undefined : undefined}
+                international={currency === "USD"}
+                title={isHold72h ? "Ready to Confirm? Pay Within 72 Hours" : "Complete Your Payment"}
+              />
             )}
 
             {/* Next Steps */}
