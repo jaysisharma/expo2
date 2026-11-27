@@ -7,17 +7,20 @@ type Props = {
   bookingRef: string;
   /** Email used for the booking; asked for when not known (e.g. on the success page) */
   email?: string;
+  /** Called after a successful upload; stallsLost lists stalls no longer held for this booking */
+  onUploaded?: (result: { stallsLost: string[] }) => void;
 };
 
 const MAX_MB = 10;
 
 /** Upload a payment receipt (photo or PDF) against a booking. */
-export default function ReceiptUpload({ bookingRef, email: knownEmail }: Props) {
+export default function ReceiptUpload({ bookingRef, email: knownEmail, onUploaded }: Props) {
   const [email, setEmail] = useState(knownEmail || "");
   const [amount, setAmount] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [status, setStatus] = useState<"idle" | "uploading" | "done" | "error">("idle");
   const [message, setMessage] = useState("");
+  const [stallsLost, setStallsLost] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const submit = async (e: React.FormEvent) => {
@@ -43,7 +46,10 @@ export default function ReceiptUpload({ bookingRef, email: knownEmail }: Props) 
       const res = await fetch("/api/payment/receipt", { method: "POST", body });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.success) throw new Error(data.error || "Upload failed. Please try again.");
+      const lost: string[] = Array.isArray(data.stallsLost) ? data.stallsLost : [];
+      setStallsLost(lost);
       setStatus("done");
+      onUploaded?.({ stallsLost: lost });
       setFile(null);
       if (inputRef.current) inputRef.current.value = "";
     } catch (err: any) {
@@ -58,7 +64,15 @@ export default function ReceiptUpload({ bookingRef, email: knownEmail }: Props) 
         <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
         <div className="text-[12.5px] text-slate-700 leading-relaxed">
           <strong className="text-slate-900">Receipt received.</strong> We&apos;ve emailed a confirmation to{" "}
-          <strong>{email}</strong>. Your stall stays reserved while our team verifies the payment (usually 1–2 working days).
+          <strong>{email}</strong>.{" "}
+          {stallsLost.length > 0 ? (
+            <>
+              Your reservation time had run out and stall <strong>{stallsLost.join(", ")}</strong> is no longer held for you.
+              Our team will check your payment and contact you about your stall.
+            </>
+          ) : (
+            <>Your stall stays reserved while our team verifies the payment (usually 1–2 working days). Your booking is confirmed once it is verified.</>
+          )}
           <button
             type="button"
             onClick={() => setStatus("idle")}

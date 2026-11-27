@@ -18,6 +18,7 @@ type Props = {
   email?: string;
   /** Stall bookings can upload a receipt; other orders (e.g. gala) are told where to send it */
   allowReceiptUpload?: boolean;
+  onReceiptUploaded?: (result: { stallsLost: string[] }) => void;
 };
 
 /**
@@ -33,6 +34,7 @@ export default function PaymentInstructions({
   title = "Complete Your Payment",
   email,
   allowReceiptUpload = true,
+  onReceiptUploaded,
 }: Props) {
   const qrCard = (
     <div className="p-4 rounded-xl bg-white border border-slate-200 space-y-3">
@@ -124,7 +126,7 @@ export default function PaymentInstructions({
             Quote <strong className="font-mono">{bookingRef}</strong> in the payment remarks, then upload your receipt below.
             Your stall is confirmed once payment is verified.
           </p>
-          <ReceiptUpload bookingRef={bookingRef} email={email} />
+          <ReceiptUpload bookingRef={bookingRef} email={email} onUploaded={onReceiptUploaded} />
         </>
       ) : (
         <p className="text-[11.5px] text-emerald-900 leading-relaxed">

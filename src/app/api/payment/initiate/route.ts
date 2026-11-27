@@ -13,7 +13,7 @@ import {
   getFirebaseBoothOverrides,
   claimFirebaseBooths,
 } from "@/lib/firebaseDb";
-import { effectiveStallStatus, findOverride, HOLD_STATUS, isStatusTaken, RESERVATION_PAYMENT_DAYS } from "@/lib/stallAvailability";
+import { effectiveStallStatus, findOverride, HOLD_STATUS, isStatusTaken, BOOKING_PAYMENT_MINUTES } from "@/lib/stallAvailability";
 import { attributionFields } from "@/lib/attribution";
 import { PAYMENT_BANK, PAYMENT_PROOF_CC, PAYMENT_PROOF_EMAIL, PAYMENT_QR_ABSOLUTE_URL } from "@/lib/paymentDetails";
 
@@ -230,15 +230,17 @@ export async function POST(req: Request) {
     }
 
     const isHold72h = paymentMethod === "hold_72h" || Boolean(body.isHold72h);
-    // Online "Book" request: stall reserved now, paid offline within RESERVATION_PAYMENT_DAYS
+    // Online "Book" request: stall reserved for BOOKING_PAYMENT_MINUTES while the exhibitor pays
+    // and uploads a receipt; it is not confirmed until the team verifies the payment
     // ("email" is the older name for the same flow)
     const isOnlineBooking = !isHold72h && (paymentMethod === "book" || paymentMethod === "email");
     const holdExpiresAt = isHold72h
       ? new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString()
       : undefined;
-    // "Book" requests stay Reserved until paid; the daily cron releases them after this deadline
+    // "Book" requests stay Reserved only for the payment window; the stall frees up the moment it
+    // passes unless a receipt was uploaded (see lib/stallAvailability and /api/payment/receipt)
     const paymentDueBy = isOnlineBooking
-      ? new Date(Date.now() + RESERVATION_PAYMENT_DAYS * 24 * 60 * 60 * 1000).toISOString()
+      ? new Date(Date.now() + BOOKING_PAYMENT_MINUTES * 60 * 1000).toISOString()
       : undefined;
 
     // Claim the stalls atomically before recording anything, so a stall that is already
@@ -562,7 +564,7 @@ export async function POST(req: Request) {
                   ? `
               <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 16px 20px; margin: 18px 0; font-size: 13px; line-height: 1.7;">
                 <strong style="color: #065f46;">Booking Received - Payment Pending:</strong><br/>
-                Your stall(s) are reserved in your organization&apos;s name until <strong>${paymentDueBy ? escapeHtml(new Date(paymentDueBy).toUTCString().replace(/ \d\d:\d\d:\d\d GMT$/, "")) : `${RESERVATION_PAYMENT_DAYS} days from today`}</strong>. Pay using the details below before then to confirm your booking; unpaid reservations are released after ${RESERVATION_PAYMENT_DAYS} days. Our secretariat will also send your official contract and pro-forma invoice. Please quote booking reference <code>${escapeHtml(orderId)}</code> in all correspondence.
+                Your stall(s) are reserved for ${BOOKING_PAYMENT_MINUTES} minutes while you complete payment and upload your receipt on the booking page. The booking is confirmed only after our team verifies your payment. Please quote booking reference <code>${escapeHtml(orderId)}</code> in all correspondence.
               </div>
               ${paymentDetailsHtml}
               `
@@ -609,7 +611,7 @@ Organization: ${company || primaryName}
 Fascia Board Name: ${fasciaName || company || primaryName}
 Tariff: ${isHold72h ? `NPR 0 Today (72-Hour Free Hold) · Full tariff: NPR ${formattedNPR} / USD $${formattedUSD}` : `NPR ${formattedNPR} / USD $${formattedUSD}`}
 Payment Method: ${isHold72h ? "72-HOUR FREE HOLD" : paymentMethod.toUpperCase()}
-${isHold72h && holdExpiresAt ? `Hold Expiration: ${holdExpiresAt} (72 Hours)\n` : ""}${paymentDueBy ? `Payment Due By: ${new Date(paymentDueBy).toUTCString()} (unpaid reservations are released after ${RESERVATION_PAYMENT_DAYS} days)\n` : ""}Dates: 17–19 January 2027
+${isHold72h && holdExpiresAt ? `Hold Expiration: ${holdExpiresAt} (72 Hours)\n` : ""}${paymentDueBy ? `Payment Window: ${BOOKING_PAYMENT_MINUTES} minutes (until ${new Date(paymentDueBy).toUTCString()})\n` : ""}Dates: 17–19 January 2027
 Venue: BHRIKUTIMANDAP, KATHMANDU, NEPAL
 
 How to Pay:
@@ -635,7 +637,7 @@ Website: https://www.higex.org
         ["Stalls", stallListStr],
         ["Tariff (incl. VAT)", `NPR ${formattedNPR} / USD $${formattedUSD}`],
         ...(isHold72h && holdExpiresAt ? [["Hold expires", new Date(holdExpiresAt).toUTCString()] as [string, string]] : []),
-        ...(paymentDueBy ? [["Payment due by", `${new Date(paymentDueBy).toUTCString()} (auto-released if still unpaid; set the stall to Booked in admin once paid)`] as [string, string]] : []),
+        ...(paymentDueBy ? [["Payment window ends", `${new Date(paymentDueBy).toUTCString()} (${BOOKING_PAYMENT_MINUTES} min; released automatically unless a receipt is uploaded)`] as [string, string]] : []),
         ["Company", company || "-"],
         ["Contact person", contactPerson || "-"],
         ["Email", email],
@@ -661,8 +663,10 @@ Website: https://www.higex.org
         </div>`;
       const teamText = teamRows.map(([k, v]) => `${k}: ${v}`).join("\n");
 
-      // after(): finish sending once the response is out, without Vercel cutting it off
-      after(async () => {
+      // after(): finish sending once the response is out, without Vercel cutting it off.
+      // "Book" is not confirmed at this point, so no emails yet: the exhibitor and the team
+      // are emailed when the receipt is uploaded (/api/payment/receipt).
+      if (!isOnlineBooking) after(async () => {
         await Promise.all([
           sendBookingConfirmationEmail({
             toEmail: email,
@@ -699,7 +703,9 @@ Website: https://www.higex.org
         success: true,
         bookingId: orderId,
         paymentMethod: "book",
-        message: "Booking recorded. Awaiting payment.",
+        paymentDueBy,
+        paymentWindowMinutes: BOOKING_PAYMENT_MINUTES,
+        message: "Stall reserved while you complete payment.",
       });
     }
 
