@@ -13,7 +13,7 @@ import {
   getFirebaseBoothOverrides,
   claimFirebaseBooths,
 } from "@/lib/firebaseDb";
-import { effectiveStallStatus, findOverride, HOLD_STATUS, isStatusTaken } from "@/lib/stallAvailability";
+import { effectiveStallStatus, findOverride, HOLD_STATUS, isStatusTaken, RESERVATION_PAYMENT_DAYS } from "@/lib/stallAvailability";
 import { attributionFields } from "@/lib/attribution";
 import { PAYMENT_BANK, PAYMENT_PROOF_CC, PAYMENT_PROOF_EMAIL, PAYMENT_QR_ABSOLUTE_URL } from "@/lib/paymentDetails";
 
@@ -235,6 +235,10 @@ export async function POST(req: Request) {
     const holdExpiresAt = isHold72h
       ? new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString()
       : undefined;
+    // "Book" requests stay Reserved until paid; the daily cron releases them after this deadline
+    const paymentDueBy = isEmailBooking
+      ? new Date(Date.now() + RESERVATION_PAYMENT_DAYS * 24 * 60 * 60 * 1000).toISOString()
+      : undefined;
 
     // Claim the stalls atomically before recording anything, so a stall that is already
     // booked, reserved or on a live hold can't be taken over by a second booking.
@@ -247,6 +251,7 @@ export async function POST(req: Request) {
         bookingRef: orderId,
         is72hHold: isHold72h,
         holdExpiresAt: holdExpiresAt || "",
+        reservationExpiresAt: paymentDueBy || "",
       },
       knownTaken
     );
@@ -286,6 +291,7 @@ export async function POST(req: Request) {
       paymentMethod,
       is72hHold: isHold72h,
       holdExpiresAt,
+      ...(paymentDueBy ? { paymentDueBy } : {}),
       paymentStatus: isHold72h
         ? "FREE_HOLD_72H"
         : isEmailBooking
@@ -555,7 +561,7 @@ export async function POST(req: Request) {
                   ? `
               <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 16px 20px; margin: 18px 0; font-size: 13px; line-height: 1.7;">
                 <strong style="color: #065f46;">Booking Request Received:</strong><br/>
-                Your stall(s) are reserved in your organization&apos;s name. Pay using the details below to confirm your booking; our secretariat will also send your official contract and pro-forma invoice. Please quote booking reference <code>${escapeHtml(orderId)}</code> in all correspondence.
+                Your stall(s) are reserved in your organization&apos;s name until <strong>${paymentDueBy ? escapeHtml(new Date(paymentDueBy).toUTCString().replace(/ \d\d:\d\d:\d\d GMT$/, "")) : `${RESERVATION_PAYMENT_DAYS} days from today`}</strong>. Pay using the details below before then to confirm your booking; unpaid reservations are released after ${RESERVATION_PAYMENT_DAYS} days. Our secretariat will also send your official contract and pro-forma invoice. Please quote booking reference <code>${escapeHtml(orderId)}</code> in all correspondence.
               </div>
               ${paymentDetailsHtml}
               `
@@ -602,7 +608,7 @@ Organization: ${company || primaryName}
 Fascia Board Name: ${fasciaName || company || primaryName}
 Tariff: ${isHold72h ? `NPR 0 Today (72-Hour Free Hold) · Full tariff: NPR ${formattedNPR} / USD $${formattedUSD}` : `NPR ${formattedNPR} / USD $${formattedUSD}`}
 Payment Method: ${isHold72h ? "72-HOUR FREE HOLD" : paymentMethod.toUpperCase()}
-${isHold72h && holdExpiresAt ? `Hold Expiration: ${holdExpiresAt} (72 Hours)\n` : ""}Dates: 17–19 January 2027
+${isHold72h && holdExpiresAt ? `Hold Expiration: ${holdExpiresAt} (72 Hours)\n` : ""}${paymentDueBy ? `Payment Due By: ${new Date(paymentDueBy).toUTCString()} (unpaid reservations are released after ${RESERVATION_PAYMENT_DAYS} days)\n` : ""}Dates: 17–19 January 2027
 Venue: BHRIKUTIMANDAP, KATHMANDU, NEPAL
 
 How to Pay:
@@ -628,6 +634,7 @@ Website: https://www.higex.org
         ["Stalls", stallListStr],
         ["Tariff (incl. VAT)", `NPR ${formattedNPR} / USD $${formattedUSD}`],
         ...(isHold72h && holdExpiresAt ? [["Hold expires", new Date(holdExpiresAt).toUTCString()] as [string, string]] : []),
+        ...(paymentDueBy ? [["Payment due by", `${new Date(paymentDueBy).toUTCString()} (auto-released if still unpaid; set the stall to Booked in admin once paid)`] as [string, string]] : []),
         ["Company", company || "-"],
         ["Contact person", contactPerson || "-"],
         ["Email", email],

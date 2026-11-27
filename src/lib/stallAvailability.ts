@@ -2,6 +2,8 @@
 // wizard and the booking API so the browser and the server agree.
 
 export const HOLD_STATUS = "72h Hold";
+/** Days a "Book" reservation stays Reserved without payment before it is released. */
+export const RESERVATION_PAYMENT_DAYS = 7;
 const TAKEN_STATUSES = new Set(["booked", "reserved", "sold"]);
 
 type OverrideLike = { status?: string; holdExpiresAt?: string } | null | undefined;

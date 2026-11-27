@@ -7,6 +7,15 @@ import { speakersData } from "@/data/speakers";
 import { attributionFields } from "@/lib/attribution";
 import { getAdminSession } from "@/lib/session";
 
+// A stall status set by an admin is a manual decision: stop the automatic payment-deadline
+// release, and drop the 72h-hold expiry unless the admin is putting the stall on hold.
+function manualStatusClears(status: string | undefined) {
+  return {
+    reservationExpiresAt: "",
+    ...(status !== "72h Hold" ? { holdExpiresAt: "", is72hHold: false } : {}),
+  };
+}
+
 export const dynamic = "force-dynamic";
 
 const ROOT_ADMIN_DATA_PATH = path.join(process.cwd(), "data", "adminData.json");
@@ -468,6 +477,7 @@ export async function POST(req: Request) {
           setFirebaseBoothOverride(boothNumber, {
             status,
             exhibitorName,
+            ...manualStatusClears(status),
             ...(parsedUSD !== undefined ? { priceUSD: parsedUSD } : {}),
             ...(parsedNPR !== undefined ? { priceNPR: parsedNPR } : {}),
             ...(parsedIsPrime !== undefined ? { isPrime: parsedIsPrime } : {}),
@@ -573,6 +583,7 @@ export async function POST(req: Request) {
           setFirebaseBoothOverride(num, {
             status: data.boothOverrides[num].status,
             exhibitorName: data.boothOverrides[num].exhibitorName,
+            ...(status !== undefined ? manualStatusClears(status) : {}),
             ...(isPrime !== undefined ? { isPrime: Boolean(isPrime) } : {}),
           }).catch(() => {});
         }

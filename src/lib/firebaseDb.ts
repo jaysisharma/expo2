@@ -143,6 +143,7 @@ export async function setFirebaseBoothOverride(
     dimensions?: string;
     is72hHold?: boolean;
     holdExpiresAt?: string;
+    reservationExpiresAt?: string;
     bookingRef?: string;
   }
 ) {

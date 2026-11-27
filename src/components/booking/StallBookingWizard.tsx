@@ -8,7 +8,7 @@ import savedFloorPlanFallback from "@/data/savedCustomFloorPlan.json";
 import InteractiveFloorPlan from "@/components/floor-plan/InteractiveFloorPlan";
 import confetti from "canvas-confetti";
 import PaymentInstructions from "./PaymentInstructions";
-import { effectiveStallStatus, findOverride, isStatusTaken } from "@/lib/stallAvailability";
+import { effectiveStallStatus, findOverride, isStatusTaken, RESERVATION_PAYMENT_DAYS } from "@/lib/stallAvailability";
 import {
   CheckCircle2,
   ArrowRight,
@@ -1555,7 +1555,7 @@ export default function StallBookingWizard() {
                 {
                   value: "book" as const,
                   title: "Book Stall",
-                  desc: "Send a booking request by email. Your stall is reserved and our team replies with the contract & invoice.",
+                  desc: `Reserve the stall now and pay within ${RESERVATION_PAYMENT_DAYS} days by QR or bank transfer. Unpaid reservations are released.`,
                   Icon: Mail,
                 },
                 {
@@ -2058,7 +2058,7 @@ export default function StallBookingWizard() {
                 </>
               ) : (
                 <>
-                  Your reservation email for <strong>STALL {selectedBoothNumbers.join(", ")}</strong> has been prepared in your email app with all your details filled in. <strong>Please press Send</strong> to complete your reservation. Our exhibition team will reply with your pro-forma invoice and exhibitor kit.
+                  Your reservation email for <strong>STALL {selectedBoothNumbers.join(", ")}</strong> has been prepared in your email app with all your details filled in. <strong>Please press Send</strong> to complete your reservation. Your stall is reserved for <strong>{RESERVATION_PAYMENT_DAYS} days</strong>: pay using the details below to confirm it, otherwise it is released for other exhibitors.
                 </>
               )}
             </p>
