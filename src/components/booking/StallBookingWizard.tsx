@@ -56,8 +56,6 @@ import { PARTICIPATION_PACKAGES, type StallPackage } from "@/data/participationP
 import { quoteBooking, resolveStall, isActualStall } from "@/lib/stallPricing";
 export { PARTICIPATION_PACKAGES, type StallPackage };
 
-const RESERVATION_EMAIL_TO = "Shrestha.anup101@gmail.com";
-const RESERVATION_EMAIL_CC = "info@himalayanenergyexpo.com";
 
 export default function StallBookingWizard() {
   const router = useRouter();
@@ -129,8 +127,7 @@ export default function StallBookingWizard() {
   const [perksModalPackageId, setPerksModalPackageId] = useState<string | null>(null);
 
   const [bookingRef, setBookingRef] = useState<string>("");
-  const [reservationMailto, setReservationMailto] = useState<string>("");
-  // "hold" = free 72-hour hold on the stalls, "book" = booking request confirmed by email
+  // "hold" = free 72-hour hold on the stalls, "book" = online booking, paid within RESERVATION_PAYMENT_DAYS
   const [reservationType, setReservationType] = useState<"book" | "hold">("book");
 
   // Load custom elements configured from Admin Floor Plan Studio & overrides
@@ -367,35 +364,6 @@ export default function StallBookingWizard() {
     });
   };
 
-  const buildReservationMailto = (ref: string) => {
-    const resolvedIndustry =
-      formData.industryCategory === "Other" ? customIndustry.trim() : formData.industryCategory;
-    const packageLine =
-      selectedPackage && selectedPackage.id !== "custom-selection" ? `Package: ${selectedPackage.name}\n` : "";
-    const subject = `Stall Reservation [${selectedBoothNumbers.join(", ")}] - ${formData.companyName.trim()} - Himalayan Green Energy Expo 2027`;
-    const body =
-      `Dear Secretariat,\n\n` +
-      `We would like to reserve the following stall(s) for Himalayan Green Energy Expo 2027.\n\n` +
-      `Reference ID: ${ref}\n` +
-      packageLine +
-      `Stalls: ${selectedBoothNumbers.join(", ")}\n` +
-      `Total Area: ${totalAreaSqM} m²\n` +
-      `Tariff (incl. VAT): NPR ${totalWithVatNPR.toLocaleString()} / USD $${totalWithVatUSD.toLocaleString()}\n\n` +
-      `--- Exhibitor Details ---\n` +
-      `Exhibitor Type: ${exhibitorOrigin === "international" ? "International" : "Domestic"}\n` +
-      `Company: ${formData.companyName.trim()}\n` +
-      `Contact Person: ${formData.contactPerson.trim()}\n` +
-      `Email: ${formData.email.trim()}\n` +
-      `Phone: ${formData.phone.trim()}\n` +
-      `Country: ${formData.country.trim()}\n` +
-      (formData.website.trim() ? `Website: ${formData.website.trim()}\n` : "") +
-      `Industry Sector: ${resolvedIndustry}\n` +
-      `Fascia Name: ${(formData.fasciaName || formData.companyName).trim()}\n` +
-      (formData.specialRequirements.trim() ? `Special Requirements: ${formData.specialRequirements.trim()}\n` : "") +
-      `\nPlease share the booking confirmation and invoice details.\n\nThank you.`;
-    return `mailto:${RESERVATION_EMAIL_TO}?cc=${RESERVATION_EMAIL_CC}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  };
-
   const handleNext = async () => {
     setFormError("");
 
@@ -443,7 +411,7 @@ export default function StallBookingWizard() {
       const ref = `HHE26-STALL-${Math.floor(100000 + Math.random() * 900000)}`;
       const resolvedIndustry =
         formData.industryCategory === "Other" ? customIndustry.trim() : formData.industryCategory;
-      const tag = `[${exhibitorOrigin.toUpperCase()} EXHIBITOR] ${isHold ? "[72-HOUR FREE HOLD] " : "[EMAIL BOOKING] "}`;
+      const tag = `[${exhibitorOrigin.toUpperCase()} EXHIBITOR] ${isHold ? "[72-HOUR FREE HOLD] " : "[ONLINE BOOKING] "}`;
 
       setIsSubmitting(true);
       try {
@@ -475,7 +443,7 @@ export default function StallBookingWizard() {
                 ? `${tag}Package: ${selectedPackage.name} | Stalls: ${selectedBoothNumbers.join(", ")}`
                 : `${tag}Stalls: ${selectedBoothNumbers.join(", ")}`) +
               (formData.specialRequirements.trim() ? ` | Notes: ${formData.specialRequirements.trim()}` : ""),
-            paymentMethod: isHold ? "hold_72h" : "email",
+            paymentMethod: isHold ? "hold_72h" : "book",
             isHold72h: isHold,
           }),
         });
@@ -512,10 +480,7 @@ export default function StallBookingWizard() {
           return;
         }
 
-        // Booking: saved in admin panel, now compose the reservation email
-        const mailto = buildReservationMailto(finalRef);
-        setReservationMailto(mailto);
-        window.location.href = mailto;
+        // Booking: saved in admin panel; show the confirmation and payment details
         setStep(4);
       } catch (err: any) {
         console.error("Reservation error:", err);
@@ -658,7 +623,7 @@ export default function StallBookingWizard() {
               ? "SELECT STALL(S)"
               : step === 2
                 ? "ORGANIZATION DETAILS"
-                : "RESERVATION EMAIL"}
+                : "CONFIRMED"}
           </span>
           <span>{Math.round((displayStep / 3) * 100)}% COMPLETED</span>
         </div>
@@ -2058,7 +2023,7 @@ export default function StallBookingWizard() {
                 </>
               ) : (
                 <>
-                  Your reservation email for <strong>STALL {selectedBoothNumbers.join(", ")}</strong> has been prepared in your email app with all your details filled in. <strong>Please press Send</strong> to complete your reservation. Your stall is reserved for <strong>{RESERVATION_PAYMENT_DAYS} days</strong>: pay using the details below to confirm it, otherwise it is released for other exhibitors.
+                  Your booking for <strong>STALL {selectedBoothNumbers.join(", ")}</strong> is confirmed and reserved in your name for <strong>{RESERVATION_PAYMENT_DAYS} days</strong>. Pay using the details below to secure it, otherwise it is released for other exhibitors. A confirmation email has been sent to <strong>{formData.email}</strong>.
                 </>
               )}
             </p>
@@ -2067,22 +2032,6 @@ export default function StallBookingWizard() {
           <div className="inline-block p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-900 font-bold">
             REFERENCE ID: {bookingRef}
           </div>
-
-          {reservationMailto && (
-            <div className="max-w-md mx-auto p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 space-y-2.5">
-              <div className="flex items-center justify-center gap-2">
-                <Mail className="w-4 h-4 text-emerald-700 shrink-0" />
-                <span>Email app didn&apos;t open? Click below, or write to <strong>{RESERVATION_EMAIL_TO}</strong> quoting your reference ID.</span>
-              </div>
-              <a
-                href={reservationMailto}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#007A5E] hover:bg-[#00664e] text-white font-mono text-xs font-bold transition-all shadow-xs"
-              >
-                <Mail className="w-3.5 h-3.5" />
-                <span>OPEN RESERVATION EMAIL</span>
-              </a>
-            </div>
-          )}
 
           {bookingRef && (
             <div className="max-w-3xl mx-auto">
@@ -2171,12 +2120,12 @@ export default function StallBookingWizard() {
                   </>
                 ) : (
                   <>
-                    {step === 2 && (reservationType === "hold" ? <Clock className="w-4 h-4" /> : <Mail className="w-4 h-4" />)}
+                    {step === 2 && (reservationType === "hold" ? <Clock className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />)}
                     <span>
                       {step === 2
                         ? reservationType === "hold"
                           ? "HOLD STALL FOR 72 HOURS (NPR 0)"
-                          : "SUBMIT BOOKING & COMPOSE EMAIL"
+                          : "CONFIRM BOOKING"
                         : step === 3
                         ? paymentMethod === "hold_72h"
                           ? "CONFIRM 72-HOUR FREE HOLD (NPR 0)"

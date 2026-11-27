@@ -230,13 +230,14 @@ export async function POST(req: Request) {
     }
 
     const isHold72h = paymentMethod === "hold_72h" || Boolean(body.isHold72h);
-    // Booking request confirmed by the exhibitor via email (no online payment)
-    const isEmailBooking = !isHold72h && paymentMethod === "email";
+    // Online "Book" request: stall reserved now, paid offline within RESERVATION_PAYMENT_DAYS
+    // ("email" is the older name for the same flow)
+    const isOnlineBooking = !isHold72h && (paymentMethod === "book" || paymentMethod === "email");
     const holdExpiresAt = isHold72h
       ? new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString()
       : undefined;
     // "Book" requests stay Reserved until paid; the daily cron releases them after this deadline
-    const paymentDueBy = isEmailBooking
+    const paymentDueBy = isOnlineBooking
       ? new Date(Date.now() + RESERVATION_PAYMENT_DAYS * 24 * 60 * 60 * 1000).toISOString()
       : undefined;
 
@@ -294,8 +295,8 @@ export async function POST(req: Request) {
       ...(paymentDueBy ? { paymentDueBy } : {}),
       paymentStatus: isHold72h
         ? "FREE_HOLD_72H"
-        : isEmailBooking
-          ? "PENDING_EMAIL_CONFIRMATION"
+        : isOnlineBooking
+          ? "PENDING_PAYMENT"
           : paymentMethod === "bank"
             ? "PENDING_WIRE"
             : "INITIATED",
@@ -423,8 +424,8 @@ export async function POST(req: Request) {
       company: company || contactPerson,
       subject: isHold72h
         ? `[72-HOUR FREE HOLD] Reservation [${stallListStr}]`
-        : isEmailBooking
-          ? `[BOOKING REQUEST - EMAIL] Reservation [${stallListStr}]`
+        : isOnlineBooking
+          ? `[ONLINE BOOKING] Reservation [${stallListStr}]`
           : `Stall Reservation [${stallListStr}] - Method: ${paymentMethod.toUpperCase()}`,
       message: `Booking Ref: ${orderId}. Stalls: ${stallListStr}. Fascia: ${fasciaName || company}. ${
         isHold72h
@@ -471,8 +472,8 @@ export async function POST(req: Request) {
 
       const subjectLine = isHold72h
         ? `[72-Hour Free Hold Confirmed] Ref: ${orderId} · ${resolvedPackageName || `Stall ${stallListStr}`} | Himalayan Green Energy Expo 2027`
-        : isEmailBooking
-        ? `[Booking Request Received] Ref: ${orderId} · ${resolvedPackageName || `Stall ${stallListStr}`} | Himalayan Green Energy Expo 2027`
+        : isOnlineBooking
+        ? `[Booking Received - Payment Pending] Ref: ${orderId} · ${resolvedPackageName || `Stall ${stallListStr}`} | Himalayan Green Energy Expo 2027`
         : `${isSponsorTier ?`${resolvedPackageName} Confirmed` : "Stall Reservation Confirmed"} [Ref: ${orderId}] | Himalayan Green Energy Expo 2027`;
 
       const perksHtml = Array.isArray(packagePerks) && packagePerks.length > 0
@@ -557,10 +558,10 @@ export async function POST(req: Request) {
               </div>
               ${paymentDetailsHtml}
               `
-                  : isEmailBooking
+                  : isOnlineBooking
                   ? `
               <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 16px 20px; margin: 18px 0; font-size: 13px; line-height: 1.7;">
-                <strong style="color: #065f46;">Booking Request Received:</strong><br/>
+                <strong style="color: #065f46;">Booking Received - Payment Pending:</strong><br/>
                 Your stall(s) are reserved in your organization&apos;s name until <strong>${paymentDueBy ? escapeHtml(new Date(paymentDueBy).toUTCString().replace(/ \d\d:\d\d:\d\d GMT$/, "")) : `${RESERVATION_PAYMENT_DAYS} days from today`}</strong>. Pay using the details below before then to confirm your booking; unpaid reservations are released after ${RESERVATION_PAYMENT_DAYS} days. Our secretariat will also send your official contract and pro-forma invoice. Please quote booking reference <code>${escapeHtml(orderId)}</code> in all correspondence.
               </div>
               ${paymentDetailsHtml}
@@ -626,7 +627,7 @@ Website: https://www.higex.org
       // Trigger asynchronous background sending
       // Notify the secretariat directly, so a new reservation never depends on the
       // exhibitor pressing Send in their email app.
-      const kindLabel = isHold72h ? "72-HOUR HOLD" : isEmailBooking ? "BOOKING REQUEST" : `RESERVATION (${String(paymentMethod).toUpperCase()})`;
+      const kindLabel = isHold72h ? "72-HOUR HOLD" : isOnlineBooking ? "BOOKING REQUEST" : `RESERVATION (${String(paymentMethod).toUpperCase()})`;
       const teamRows: [string, string][] = [
         ["Reference", orderId],
         ["Type", kindLabel],
@@ -693,12 +694,12 @@ Website: https://www.higex.org
       (process.env.NODE_ENV === "development" ? "http://localhost:3000" : "https://www.higex.org");
 
     // Email booking request: recorded above, the exhibitor confirms by sending the composed email
-    if (isEmailBooking) {
+    if (isOnlineBooking) {
       return NextResponse.json({
         success: true,
         bookingId: orderId,
-        paymentMethod: "email",
-        message: "Booking request recorded. Awaiting email confirmation.",
+        paymentMethod: "book",
+        message: "Booking recorded. Awaiting payment.",
       });
     }
 
