@@ -3,6 +3,7 @@ import { getStaffOrAdminSession } from "@/lib/session";
 import fs from "fs";
 import path from "path";
 import { getFirebaseRegistrationById, toggleFirebaseCheckin } from "@/lib/firebaseDb";
+import { isPaidTicketOrder } from "@/lib/orders";
 import {
   decryptPassToken,
   generateSecurityChecksum,
@@ -127,6 +128,22 @@ export async function GET(req: NextRequest) {
       }
     }
 
+    // A paid ticket (Networking Dinner) is not a valid pass until its payment is verified
+    if (attendee && isPaidTicketOrder(attendee) && attendee.paymentStatus !== "PAID") {
+      return NextResponse.json(
+        {
+          success: false,
+          paymentPending: true,
+          message: "This ticket's payment has not been verified yet, so it is not a valid pass. Please contact the registration desk.",
+        },
+        { status: 402 }
+      );
+    }
+    // Never vouch for a paid ticket that isn't in the database
+    if (!attendee && isPaidTicketOrder({ id })) {
+      return NextResponse.json({ success: false, message: "Ticket not found." }, { status: 404 });
+    }
+
     // 3. Fallback to URL parameters if not found in database
     if (attendee) {
       // Merge with query parameters if some fields are missing
@@ -242,6 +259,17 @@ export async function POST(req: NextRequest) {
     }
 
     const newStatus = checkedIn !== undefined ? Boolean(checkedIn) : true;
+
+    // Don't admit an unpaid Networking Dinner ticket
+    if (newStatus) {
+      const reg = await getFirebaseRegistrationById(id).catch(() => null);
+      if (reg && isPaidTicketOrder(reg) && reg.paymentStatus !== "PAID") {
+        return NextResponse.json(
+          { success: false, paymentPending: true, message: "Payment not verified for this ticket. Do not admit." },
+          { status: 402 }
+        );
+      }
+    }
 
     // Update in local file
     const localData = readLocalAdminData();

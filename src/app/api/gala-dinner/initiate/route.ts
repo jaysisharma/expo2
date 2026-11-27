@@ -80,9 +80,17 @@ export async function POST(req: Request) {
       );
     }
 
-    // International delegates pay in USD by SWIFT wire to Standard Chartered (lib/paymentDetails)
-    const isIntlDelegate = passType === 'international';
-    const effectivePaymentMethod = isIntlDelegate ? 'bank' : paymentMethod;
+    // Decide the payment route once, so the saved status, the email and the redirect agree.
+    // International delegates pay in USD by SWIFT wire to Standard Chartered (lib/paymentDetails).
+    const cleanCountry = String(country || '').trim().toLowerCase();
+    const isDomestic =
+      cleanCountry === '' ||
+      cleanCountry.includes('nepal') ||
+      cleanCountry.includes('ktm') ||
+      cleanCountry.includes('kathmandu');
+    const isIntlDelegate = passType === 'international' || !isDomestic || paymentMethod === 'intl_card';
+    const effectivePaymentMethod: 'bank' | 'khalti' | 'qr' =
+      isIntlDelegate || paymentMethod === 'bank' ? 'bank' : paymentMethod === 'khalti' ? 'khalti' : 'qr';
 
     const qty = Math.max(1, parseInt(String(quantity), 10) || 1);
     const unitPriceNPR = passType === 'international' ? 6750 : 6000;
@@ -137,11 +145,14 @@ export async function POST(req: Request) {
         specialRequests,
       },
       paymentMethod: effectivePaymentMethod,
-      paymentStatus: isIntlDelegate
-        ? 'PENDING_WIRE'
-        : paymentMethod === 'qr'
-          ? 'PENDING_QR_VERIFICATION'
-          : 'UNPAID',
+      // Never PAID here: only a verified Khalti payment or an admin check of the QR / wire confirms it
+      paymentStatus:
+        effectivePaymentMethod === 'bank'
+          ? 'PENDING_WIRE'
+          : effectivePaymentMethod === 'qr'
+            ? 'PENDING_QR_VERIFICATION'
+            : 'UNPAID',
+      status: 'Pending Payment',
       screenshotUrl: body.screenshotUrl || '',
       checkedIn: false,
       registeredAt: new Date().toISOString(),
@@ -160,8 +171,8 @@ export async function POST(req: Request) {
       email,
       phone,
       company: organization || name,
-      subject: `Networking Dinner Reservation [${qty}x ${passType.toUpperCase()}] - ${isIntlDelegate ? 'SWIFT WIRE' : paymentMethod.toUpperCase()}`,
-      message: `Order: ${orderId}. Pass: ${resolvedPassTitle}. Quantity: ${qty}. Total: NPR ${totalAmountNPR.toLocaleString()} (USD ${totalAmountUSD}). Dietary: ${dietary}. Payment: ${paymentMethod.toUpperCase()}.`,
+      subject: `Networking Dinner Reservation [${qty}x ${passType.toUpperCase()}] - ${effectivePaymentMethod === 'bank' ? 'SWIFT WIRE' : effectivePaymentMethod.toUpperCase()}`,
+      message: `Order: ${orderId}. Pass: ${resolvedPassTitle}. Quantity: ${qty}. Total: NPR ${totalAmountNPR.toLocaleString()} (USD ${totalAmountUSD}). Dietary: ${dietary}. Payment: ${effectivePaymentMethod.toUpperCase()} (not yet verified).`,
       stallInterest: 'Networking Dinner (Royal Tulip)',
       status: 'New',
       submittedAt: new Date().toISOString(),
@@ -172,10 +183,12 @@ export async function POST(req: Request) {
 
     await saveAdminData(adminData);
 
-    // Send automated email confirmation to delegate (auto-reply)
+    // Acknowledgement email (NOT a confirmation): payment is still pending for every method.
+    // Khalti guests get nothing yet: they are on their way to pay, and the confirmation with
+    // their entry pass is sent once Khalti verifies the payment (lib/orders markOrderPaymentStatus).
     try {
       const transporter = createTransporter();
-      if (transporter) {
+      if (transporter && effectivePaymentMethod !== 'khalti') {
         const fromName = process.env.SMTP_FROM_NAME || "Himalayan Green Energy Expo 2027";
         const smtpUser = process.env.SMTP_USER;
 
@@ -219,14 +232,26 @@ export async function POST(req: Request) {
                     ? `USD $${totalAmountUSD.toLocaleString()} (Includes 13% VAT: USD $${vatUSD.toLocaleString()})`
                     : `NPR ${totalAmountNPR.toLocaleString()} (Includes 13% VAT: NPR ${vatNPR.toLocaleString()})`
                 }<br/>
-                &bull; <strong>Payment Method:</strong> ${isIntlDelegate ? 'SWIFT BANK WIRE (USD)' : paymentMethod.toUpperCase()}<br/>
+                &bull; <strong>Payment Method:</strong> ${effectivePaymentMethod === 'bank' ? 'SWIFT BANK WIRE (USD)' : 'QR PAYMENT'}<br/>
+                &bull; <strong>Payment Status:</strong> Pending verification<br/>
                 &bull; <strong>Date &amp; Time:</strong> Monday, 18 January 2027 &bull; 6:00 PM onwards<br/>
                 &bull; <strong>Venue:</strong> Royal Tulip Kathmandu (Gwarko)<br/>
                 &bull; <strong>Inclusions:</strong> 5-Star Gourmet Banquet, diplomatic plenary reflections, and complimentary 3-day access badge to the main exhibition at Bhrikuti Mandap.
               </div>
 
               ${
-                isIntlDelegate
+                effectivePaymentMethod === 'qr'
+                  ? `
+              <div style="background-color: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 16px 20px; margin: 18px 0; font-size: 13px; line-height: 1.7;">
+                <strong style="color: #92400e;">Not confirmed yet &ndash; payment being verified</strong><br/>
+                We have received your payment screenshot. Our team will check it against our account; once the payment is verified
+                you will receive a confirmation email with your official entry pass and QR code. Please don't treat this email as your ticket.
+              </div>`
+                  : ''
+              }
+
+              ${
+                effectivePaymentMethod === 'bank'
                   ? `
               <div style="background-color: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 16px 20px; margin: 18px 0; font-size: 13px; line-height: 1.7;">
                 <strong style="color: #075985;">Pay by SWIFT Bank Wire (USD):</strong><br/>
@@ -264,9 +289,7 @@ export async function POST(req: Request) {
           from: `"${fromName}" <${smtpUser}>`,
           to: email,
           replyTo: `"Expo Secretariat" <info@eventsolutionnepal.com.np>`,
-          subject: isIntlDelegate
-            ? `Networking Dinner Reservation Received - Payment Pending [Ref: ${orderId}] | Himalayan Green Energy Expo 2027`
-            : `Networking Dinner Reservation Confirmed [Ref: ${orderId}] | Himalayan Green Energy Expo 2027`,
+          subject: `Networking Dinner Reservation Received - Payment Pending [Ref: ${orderId}] | Himalayan Green Energy Expo 2027`,
           html: emailHtml,
         }).catch((err) => {
           console.warn("[gala-dinner] Auto-reply send error:", err?.message || err);
@@ -285,22 +308,10 @@ export async function POST(req: Request) {
       process.env.NEXT_PUBLIC_APP_URL ||
       (process.env.NODE_ENV === "development" ? "http://localhost:3000" : "https://www.higex.org");
 
-    const cleanCountry = (country || "").trim().toLowerCase();
-    const isDomestic =
-      cleanCountry === "nepal" ||
-      cleanCountry === "" ||
-      cleanCountry.includes("nepal") ||
-      cleanCountry.includes("ktm") ||
-      cleanCountry.includes("kathmandu");
+    const isInternational = isIntlDelegate;
 
-    const isInternational =
-      passType === "international" ||
-      (!isDomestic && cleanCountry !== "") ||
-      paymentMethod === "intl_card";
-
-    // International delegates are strictly routed to bank wire / USD invoice
-    // Online card checkout is currently under construction.
-    if (isInternational || paymentMethod === 'bank') {
+    // International delegates are routed to SWIFT bank wire (USD)
+    if (effectivePaymentMethod === 'bank') {
       return NextResponse.json({
         success: true,
         orderId,
@@ -315,7 +326,7 @@ export async function POST(req: Request) {
     }
 
     // 2. If Khalti payment method
-    if (paymentMethod === 'khalti') {
+    if (effectivePaymentMethod === 'khalti') {
       try {
         const returnUrl = `${baseUrl}/api/payment/callback?order_id=${encodeURIComponent(
           orderId

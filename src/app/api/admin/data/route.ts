@@ -6,6 +6,7 @@ import { exhibitorsData } from "@/data/exhibitors";
 import { speakersData } from "@/data/speakers";
 import { attributionFields } from "@/lib/attribution";
 import { getAdminSession } from "@/lib/session";
+import { findOrder, markOrderPaymentStatus } from "@/lib/orders";
 
 // A stall status set by an admin is a manual decision: stop the automatic payment-deadline
 // release, and drop the 72h-hold expiry unless the admin is putting the stall on hold.
@@ -444,6 +445,26 @@ export async function POST(req: Request) {
           return NextResponse.json({ success: true, message: "Check-in updated", data: reg });
         }
         return NextResponse.json({ success: false, message: "Registration not found" }, { status: 404 });
+      }
+
+      case "verify_registration_payment": {
+        // Admin confirms a QR / bank payment for a paid ticket (Networking Dinner): marks it PAID,
+        // which also emails the guest their entry pass (lib/orders markOrderPaymentStatus).
+        const { regId } = payload;
+        const order = regId ? await findOrder(String(regId)) : null;
+        if (!order || order.kind !== "registration") {
+          return NextResponse.json({ success: false, message: "Registration not found" }, { status: 404 });
+        }
+        if (order.record.paymentStatus === "PAID") {
+          return NextResponse.json({ success: true, message: "Already marked as paid" });
+        }
+        await markOrderPaymentStatus(String(regId), "PAID");
+        const reg = data.registrations?.find((r: any) => r.id === regId);
+        if (reg) {
+          Object.assign(reg, { paymentStatus: "PAID", status: "Confirmed", paidAt: new Date().toISOString() });
+          await saveAdminData(data);
+        }
+        return NextResponse.json({ success: true, message: "Payment verified. Entry pass emailed to the guest." });
       }
 
       case "delete_registration": {
