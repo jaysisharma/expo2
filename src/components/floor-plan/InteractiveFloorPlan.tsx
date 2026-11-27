@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import savedFloorPlanFallback from "@/data/savedCustomFloorPlan.json";
+import { effectiveStallStatus } from "@/lib/stallAvailability";
 import {
   officialStalls,
   OfficialStall,
@@ -279,7 +280,7 @@ export default function InteractiveFloorPlan({
   const toggleStall = (stall: any) => {
     const stallNumber = stall.number || stall.id;
     const override = boothOverrides[stallNumber] || (stall.id && boothOverrides[stall.id]);
-    const effectiveStatus = override?.status || stall.status;
+    const effectiveStatus = effectiveStallStatus(override, stall.status);
 
     // Show mobile detail card when tapped on mobile screens (< 768px)
     if (typeof window !== "undefined" && window.innerWidth < 768) {
@@ -658,7 +659,7 @@ export default function InteractiveFloorPlan({
 
                   const stallNumber = el.number || el.id;
                   const override = boothOverrides[stallNumber] || (el.id && boothOverrides[el.id]);
-                  const effectiveStatus = override?.status || el.status;
+                  const effectiveStatus = effectiveStallStatus(override, el.status);
                   const isPrime = Boolean(override?.isPrime ?? el.isPrime);
                   const isBooked = effectiveStatus === "Booked";
                   const isReserved = effectiveStatus === "Reserved";
@@ -853,7 +854,7 @@ export default function InteractiveFloorPlan({
             {stallElements.filter((el) => !isPolygonElement(el)).map((el) => {
               const stallNumber = el.number || el.id;
               const override = boothOverrides[stallNumber] || (el.id && boothOverrides[el.id]);
-              const effectiveStatus = override?.status || el.status;
+              const effectiveStatus = effectiveStallStatus(override, el.status);
               const isPrime = Boolean(override?.isPrime ?? el.isPrime);
               const isSelected = selectedStalls.some((s) => s.toLowerCase() === stallNumber.toLowerCase() || (el.id && s.toLowerCase() === el.id.toLowerCase()));
               const isHovered = hoveredStall?.id === el.id;
@@ -1027,7 +1028,7 @@ export default function InteractiveFloorPlan({
           const isBareSpace = !isB && !isH;
 
           const ov = boothOverrides[stallNum] || (activeMobileStall.id && boothOverrides[activeMobileStall.id]);
-          const effectiveStatus = ov?.status || activeMobileStall.status || "Available";
+          const effectiveStatus = effectiveStallStatus(ov, activeMobileStall.status);
           const card = stallCardInfo(activeMobileStall);
           const isStallPrime = card.isPrime;
           const isBooked = effectiveStatus === "Booked";

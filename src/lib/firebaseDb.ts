@@ -15,7 +15,9 @@ import {
   limit,
   where,
   addDoc,
+  runTransaction,
 } from "./firestoreServer";
+import { effectiveStallStatus, isStatusTaken } from "./stallAvailability";
 
 // Collection Names
 export const COLLECTIONS = {
@@ -141,6 +143,7 @@ export async function setFirebaseBoothOverride(
     dimensions?: string;
     is72hHold?: boolean;
     holdExpiresAt?: string;
+    reservationExpiresAt?: string;
     bookingRef?: string;
   }
 ) {
@@ -744,5 +747,54 @@ export async function getFirebaseStallBookings(): Promise<any[] | null> {
   } catch (error) {
     console.warn("Firestore getStallBookings error:", error);
     return null;
+  }
+}
+
+// ----------------- ATOMIC STALL CLAIM -----------------
+export type StallClaimResult =
+  | { ok: true; atomic: boolean }
+  | { ok: false; taken: string[] };
+
+/**
+ * Claims stalls for a booking only if none of them is already booked, reserved or on a
+ * live 72h hold. Runs in a Firestore transaction so two people cannot claim the same
+ * stall at once. `knownTaken` lists stalls already known to be taken from the floor plan
+ * and a case-insensitive scan of the overrides (the transaction only sees exact doc IDs).
+ */
+export async function claimFirebaseBooths(
+  stallNumbers: string[],
+  payload: Record<string, any>,
+  knownTaken: string[] = []
+): Promise<StallClaimResult> {
+  const now = new Date().toISOString();
+  const alreadyTaken = new Set(knownTaken.map((s) => s.toLowerCase()));
+
+  try {
+    return await runTransaction(async (tx) => {
+      const refs = stallNumbers.map((num) => doc(db, COLLECTIONS.BOOTHS, num));
+      const snaps = await Promise.all(refs.map((r) => tx.get(r)));
+      const taken = stallNumbers.filter((num, i) => {
+        if (alreadyTaken.has(num.toLowerCase())) return true;
+        const override = snaps[i].exists() ? snaps[i].data() : undefined;
+        return Boolean(override?.status) && isStatusTaken(effectiveStallStatus(override));
+      });
+      if (taken.length > 0) return { ok: false as const, taken };
+      refs.forEach((r, i) => tx.set(r, { ...payload, boothNumber: stallNumbers[i], updatedAt: now }, { merge: true }));
+      return { ok: true as const, atomic: true };
+    });
+  } catch (error) {
+    // Firestore unreachable or transactions not permitted: fall back to a plain check-then-write
+    console.warn("Firestore claimBooths transaction failed, using non-atomic fallback:", error);
+    const overrides = (await getFirebaseBoothOverrides()) || {};
+    const lower: Record<string, any> = {};
+    for (const [k, v] of Object.entries(overrides)) lower[k.toLowerCase()] = v;
+    const taken = stallNumbers.filter((num) => {
+      if (alreadyTaken.has(num.toLowerCase())) return true;
+      const override = overrides[num] || lower[num.toLowerCase()];
+      return Boolean(override?.status) && isStatusTaken(effectiveStallStatus(override));
+    });
+    if (taken.length > 0) return { ok: false, taken };
+    await Promise.all(stallNumbers.map((num) => setFirebaseBoothOverride(num, payload)));
+    return { ok: true, atomic: false };
   }
 }

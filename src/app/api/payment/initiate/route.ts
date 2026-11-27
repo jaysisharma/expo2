@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { initializeKhaltiPayment } from "@/lib/khalti";
 import nodemailer from "nodemailer";
 import fs from "fs/promises";
@@ -6,14 +6,19 @@ import path from "path";
 
 import { Resend } from "resend";
 import {
-  setFirebaseBoothOverride,
   setFirebaseSponsorshipHold,
   addFirebaseInquiry,
   getFirebaseFloorPlan,
   saveFirebaseFloorPlan,
+  getFirebaseBoothOverrides,
+  claimFirebaseBooths,
 } from "@/lib/firebaseDb";
+import { effectiveStallStatus, findOverride, HOLD_STATUS, isStatusTaken, RESERVATION_PAYMENT_DAYS } from "@/lib/stallAvailability";
 import { attributionFields } from "@/lib/attribution";
-import { PAYMENT_BANK, PAYMENT_PROOF_EMAIL, PAYMENT_QR_ABSOLUTE_URL } from "@/lib/paymentDetails";
+import { PAYMENT_BANK, PAYMENT_PROOF_CC, PAYMENT_PROOF_EMAIL, PAYMENT_QR_ABSOLUTE_URL } from "@/lib/paymentDetails";
+
+// Secretariat inboxes notified of every new stall hold / booking
+const BOOKING_TEAM_EMAILS = [PAYMENT_PROOF_EMAIL, PAYMENT_PROOF_CC];
 import { resolveNewOrderId, saveStallBooking } from "@/lib/orders";
 import { quoteBookingOnServer } from "@/lib/stallPricingServer";
 
@@ -23,6 +28,34 @@ const ROOT_ADMIN_DATA_PATH = path.join(process.cwd(), "data", "adminData.json");
 const SRC_ADMIN_DATA_PATH = path.join(process.cwd(), "src", "data", "adminData.json");
 const ROOT_FLOOR_PLAN_PATH = path.join(process.cwd(), "data", "savedCustomFloorPlan.json");
 const SRC_FLOOR_PLAN_PATH = path.join(process.cwd(), "src", "data", "savedCustomFloorPlan.json");
+
+/** Stalls the saved floor plan or the admin overrides already mark as booked / reserved / held. */
+async function findTakenStalls(stallNumbers: string[]): Promise<string[]> {
+  const [overrides, fbFloor] = await Promise.all([
+    getFirebaseBoothOverrides().catch(() => null),
+    getFirebaseFloorPlan().catch(() => null),
+  ]);
+  let elements: any[] = Array.isArray(fbFloor?.elements) ? fbFloor.elements : [];
+  if (elements.length === 0) {
+    for (const p of [ROOT_FLOOR_PLAN_PATH, SRC_FLOOR_PLAN_PATH]) {
+      try {
+        const local = JSON.parse(await fs.readFile(p, "utf-8"));
+        if (Array.isArray(local?.elements)) {
+          elements = local.elements;
+          break;
+        }
+      } catch {}
+    }
+  }
+  return stallNumbers.filter((num) => {
+    const n = num.trim().toLowerCase();
+    const el = elements.find(
+      (e: any) => (e.number && e.number.trim().toLowerCase() === n) || (e.id && e.id.trim().toLowerCase() === n)
+    );
+    const override = findOverride(overrides, num, el?.number, el?.id);
+    return isStatusTaken(effectiveStallStatus(override, el?.status));
+  });
+}
 
 async function getAdminData() {
   try {
@@ -202,6 +235,36 @@ export async function POST(req: Request) {
     const holdExpiresAt = isHold72h
       ? new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString()
       : undefined;
+    // "Book" requests stay Reserved until paid; the daily cron releases them after this deadline
+    const paymentDueBy = isEmailBooking
+      ? new Date(Date.now() + RESERVATION_PAYMENT_DAYS * 24 * 60 * 60 * 1000).toISOString()
+      : undefined;
+
+    // Claim the stalls atomically before recording anything, so a stall that is already
+    // booked, reserved or on a live hold can't be taken over by a second booking.
+    const knownTaken = await findTakenStalls(stallNumbers);
+    const claim = await claimFirebaseBooths(
+      stallNumbers,
+      {
+        status: isHold72h ? HOLD_STATUS : "Reserved",
+        exhibitorName: company || contactPerson || "",
+        bookingRef: orderId,
+        is72hHold: isHold72h,
+        holdExpiresAt: holdExpiresAt || "",
+        reservationExpiresAt: paymentDueBy || "",
+      },
+      knownTaken
+    );
+    if (!claim.ok) {
+      return NextResponse.json(
+        {
+          success: false,
+          takenStalls: claim.taken,
+          error: `Sorry, stall ${claim.taken.join(", ")} ${claim.taken.length > 1 ? "were" : "was"} just booked or held by someone else. Please go back and choose another stall.`,
+        },
+        { status: 409 }
+      );
+    }
 
     const newBookingRecord = {
       id: orderId,
@@ -228,6 +291,7 @@ export async function POST(req: Request) {
       paymentMethod,
       is72hHold: isHold72h,
       holdExpiresAt,
+      ...(paymentDueBy ? { paymentDueBy } : {}),
       paymentStatus: isHold72h
         ? "FREE_HOLD_72H"
         : isEmailBooking
@@ -271,7 +335,7 @@ export async function POST(req: Request) {
       setFirebaseSponsorshipHold(resolvedPackageId, pkgHoldData).catch(() => {});
     }
 
-    // 3. Mark stalls as Reserved or 72h Hold in boothOverrides
+    // 3. Mirror the stall claim into the local admin store (Firestore was written by claimFirebaseBooths)
     if (!adminData.boothOverrides) adminData.boothOverrides = {};
     for (const stNum of stallNumbers) {
       const overridePayload = {
@@ -283,7 +347,6 @@ export async function POST(req: Request) {
         updatedAt: new Date().toISOString(),
       };
       adminData.boothOverrides[stNum] = overridePayload;
-      setFirebaseBoothOverride(stNum, overridePayload).catch(() => {});
     }
 
     // 4. Sync stall status directly into floor plan designs (local and Firebase)
@@ -498,7 +561,7 @@ export async function POST(req: Request) {
                   ? `
               <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 16px 20px; margin: 18px 0; font-size: 13px; line-height: 1.7;">
                 <strong style="color: #065f46;">Booking Request Received:</strong><br/>
-                Your stall(s) are reserved in your organization&apos;s name. Pay using the details below to confirm your booking; our secretariat will also send your official contract and pro-forma invoice. Please quote booking reference <code>${escapeHtml(orderId)}</code> in all correspondence.
+                Your stall(s) are reserved in your organization&apos;s name until <strong>${paymentDueBy ? escapeHtml(new Date(paymentDueBy).toUTCString().replace(/ \d\d:\d\d:\d\d GMT$/, "")) : `${RESERVATION_PAYMENT_DAYS} days from today`}</strong>. Pay using the details below before then to confirm your booking; unpaid reservations are released after ${RESERVATION_PAYMENT_DAYS} days. Our secretariat will also send your official contract and pro-forma invoice. Please quote booking reference <code>${escapeHtml(orderId)}</code> in all correspondence.
               </div>
               ${paymentDetailsHtml}
               `
@@ -545,7 +608,7 @@ Organization: ${company || primaryName}
 Fascia Board Name: ${fasciaName || company || primaryName}
 Tariff: ${isHold72h ? `NPR 0 Today (72-Hour Free Hold) · Full tariff: NPR ${formattedNPR} / USD $${formattedUSD}` : `NPR ${formattedNPR} / USD $${formattedUSD}`}
 Payment Method: ${isHold72h ? "72-HOUR FREE HOLD" : paymentMethod.toUpperCase()}
-${isHold72h && holdExpiresAt ? `Hold Expiration: ${holdExpiresAt} (72 Hours)\n` : ""}Dates: 17–19 January 2027
+${isHold72h && holdExpiresAt ? `Hold Expiration: ${holdExpiresAt} (72 Hours)\n` : ""}${paymentDueBy ? `Payment Due By: ${new Date(paymentDueBy).toUTCString()} (unpaid reservations are released after ${RESERVATION_PAYMENT_DAYS} days)\n` : ""}Dates: 17–19 January 2027
 Venue: BHRIKUTIMANDAP, KATHMANDU, NEPAL
 
 How to Pay:
@@ -561,13 +624,60 @@ Website: https://www.higex.org
       `.trim();
 
       // Trigger asynchronous background sending
-      sendBookingConfirmationEmail({
-        toEmail: email,
-        subject: subjectLine,
-        htmlContent: emailHtml,
-        textContent: textFallback,
-      }).catch((err) => {
-        console.warn("[stall-booking] Background email dispatch error:", err);
+      // Notify the secretariat directly, so a new reservation never depends on the
+      // exhibitor pressing Send in their email app.
+      const kindLabel = isHold72h ? "72-HOUR HOLD" : isEmailBooking ? "BOOKING REQUEST" : `RESERVATION (${String(paymentMethod).toUpperCase()})`;
+      const teamRows: [string, string][] = [
+        ["Reference", orderId],
+        ["Type", kindLabel],
+        ...(resolvedPackageName ? [["Package", resolvedPackageName] as [string, string]] : []),
+        ["Stalls", stallListStr],
+        ["Tariff (incl. VAT)", `NPR ${formattedNPR} / USD $${formattedUSD}`],
+        ...(isHold72h && holdExpiresAt ? [["Hold expires", new Date(holdExpiresAt).toUTCString()] as [string, string]] : []),
+        ...(paymentDueBy ? [["Payment due by", `${new Date(paymentDueBy).toUTCString()} (auto-released if still unpaid; set the stall to Booked in admin once paid)`] as [string, string]] : []),
+        ["Company", company || "-"],
+        ["Contact person", contactPerson || "-"],
+        ["Email", email],
+        ["Phone", phone],
+        ["Country", country || "-"],
+        ["Industry", industryCategory || "-"],
+        ["Fascia name", fasciaName || company || "-"],
+        ["Notes", specialRequirements || "-"],
+      ];
+      const teamHtml = `
+        <div style="font-family: Arial, sans-serif; color: #0f172a; max-width: 620px;">
+          <h2 style="margin: 0 0 6px; font-size: 18px;">New stall ${isHold72h ? "hold" : "booking"}: ${escapeHtml(stallListStr)}</h2>
+          <p style="margin: 0 0 14px; font-size: 13px; color: #475569;">Submitted on the website. It is saved in the admin panel under Stall Bookings.</p>
+          <table style="border-collapse: collapse; font-size: 13px; width: 100%;">
+            ${teamRows
+              .map(
+                ([k, v]) =>
+                  `<tr><td style="padding: 6px 10px; border: 1px solid #e2e8f0; background: #f8fafc; font-weight: 600; white-space: nowrap;">${escapeHtml(k)}</td><td style="padding: 6px 10px; border: 1px solid #e2e8f0;">${escapeHtml(String(v))}</td></tr>`
+              )
+              .join("")}
+          </table>
+          <p style="margin: 14px 0 0; font-size: 13px;"><a href="mailto:${escapeHtml(email)}?subject=${encodeURIComponent(`Re: Stall ${stallListStr} - Ref ${orderId}`)}" style="color: #047857; font-weight: 600;">Reply to ${escapeHtml(contactPerson || email)}</a></p>
+        </div>`;
+      const teamText = teamRows.map(([k, v]) => `${k}: ${v}`).join("\n");
+
+      // after(): finish sending once the response is out, without Vercel cutting it off
+      after(async () => {
+        await Promise.all([
+          sendBookingConfirmationEmail({
+            toEmail: email,
+            subject: subjectLine,
+            htmlContent: emailHtml,
+            textContent: textFallback,
+          }).catch((err) => console.warn("[stall-booking] Exhibitor email error:", err)),
+          ...BOOKING_TEAM_EMAILS.map((to) =>
+            sendBookingConfirmationEmail({
+              toEmail: to,
+              subject: `[New ${isHold72h ? "Hold" : "Booking"}] Stall ${stallListStr} - ${company || contactPerson} (Ref ${orderId})`,
+              htmlContent: teamHtml,
+              textContent: teamText,
+            }).catch((err) => console.warn("[stall-booking] Team notification error:", err))
+          ),
+        ]);
       });
     } catch (e) {
       console.warn("[stall-booking] Email setup skipped:", e);

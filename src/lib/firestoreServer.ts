@@ -102,6 +102,41 @@ export async function deleteDoc(ref: any): Promise<void> {
   await (ref as FirebaseFirestore.DocumentReference).delete();
 }
 
+export type TxSnapshot = { exists: () => boolean; data: () => any };
+export type Tx = {
+  get: (ref: any) => Promise<TxSnapshot>;
+  set: (ref: any, data: any, options?: { merge?: boolean }) => void;
+};
+
+/** Atomic read-then-write; retried by Firestore if a read doc changes before commit. */
+export async function runTransaction<T>(fn: (tx: Tx) => Promise<T>): Promise<T> {
+  const admin = getAdminDb();
+  if (admin) {
+    return admin.runTransaction((t) =>
+      fn({
+        get: async (ref) => {
+          const snap = await t.get(ref as FirebaseFirestore.DocumentReference);
+          return { exists: () => snap.exists, data: () => snap.data() };
+        },
+        set: (ref, data, options) => {
+          t.set(ref as FirebaseFirestore.DocumentReference, data, options || {});
+        },
+      })
+    );
+  }
+  return client.runTransaction(clientDb, (t) =>
+    fn({
+      get: async (ref) => {
+        const snap = await t.get(ref);
+        return { exists: () => snap.exists(), data: () => snap.data() };
+      },
+      set: (ref, data, options) => {
+        t.set(ref, data, options || {});
+      },
+    })
+  );
+}
+
 export async function addDoc(ref: any, data: any): Promise<{ id: string }> {
   if (!getAdminDb()) return client.addDoc(ref, data);
   return (ref as FirebaseFirestore.CollectionReference).add(data);
