@@ -7,6 +7,7 @@ import { officialStalls } from "@/data/officialFloorPlanData";
 import savedFloorPlanFallback from "@/data/savedCustomFloorPlan.json";
 import InteractiveFloorPlan from "@/components/floor-plan/InteractiveFloorPlan";
 import confetti from "canvas-confetti";
+import PaymentInstructions from "./PaymentInstructions";
 import {
   CheckCircle2,
   ArrowRight,
@@ -59,6 +60,9 @@ const RESERVATION_EMAIL_CC = "info@himalayanenergyexpo.com";
 
 export default function StallBookingWizard() {
   const router = useRouter();
+  // Scroll back to the top of the wizard whenever the step changes, so a shorter
+  // next step doesn't leave the viewport sitting on the page footer.
+  const wizardTopRef = useRef<HTMLDivElement>(null);
   const searchParams = useSearchParams();
   const queryStall =
     searchParams.get("stalls") ||
@@ -77,6 +81,14 @@ export default function StallBookingWizard() {
   // Funnel: moving past stall selection counts as starting a booking
   useEffect(() => {
     if (step >= 2) trackFunnel("stall_booking", "start");
+  }, [step]);
+  const isFirstStepRenderRef = useRef(true);
+  useEffect(() => {
+    if (isFirstStepRenderRef.current) {
+      isFirstStepRenderRef.current = false;
+      return;
+    }
+    wizardTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [step]);
   const [selectedBoothNumbers, setSelectedBoothNumbers] = useState<string[]>([]);
   const [selectedPackageId, setSelectedPackageId] = useState<string>("custom-selection");
@@ -619,7 +631,7 @@ export default function StallBookingWizard() {
   };
 
   return (
-    <div className="w-full p-6 sm:p-10 rounded-3xl bg-white border border-slate-200 shadow-md">
+    <div ref={wizardTopRef} className="w-full p-6 sm:p-10 rounded-3xl bg-white border border-slate-200 shadow-md scroll-mt-24">
       {/* Step Progress Bar */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-3 text-xs font-mono text-slate-500 font-semibold">
@@ -2052,6 +2064,19 @@ export default function StallBookingWizard() {
                 <Mail className="w-3.5 h-3.5" />
                 <span>OPEN RESERVATION EMAIL</span>
               </a>
+            </div>
+          )}
+
+          {bookingRef && (
+            <div className="max-w-3xl mx-auto">
+              <PaymentInstructions
+                bookingRef={bookingRef}
+                stalls={selectedBoothNumbers.join(", ")}
+                amountNPR={totalWithVatNPR}
+                amountUSD={totalWithVatUSD}
+                international={exhibitorOrigin === "international"}
+                title={paymentMethod === "hold_72h" ? "Ready to Confirm? Pay Within 72 Hours" : "Pay Now to Confirm Your Stall"}
+              />
             </div>
           )}
 

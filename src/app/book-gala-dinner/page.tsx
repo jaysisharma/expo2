@@ -829,7 +829,7 @@ function BookGalaDinnerForm() {
                 <div className="p-3.5 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-200 space-y-1.5">
                   <span className="font-bold text-sky-300 block">How to secure your seat now:</span>
                   <p className="text-[11px] text-slate-300 leading-relaxed">
-                    Your VIP seating is immediately locked when you submit via <strong>Official USD SWIFT Wire Remittance</strong>. You will receive an official IPPAN pro-forma invoice with international banking details (SWIFT: NIMBNPKA) and a 48-hour reservation hold.
+                    Your VIP seating is immediately locked when you submit via <strong>Official USD SWIFT Wire Remittance</strong>. You will receive an official IPPAN pro-forma invoice with international banking details (SWIFT: SCBLNPKA) and a 48-hour reservation hold.
                   </p>
                 </div>
               </div>

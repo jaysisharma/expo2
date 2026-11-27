@@ -13,6 +13,7 @@ import {
   saveFirebaseFloorPlan,
 } from "@/lib/firebaseDb";
 import { attributionFields } from "@/lib/attribution";
+import { PAYMENT_BANK, PAYMENT_PROOF_EMAIL, PAYMENT_QR_ABSOLUTE_URL } from "@/lib/paymentDetails";
 import { resolveNewOrderId, saveStallBooking } from "@/lib/orders";
 import { quoteBookingOnServer } from "@/lib/stallPricingServer";
 
@@ -391,6 +392,20 @@ export async function POST(req: Request) {
         ? `Official ${resolvedPackageName} Booking`
         : `Exhibition Stall Reservation [${stallListStr}]`;
 
+      const paymentDetailsHtml = `
+              <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 16px 20px; margin: 18px 0; font-size: 13px; line-height: 1.7;">
+                <strong style="color: #065f46;">How to Pay</strong><br/><br/>
+                <strong>In Nepal (NPR) &ndash; Scan &amp; Pay:</strong> scan this NepalPay / NepalQR code with any Nepali banking or wallet app.<br/>
+                <img src="${PAYMENT_QR_ABSOLUTE_URL}" alt="NepalPay QR - ${escapeHtml(PAYMENT_BANK.beneficiary)}" width="200" style="display: block; width: 200px; max-width: 100%; height: auto; margin: 10px 0; border: 1px solid #d1fae5; border-radius: 8px;" /><br/>
+                <strong>From Abroad (USD) &ndash; SWIFT Wire:</strong><br/>
+                &bull; <strong>Beneficiary:</strong> ${escapeHtml(PAYMENT_BANK.beneficiary)}<br/>
+                &bull; <strong>Bank:</strong> ${escapeHtml(PAYMENT_BANK.bankName)}<br/>
+                &bull; <strong>Branch:</strong> ${escapeHtml(PAYMENT_BANK.branch)}<br/>
+                &bull; <strong>SWIFT / BIC:</strong> ${PAYMENT_BANK.swift}<br/>
+                &bull; <strong>Account Number:</strong> ${PAYMENT_BANK.accountNumber}<br/><br/>
+                Quote booking reference <code>${escapeHtml(orderId)}</code> in the payment remarks and email your receipt / SWIFT advice to <a href="mailto:${PAYMENT_PROOF_EMAIL}" style="color: #047857; font-weight: 600;">${PAYMENT_PROOF_EMAIL}</a>.
+              </div>`;
+
       const subjectLine = isHold72h
         ? `[72-Hour Free Hold Confirmed] Ref: ${orderId} · ${resolvedPackageName || `Stall ${stallListStr}`} | Himalayan Green Energy Expo 2027`
         : isEmailBooking
@@ -475,36 +490,20 @@ export async function POST(req: Request) {
                   ? `
               <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 16px 20px; margin: 18px 0; font-size: 13px; line-height: 1.7;">
                 <strong style="color: #065f46;">72-Hour Free Hold Active (Zero Upfront Cost):</strong><br/>
-                Your reservation is held exclusively in your organization&apos;s name for the next 72 hours. No other enterprise can claim this allocation during your hold window.<br/><br/>
-                <strong>Next Steps:</strong> Our exhibition secretariat will provide your official corporate contract and pro-forma invoice. When ready to confirm, your accounts team may wire remittance to the official bank account below:<br/><br/>
-                &bull; <strong>Beneficiary:</strong> IPPAN - GREEN ENERGY EXPO<br/>
-                &bull; <strong>Bank Name:</strong> Nepal Investment Mega Bank (NIMB)<br/>
-                &bull; <strong>NPR Account Number:</strong> 001001201928471<br/>
-                &bull; <strong>USD Account Number:</strong> 001001201928482<br/>
-                &bull; <strong>Branch / SWIFT:</strong> Durbarmarg, Kathmandu / NIMBNPKA<br/>
-                &bull; <strong>Wire Remarks:</strong> Please quote booking reference <code>${escapeHtml(orderId)}</code>
+                Your reservation is held exclusively in your organization&apos;s name for the next 72 hours. No other enterprise can claim this allocation during your hold window. When you are ready to confirm, pay using the details below.
               </div>
+              ${paymentDetailsHtml}
               `
                   : isEmailBooking
                   ? `
               <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 16px 20px; margin: 18px 0; font-size: 13px; line-height: 1.7;">
                 <strong style="color: #065f46;">Booking Request Received:</strong><br/>
-                Your stall(s) are reserved in your organization&apos;s name while our exhibition secretariat reviews your request. We will reply with your official contract and pro-forma invoice. Please quote booking reference <code>${escapeHtml(orderId)}</code> in all correspondence.
+                Your stall(s) are reserved in your organization&apos;s name. Pay using the details below to confirm your booking; our secretariat will also send your official contract and pro-forma invoice. Please quote booking reference <code>${escapeHtml(orderId)}</code> in all correspondence.
               </div>
+              ${paymentDetailsHtml}
               `
                   : isBankTransfer
-                  ? `
-              <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 16px 20px; margin: 18px 0; font-size: 13px; line-height: 1.7;">
-                <strong style="color: #065f46;">Bank Wire Remittance Instructions:</strong><br/>
-                Please wire the fee to the official IPPAN account below:<br/><br/>
-                &bull; <strong>Beneficiary:</strong> IPPAN - GREEN ENERGY EXPO<br/>
-                &bull; <strong>Bank Name:</strong> Nepal Investment Mega Bank (NIMB)<br/>
-                &bull; <strong>NPR Account Number:</strong> 001001201928471<br/>
-                &bull; <strong>USD Account Number:</strong> 001001201928482<br/>
-                &bull; <strong>Branch / SWIFT:</strong> Durbarmarg, Kathmandu / NIMBNPKA<br/>
-                &bull; <strong>Wire Remarks:</strong> Quote booking ID <code>${escapeHtml(orderId)}</code> and email the bank swift advice/voucher to <a href="mailto:expo@ippan.org.np" style="color: #047857; font-weight: 600;">expo@ippan.org.np</a>.
-              </div>
-              `
+                  ? paymentDetailsHtml
                   : `
               <p style="font-size: 13px; color: #475569; line-height: 1.6;">
                 Once your online payment verification is confirmed, your stall status will automatically lock as <strong>Confirmed &amp; Booked</strong> on the interactive floor plan.
@@ -549,12 +548,10 @@ Payment Method: ${isHold72h ? "72-HOUR FREE HOLD" : paymentMethod.toUpperCase()}
 ${isHold72h && holdExpiresAt ? `Hold Expiration: ${holdExpiresAt} (72 Hours)\n` : ""}Dates: 17–19 January 2027
 Venue: BHRIKUTIMANDAP, KATHMANDU, NEPAL
 
-Bank Details for Remittance:
-Beneficiary: IPPAN - GREEN ENERGY EXPO
-Bank: Nepal Investment Mega Bank (NIMB)
-NPR A/C: 001001201928471
-USD A/C: 001001201928482
-SWIFT: NIMBNPKA
+How to Pay:
+- In Nepal (NPR): scan the NepalPay QR at ${PAYMENT_QR_ABSOLUTE_URL} (merchant ${PAYMENT_BANK.beneficiary}, ID ${PAYMENT_BANK.qrMerchantId})
+- From abroad (USD): SWIFT wire to ${PAYMENT_BANK.beneficiary}, ${PAYMENT_BANK.bankName}, ${PAYMENT_BANK.branch}, A/C ${PAYMENT_BANK.accountNumber}, SWIFT ${PAYMENT_BANK.swift}
+- Quote ${orderId} in the payment remarks and email the receipt / SWIFT advice to ${PAYMENT_PROOF_EMAIL}
 
 Secretariat Contacts:
 Hotlines: +977-9703606348 / 9703606345
